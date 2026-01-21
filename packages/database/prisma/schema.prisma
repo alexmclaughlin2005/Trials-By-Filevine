@@ -1,0 +1,480 @@
+// TrialForge AI - Database Schema
+// PostgreSQL 16 with pgvector extension for embeddings
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
+}
+
+// ============================================
+// ORGANIZATIONS & USERS
+// ============================================
+
+model Organization {
+  id                String   @id @default(uuid())
+  name              String
+  slug              String   @unique
+  settings          Json?
+  subscriptionTier  String   @default("trial") @map("subscription_tier")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  users             User[]
+  cases             Case[]
+  personas          Persona[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  email          String    @unique
+  name           String
+  role           String    // admin | attorney | paralegal | consultant
+  authProviderId String?   @map("auth_provider_id")
+  lastLoginAt    DateTime? @map("last_login_at")
+  settings       Json?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+  @@map("users")
+}
+
+// ============================================
+// CASES
+// ============================================
+
+model Case {
+  id             String    @id @default(uuid())
+  organizationId String    @map("organization_id")
+  name           String
+  caseNumber     String?   @map("case_number")
+  jurisdiction   String?
+  venue          String?
+  trialDate      DateTime? @map("trial_date")
+  caseType       String?   @map("case_type") // civil | criminal | family
+  plaintiffName  String?   @map("plaintiff_name")
+  defendantName  String?   @map("defendant_name")
+  ourSide        String?   @map("our_side") // plaintiff | defendant
+  status         String    @default("active") // active | archived | closed
+  createdBy      String    @map("created_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  facts            CaseFact[]
+  arguments        CaseArgument[]
+  witnesses        CaseWitness[]
+  juryPanels       JuryPanel[]
+  trialSessions    TrialSession[]
+  focusGroupSessions FocusGroupSession[]
+
+  @@index([organizationId])
+  @@index([status])
+  @@map("cases")
+}
+
+model CaseFact {
+  id        String   @id @default(uuid())
+  caseId    String   @map("case_id")
+  content   String   @db.Text
+  factType  String   @map("fact_type") // background | disputed | undisputed
+  source    String?
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@map("case_facts")
+}
+
+model CaseArgument {
+  id           String   @id @default(uuid())
+  caseId       String   @map("case_id")
+  argumentType String   @map("argument_type") // opening | closing | theme | rebuttal
+  title        String
+  content      String   @db.Text
+  version      Int      @default(1)
+  isCurrent    Boolean  @default(true) @map("is_current")
+  parentId     String?  @map("parent_id")
+  changeNotes  String?  @map("change_notes") @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case   Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  parent CaseArgument? @relation("ArgumentVersions", fields: [parentId], references: [id])
+  children CaseArgument[] @relation("ArgumentVersions")
+
+  @@index([caseId])
+  @@index([parentId])
+  @@map("case_arguments")
+}
+
+model CaseWitness {
+  id             String   @id @default(uuid())
+  caseId         String   @map("case_id")
+  name           String
+  role           String   // fact | expert | character
+  affiliation    String   // plaintiff | defendant | neutral
+  summary        String?  @db.Text
+  directOutline  String?  @map("direct_outline") @db.Text
+  crossOutline   String?  @map("cross_outline") @db.Text
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@map("case_witnesses")
+}
+
+// ============================================
+// JURY PANEL & JURORS
+// ============================================
+
+model JuryPanel {
+  id           String   @id @default(uuid())
+  caseId       String   @map("case_id")
+  panelDate    DateTime @map("panel_date")
+  source       String?
+  version      Int      @default(1)
+  totalJurors  Int      @default(0) @map("total_jurors")
+  status       String   @default("draft") // draft | active | completed
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case   Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  jurors Juror[]
+
+  @@index([caseId])
+  @@map("jury_panels")
+}
+
+model Juror {
+  id                 String   @id @default(uuid())
+  panelId            String   @map("panel_id")
+  jurorNumber        String?  @map("juror_number")
+  firstName          String   @map("first_name") // Encrypted at application layer
+  lastName           String   @map("last_name") // Encrypted at application layer
+  age                Int?
+  occupation         String?
+  employer           String?
+  city               String?
+  zipCode            String?  @map("zip_code")
+  questionnaireData  Json?    @map("questionnaire_data")
+  status             String   @default("available") // available | questioned | struck_for_cause | peremptory_strike | seated | alternate | dismissed
+  strikeReason       String?  @map("strike_reason") @db.Text
+  keepPriority       Int?     @map("keep_priority") // 1-5 scale
+  strikePriority     Int?     @map("strike_priority") // 1-5 scale
+  notes              String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  panel              JuryPanel              @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  researchArtifacts  ResearchArtifact[]
+  personaMappings    JurorPersonaMapping[]
+
+  @@index([panelId])
+  @@index([status])
+  @@map("jurors")
+}
+
+// ============================================
+// PERSONAS
+// ============================================
+
+model Persona {
+  id              String   @id @default(uuid())
+  organizationId  String?  @map("organization_id") // NULL for system personas
+  name            String
+  description     String   @db.Text
+  sourceType      String   @map("source_type") // system | ai_generated | user_created
+  attributes      Json?
+  signals         Json?
+  persuasionLevers Json?   @map("persuasion_levers")
+  pitfalls        Json?
+  isActive        Boolean  @default(true) @map("is_active")
+  version         Int      @default(1)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization    Organization?        @relation(fields: [organizationId], references: [id])
+  jurorMappings   JurorPersonaMapping[]
+  focusGroupPersonas FocusGroupPersona[]
+
+  @@index([organizationId])
+  @@index([sourceType])
+  @@map("personas")
+}
+
+model JurorPersonaMapping {
+  id            String    @id @default(uuid())
+  jurorId       String    @map("juror_id")
+  personaId     String    @map("persona_id")
+  mappingType   String    @map("mapping_type") // primary | secondary
+  source        String    // ai_suggested | user_assigned
+  confidence    Decimal   @db.Decimal(3, 2) // 0.00 - 1.00
+  rationale     String?   @db.Text
+  counterfactual String?  @db.Text
+  isConfirmed   Boolean   @default(false) @map("is_confirmed")
+  confirmedBy   String?   @map("confirmed_by")
+  confirmedAt   DateTime? @map("confirmed_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  juror   Juror   @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  persona Persona @relation(fields: [personaId], references: [id])
+
+  @@index([jurorId])
+  @@index([personaId])
+  @@map("juror_persona_mappings")
+}
+
+// ============================================
+// RESEARCH ARTIFACTS
+// ============================================
+
+model ResearchArtifact {
+  id                 String    @id @default(uuid())
+  jurorId            String    @map("juror_id")
+  sourceType         String    @map("source_type") // linkedin | facebook | pacer | fec | etc
+  sourceUrl          String?   @db.Text
+  sourceName         String?
+  retrievedAt        DateTime  @map("retrieved_at")
+  rawContent         String?   @db.Text
+  extractedSnippets  Json?     @map("extracted_snippets")
+  signals            Json?
+  matchConfidence    Decimal?  @map("match_confidence") @db.Decimal(3, 2)
+  matchRationale     String?   @map("match_rationale") @db.Text
+  userAction         String    @default("pending") @map("user_action") // pending | confirmed | rejected | uncertain
+  actionedBy         String?   @map("actioned_by")
+  actionedAt         DateTime? @map("actioned_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  juror Juror @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+
+  @@index([jurorId])
+  @@index([sourceType])
+  @@index([userAction])
+  @@map("research_artifacts")
+}
+
+// ============================================
+// TRIAL SESSIONS
+// ============================================
+
+model TrialSession {
+  id                String   @id @default(uuid())
+  caseId            String   @map("case_id")
+  sessionType       String   @map("session_type") // voir_dire | trial_day
+  sessionDate       DateTime @map("session_date")
+  sessionNumber     Int?     @map("session_number")
+  title             String?
+  status            String   @default("scheduled") // scheduled | in_progress | completed
+  startedAt         DateTime? @map("started_at")
+  endedAt           DateTime? @map("ended_at")
+  audioFileUrl      String?  @map("audio_file_url") @db.Text
+  transcriptStatus  String   @default("pending") @map("transcript_status") // pending | processing | completed | failed
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case              Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  timestamps        SessionTimestamp[]
+  transcriptSegments TranscriptSegment[]
+  insights          SessionInsight[]
+
+  @@index([caseId])
+  @@index([status])
+  @@map("trial_sessions")
+}
+
+model SessionTimestamp {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  timestampMs BigInt   @map("timestamp_ms")
+  eventType   String   @map("event_type") // witness_change | questioner_change | break | note
+  label       String?
+  witnessId   String?  @map("witness_id")
+  createdBy   String   @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session TrialSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("session_timestamps")
+}
+
+model TranscriptSegment {
+  id            String   @id @default(uuid())
+  sessionId     String   @map("session_id")
+  startMs       BigInt   @map("start_ms")
+  endMs         BigInt   @map("end_ms")
+  speakerLabel  String?  @map("speaker_label")
+  content       String   @db.Text
+  confidence    Decimal? @db.Decimal(3, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session TrialSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  insights SessionInsight[]
+
+  @@index([sessionId])
+  @@map("transcript_segments")
+}
+
+model SessionInsight {
+  id                String    @id @default(uuid())
+  sessionId         String    @map("session_id")
+  segmentId         String?   @map("segment_id")
+  insightType       String    @map("insight_type") // persona_signal | credibility | opportunity | risk
+  severity          String    // info | warning | critical
+  title             String
+  description       String    @db.Text
+  affectedPersonas  String[]  @map("affected_personas")
+  suggestedAction   String?   @map("suggested_action") @db.Text
+  isDismissed       Boolean   @default(false) @map("is_dismissed")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  session TrialSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  segment TranscriptSegment? @relation(fields: [segmentId], references: [id])
+
+  @@index([sessionId])
+  @@index([insightType])
+  @@map("session_insights")
+}
+
+// ============================================
+// FOCUS GROUPS
+// ============================================
+
+model FocusGroupSession {
+  id            String    @id @default(uuid())
+  caseId        String    @map("case_id")
+  name          String
+  description   String?   @db.Text
+  panelType     String    @map("panel_type") // generic | case_matched | custom
+  argumentId    String?   @map("argument_id")
+  status        String    @default("draft") // draft | running | completed
+  startedAt     DateTime? @map("started_at")
+  completedAt   DateTime? @map("completed_at")
+  createdBy     String    @map("created_by")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  case            Case                      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  personas        FocusGroupPersona[]
+  results         FocusGroupResult[]
+  recommendations FocusGroupRecommendation[]
+
+  @@index([caseId])
+  @@index([status])
+  @@map("focus_group_sessions")
+}
+
+model FocusGroupPersona {
+  id         String   @id @default(uuid())
+  sessionId  String   @map("session_id")
+  personaId  String   @map("persona_id")
+  seatNumber Int      @map("seat_number")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session FocusGroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  persona Persona           @relation(fields: [personaId], references: [id])
+
+  @@index([sessionId])
+  @@map("focus_group_personas")
+}
+
+model FocusGroupResult {
+  id              String   @id @default(uuid())
+  sessionId       String   @map("session_id")
+  personaId       String   @map("persona_id")
+  reactionSummary String   @map("reaction_summary") @db.Text
+  sentimentScore  Decimal  @map("sentiment_score") @db.Decimal(3, 2) // -1.00 to 1.00
+  concerns        Json?
+  questions       Json?
+  verdictLean     String?  @map("verdict_lean") // plaintiff | defendant | undecided
+  confidence      Decimal? @db.Decimal(3, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  session FocusGroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("focus_group_results")
+}
+
+model FocusGroupRecommendation {
+  id                  String   @id @default(uuid())
+  sessionId           String   @map("session_id")
+  recommendationType  String   @map("recommendation_type") // weakness | strength | reframe | add_evidence
+  priority            Int      // 1-5
+  title               String
+  description         String   @db.Text
+  affectedPersonas    String[] @map("affected_personas")
+  isAddressed         Boolean  @default(false) @map("is_addressed")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  session FocusGroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@map("focus_group_recommendations")
+}
+
+// ============================================
+// AUDIT LOG
+// ============================================
+
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String   @map("organization_id")
+  userId         String?  @map("user_id")
+  action         String   // research_initiated | persona_assigned | etc
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id")
+  caseId         String?  @map("case_id")
+  details        Json?
+  ipAddress      String?  @map("ip_address")
+  userAgent      String?  @map("user_agent") @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([organizationId])
+  @@index([userId])
+  @@index([caseId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
