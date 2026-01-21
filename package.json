@@ -1,0 +1,33 @@
+{
+  "name": "trialforge-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-Powered Trial Preparation & Jury Intelligence Platform",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "ai-services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "db:generate": "cd packages/database && prisma generate",
+    "db:migrate": "cd packages/database && prisma migrate dev",
+    "db:push": "cd packages/database && prisma db push",
+    "db:seed": "cd packages/database && tsx prisma/seed.ts"
+  },
+  "devDependencies": {
+    "prettier": "^3.2.4",
+    "turbo": "^1.11.3",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
