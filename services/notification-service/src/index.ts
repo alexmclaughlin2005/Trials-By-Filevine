@@ -14,6 +14,7 @@ dotenv.config();
 
 const PORT = parseInt(process.env.PORT || '3004', 10);
 const HOST = process.env.HOST || '0.0.0.0';
+const SERVICE_NAME = 'Notification Service';
 
 async function start() {
   // Initialize Fastify
