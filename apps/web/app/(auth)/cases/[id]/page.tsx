@@ -215,7 +215,7 @@ export default function CaseDetailPageEnhanced() {
                 <Target className="h-5 w-5 text-purple-500" />
                 <div>
                   <p className="text-2xl font-bold text-filevine-gray-900">
-                    {data.juryPanels?.[0]?.totalJurors || 0}
+                    {data.juryPanels?.reduce((sum, panel) => sum + (panel.jurors?.length || 0), 0) || 0}
                   </p>
                   <p className="text-xs text-filevine-gray-600">Jurors</p>
                 </div>
@@ -241,7 +241,7 @@ export default function CaseDetailPageEnhanced() {
                 Witnesses ({data.witnesses?.length || 0})
               </TabsTrigger>
               <TabsTrigger value="jurors">
-                Jurors ({data.juryPanels?.[0]?.totalJurors || 0})
+                Jurors ({data.juryPanels?.reduce((sum, panel) => sum + (panel.jurors?.length || 0), 0) || 0})
               </TabsTrigger>
               <TabsTrigger value="questions">Voir Dire Questions</TabsTrigger>
               <TabsTrigger value="focus-groups">Focus Groups</TabsTrigger>
