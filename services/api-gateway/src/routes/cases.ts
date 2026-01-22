@@ -6,7 +6,6 @@ const createCaseSchema = z.object({
   name: z.string().min(1),
   caseNumber: z.string().min(1),
   caseType: z.string(),
-  description: z.string().optional(),
   plaintiffName: z.string().optional(),
   defendantName: z.string().optional(),
   ourSide: z.string().optional(),
