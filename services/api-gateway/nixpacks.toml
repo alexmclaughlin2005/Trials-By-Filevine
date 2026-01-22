@@ -13,4 +13,4 @@ cmds = [
 ]
 
 [start]
-cmd = "cd services/api-gateway && node dist/index.js"
+cmd = "cd services/api-gateway && node dist/services/api-gateway/src/index.js"
