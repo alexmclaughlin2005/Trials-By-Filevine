@@ -9,6 +9,8 @@ const createCaseSchema = z.object({
   description: z.string().optional(),
   plaintiffName: z.string().optional(),
   defendantName: z.string().optional(),
+  ourSide: z.string().optional(),
+  jurisdiction: z.string().optional(),
   trialDate: z.string().optional(),
   venue: z.string().optional(),
 });
