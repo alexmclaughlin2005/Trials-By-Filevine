@@ -8,9 +8,10 @@
 import { spawn } from 'child_process';
 import path from 'path';
 
-// __dirname will be dist/services/api-gateway/src when compiled
-// We need to go up to root and find packages/database in the source tree
-const SCHEMA_PATH = path.join(__dirname, '../../../../packages/database/prisma/schema.prisma');
+// When running from cd services/api-gateway:
+// __dirname = /app/services/api-gateway/dist/services/api-gateway/src
+// Need to go up 6 levels to reach /app (monorepo root)
+const SCHEMA_PATH = path.join(__dirname, '../../../../../packages/database/prisma/schema.prisma');
 
 console.log('=========================================');
 console.log('API Gateway Startup');
