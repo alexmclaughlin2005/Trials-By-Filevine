@@ -55,9 +55,20 @@ async function main() {
 
     try {
       await runCommand('npx', ['prisma', 'migrate', 'resolve', '--rolled-back', '20260121164817_init', `--schema=${SCHEMA_PATH}`]);
-      console.log('✅ Resolved failed migration');
+      console.log('✅ Resolved failed migration as rolled back');
     } catch (e) {
       console.log('No failed migrations to resolve (or already resolved)');
+    }
+
+    console.log('');
+
+    // Mark the init migration as applied since it has pgvector which Railway doesn't support
+    console.log('Marking init migration as applied (pgvector not supported)...');
+    try {
+      await runCommand('npx', ['prisma', 'migrate', 'resolve', '--applied', '20260121164817_init', `--schema=${SCHEMA_PATH}`]);
+      console.log('✅ Marked init migration as applied');
+    } catch (e) {
+      console.log('Init migration already applied or does not need resolution');
     }
 
     console.log('');
