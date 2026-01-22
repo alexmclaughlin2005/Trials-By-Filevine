@@ -522,3 +522,133 @@ const profile = await synthesisService.getProfile(profileId);
 - Max web searches: 10
 - Timeout: 60 seconds
 - Retry attempts: 1
+
+---
+
+## Railway Deployment
+
+This service is deployed on Railway using a monorepo configuration.
+
+### Configuration Files
+
+Two configuration files control the Railway deployment:
+
+1. **[railway.json](./railway.json)** - Primary Railway configuration
+2. **[nixpacks.toml](./nixpacks.toml)** - Nixpacks build configuration
+
+### Build Strategy
+
+The build executes from the repository root (`/app` in Railway container) with explicit directory changes:
+
+```bash
+# 1. Install all dependencies
+npm install
+
+# 2. Generate Prisma client
+npx prisma generate --schema=./packages/database/prisma/schema.prisma
+
+# 3. Build shared packages (dependencies first!)
+cd packages/database && npm run build && cd ../..
+cd packages/utils && npm run build && cd ../..
+
+# 4. Build API Gateway service
+cd services/api-gateway && npm run build && cd ../..
+```
+
+**Why explicit `cd` commands?** npm workspace commands can execute from the wrong context, causing the `dist` folder to be created in the wrong location. Using `cd` ensures each package builds in its own directory.
+
+### Start Command
+
+```bash
+cd services/api-gateway && node dist/index.js
+```
+
+### Railway Dashboard Settings
+
+**Root Directory:** `/` (not `services/api-gateway/`)
+
+**Watch Paths:**
+```
+services/api-gateway/**
+packages/**
+```
+
+This configuration ensures:
+- Deployments trigger when API Gateway code changes
+- Deployments trigger when any shared package changes
+- Other services don't trigger unnecessary API Gateway deployments
+
+### Environment Variables
+
+Configure these in Railway dashboard:
+
+```bash
+# Database (Railway provides this when you add PostgreSQL)
+DATABASE_URL=postgresql://user:pass@host:port/db
+
+# Server
+PORT=3000                      # Railway auto-assigns
+NODE_ENV=production
+
+# Authentication
+JWT_SECRET=your-secret-key-here
+
+# AI Services
+ANTHROPIC_API_KEY=sk-ant-...
+
+# CORS
+FRONTEND_URL=https://your-frontend.vercel.app
+```
+
+### TypeScript Configuration
+
+The service uses TypeScript path mappings for workspace packages:
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@juries/database": ["../../packages/database/src"],
+      "@juries/types": ["../../packages/types/src"],
+      "@juries/utils": ["../../packages/utils/src"],
+      "@juries/ai-client": ["../../packages/ai-client/src"]
+    }
+  }
+}
+```
+
+**Important:** Paths point to `src` directories for compile-time resolution. Runtime resolution uses npm workspaces.
+
+### Common Deployment Issues
+
+**Issue:** `Cannot find module '/app/services/api-gateway/dist/index.js'`
+- **Cause:** Build didn't create dist folder in correct location
+- **Solution:** Use explicit `cd` commands in build script (already configured)
+
+**Issue:** `error TS2307: Cannot find module '@juries/...'`
+- **Cause:** Missing TypeScript path mappings
+- **Solution:** Add to `tsconfig.json` paths (already configured)
+
+**Issue:** TypeScript not found during build
+- **Cause:** TypeScript in devDependencies instead of dependencies
+- **Solution:** Move to dependencies in package.json (already done)
+
+**Issue:** Database connection fails
+- **Cause:** `DATABASE_URL` not set or incorrect format
+- **Solution:** Check Railway environment variables
+
+### Monitoring
+
+Check these after deployment:
+
+1. **Build Logs:** Verify all packages build successfully
+2. **Deploy Logs:** Ensure service starts without errors
+3. **Health Endpoint:** Test `https://your-service.railway.app/health`
+4. **Database Connection:** Verify Prisma connects successfully
+
+### Related Documentation
+
+- **[Railway Deployment Guide](../../RAILWAY_DEPLOYMENT.md)** - Complete Railway setup and best practices
+- **[Project Structure](../../ai_instructions.md)** - Full project architecture
+- **Database Package** - See `packages/database/README.md` for schema docs

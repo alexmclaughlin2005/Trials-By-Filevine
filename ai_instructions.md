@@ -17,12 +17,15 @@ Juries by Filevine is an AI-powered jury intelligence platform that helps legal 
 - **File Storage:** Vercel Blob or AWS S3
 - **CDN:** Vercel Edge Network
 
+**📘 See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for complete deployment guide**
+
 ## Repository Structure
 
 ```
 Trials by Filevine/
 ├── ai_instructions.md              # THIS FILE - Project structure & directory map
-├── claude.md                        # AI assistant instructions for documentation
+├── CLAUDE.md                       # AI assistant instructions for documentation
+├── RAILWAY_DEPLOYMENT.md           # Railway deployment guide & best practices
 ├── Trials by Filevine_AI_PRD.md            # Product requirements document
 ├── Trials by Filevine_AI_Architecture.md   # System architecture document
 ├── Trials by Filevine_AI_Technical_Design.md # Technical specifications
@@ -407,6 +410,9 @@ CASE_SERVICE_URL=...
 3. **Local Dev:** Each service has `npm run dev` or `python -m uvicorn`
 4. **Testing:** Each service has its own test suite
 5. **Deployment:** Push to main triggers Railway/Vercel deploys
+   - See [RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md) for Railway-specific configuration
+   - Services use explicit build order: database → utils → service
+   - Watch paths configured per service to trigger targeted deployments
 
 ## Key Architectural Patterns
 
