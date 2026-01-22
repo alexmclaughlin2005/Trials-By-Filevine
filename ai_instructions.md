@@ -490,23 +490,27 @@ CASE_SERVICE_URL=...
 
 ## Implementation Status
 
-### ✅ Completed
+### ✅ Completed (Phases 1-5)
 1. **Monorepo Setup** - Turborepo with npm workspaces configured
 2. **Database Layer** (`packages/database`) - Prisma schema with 16 models, migrations, seed data
 3. **Shared Packages:**
    - `@juries/types` - Shared TypeScript types
    - `@juries/database` - Prisma client wrapper
    - `@juries/ai-client` - Claude AI client wrapper
+   - `@juries/utils` - Shared utility functions
 4. **Next.js Web App** (`apps/web`) - Full application with:
    - Authentication system (JWT, login, protected routes)
    - Dashboard with real data from API
-   - Jurors list and detail pages
+   - Case management with tabbed interface (Overview, Facts, Arguments, Witnesses, Jurors, Questions, Focus Groups)
+   - **Embedded juror research workflow** (no separate navigation)
+   - Expandable juror cards with inline research tools
    - PersonaSuggester component with AI integration
    - Filevine design system (Tailwind config, custom colors, components)
 5. **API Gateway** (`services/api-gateway`) - Fastify server with:
    - JWT authentication middleware
-   - Complete REST API: cases, jurors, personas, research, focus groups
+   - Complete REST API: cases, jurors, personas, research, focus groups, captures, synthesis
    - All AI services integrated and functional
+   - Auto-creation of jury panels on case creation
 6. **Complete AI Service Suite:**
    - **ArchetypeClassifierService** - Classifies jurors into 10 behavioral archetypes ✅
      - Fully integrated with Claude 4.5 Sonnet API
@@ -540,29 +544,85 @@ CASE_SERVICE_URL=...
 8. **Base64 Image Storage** - Temporary solution (production will use Vercel Blob/S3)
 
 ### ✅ Phase 5 Complete - Deep Research Synthesis
-1. **JurorSynthesisService** - Complete backend service with Claude web search integration
+1. **JurorSynthesisService** - Complete backend service with Claude web search integration ✅ **TESTED**
 2. **Synthesis API Routes** - 3 endpoints: start synthesis, poll status, get profile
 3. **DeepResearch Component** - Full frontend with polling, error handling, rich UI
 4. **Database Schema** - SynthesizedProfile model with all metrics
 5. **Context-Based Caching** - SHA256 hash for cache invalidation on context changes
-6. **Identity Resolution Integration** - Automatic appearance after candidate confirmation
+6. **Identity Resolution Integration** - Always visible with helpful instructions (improved discoverability)
 7. **Comprehensive Testing** - Test script validates end-to-end workflow
 8. **User Documentation** - DEEP_RESEARCH_GUIDE.md with usage instructions
-9. **Technical Documentation** - DEEP_RESEARCH_TECHNICAL.md with implementation details
-10. **Bug Fixes** - Resolved candidate ID issues and React Query cache synchronization
+9. **Technical Documentation** - DEEP_RESEARCH_TECHNICAL.md with implementation details (500+ lines)
+10. **Bug Fixes** - Resolved candidate ID issues and React Query cache synchronization (Jan 22, 2026)
 11. **Production Ready** - Error handling, logging, performance optimization complete
 
+### ✅ Phase 5.5 Complete - UX Simplification (Jan 2026)
+1. **Embedded Research Workflow** - All juror research happens within case context
+2. **Auto-Panel Creation** - Jury panels automatically created on case creation
+3. **Simplified Panel Management** - Removed panel expansion UI (99% use case optimization)
+4. **Expandable Juror Cards** - Click to expand inline research tools
+5. **Always-Visible Deep Research** - No longer hidden, shows helpful instructions before confirmation
+6. **Reduced Navigation** - 2 steps shorter workflow, no separate juror pages needed
+
 ### 🚧 In Progress / Next Steps
-1. Test document capture end-to-end with real images
-2. Integrate Vercel Blob or AWS S3 for production image storage
-3. Add thumbnail generation for captures
-4. Create trial mode PWA for courtroom use
-5. Add real-time collaboration features (WebSocket - Phase 5)
-6. Implement comprehensive audit logging system
-7. Deploy to Railway (backend) and Vercel (frontend)
-8. Set up monitoring and error tracking (Sentry)
-9. Add bulk archetype classification for entire jury panels
-10. Implement archetype comparison views and panel composition analysis
+
+#### Immediate Priority (This Week)
+1. **Production Deployment**
+   - [ ] Deploy API Gateway to Railway
+   - [ ] Deploy Web App to Vercel
+   - [ ] Run production migrations
+   - [ ] Test end-to-end with real data
+   - See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+2. **Real-World Testing**
+   - [ ] Import actual jury panel with real names
+   - [ ] Test identity matching with real candidates
+   - [ ] Validate Deep Research quality with actual public data
+   - [ ] Measure processing times and web search effectiveness
+   - [ ] Collect attorney feedback
+
+#### Short-Term (Next 2 Weeks)
+3. **Image Storage Migration**
+   - [ ] Integrate Vercel Blob or AWS S3 for production image storage
+   - [ ] Add presigned URLs for secure access
+   - [ ] Add thumbnail generation for captures
+   - [ ] Update OCR service to use cloud storage
+
+4. **Production Monitoring**
+   - [ ] Set up error tracking (Sentry)
+   - [ ] Configure uptime monitoring
+   - [ ] Monitor API costs and token usage
+   - [ ] Track Deep Research processing times
+
+#### Medium-Term (Next Month)
+5. **Enhanced Data Sources (Phase 6)**
+   - [ ] Implement FEC API integration (free - political donations)
+   - [ ] Add voter file pre-loading (county-specific)
+   - [ ] Evaluate need for paid people search APIs
+   - [ ] Social media aggregation strategy
+
+6. **Advanced Features**
+   - [ ] Bulk archetype classification for entire jury panels
+   - [ ] Implement archetype comparison views
+   - [ ] Panel composition analysis
+   - [ ] WebSocket for real-time Deep Research updates (no polling)
+
+#### Long-Term (Future Phases)
+7. **Trial Mode PWA (Phase 7)**
+   - [ ] Offline-first architecture
+   - [ ] Service worker implementation
+   - [ ] IndexedDB storage
+   - [ ] Background sync for courtroom use
+
+8. **Real-Time Collaboration**
+   - [ ] WebSocket infrastructure complete, needs UI
+   - [ ] User presence tracking
+   - [ ] Live updates across team members
+
+9. **Audit & Compliance**
+   - [ ] Comprehensive audit logging system
+   - [ ] Compliance documentation
+   - [ ] SOC 2 readiness assessment
 
 ## Important Notes
 

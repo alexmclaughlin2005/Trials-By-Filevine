@@ -184,20 +184,48 @@ See [infrastructure/railway/README.md](./infrastructure/railway/README.md) for d
 
 ## Documentation
 
+### Getting Started
+- **[CURRENT_STATE.md](./CURRENT_STATE.md)** ⭐ **START HERE** - Complete current state, feature breakdown, and roadmap
+- **[GETTING_STARTED.md](./GETTING_STARTED.md)** - Comprehensive setup guide
+- **[DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md)** - Developer quick reference
+- **[QUICK_DEMO.md](./QUICK_DEMO.md)** - 5-minute demo script
+
+### System Documentation
+- **[PROJECT_STATUS.md](./PROJECT_STATUS.md)** - Phase completion status and next steps
+- **[SYSTEM_OVERVIEW.md](./SYSTEM_OVERVIEW.md)** - Complete system documentation
 - **[ai_instructions.md](./ai_instructions.md)** - Complete project structure and AI assistant instructions
 - **[claude.md](./claude.md)** - Documentation management protocol for AI assistants
-- **[Trials by Filevine_AI_PRD.md](./Trials by Filevine_AI_PRD.md)** - Product requirements
-- **[Trials by Filevine_AI_Architecture.md](./Trials by Filevine_AI_Architecture.md)** - System architecture
-- **[Trials by Filevine_AI_Technical_Design.md](./Trials by Filevine_AI_Technical_Design.md)** - Technical specifications
+
+### Architecture & Design
+- **[TrialForge_AI_PRD.md](./TrialForge_AI_PRD.md)** - Product requirements
+- **[TrialForge_AI_Architecture.md](./TrialForge_AI_Architecture.md)** - System architecture
+- **[TrialForge_AI_Technical_Design.md](./TrialForge_AI_Technical_Design.md)** - Technical specifications
+
+### Deployment
+- **[DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)** - Primary deployment guide
+- **[RAILWAY_DEPLOYMENT.md](./RAILWAY_DEPLOYMENT.md)** - Railway-specific deep dive
+
+### Feature Documentation
+- **[DEEP_RESEARCH_TECHNICAL.md](./DEEP_RESEARCH_TECHNICAL.md)** - Deep Research implementation (500+ lines)
+- **[ARCHETYPE_SYSTEM_SUMMARY.md](./ARCHETYPE_SYSTEM_SUMMARY.md)** - Complete archetype guide
+- **[PHASE_4_COMPLETE.md](./PHASE_4_COMPLETE.md)** - Document capture & OCR implementation
 
 ### Service Documentation
-
 Each service has its own README:
 - [apps/web/README.md](./apps/web/README.md) - Web application
 - [services/api-gateway/README.md](./services/api-gateway/README.md) - API gateway
 - [ai-services/persona-suggester/README.md](./ai-services/persona-suggester/README.md) - Persona AI service
 - [packages/database/README.md](./packages/database/README.md) - Database package
 - [packages/ai-client/README.md](./packages/ai-client/README.md) - Claude API client
+
+### Archived Documentation
+Historical documentation has been moved to [docs/archive/](./docs/archive/) to reduce clutter. This includes:
+- Phase completion documents (Phases 2-3)
+- Deployment milestone markers
+- Setup completion markers
+- Superseded setup and deployment guides
+
+See [docs/archive/README.md](./docs/archive/README.md) for a complete list and information about what superseded each archived document.
 
 ## Architecture Highlights
 
@@ -225,21 +253,34 @@ Each service has its own README:
 
 ## Key Features
 
-### Phase 1: MVP (Current Focus)
-- ✅ Case management
-- ✅ Automated juror research
-- ✅ Persona library and mapping
-- ✅ Focus group simulations
-- ✅ Multi-user collaboration
+### ✅ Phase 1-5: Complete & Production-Ready
+- ✅ Case management with tabbed interface
+- ✅ Auto-created jury panels (simplified workflow)
+- ✅ Embedded juror research (no separate navigation)
+- ✅ Identity matching with public records search
+- ✅ Deep research synthesis with Claude web search (10-60 seconds)
+- ✅ Archetype classification (10 behavioral types)
+- ✅ Persona library and AI-powered matching
+- ✅ Strategic voir dire question generation
+- ✅ Focus group deliberation simulations
+- ✅ Document capture with OCR (Claude Vision)
+- ✅ Batch CSV import for jury panels
 
-### Phase 2: Trial Support
-- ⏳ Voir dire question generation
+### Phase 6: Enhanced Data Sources (Planned)
+- ⏳ FEC API integration (political donations)
+- ⏳ Voter file pre-loading (county-specific)
+- ⏳ People search APIs (Pipl, FullContact)
+- ⏳ Social media aggregation
+- ⏳ Court records integration
+
+### Phase 7: Trial Support (Future)
 - ⏳ Real-time trial audio analysis
-- ⏳ Witness preparation mode
+- ⏳ Trial mode PWA for courtroom use
 - ⏳ Offline recording with sync
+- ⏳ Witness preparation mode
 
-### Phase 3: Integrations
-- ⏳ Filevine integration
+### Phase 8: Integrations (Future)
+- ⏳ Filevine native integration
 - ⏳ Clio integration
 - ⏳ Mobile companion app
 - ⏳ Verdict prediction

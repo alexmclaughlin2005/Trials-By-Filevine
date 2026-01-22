@@ -1,7 +1,7 @@
 # Trials by Filevine AI - Project Status
 
-**Last Updated:** January 22, 2026
-**Current Phase:** Phase 5 Complete ✅ - Ready for Production Deployment 🚀
+**Last Updated:** January 23, 2026
+**Current Phase:** Phase 5 Complete ✅ + UX Simplification
 **Next Phase:** Production Deployment → Phase 6 (Enhanced Data Sources)
 
 ---
@@ -31,14 +31,21 @@ All AI services fully integrated with Claude 4.5 Sonnet and functional UI compon
 **Documentation:** API specs and integration guides complete
 
 ### ✅ Phase 3: Juror Research System (Complete)
-- Juror CRUD operations
+- Juror CRUD operations with simplified workflow
 - Research artifact management
 - Candidate matching system
 - Archetype classification UI
 - Persona suggestion interface
 - Batch import functionality
+- **NEW:** Embedded research workflow within case context
 
 **Documentation:** User guides and API documentation complete
+
+**Recent UX Improvements (Jan 2026):**
+- Embedded all juror research within case pages (no separate navigation required)
+- Auto-creation of jury panels for each case (simplified from panel management)
+- Expandable juror cards with inline research tools
+- Always-visible Deep Research section with helpful instructions
 
 ### ✅ Phase 4: Document Capture & OCR (Complete)
 - **OCR Service** with Claude Vision API
@@ -71,16 +78,24 @@ All AI services fully integrated with Claude 4.5 Sonnet and functional UI compon
 - [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md) - Developer quick reference
 
 ### ✅ Phase 5: Deep Research Synthesis (Complete)
-- **JurorSynthesisService** - Complete backend service with Claude web search
+- **JurorSynthesisService** - Complete backend service with Claude web search ✅ **TESTED IN PRODUCTION**
 - **Synthesis API Routes** - Start synthesis, poll status, get profile
 - **DeepResearch Component** - Full frontend with polling, error handling, rich UI
 - **Database Schema** - SynthesizedProfile model with all metrics
 - **Context-Based Caching** - SHA256 hash for cache invalidation
-- **Identity Resolution Integration** - Automatic appearance after confirmation
-- **Comprehensive Testing** - Test script validates end-to-end workflow
+- **Identity Resolution Integration** - Always visible with helpful instructions
+- **Comprehensive Testing** - End-to-end workflow validated with bug fixes
 - **Production Ready** - Error handling, logging, performance optimization
 
-**Documentation:** DEEP_RESEARCH_GUIDE.md and DEEP_RESEARCH_TECHNICAL.md
+**Bug Fixes (Jan 22, 2026):**
+- ✅ Fixed candidate ID undefined issue (search orchestrator returning in-memory objects)
+- ✅ Fixed React Query cache not refreshing (added callback pattern for parent refetch)
+- ✅ Confirmed full workflow: search → confirm → deep research
+
+**Documentation:**
+- [DEEP_RESEARCH_GUIDE.md](DEEP_RESEARCH_GUIDE.md) - User guide
+- [DEEP_RESEARCH_TECHNICAL.md](DEEP_RESEARCH_TECHNICAL.md) - Technical implementation (500+ lines)
+- [SESSION_SUMMARY_2026-01-22.md](SESSION_SUMMARY_2026-01-22.md) - Testing session and bug fixes
 
 ### 🚀 Ready for Production Deployment
 All phases (1-5) complete and tested. System ready for Railway + Vercel deployment.
@@ -105,16 +120,17 @@ All phases (1-5) complete and tested. System ready for Railway + Vercel deployme
 ## Current System Capabilities
 
 ### User-Facing Features
-1. **Case Management** - Create and manage trial cases
-2. **Jury Panel Management** - Track jury panels with versioning
-3. **Juror Research** - Comprehensive juror information management
-4. **Archetype Classification** - AI-powered behavioral analysis (10 archetypes)
-5. **Persona Matching** - Suggest personas based on juror data
-6. **Research Synthesis** - Deep web research with Claude AI
-7. **Question Generation** - Strategic voir dire questions
-8. **Focus Group Simulation** - AI-powered jury deliberation simulation
-9. **Document Capture** - Photo-to-jurors with OCR (NEW ✨)
-10. **Batch Import** - CSV import for jury panels
+1. **Case Management** - Create and manage trial cases with tabbed interface
+2. **Jury Panel Management** - Auto-created panels (simplified from manual panel creation)
+3. **Embedded Juror Research** - All research happens within case context, no separate navigation
+4. **Identity Matching** - Search public records, review candidates, confirm matches
+5. **Archetype Classification** - AI-powered behavioral analysis (10 archetypes) with danger levels
+6. **Persona Matching** - Suggest personas based on juror data
+7. **Deep Research Synthesis** - Claude AI with web search (10-60 seconds, 3-10 web searches)
+8. **Question Generation** - Strategic voir dire questions with follow-ups
+9. **Focus Group Simulation** - AI-powered jury deliberation simulation
+10. **Document Capture** - Photo-to-jurors with OCR (Claude Vision)
+11. **Batch Import** - CSV import for jury panels
 
 ### Technical Infrastructure
 - **Frontend:** Next.js 14 on Vercel
@@ -193,10 +209,10 @@ All phases (1-5) complete and tested. System ready for Railway + Vercel deployme
 
 ---
 
-## Known Limitations
+## Known Limitations & Planned Improvements
 
-### Phase 4 Limitations
-1. **Image Storage** - Currently using base64 in database (not production-ready)
+### Current Limitations
+1. **Image Storage** - Currently using base64 in database (temporary solution)
    - **TODO:** Integrate Vercel Blob or AWS S3
    - **TODO:** Generate presigned URLs
    - **TODO:** Add thumbnail generation
@@ -208,11 +224,19 @@ All phases (1-5) complete and tested. System ready for Railway + Vercel deployme
 3. **No Retry UI** - If OCR fails, must re-upload
    - **TODO:** Add "Retry Processing" button
 
+4. **Deep Research Polling** - Frontend polls for status updates
+   - **TODO:** Implement WebSocket for real-time updates
+   - **TODO:** Add progress indicators (e.g., "Searching LinkedIn...")
+
+5. **Manual Panel Creation** - Users can create new panels (edge case, <1% usage)
+   - Current: Auto-creates one panel per case (99% use case)
+   - Future: Consider hiding manual panel creation unless explicitly needed
+
 ### General Limitations
-1. No real-time collaboration yet (Phase 5)
-2. No offline support for courtroom use (trial mode PWA)
-3. No comprehensive audit logging
-4. Not deployed to production yet
+1. No real-time collaboration yet (WebSocket infrastructure in place, needs UI)
+2. No offline support for courtroom use (trial mode PWA - planned Phase 7)
+3. No comprehensive audit logging (basic logging exists, needs enhancement)
+4. Not deployed to production yet (ready for deployment, pending final testing)
 
 ---
 
@@ -225,14 +249,22 @@ All phases (1-5) complete and tested. System ready for Railway + Vercel deployme
    - [ ] Deploy API Gateway to Railway
    - [ ] Run production migrations
    - [ ] Deploy Web App to Vercel
-   - [ ] Test production end-to-end
+   - [ ] Test production end-to-end with real data
    - See [DEPLOY_CHECKLIST.md](DEPLOY_CHECKLIST.md) for step-by-step guide
 
-2. **Post-Deployment Monitoring**
+2. **Real-World Testing**
+   - [ ] Import actual jury panel with real names
+   - [ ] Test identity matching with real candidates
+   - [ ] Validate Deep Research quality with real public data
+   - [ ] Measure actual processing times and web search effectiveness
+   - [ ] Collect attorney feedback on synthesis usefulness
+
+3. **Post-Deployment Monitoring**
    - Monitor Railway logs for errors
    - Check Vercel Analytics for performance
    - Test all AI features in production
    - Verify ANTHROPIC_API_KEY usage and costs
+   - Track Deep Research processing times and token usage
 
 ### Short-term (Next 2 Weeks)
 3. **Production Optimizations**
@@ -332,15 +364,35 @@ npm run dev
 
 ---
 
+## Key Documentation
+
+### Quick Reference
+- **[CURRENT_STATE.md](CURRENT_STATE.md)** - Complete current state & roadmap (comprehensive, start here!)
+- **[QUICK_DEMO.md](QUICK_DEMO.md)** - 5-minute demo script (updated for current workflow)
+- **[DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)** - Production deployment instructions
+
+### Detailed Documentation
+- **[SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md)** - System architecture & features
+- **[DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)** - Development quick reference
+- **[DEEP_RESEARCH_TECHNICAL.md](DEEP_RESEARCH_TECHNICAL.md)** - Deep Research implementation (500+ lines)
+- **[ARCHETYPE_SYSTEM_SUMMARY.md](ARCHETYPE_SYSTEM_SUMMARY.md)** - Complete archetype guide
+- **[PHASE_4_COMPLETE.md](PHASE_4_COMPLETE.md)** - Document capture details
+
+### Session Notes
+- **[SESSION_SUMMARY_2026-01-22.md](SESSION_SUMMARY_2026-01-22.md)** - Testing & bug fixes
+
+---
+
 ## Contact & Support
 
 For questions about:
+- **Current State & Roadmap:** See [CURRENT_STATE.md](CURRENT_STATE.md) ⭐ **START HERE**
 - **System Architecture:** See [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md)
 - **Development:** See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
-- **Phase 4 Details:** See [PHASE_4_COMPLETE.md](PHASE_4_COMPLETE.md)
+- **Deployment:** See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
 - **API Endpoints:** See [services/api-gateway/README.md](services/api-gateway/README.md)
 
 ---
 
-**System Status:** Production-Ready for Phases 1-4 🎉
-**Next Milestone:** Phase 5 (Real-time Collaboration) or Production Deployment
+**System Status:** Production-Ready (Phases 1-5 Complete) 🎉
+**Next Milestone:** Production Deployment → Real-World Testing

@@ -19,7 +19,9 @@
     "db:generate": "cd packages/database && prisma generate",
     "db:migrate": "cd packages/database && prisma migrate dev",
     "db:push": "cd packages/database && prisma db push",
-    "db:seed": "cd packages/database && tsx prisma/seed.ts"
+    "db:seed": "cd packages/database && tsx prisma/seed.ts",
+    "import-personas": "npx tsx scripts/import-personas.ts",
+    "list-personas": "npx tsx scripts/list-personas.ts"
   },
   "devDependencies": {
     "prettier": "^3.2.4",

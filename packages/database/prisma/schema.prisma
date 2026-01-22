@@ -2,14 +2,14 @@
 // PostgreSQL 16 with pgvector extension for embeddings
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
   // Temporarily disabled pgvector extension
   // previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
   // Temporarily disabled pgvector extension - can re-enable when Railway supports it
   // extensions = [pgvector(map: "vector")]
 }
@@ -51,9 +51,9 @@ model User {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization             Organization              @relation(fields: [organizationId], references: [id])
-  notifications            Notification[]
-  notificationPreferences  NotificationPreferences?
+  organization            Organization             @relation(fields: [organizationId], references: [id])
+  notifications           Notification[]
+  notificationPreferences NotificationPreferences?
 
   @@index([organizationId])
   @@map("users")
@@ -679,7 +679,7 @@ model Candidate {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  juror              Juror                 @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  juror              Juror                @relation(fields: [jurorId], references: [id], onDelete: Cascade)
   sources            CandidateSource[]
   synthesizedProfile SynthesizedProfile[]
 
@@ -729,25 +729,25 @@ model SearchJob {
 }
 
 model SynthesizedProfile {
-  id                   String   @id @default(uuid())
-  candidateId          String   @map("candidate_id")
-  caseId               String   @map("case_id")
-  profile              Json // Full juror profile matching schema
-  caseContext          Json     @map("case_context") // Case context used for synthesis
-  model                String // AI model used (e.g., "claude-sonnet-4-20250514")
-  inputTokens          Int      @map("input_tokens")
-  outputTokens         Int      @map("output_tokens")
-  webSearchCount       Int      @default(0) @map("web_search_count")
-  contextHash          String   @map("context_hash") // Hash of case context for cache invalidation
-  dataRichness         String?  @map("data_richness") // sparse | moderate | comprehensive
-  confidenceOverall    String?  @map("confidence_overall") // low | medium | high
-  concernsCount        Int      @default(0) @map("concerns_count")
-  favorableCount       Int      @default(0) @map("favorable_count")
-  status               String   @default("processing") // processing | completed | failed
-  errorMessage         String?  @map("error_message") @db.Text
-  processingTimeMs     Int?     @map("processing_time_ms")
-  createdAt            DateTime @default(now()) @map("created_at")
-  updatedAt            DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(uuid())
+  candidateId       String   @map("candidate_id")
+  caseId            String   @map("case_id")
+  profile           Json // Full juror profile matching schema
+  caseContext       Json     @map("case_context") // Case context used for synthesis
+  model             String // AI model used (e.g., "claude-sonnet-4-20250514")
+  inputTokens       Int      @map("input_tokens")
+  outputTokens      Int      @map("output_tokens")
+  webSearchCount    Int      @default(0) @map("web_search_count")
+  contextHash       String   @map("context_hash") // Hash of case context for cache invalidation
+  dataRichness      String?  @map("data_richness") // sparse | moderate | comprehensive
+  confidenceOverall String?  @map("confidence_overall") // low | medium | high
+  concernsCount     Int      @default(0) @map("concerns_count")
+  favorableCount    Int      @default(0) @map("favorable_count")
+  status            String   @default("processing") // processing | completed | failed
+  errorMessage      String?  @map("error_message") @db.Text
+  processingTimeMs  Int?     @map("processing_time_ms")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   // Relations
   candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
@@ -796,27 +796,27 @@ model Capture {
 }
 
 model BatchImport {
-  id           String  @id @default(uuid())
-  panelId      String  @map("panel_id")
-  uploadedBy   String  @map("uploaded_by")
-  fileName     String  @map("file_name")
-  fileUrl      String? @map("file_url") @db.Text
+  id         String  @id @default(uuid())
+  panelId    String  @map("panel_id")
+  uploadedBy String  @map("uploaded_by")
+  fileName   String  @map("file_name")
+  fileUrl    String? @map("file_url") @db.Text
 
   // Processing Status
-  status          String  @default("pending") // pending | processing | completed | failed
-  totalRows       Int     @default(0) @map("total_rows")
-  processedRows   Int     @default(0) @map("processed_rows")
-  successfulRows  Int     @default(0) @map("successful_rows")
-  failedRows      Int     @default(0) @map("failed_rows")
+  status         String @default("pending") // pending | processing | completed | failed
+  totalRows      Int    @default(0) @map("total_rows")
+  processedRows  Int    @default(0) @map("processed_rows")
+  successfulRows Int    @default(0) @map("successful_rows")
+  failedRows     Int    @default(0) @map("failed_rows")
 
   // Configuration
-  autoSearch      Boolean @default(false) @map("auto_search") // Whether to trigger searches automatically
-  venueId         String? @map("venue_id") // Optional venue for searches
-  columnMapping   Json?   @map("column_mapping") // Map CSV columns to juror fields
+  autoSearch    Boolean @default(false) @map("auto_search") // Whether to trigger searches automatically
+  venueId       String? @map("venue_id") // Optional venue for searches
+  columnMapping Json?   @map("column_mapping") // Map CSV columns to juror fields
 
   // Results
-  importedJurors  Json    @default("[]") @map("imported_jurors") // Array of created juror IDs
-  errors          Json    @default("[]") // Array of error messages per row
+  importedJurors Json @default("[]") @map("imported_jurors") // Array of created juror IDs
+  errors         Json @default("[]") // Array of error messages per row
 
   // Timestamps
   startedAt    DateTime? @map("started_at")
@@ -886,33 +886,33 @@ model NotificationPreferences {
 // ============================================
 
 model FilevineConnection {
-  id                    String    @id @default(uuid())
-  organizationId        String    @unique @map("organization_id") // One connection per org
+  id             String @id @default(uuid())
+  organizationId String @unique @map("organization_id") // One connection per org
 
   // OAuth Credentials (encrypted at rest)
-  clientId              String    @map("client_id")
-  clientSecret          String    @db.Text @map("client_secret") // Encrypted
-  personalAccessToken   String    @db.Text @map("personal_access_token") // Encrypted, 64-char hex
+  clientId            String @map("client_id")
+  clientSecret        String @map("client_secret") @db.Text // Encrypted
+  personalAccessToken String @map("personal_access_token") @db.Text // Encrypted, 64-char hex
 
   // Cached Authentication Data
-  accessToken           String?   @db.Text @map("access_token")
-  sessionId             String?   @map("session_id") // JWT 'jti' claim
-  numericUserId         String?   @map("numeric_user_id") // From GetUserOrgsWithToken
-  filevineOrgId         String?   @map("filevine_org_id") // Filevine's org ID
-  tokenExpiresAt        DateTime? @map("token_expires_at")
+  accessToken    String?   @map("access_token") @db.Text
+  sessionId      String?   @map("session_id") // JWT 'jti' claim
+  numericUserId  String?   @map("numeric_user_id") // From GetUserOrgsWithToken
+  filevineOrgId  String?   @map("filevine_org_id") // Filevine's org ID
+  tokenExpiresAt DateTime? @map("token_expires_at")
 
   // Metadata
-  connectionName        String    @default("Filevine Integration") @map("connection_name")
-  isActive              Boolean   @default(true) @map("is_active")
-  lastSyncedAt          DateTime? @map("last_synced_at")
-  lastTestSuccessful    Boolean?  @map("last_test_successful")
-  lastTestAt            DateTime? @map("last_test_at")
-  lastErrorMessage      String?   @db.Text @map("last_error_message")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  connectionName     String    @default("Filevine Integration") @map("connection_name")
+  isActive           Boolean   @default(true) @map("is_active")
+  lastSyncedAt       DateTime? @map("last_synced_at")
+  lastTestSuccessful Boolean?  @map("last_test_successful")
+  lastTestAt         DateTime? @map("last_test_at")
+  lastErrorMessage   String?   @map("last_error_message") @db.Text
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([organizationId, isActive])
   @@map("filevine_connections")
@@ -941,4 +941,117 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============================================
+// PROMPT MANAGEMENT
+// ============================================
+
+model Prompt {
+  id               String   @id @default(uuid())
+  serviceId        String   @unique @map("service_id") // 'archetype-classifier', 'persona-suggester', etc.
+  name             String
+  description      String?  @db.Text
+  category         String? // 'classification', 'suggestion', 'analysis', 'generation', 'simulation', 'vision', 'research'
+  currentVersionId String?  @map("current_version_id")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  versions  PromptVersion[]
+  analytics PromptAnalytics[]
+  abTests   ABTest[]
+
+  @@index([serviceId])
+  @@index([category])
+  @@map("prompts")
+}
+
+model PromptVersion {
+  id                 String   @id @default(uuid())
+  promptId           String   @map("prompt_id")
+  version            String // 'v1.0.0', 'v1.1.0', etc.
+  systemPrompt       String?  @map("system_prompt") @db.Text
+  userPromptTemplate String   @map("user_prompt_template") @db.Text
+  config             Json // { model, maxTokens, temperature, etc. }
+  variables          Json // Schema for required variables
+  outputSchema       Json?    @map("output_schema") // Expected output structure
+  createdBy          String?  @map("created_by")
+  createdAt          DateTime @default(now()) @map("created_at")
+  isDraft            Boolean  @default(false) @map("is_draft")
+  notes              String?  @db.Text // Change notes
+
+  // Relations
+  prompt           Prompt            @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  analytics        PromptAnalytics[]
+  asControlInTests ABTest[]          @relation("ControlVersion")
+  asVariantInTests ABTest[]          @relation("VariantVersion")
+  asWinnerInTests  ABTest[]          @relation("WinnerVersion")
+
+  @@unique([promptId, version])
+  @@index([promptId])
+  @@index([createdAt])
+  @@map("prompt_versions")
+}
+
+model PromptTemplate {
+  id               String   @id @default(uuid())
+  name             String   @unique // 'classification', 'suggestion', 'analysis', etc.
+  description      String?  @db.Text
+  baseTemplate     String   @map("base_template") @db.Text
+  exampleVariables Json?    @map("example_variables")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("prompt_templates")
+}
+
+model ABTest {
+  id               String    @id @default(uuid())
+  promptId         String    @map("prompt_id")
+  name             String
+  description      String?   @db.Text
+  controlVersionId String    @map("control_version_id")
+  variantVersionId String    @map("variant_version_id")
+  trafficSplit     Int       @default(50) @map("traffic_split") // % to variant (0-100)
+  status           String    @default("draft") // 'draft', 'running', 'completed', 'cancelled'
+  startedAt        DateTime? @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+  winnerVersionId  String?   @map("winner_version_id")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  prompt         Prompt            @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  controlVersion PromptVersion     @relation("ControlVersion", fields: [controlVersionId], references: [id])
+  variantVersion PromptVersion     @relation("VariantVersion", fields: [variantVersionId], references: [id])
+  winnerVersion  PromptVersion?    @relation("WinnerVersion", fields: [winnerVersionId], references: [id])
+  analytics      PromptAnalytics[]
+
+  @@index([promptId])
+  @@index([status])
+  @@map("ab_tests")
+}
+
+model PromptAnalytics {
+  id           String   @id @default(uuid())
+  promptId     String   @map("prompt_id")
+  versionId    String   @map("version_id")
+  abTestId     String?  @map("ab_test_id")
+  success      Boolean
+  tokensUsed   Int?     @map("tokens_used")
+  latencyMs    Int?     @map("latency_ms")
+  confidence   Float?   @db.Real // 0.00 to 1.00
+  errorMessage String?  @map("error_message") @db.Text
+  metadata     Json? // Additional context
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  prompt  Prompt        @relation(fields: [promptId], references: [id], onDelete: Cascade)
+  version PromptVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  abTest  ABTest?       @relation(fields: [abTestId], references: [id], onDelete: SetNull)
+
+  @@index([promptId, versionId])
+  @@index([abTestId])
+  @@index([createdAt])
+  @@map("prompt_analytics")
 }

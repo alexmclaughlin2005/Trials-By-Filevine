@@ -13,23 +13,60 @@ cd apps/web && npm run dev
 # Login: attorney@example.com / password
 ```
 
-## Demo Flow (4 minutes)
+## Demo Flow (5 minutes)
 
-### 1. AI Persona Analysis (60 seconds)
+### 1. Embedded Juror Research (90 seconds)
 
-**Path**: Dashboard → Jurors → Michael Chen → Analyze with AI
+**Path**: Dashboard → Cases → Johnson v. TechCorp → Jurors Tab → Click juror to expand
 
 **Say**:
-"Let's analyze this software engineer juror. AI will match him to behavioral personas based on his occupation, demographics, and background."
+"Let's look at a juror. All research happens right here in the case - no separate pages needed."
 
 **Show**:
-- Click "Analyze with AI" button
-- Wait 3-5 seconds (emphasize real-time AI)
-- Point to top match: "Tech Pragmatist" with 85% confidence
-- Read one key match and one concern
-- Click "Select Persona" to save
+- Click to expand a juror card
+- Point out inline sections: Basic Info, Identity Research, Deep Research, Archetype Classification
+- Explain: "Everything stays in context - this is where attorneys will spend their time."
 
-**Key Message**: "In 5 seconds, AI identifies the most likely behavioral profile for strategic jury selection."
+**Key Message**: "Complete juror research workflow embedded within the case. No jumping between pages."
+
+---
+
+### 2. Identity Matching & Deep Research (90 seconds)
+
+**Path**: Same expanded juror → Identity Research section
+
+**Say**:
+"First, we find the right person. Then Claude AI does comprehensive web research."
+
+**Show**:
+- Click "Search Public Records" button
+- Show candidate matches with confidence scores
+- Click green "Confirm" button on best match
+- Point to Deep Research section appearing below
+- Click "Start Deep Research"
+- Show processing indicator (10-20 seconds)
+- Highlight results: Executive Summary, Concerns, Favorable Indicators, Suggested Questions
+
+**Key Message**: "In 20 seconds, Claude searches the web and creates a comprehensive profile with strategic recommendations."
+
+---
+
+### 3. Archetype Classification (60 seconds)
+
+**Path**: Same expanded juror → Archetype Classification section
+
+**Say**:
+"Now let's classify their behavioral archetype - one of 10 proven juror types."
+
+**Show**:
+- Click "Classify Juror" button
+- Wait 5 seconds (emphasize real-time AI)
+- Point to primary archetype with confidence score
+- Show psychological dimension scores
+- Highlight plaintiff/defense danger levels (color-coded)
+- Show suggested voir dire questions
+
+**Key Message**: "AI identifies behavioral patterns and gives strategic guidance specific to your case."
 
 ---
 
@@ -56,7 +93,25 @@ cd apps/web && npm run dev
 
 ---
 
-### 3. Focus Group Simulation (90 seconds)
+### 4. Voir Dire Question Generation (60 seconds)
+
+**Path**: Same case → Voir Dire Questions Tab
+
+**Say**:
+"Let's generate strategic questions for voir dire based on our case facts."
+
+**Show**:
+- Click "Generate Questions"
+- Wait 5-10 seconds
+- Show 4 category tabs with question counts
+- Click on a high-priority question (Priority 9-10)
+- Expand to show full details: Purpose, Listen for, Red flags, Ideal answers, Follow-ups
+
+**Key Message**: "AI creates 20+ tailored questions with strategic guidance in 10 seconds. Would normally take hours."
+
+---
+
+### 5. Focus Group Simulation (60 seconds)
 
 **Path**: Same case → Focus Groups Tab → Select argument → Run simulation
 
@@ -79,10 +134,12 @@ cd apps/web && npm run dev
 
 ## Key Stats to Mention
 
-- ⏱️ **Time Saved**: Hours of analysis → Seconds
+- ⏱️ **Time Saved**: Hours of research → 20 seconds per juror
 - 🎯 **Accuracy**: 70-90% confidence scores typical
-- 📊 **Scale**: Analyze 100 jurors in minutes
-- 🧠 **AI Model**: Claude 4.5 (cutting-edge)
+- 📊 **Scale**: Analyze entire jury panel (40+ jurors) in under 15 minutes
+- 🧠 **AI Model**: Claude 4.5 Sonnet with web search (cutting-edge)
+- 🌐 **Web Search**: 3-10 searches per juror for comprehensive public data
+- 📋 **Complete Workflow**: Everything in one place - no separate navigation
 
 ## Powerful Quotes
 
