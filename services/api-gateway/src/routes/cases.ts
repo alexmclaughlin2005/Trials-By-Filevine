@@ -188,12 +188,27 @@ export async function casesRoutes(server: FastifyInstance) {
       const panels = await server.prisma.juryPanel.findMany({
         where: { caseId: id },
         include: {
+          case: {
+            select: {
+              id: true,
+              name: true,
+              caseNumber: true,
+              caseType: true,
+              jurisdiction: true,
+              ourSide: true,
+            },
+          },
           jurors: {
             include: {
+              researchArtifacts: true,
               personaMappings: {
                 include: {
                   persona: true,
                 },
+              },
+              candidates: {
+                where: { isRejected: false },
+                orderBy: { confidenceScore: 'desc' },
               },
             },
           },

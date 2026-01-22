@@ -4,9 +4,26 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Calendar, Loader2, ExternalLink } from 'lucide-react';
+import { Plus, Users, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
-import Link from 'next/link';
+import { JurorResearchPanel } from '@/components/juror-research-panel';
+import { DeepResearch } from '@/components/deep-research';
+import { ArchetypeClassifier } from '@/components/archetype-classifier';
+import { ResearchSummarizer } from '@/components/research-summarizer';
+
+interface ScoreFactors {
+  nameScore: number;
+  nameReason: string;
+  ageScore: number;
+  ageReason: string;
+  locationScore: number;
+  locationReason: string;
+  occupationScore: number;
+  occupationReason: string;
+  corroborationScore: number;
+  corroborationReason: string;
+  totalScore: number;
+}
 
 interface Juror {
   id: string;
@@ -15,9 +32,36 @@ interface Juror {
   lastName: string;
   age: number | null;
   occupation: string | null;
+  employer: string | null;
   city: string | null;
   zipCode: string | null;
   status: string;
+  researchArtifacts?: Array<{
+    id: string;
+    sourceType: string;
+    sourceName: string | null;
+    sourceUrl: string | null;
+    rawContent: string | null;
+  }>;
+  candidates?: Array<{
+    id: string;
+    fullName: string;
+    firstName?: string;
+    lastName?: string;
+    age?: number;
+    occupation?: string;
+    employer?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    phone?: string;
+    email?: string;
+    confidenceScore: number;
+    sourceType: string;
+    isConfirmed: boolean;
+    isRejected: boolean;
+    scoreFactors: ScoreFactors;
+  }>;
 }
 
 interface JuryPanel {
@@ -27,6 +71,14 @@ interface JuryPanel {
   version: number;
   totalJurors: number;
   jurors: Juror[];
+  case: {
+    id: string;
+    name: string;
+    caseNumber: string;
+    caseType: string | null;
+    jurisdiction: string | null;
+    ourSide: string | null;
+  };
 }
 
 interface JurorsTabProps {
@@ -39,9 +91,10 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const [showJurorDialog, setShowJurorDialog] = useState(false);
   const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
   const [expandedPanels, setExpandedPanels] = useState<Set<string>>(new Set());
+  const [expandedJurors, setExpandedJurors] = useState<Set<string>>(new Set());
 
-  // Fetch jury panels
-  const { data, isLoading, error } = useQuery({
+  // Fetch jury panels with full juror data including research
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['case', caseId, 'panels'],
     queryFn: async () => {
       const response = await apiClient.get<{ panels: JuryPanel[] }>(`/cases/${caseId}/panels`);
@@ -115,6 +168,16 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
       newExpanded.add(panelId);
     }
     setExpandedPanels(newExpanded);
+  };
+
+  const toggleJuror = (jurorId: string) => {
+    const newExpanded = new Set(expandedJurors);
+    if (newExpanded.has(jurorId)) {
+      newExpanded.delete(jurorId);
+    } else {
+      newExpanded.add(jurorId);
+    }
+    setExpandedJurors(newExpanded);
   };
 
   if (isLoading) {
@@ -207,65 +270,138 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                       No jurors in this panel yet. Click &quot;Add Juror&quot; to add one.
                     </p>
                   ) : (
-                    <div className="overflow-hidden rounded-lg border">
-                      <table className="min-w-full divide-y divide-border">
-                        <thead className="bg-muted/50">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Juror #
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Name
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Age
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Occupation
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Location
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Status
-                            </th>
-                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
-                              Actions
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-border bg-background">
-                          {panel.jurors.map((juror) => (
-                            <tr key={juror.id} className="hover:bg-muted/50">
-                              <td className="px-4 py-3 text-sm font-medium">
-                                {juror.jurorNumber}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                {juror.firstName} {juror.lastName}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                {juror.age || '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                {juror.occupation || '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                {juror.city ? `${juror.city}${juror.zipCode ? `, ${juror.zipCode}` : ''}` : '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                <span className="capitalize">{juror.status}</span>
-                              </td>
-                              <td className="px-4 py-3 text-sm">
-                                <Link href={`/jurors/${juror.id}`}>
-                                  <Button size="sm" variant="ghost">
-                                    <ExternalLink className="h-4 w-4" />
-                                  </Button>
-                                </Link>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                    <div className="space-y-3">
+                      {panel.jurors.map((juror) => (
+                        <div key={juror.id} className="border rounded-lg bg-background">
+                          {/* Juror Summary Header */}
+                          <div
+                            className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50"
+                            onClick={() => toggleJuror(juror.id)}
+                          >
+                            <div className="flex items-center gap-4 flex-1">
+                              <div className="flex items-center gap-3">
+                                <div className="rounded-full bg-primary/10 px-3 py-1">
+                                  <span className="text-sm font-semibold text-primary">
+                                    #{juror.jurorNumber}
+                                  </span>
+                                </div>
+                                <div>
+                                  <h4 className="font-semibold text-base">
+                                    {juror.firstName} {juror.lastName}
+                                  </h4>
+                                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                    {juror.age && <span>Age {juror.age}</span>}
+                                    {juror.occupation && (
+                                      <>
+                                        <span>•</span>
+                                        <span>{juror.occupation}</span>
+                                      </>
+                                    )}
+                                    {juror.city && (
+                                      <>
+                                        <span>•</span>
+                                        <span>{juror.city}{juror.zipCode ? `, ${juror.zipCode}` : ''}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={`ml-auto rounded-full px-3 py-1 text-xs font-semibold ${
+                                juror.status === 'available'
+                                  ? 'bg-green-100 text-green-700'
+                                  : juror.status === 'selected'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {juror.status}
+                              </span>
+                            </div>
+                            <div className="ml-4">
+                              {expandedJurors.has(juror.id) ? (
+                                <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Expanded Research Section */}
+                          {expandedJurors.has(juror.id) && (
+                            <div className="border-t p-6 space-y-6 bg-muted/20">
+                              {/* Juror Basic Info */}
+                              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                                  Juror Information
+                                </h3>
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-gray-600">Age:</span>{' '}
+                                    <span className="font-medium">{juror.age || 'Not provided'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Occupation:</span>{' '}
+                                    <span className="font-medium">{juror.occupation || 'Not provided'}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">Employer:</span>{' '}
+                                    <span className="font-medium">{juror.employer || 'Not provided'}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Research Summarizer */}
+                              {juror.researchArtifacts && juror.researchArtifacts.length > 0 && (
+                                <div className="rounded-lg border border-gray-200 bg-white p-4">
+                                  <ResearchSummarizer
+                                    jurorId={juror.id}
+                                    artifacts={juror.researchArtifacts}
+                                  />
+                                </div>
+                              )}
+
+                              {/* Identity Research Panel */}
+                              <JurorResearchPanel
+                                jurorId={juror.id}
+                                jurorName={`${juror.firstName} ${juror.lastName}`}
+                                jurorInfo={{
+                                  firstName: juror.firstName,
+                                  lastName: juror.lastName,
+                                  age: juror.age || undefined,
+                                  city: juror.city || undefined,
+                                  zipCode: juror.zipCode || undefined,
+                                  occupation: juror.occupation || undefined,
+                                }}
+                                initialCandidates={juror.candidates || []}
+                                onCandidateConfirmed={refetch}
+                              />
+
+                              {/* Deep Research - Only show if candidate confirmed */}
+                              {juror.candidates && juror.candidates.some((c) => c.isConfirmed) && (
+                                <DeepResearch
+                                  candidateId={juror.candidates.find((c) => c.isConfirmed)!.id}
+                                  candidateName={juror.candidates.find((c) => c.isConfirmed)!.fullName}
+                                  caseType={panel.case?.caseType || 'general civil'}
+                                  caseIssues={[]}
+                                  clientPosition={(panel.case?.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
+                                />
+                              )}
+
+                              {/* Archetype Classifier */}
+                              <div className="rounded-lg border border-gray-200 bg-white p-6">
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                                  Archetype Classification
+                                </h3>
+                                <ArchetypeClassifier
+                                  jurorId={juror.id}
+                                  caseType={panel.case?.caseType || undefined}
+                                  jurisdiction={panel.case?.jurisdiction || undefined}
+                                  ourSide={panel.case?.ourSide as 'plaintiff' | 'defense' | undefined}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </div>
