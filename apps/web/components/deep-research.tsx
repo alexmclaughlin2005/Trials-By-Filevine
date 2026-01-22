@@ -6,8 +6,8 @@ import { Sparkles, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface DeepResearchProps {
-  candidateId: string;
-  candidateName: string;
+  candidateId?: string;
+  candidateName?: string;
   caseType: string;
   caseIssues?: string[];
   clientPosition: 'plaintiff' | 'defense';
@@ -49,7 +49,9 @@ export function DeepResearch({
 
   // Check if synthesis already exists on mount
   useEffect(() => {
-    checkExistingProfile();
+    if (candidateId) {
+      checkExistingProfile();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidateId]);
 
@@ -160,6 +162,30 @@ export function DeepResearch({
       </span>
     );
   };
+
+  // If no candidate is confirmed, show a helpful message
+  if (!candidateId) {
+    return (
+      <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <Sparkles className="w-5 h-5 text-filevine-blue" />
+          <h2 className="text-xl font-semibold text-filevine-gray-900">
+            Deep Research Synthesis
+          </h2>
+        </div>
+        <div className="text-center py-12">
+          <Sparkles className="w-12 h-12 mx-auto mb-4 text-filevine-gray-300" />
+          <p className="text-filevine-gray-900 font-medium mb-2">
+            Confirm a Candidate to Enable Deep Research
+          </p>
+          <p className="text-sm text-filevine-gray-600 max-w-md mx-auto">
+            First search for identity matches above, then click the green &quot;Confirm&quot; button on a candidate.
+            Deep Research will then use Claude AI with web search to find and analyze comprehensive public information.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">

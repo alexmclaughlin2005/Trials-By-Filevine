@@ -375,16 +375,14 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                                 onCandidateConfirmed={refetch}
                               />
 
-                              {/* Deep Research - Only show if candidate confirmed */}
-                              {juror.candidates && juror.candidates.some((c) => c.isConfirmed) && (
-                                <DeepResearch
-                                  candidateId={juror.candidates.find((c) => c.isConfirmed)!.id}
-                                  candidateName={juror.candidates.find((c) => c.isConfirmed)!.fullName}
-                                  caseType={panel.case?.caseType || 'general civil'}
-                                  caseIssues={[]}
-                                  clientPosition={(panel.case?.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
-                                />
-                              )}
+                              {/* Deep Research */}
+                              <DeepResearch
+                                candidateId={juror.candidates?.find((c) => c.isConfirmed)?.id}
+                                candidateName={juror.candidates?.find((c) => c.isConfirmed)?.fullName}
+                                caseType={panel.case?.caseType || 'general civil'}
+                                caseIssues={[]}
+                                clientPosition={(panel.case?.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
+                              />
 
                               {/* Archetype Classifier */}
                               <div className="rounded-lg border border-gray-200 bg-white p-6">
