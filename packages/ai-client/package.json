@@ -6,6 +6,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "build": "tsc",
+    "prebuild": "npm run clean",
     "lint": "tsc --noEmit",
     "test": "jest",
     "clean": "rm -rf dist"
