@@ -115,7 +115,8 @@ export async function testFilevineConnection(
   connectionId: string
 ): Promise<FilevineTestResponse> {
   return apiClient.post<FilevineTestResponse>(
-    `/filevine/connections/${connectionId}/test`
+    `/filevine/connections/${connectionId}/test`,
+    {} // Empty body to satisfy Fastify's content-type validation
   );
 }
 
