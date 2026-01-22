@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -21,6 +22,9 @@ async function main() {
   });
   console.log('✅ Created organization:', org.name);
 
+  // Hash default password for demo users
+  const defaultPasswordHash = await bcrypt.hash('password123', 10);
+
   // Create sample users
   const attorney = await prisma.user.upsert({
     where: { email: 'attorney@example.com' },
@@ -30,6 +34,7 @@ async function main() {
       name: 'John Attorney',
       role: 'attorney',
       organizationId: org.id,
+      passwordHash: defaultPasswordHash,
       authProviderId: 'auth0|sample-attorney',
     },
   });
@@ -42,6 +47,7 @@ async function main() {
       name: 'Sarah Paralegal',
       role: 'paralegal',
       organizationId: org.id,
+      passwordHash: defaultPasswordHash,
       authProviderId: 'auth0|sample-paralegal',
     },
   });
@@ -266,8 +272,8 @@ async function main() {
   console.log('🎉 Seeding complete!');
   console.log('');
   console.log('Sample credentials:');
-  console.log('  Attorney: attorney@example.com');
-  console.log('  Paralegal: paralegal@example.com');
+  console.log('  Attorney: attorney@example.com / password123');
+  console.log('  Paralegal: paralegal@example.com / password123');
   console.log('');
   console.log('Sample case created:', sampleCase.name);
   console.log('Jury panel created with 5 jurors');

@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -29,9 +30,9 @@ export async function authRoutes(server: FastifyInstance) {
       return { error: 'Invalid credentials' };
     }
 
-    // TODO: Add password hashing verification (bcrypt)
-    // For now, simple string comparison for demo
-    if (user.passwordHash !== body.password) {
+    // Verify password with bcrypt
+    const isValidPassword = await bcrypt.compare(body.password, user.passwordHash);
+    if (!isValidPassword) {
       reply.code(401);
       return { error: 'Invalid credentials' };
     }
@@ -94,15 +95,15 @@ export async function authRoutes(server: FastifyInstance) {
       organizationId = defaultOrg.id;
     }
 
-    // TODO: Add password hashing (bcrypt)
-    // For now, storing plaintext (NOT PRODUCTION READY)
+    // Hash password with bcrypt
+    const passwordHash = await bcrypt.hash(body.password, 10);
 
     // Create user
     const user = await server.prisma.user.create({
       data: {
         email: body.email,
         name: body.name,
-        passwordHash: body.password, // TODO: Hash this!
+        passwordHash,
         role: 'attorney',
         organizationId,
       },

@@ -20,15 +20,17 @@
     "@juries/ai-client": "^1.0.0",
     "@juries/database": "*",
     "@juries/types": "*",
+    "bcryptjs": "^3.0.3",
     "csv-parse": "^6.1.0",
     "dotenv": "^16.4.1",
     "fastify": "^4.26.0",
     "pino": "^8.17.2",
     "pino-pretty": "^10.3.1",
-    "zod": "^3.22.4",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.5",
     "tsx": "^4.7.0"
   }
