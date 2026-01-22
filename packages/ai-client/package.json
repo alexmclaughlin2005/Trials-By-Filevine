@@ -11,7 +11,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.27.3",
+    "@anthropic-ai/sdk": "^0.71.2",
     "@juries/types": "*"
   },
   "devDependencies": {
