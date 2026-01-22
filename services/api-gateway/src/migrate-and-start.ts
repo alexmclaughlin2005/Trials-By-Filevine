@@ -56,7 +56,7 @@ async function main() {
     console.log('Step 2: Starting API server...');
     console.log('');
 
-    const serverPath = path.join(__dirname, 'index.js');
+    const serverPath = path.join(__dirname, '../services/api-gateway/src/index.js');
     await runCommand('node', [serverPath]);
 
   } catch (error) {

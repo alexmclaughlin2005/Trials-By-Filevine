@@ -7,7 +7,7 @@
     "dev": "tsx watch src/index.ts",
     "prebuild": "cd ../../packages/database && npx prisma generate && npm run build && cd ../ai-client && npm run build && cd ../utils && npm run build",
     "build": "tsc",
-    "start": "node dist/migrate-and-start.js",
+    "start": "node dist/src/migrate-and-start.js",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },
