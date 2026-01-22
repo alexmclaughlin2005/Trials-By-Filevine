@@ -100,6 +100,17 @@ export async function casesRoutes(server: FastifyInstance) {
         },
       });
 
+      // Auto-create a default jury panel for the case
+      await server.prisma.juryPanel.create({
+        data: {
+          caseId: caseData.id,
+          panelDate: caseData.trialDate || new Date(),
+          source: 'manual',
+          version: 1,
+          totalJurors: 0,
+        },
+      });
+
       reply.code(201);
       return { case: caseData };
     },

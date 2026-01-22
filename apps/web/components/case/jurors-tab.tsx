@@ -4,8 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Users, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
 import { ArchetypeClassifier } from '@/components/archetype-classifier';
@@ -87,10 +86,7 @@ interface JurorsTabProps {
 
 export function JurorsTab({ caseId }: JurorsTabProps) {
   const queryClient = useQueryClient();
-  const [showPanelDialog, setShowPanelDialog] = useState(false);
   const [showJurorDialog, setShowJurorDialog] = useState(false);
-  const [selectedPanelId, setSelectedPanelId] = useState<string | null>(null);
-  const [expandedPanels, setExpandedPanels] = useState<Set<string>>(new Set());
   const [expandedJurors, setExpandedJurors] = useState<Set<string>>(new Set());
 
   // Fetch jury panels with full juror data including research
@@ -102,22 +98,8 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     },
   });
 
-  // Create panel mutation
-  const [panelDate, setPanelDate] = useState('');
-  const createPanelMutation = useMutation({
-    mutationFn: async () => {
-      return await apiClient.post(`/cases/${caseId}/panels`, {
-        panelDate: panelDate || new Date().toISOString(),
-        source: 'manual',
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['case', caseId, 'panels'] });
-      queryClient.invalidateQueries({ queryKey: ['case', caseId] });
-      setShowPanelDialog(false);
-      setPanelDate('');
-    },
-  });
+  // Get the first (and typically only) panel
+  const panel = data?.[0];
 
   // Create juror mutation
   const [jurorForm, setJurorForm] = useState({
@@ -133,7 +115,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const createJurorMutation = useMutation({
     mutationFn: async () => {
       return await apiClient.post('/jurors', {
-        panelId: selectedPanelId,
+        panelId: panel?.id,
         jurorNumber: jurorForm.jurorNumber,
         firstName: jurorForm.firstName,
         lastName: jurorForm.lastName,
@@ -147,7 +129,6 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
       queryClient.invalidateQueries({ queryKey: ['case', caseId, 'panels'] });
       queryClient.invalidateQueries({ queryKey: ['case', caseId] });
       setShowJurorDialog(false);
-      setSelectedPanelId(null);
       setJurorForm({
         jurorNumber: '',
         firstName: '',
@@ -159,16 +140,6 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
       });
     },
   });
-
-  const togglePanel = (panelId: string) => {
-    const newExpanded = new Set(expandedPanels);
-    if (newExpanded.has(panelId)) {
-      newExpanded.delete(panelId);
-    } else {
-      newExpanded.add(panelId);
-    }
-    setExpandedPanels(newExpanded);
-  };
 
   const toggleJuror = (jurorId: string) => {
     const newExpanded = new Set(expandedJurors);
@@ -196,83 +167,47 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     );
   }
 
+  if (!panel) {
+    return (
+      <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+        <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+        <p className="mb-4">No jury panel found for this case.</p>
+      </div>
+    );
+  }
+
+  const jurors = panel.jurors || [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Jury Panels</h2>
+          <h2 className="text-2xl font-bold">Jurors</h2>
           <p className="text-sm text-muted-foreground">
-            Manage jury panels and jurors for this case
+            Manage jurors and conduct research for this case
           </p>
         </div>
-        <Button onClick={() => setShowPanelDialog(true)}>
+        <Button onClick={() => setShowJurorDialog(true)}>
           <Plus className="mr-2 h-4 w-4" />
-          New Panel
+          Add Juror
         </Button>
       </div>
 
-      {/* Panels List */}
-      {!data || data.length === 0 ? (
+      {/* Jurors List */}
+      {jurors.length === 0 ? (
         <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
           <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-          <p className="mb-4">No jury panels yet. Create your first panel to get started.</p>
-          <Button onClick={() => setShowPanelDialog(true)}>
+          <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
+          <Button onClick={() => setShowJurorDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
-            Create Panel
+            Add Juror
           </Button>
         </div>
       ) : (
-        <div className="space-y-4">
-          {data.map((panel) => (
-            <div key={panel.id} className="rounded-lg border bg-card">
-              <div
-                className="flex items-center justify-between p-6 cursor-pointer hover:bg-accent/50"
-                onClick={() => togglePanel(panel.id)}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="rounded-full bg-primary/10 p-3">
-                    <Users className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold">
-                      Panel {format(new Date(panel.panelDate), 'MMM dd, yyyy')}
-                    </h3>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Calendar className="h-3 w-3" />
-                      <span>{panel.jurors?.length || 0} jurors</span>
-                      <span>•</span>
-                      <span className="capitalize">{panel.source}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedPanelId(panel.id);
-                      setShowJurorDialog(true);
-                    }}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Juror
-                  </Button>
-                </div>
-              </div>
-
-              {/* Jurors List */}
-              {expandedPanels.has(panel.id) && (
-                <div className="border-t p-6">
-                  {!panel.jurors || panel.jurors.length === 0 ? (
-                    <p className="text-center text-sm text-muted-foreground py-8">
-                      No jurors in this panel yet. Click &quot;Add Juror&quot; to add one.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {panel.jurors.map((juror) => (
-                        <div key={juror.id} className="border rounded-lg bg-background">
+        <div className="space-y-3">
+          {jurors.map((juror) => (
+            <div key={juror.id} className="border rounded-lg bg-background">
                           {/* Juror Summary Header */}
                           <div
                             className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50"
@@ -398,58 +333,8 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                               </div>
                             </div>
                           )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Create Panel Dialog */}
-      {showPanelDialog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-background p-6 shadow-lg">
-            <h3 className="text-lg font-semibold mb-4">Create New Jury Panel</h3>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="panelDate" className="mb-2 block text-sm font-medium">
-                  Panel Date
-                </label>
-                <input
-                  id="panelDate"
-                  type="date"
-                  value={panelDate}
-                  onChange={(e) => setPanelDate(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Leave blank to use today&apos;s date
-                </p>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowPanelDialog(false);
-                    setPanelDate('');
-                  }}
-                  disabled={createPanelMutation.isPending}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => createPanelMutation.mutate()}
-                  disabled={createPanelMutation.isPending}
-                >
-                  {createPanelMutation.isPending ? 'Creating...' : 'Create Panel'}
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
@@ -562,7 +447,6 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                   variant="outline"
                   onClick={() => {
                     setShowJurorDialog(false);
-                    setSelectedPanelId(null);
                     setJurorForm({
                       jurorNumber: '',
                       firstName: '',
