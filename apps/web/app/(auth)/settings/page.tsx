@@ -46,7 +46,7 @@ export default function SettingsPage() {
       await testFilevineConnection(connectionStatus.id);
       // Reload status to get updated test results
       await loadConnectionStatus();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Connection test failed:', error);
     } finally {
       setTestingConnection(false);
@@ -64,7 +64,7 @@ export default function SettingsPage() {
       setRemovingConnection(true);
       await removeFilevineConnection(connectionStatus.id);
       await loadConnectionStatus();
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to remove connection:', error);
       alert('Failed to remove connection. Please try again.');
     } finally {
