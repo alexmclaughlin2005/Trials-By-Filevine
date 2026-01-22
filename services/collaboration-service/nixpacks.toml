@@ -2,10 +2,13 @@
 nixPkgs = ["nodejs", "npm"]
 
 [phases.install]
-cmds = ["cd ../.. && npm install"]
+cmds = ["npm install"]
 
 [phases.build]
-cmds = ["cd ../.. && npm run build --workspace=@juries/collaboration-service"]
+cmds = [
+  "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
+  "npm run build --workspace=@juries/collaboration-service"
+]
 
 [start]
-cmd = "cd ../.. && npm run start --workspace=@juries/collaboration-service"
+cmd = "npm run start --workspace=@juries/collaboration-service"
