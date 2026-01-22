@@ -40,7 +40,10 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.post('/connections', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore - JWT user added by auth middleware
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
       if (!user) {
         reply.code(401);
@@ -90,12 +93,19 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.get('/connections', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore
-      const user = request.user;
+      // Try to verify JWT if Authorization header exists
+      try {
+        await request.jwtVerify();
+      } catch (err) {
+        // No valid token - return disconnected state
+        console.log('[Filevine] Connection status check without valid authentication - returning disconnected');
+        return { connected: false };
+      }
 
-      // Allow unauthenticated access - return disconnected state
+      // @ts-ignore - JWT user added by jwtVerify
+      const user = request.user;
       if (!user) {
-        console.log('[Filevine] Connection status check without authentication - returning disconnected');
+        console.log('[Filevine] Connection status check without user - returning disconnected');
         return { connected: false };
       }
 
@@ -116,7 +126,10 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.put('/connections/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
       if (!user) {
         reply.code(401);
@@ -195,7 +208,10 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.delete('/connections/:id', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
       if (!user) {
         reply.code(401);
@@ -235,7 +251,10 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.post('/connections/:id/test', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
       if (!user) {
         reply.code(401);
@@ -280,7 +299,10 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.get('/projects', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
       if (!user) {
         reply.code(401);
@@ -332,7 +354,10 @@ export async function filevineRoutes(server: FastifyInstance) {
    */
   server.get('/projects/:projectId', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      // @ts-ignore
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
       if (!user) {
         reply.code(401);
