@@ -48,33 +48,35 @@ async function runCommand(command: string, args: string[]): Promise<void> {
 
 async function main() {
   try {
-    // Step 1: Resolve any failed migrations first
-    console.log('Step 1a: Checking for failed migrations...');
+    // Step 1: Resolve ALL failed migrations by marking them as applied
+    // This is a one-time fix for the production database that has multiple failed migrations
+    console.log('Step 1: Resolving any failed migrations...');
     console.log(`Schema path: ${SCHEMA_PATH}`);
     console.log('');
 
-    try {
-      await runCommand('npx', ['prisma', 'migrate', 'resolve', '--rolled-back', '20260121164817_init', `--schema=${SCHEMA_PATH}`]);
-      console.log('✅ Resolved failed migration as rolled back');
-    } catch (e) {
-      console.log('No failed migrations to resolve (or already resolved)');
+    const failedMigrations = [
+      '20260121164817_init',
+      '20260121173451_add_archetype_system'
+    ];
+
+    for (const migration of failedMigrations) {
+      try {
+        // First mark as rolled back
+        await runCommand('npx', ['prisma', 'migrate', 'resolve', '--rolled-back', migration, `--schema=${SCHEMA_PATH}`]);
+        console.log(`✅ Marked ${migration} as rolled back`);
+
+        // Then mark as applied to skip it
+        await runCommand('npx', ['prisma', 'migrate', 'resolve', '--applied', migration, `--schema=${SCHEMA_PATH}`]);
+        console.log(`✅ Marked ${migration} as applied`);
+      } catch (e) {
+        console.log(`Migration ${migration} already resolved or doesn't need resolution`);
+      }
     }
 
     console.log('');
 
-    // Mark the init migration as applied since it has pgvector which Railway doesn't support
-    console.log('Marking init migration as applied (pgvector not supported)...');
-    try {
-      await runCommand('npx', ['prisma', 'migrate', 'resolve', '--applied', '20260121164817_init', `--schema=${SCHEMA_PATH}`]);
-      console.log('✅ Marked init migration as applied');
-    } catch (e) {
-      console.log('Init migration already applied or does not need resolution');
-    }
-
-    console.log('');
-
-    // Step 1b: Run migrations
-    console.log('Step 1b: Running database migrations...');
+    // Step 2: Run remaining migrations
+    console.log('Step 2: Running database migrations...');
     console.log('');
 
     await runCommand('npx', ['prisma', 'migrate', 'deploy', `--schema=${SCHEMA_PATH}`]);

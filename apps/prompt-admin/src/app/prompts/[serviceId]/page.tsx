@@ -46,11 +46,26 @@ export default function PromptDetailPage({
   };
 
   const handleSave = async () => {
-    if (!prompt || !currentVersion) return;
+    if (!prompt || !currentVersion || !versions) return;
 
-    const versionNumber = currentVersion.version.split('.');
-    const newPatch = parseInt(versionNumber[2] || '0') + 1;
-    const newVersion = `${versionNumber[0]}.${versionNumber[1]}.${newPatch}`;
+    // Find the highest version number from all versions
+    const versionNumbers = versions.map((v) => {
+      const parts = v.version.replace(/^v/, '').split('.');
+      return {
+        major: parseInt(parts[0] || '0'),
+        minor: parseInt(parts[1] || '0'),
+        patch: parseInt(parts[2] || '0'),
+      };
+    });
+
+    const maxVersion = versionNumbers.reduce((max, curr) => {
+      if (curr.major > max.major) return curr;
+      if (curr.major === max.major && curr.minor > max.minor) return curr;
+      if (curr.major === max.major && curr.minor === max.minor && curr.patch > max.patch) return curr;
+      return max;
+    }, { major: 1, minor: 0, patch: 0 });
+
+    const newVersion = `v${maxVersion.major}.${maxVersion.minor}.${maxVersion.patch + 1}`;
 
     try {
       await createVersion.mutateAsync({
