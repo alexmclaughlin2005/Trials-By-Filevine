@@ -2,11 +2,11 @@
   "name": "@juries/notification-service",
   "version": "1.0.0",
   "description": "Notification service for Trials by Filevine AI",
-  "main": "dist/index.js",
+  "main": "dist/services/notification-service/src/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/services/notification-service/src/index.js",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },

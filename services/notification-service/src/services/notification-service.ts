@@ -1,13 +1,36 @@
 import Redis from 'ioredis';
 import { prisma } from '@juries/database';
+import type { Notification as PrismaNotification } from '@prisma/client';
 import {
   Notification,
   CreateNotificationRequest,
   BatchNotificationRequest,
   NotificationChannel,
   NotificationPreferences,
+  NotificationType,
+  NotificationPriority,
 } from '../types/notification';
 import { EmailService } from './email-service';
+
+// Helper to transform Prisma notification to API notification format
+function transformNotification(prismaNotification: PrismaNotification): Notification {
+  return {
+    id: prismaNotification.id,
+    userId: prismaNotification.userId,
+    organizationId: prismaNotification.organizationId,
+    type: prismaNotification.type as NotificationType,
+    priority: prismaNotification.priority as NotificationPriority,
+    channel: prismaNotification.channel as NotificationChannel,
+    title: prismaNotification.title,
+    message: prismaNotification.message,
+    actionUrl: prismaNotification.actionUrl ?? undefined,
+    actionLabel: prismaNotification.actionLabel ?? undefined,
+    metadata: (prismaNotification.metadata as Record<string, any>) ?? undefined,
+    read: prismaNotification.read,
+    createdAt: prismaNotification.createdAt.toISOString(),
+    readAt: prismaNotification.readAt?.toISOString(),
+  };
+}
 
 export class NotificationService {
   private redis: Redis;
@@ -42,16 +65,19 @@ export class NotificationService {
       },
     });
 
+    // Transform to API format
+    const transformedNotification = transformNotification(notification);
+
     // Queue for delivery based on channel and preferences
     if (this.shouldSendInApp(request.channel, preferences)) {
-      await this.queueInAppNotification(notification);
+      await this.queueInAppNotification(transformedNotification);
     }
 
     if (this.shouldSendEmail(request.channel, preferences)) {
-      await this.queueEmailNotification(notification);
+      await this.queueEmailNotification(transformedNotification);
     }
 
-    return notification as Notification;
+    return transformedNotification;
   }
 
   /**
@@ -110,7 +136,7 @@ export class NotificationService {
     ]);
 
     return {
-      notifications: notifications as Notification[],
+      notifications: notifications.map(transformNotification),
       total,
     };
   }
