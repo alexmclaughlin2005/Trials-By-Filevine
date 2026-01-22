@@ -48,11 +48,14 @@ async function start() {
   });
 
   // Initialize Redis for pub/sub
-  const pubClient = new Redis({
-    host: process.env.REDIS_HOST || 'localhost',
-    port: parseInt(process.env.REDIS_PORT || '6379', 10),
-    password: process.env.REDIS_PASSWORD || undefined,
-  });
+  const redisUrl = process.env.REDIS_URL;
+  const pubClient = redisUrl
+    ? new Redis(redisUrl)
+    : new Redis({
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379', 10),
+        password: process.env.REDIS_PASSWORD || undefined,
+      });
 
   const subClient = pubClient.duplicate();
 
