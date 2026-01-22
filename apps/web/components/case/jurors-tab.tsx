@@ -203,7 +203,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                 <div className="border-t p-6">
                   {!panel.jurors || panel.jurors.length === 0 ? (
                     <p className="text-center text-sm text-muted-foreground py-8">
-                      No jurors in this panel yet. Click "Add Juror" to add one.
+                      No jurors in this panel yet. Click &quot;Add Juror&quot; to add one.
                     </p>
                   ) : (
                     <div className="overflow-hidden rounded-lg border">
@@ -282,7 +282,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                   className="w-full rounded-md border border-input bg-background px-3 py-2"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Leave blank to use today's date
+                  Leave blank to use today&apos;s date
                 </p>
               </div>
               <div className="flex justify-end gap-2">
