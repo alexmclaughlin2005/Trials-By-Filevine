@@ -11,6 +11,9 @@
     "migrate:reset": "prisma migrate reset",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "db:seed:juror-research": "tsx prisma/seed-juror-research.ts",
+    "db:seed:voter-records": "tsx prisma/seed-voter-records.ts",
+    "db:seed:fec-donations": "tsx prisma/seed-fec-donations.ts",
     "studio": "prisma studio"
   },
   "dependencies": {

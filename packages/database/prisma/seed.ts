@@ -110,10 +110,8 @@ async function main() {
   ];
 
   for (const personaData of personas) {
-    await prisma.persona.upsert({
-      where: { name: personaData.name },
-      update: {},
-      create: {
+    await prisma.persona.create({
+      data: {
         ...personaData,
         organizationId: null, // System persona
       },

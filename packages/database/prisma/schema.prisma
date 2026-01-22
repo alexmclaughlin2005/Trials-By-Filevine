@@ -17,18 +17,19 @@ datasource db {
 // ============================================
 
 model Organization {
-  id                String   @id @default(uuid())
-  name              String
-  slug              String   @unique
-  settings          Json?
-  subscriptionTier  String   @default("trial") @map("subscription_tier")
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  settings         Json?
+  subscriptionTier String   @default("trial") @map("subscription_tier")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
-  users             User[]
-  cases             Case[]
-  personas          Persona[]
+  users          User[]
+  cases          Case[]
+  personas       Persona[]
+  notifications  Notification[]
 
   @@map("organizations")
 }
@@ -38,7 +39,8 @@ model User {
   organizationId String    @map("organization_id")
   email          String    @unique
   name           String
-  role           String    // admin | attorney | paralegal | consultant
+  passwordHash   String    @default("password") @map("password_hash") // For demo purposes
+  role           String // admin | attorney | paralegal | consultant
   authProviderId String?   @map("auth_provider_id")
   lastLoginAt    DateTime? @map("last_login_at")
   settings       Json?
@@ -46,7 +48,9 @@ model User {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization             Organization              @relation(fields: [organizationId], references: [id])
+  notifications            Notification[]
+  notificationPreferences  NotificationPreferences?
 
   @@index([organizationId])
   @@map("users")
@@ -74,12 +78,12 @@ model Case {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization     Organization      @relation(fields: [organizationId], references: [id])
-  facts            CaseFact[]
-  arguments        CaseArgument[]
-  witnesses        CaseWitness[]
-  juryPanels       JuryPanel[]
-  trialSessions    TrialSession[]
+  organization       Organization        @relation(fields: [organizationId], references: [id])
+  facts              CaseFact[]
+  arguments          CaseArgument[]
+  witnesses          CaseWitness[]
+  juryPanels         JuryPanel[]
+  trialSessions      TrialSession[]
   focusGroupSessions FocusGroupSession[]
 
   @@index([organizationId])
@@ -118,8 +122,8 @@ model CaseArgument {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  case   Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  parent CaseArgument? @relation("ArgumentVersions", fields: [parentId], references: [id])
+  case     Case           @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  parent   CaseArgument?  @relation("ArgumentVersions", fields: [parentId], references: [id])
   children CaseArgument[] @relation("ArgumentVersions")
 
   @@index([caseId])
@@ -128,17 +132,17 @@ model CaseArgument {
 }
 
 model CaseWitness {
-  id             String   @id @default(uuid())
-  caseId         String   @map("case_id")
-  name           String
-  role           String   // fact | expert | character
-  affiliation    String   // plaintiff | defendant | neutral
-  summary        String?  @db.Text
-  directOutline  String?  @map("direct_outline") @db.Text
-  crossOutline   String?  @map("cross_outline") @db.Text
-  sortOrder      Int      @default(0) @map("sort_order")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(uuid())
+  caseId        String   @map("case_id")
+  name          String
+  role          String // fact | expert | character
+  affiliation   String // plaintiff | defendant | neutral
+  summary       String?  @db.Text
+  directOutline String?  @map("direct_outline") @db.Text
+  crossOutline  String?  @map("cross_outline") @db.Text
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
   case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
@@ -152,97 +156,153 @@ model CaseWitness {
 // ============================================
 
 model JuryPanel {
-  id           String   @id @default(uuid())
-  caseId       String   @map("case_id")
-  panelDate    DateTime @map("panel_date")
-  source       String?
-  version      Int      @default(1)
-  totalJurors  Int      @default(0) @map("total_jurors")
-  status       String   @default("draft") // draft | active | completed
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  id          String   @id @default(uuid())
+  caseId      String   @map("case_id")
+  panelDate   DateTime @map("panel_date")
+  source      String?
+  version     Int      @default(1)
+  totalJurors Int      @default(0) @map("total_jurors")
+  status      String   @default("draft") // draft | active | completed
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  case   Case    @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  jurors Juror[]
+  case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  jurors       Juror[]
+  batchImports BatchImport[]
 
   @@index([caseId])
   @@map("jury_panels")
 }
 
 model Juror {
-  id                 String   @id @default(uuid())
-  panelId            String   @map("panel_id")
-  jurorNumber        String?  @map("juror_number")
-  firstName          String   @map("first_name") // Encrypted at application layer
-  lastName           String   @map("last_name") // Encrypted at application layer
-  age                Int?
-  occupation         String?
-  employer           String?
-  city               String?
-  zipCode            String?  @map("zip_code")
-  questionnaireData  Json?    @map("questionnaire_data")
-  status             String   @default("available") // available | questioned | struck_for_cause | peremptory_strike | seated | alternate | dismissed
-  strikeReason       String?  @map("strike_reason") @db.Text
-  keepPriority       Int?     @map("keep_priority") // 1-5 scale
-  strikePriority     Int?     @map("strike_priority") // 1-5 scale
-  notes              String?  @db.Text
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                String  @id @default(uuid())
+  panelId           String  @map("panel_id")
+  jurorNumber       String? @map("juror_number")
+  firstName         String  @map("first_name") // Encrypted at application layer
+  lastName          String  @map("last_name") // Encrypted at application layer
+  age               Int?
+  occupation        String?
+  employer          String?
+  city              String?
+  zipCode           String? @map("zip_code")
+  questionnaireData Json?   @map("questionnaire_data")
+
+  // Archetype Classification
+  classifiedArchetype String?   @map("classified_archetype") // Primary archetype classification
+  archetypeConfidence Decimal?  @map("archetype_confidence") @db.Decimal(3, 2) // Classification confidence
+  dimensionScores     Json?     @map("dimension_scores") // 8 dimension scores
+  classifiedAt        DateTime? @map("classified_at") // When classification was done
+
+  // Juror Research Fields
+  venueId           String?   @map("venue_id") // Link to venue for pre-loaded data
+  source            String    @default("manual") // manual | csv_import | ocr_capture
+  captureId         String?   @map("capture_id") // If created from document capture
+  searchStartedAt   DateTime? @map("search_started_at")
+  searchCompletedAt DateTime? @map("search_completed_at")
+
+  // Status & Priority
+  status         String   @default("available") // available | questioned | struck_for_cause | peremptory_strike | seated | alternate | dismissed
+  strikeReason   String?  @map("strike_reason") @db.Text
+  keepPriority   Int?     @map("keep_priority") // 1-5 scale
+  strikePriority Int?     @map("strike_priority") // 1-5 scale
+  notes          String?  @db.Text
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   // Relations
-  panel              JuryPanel              @relation(fields: [panelId], references: [id], onDelete: Cascade)
-  researchArtifacts  ResearchArtifact[]
-  personaMappings    JurorPersonaMapping[]
+  panel             JuryPanel             @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  venue             Venue?                @relation(fields: [venueId], references: [id])
+  capture           Capture?              @relation(fields: [captureId], references: [id])
+  researchArtifacts ResearchArtifact[]
+  personaMappings   JurorPersonaMapping[]
+  candidates        Candidate[]
+  searchJobs        SearchJob[]
 
   @@index([panelId])
+  @@index([venueId])
   @@index([status])
+  @@index([classifiedArchetype])
   @@map("jurors")
 }
 
 // ============================================
-// PERSONAS
+// PERSONAS & ARCHETYPES
 // ============================================
 
 model Persona {
-  id              String   @id @default(uuid())
-  organizationId  String?  @map("organization_id") // NULL for system personas
-  name            String
-  description     String   @db.Text
-  sourceType      String   @map("source_type") // system | ai_generated | user_created
-  attributes      Json?
-  signals         Json?
-  persuasionLevers Json?   @map("persuasion_levers")
-  pitfalls        Json?
-  isActive        Boolean  @default(true) @map("is_active")
-  version         Int      @default(1)
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id             String  @id @default(uuid())
+  organizationId String? @map("organization_id") // NULL for system personas
+
+  // Basic Information
+  name        String
+  nickname    String? // e.g., "Bootstrap Bob"
+  description String  @db.Text
+  tagline     String? // Brief characteristic phrase
+
+  // Archetype Classification
+  archetype          String? // bootstrapper | crusader | scale_balancer | captain | chameleon | scarred | calculator | heart | trojan_horse | maverick
+  archetypeStrength  Decimal? @map("archetype_strength") @db.Decimal(3, 2) // 0.00 - 1.00
+  secondaryArchetype String?  @map("secondary_archetype")
+  variant            String? // Archetype variant (e.g., MILITARY_PROCEDURAL)
+
+  // Legacy Fields (for backward compatibility)
+  sourceType       String @map("source_type") // system | ai_generated | user_created
+  attributes       Json?
+  signals          Json?
+  persuasionLevers Json?  @map("persuasion_levers")
+  pitfalls         Json?
+
+  // Archetype System Fields
+  demographics          Json? // Age, gender, location, education, occupation, income, marital status, religion, political affiliation
+  dimensions            Json? // 8 psychological dimensions with scores
+  lifeExperiences       Json? @map("life_experiences") // Key formative experiences
+  characteristicPhrases Json? @map("characteristic_phrases") // Typical speech patterns
+  voirDireResponses     Json? @map("voir_dire_responses") // Predicted Q&A
+  deliberationBehavior  Json? @map("deliberation_behavior") // Predicted role and tactics
+
+  // Simulation Parameters
+  simulationParams  Json? @map("simulation_params") // Evidence processing, deliberation weights, verdict priors
+  caseTypeModifiers Json? @map("case_type_modifiers") // Case-specific behavior predictions
+  regionalModifiers Json? @map("regional_modifiers") // Geographic variations
+
+  // Strategic Guidance
+  plaintiffDangerLevel Int?  @map("plaintiff_danger_level") // 1-5 scale
+  defenseDangerLevel   Int?  @map("defense_danger_level") // 1-5 scale
+  causeChallenge       Json? @map("cause_challenge") // Vulnerability and scripts
+  strategyGuidance     Json? @map("strategy_guidance") // Recommended questions and approach
+
+  // Metadata
+  isActive  Boolean  @default(true) @map("is_active")
+  version   Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  organization    Organization?        @relation(fields: [organizationId], references: [id])
-  jurorMappings   JurorPersonaMapping[]
+  organization       Organization?         @relation(fields: [organizationId], references: [id])
+  jurorMappings      JurorPersonaMapping[]
   focusGroupPersonas FocusGroupPersona[]
 
   @@index([organizationId])
   @@index([sourceType])
+  @@index([archetype])
   @@map("personas")
 }
 
 model JurorPersonaMapping {
-  id            String    @id @default(uuid())
-  jurorId       String    @map("juror_id")
-  personaId     String    @map("persona_id")
-  mappingType   String    @map("mapping_type") // primary | secondary
-  source        String    // ai_suggested | user_assigned
-  confidence    Decimal   @db.Decimal(3, 2) // 0.00 - 1.00
-  rationale     String?   @db.Text
-  counterfactual String?  @db.Text
-  isConfirmed   Boolean   @default(false) @map("is_confirmed")
-  confirmedBy   String?   @map("confirmed_by")
-  confirmedAt   DateTime? @map("confirmed_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id             String    @id @default(uuid())
+  jurorId        String    @map("juror_id")
+  personaId      String    @map("persona_id")
+  mappingType    String    @map("mapping_type") // primary | secondary
+  source         String // ai_suggested | user_assigned
+  confidence     Decimal   @db.Decimal(3, 2) // 0.00 - 1.00
+  rationale      String?   @db.Text
+  counterfactual String?   @db.Text
+  isConfirmed    Boolean   @default(false) @map("is_confirmed")
+  confirmedBy    String?   @map("confirmed_by")
+  confirmedAt    DateTime? @map("confirmed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
   juror   Juror   @relation(fields: [jurorId], references: [id], onDelete: Cascade)
@@ -258,22 +318,22 @@ model JurorPersonaMapping {
 // ============================================
 
 model ResearchArtifact {
-  id                 String    @id @default(uuid())
-  jurorId            String    @map("juror_id")
-  sourceType         String    @map("source_type") // linkedin | facebook | pacer | fec | etc
-  sourceUrl          String?   @db.Text
-  sourceName         String?
-  retrievedAt        DateTime  @map("retrieved_at")
-  rawContent         String?   @db.Text
-  extractedSnippets  Json?     @map("extracted_snippets")
-  signals            Json?
-  matchConfidence    Decimal?  @map("match_confidence") @db.Decimal(3, 2)
-  matchRationale     String?   @map("match_rationale") @db.Text
-  userAction         String    @default("pending") @map("user_action") // pending | confirmed | rejected | uncertain
-  actionedBy         String?   @map("actioned_by")
-  actionedAt         DateTime? @map("actioned_at")
-  createdAt          DateTime  @default(now()) @map("created_at")
-  updatedAt          DateTime  @updatedAt @map("updated_at")
+  id                String    @id @default(uuid())
+  jurorId           String    @map("juror_id")
+  sourceType        String    @map("source_type") // linkedin | facebook | pacer | fec | etc
+  sourceUrl         String?   @db.Text
+  sourceName        String?
+  retrievedAt       DateTime  @map("retrieved_at")
+  rawContent        String?   @db.Text
+  extractedSnippets Json?     @map("extracted_snippets")
+  signals           Json?
+  matchConfidence   Decimal?  @map("match_confidence") @db.Decimal(3, 2)
+  matchRationale    String?   @map("match_rationale") @db.Text
+  userAction        String    @default("pending") @map("user_action") // pending | confirmed | rejected | uncertain
+  actionedBy        String?   @map("actioned_by")
+  actionedAt        DateTime? @map("actioned_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   // Relations
   juror Juror @relation(fields: [jurorId], references: [id], onDelete: Cascade)
@@ -289,25 +349,25 @@ model ResearchArtifact {
 // ============================================
 
 model TrialSession {
-  id                String   @id @default(uuid())
-  caseId            String   @map("case_id")
-  sessionType       String   @map("session_type") // voir_dire | trial_day
-  sessionDate       DateTime @map("session_date")
-  sessionNumber     Int?     @map("session_number")
-  title             String?
-  status            String   @default("scheduled") // scheduled | in_progress | completed
-  startedAt         DateTime? @map("started_at")
-  endedAt           DateTime? @map("ended_at")
-  audioFileUrl      String?  @map("audio_file_url") @db.Text
-  transcriptStatus  String   @default("pending") @map("transcript_status") // pending | processing | completed | failed
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  id               String    @id @default(uuid())
+  caseId           String    @map("case_id")
+  sessionType      String    @map("session_type") // voir_dire | trial_day
+  sessionDate      DateTime  @map("session_date")
+  sessionNumber    Int?      @map("session_number")
+  title            String?
+  status           String    @default("scheduled") // scheduled | in_progress | completed
+  startedAt        DateTime? @map("started_at")
+  endedAt          DateTime? @map("ended_at")
+  audioFileUrl     String?   @map("audio_file_url") @db.Text
+  transcriptStatus String    @default("pending") @map("transcript_status") // pending | processing | completed | failed
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  case              Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  timestamps        SessionTimestamp[]
+  case               Case                @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  timestamps         SessionTimestamp[]
   transcriptSegments TranscriptSegment[]
-  insights          SessionInsight[]
+  insights           SessionInsight[]
 
   @@index([caseId])
   @@index([status])
@@ -332,17 +392,17 @@ model SessionTimestamp {
 }
 
 model TranscriptSegment {
-  id            String   @id @default(uuid())
-  sessionId     String   @map("session_id")
-  startMs       BigInt   @map("start_ms")
-  endMs         BigInt   @map("end_ms")
-  speakerLabel  String?  @map("speaker_label")
-  content       String   @db.Text
-  confidence    Decimal? @db.Decimal(3, 2)
-  createdAt     DateTime @default(now()) @map("created_at")
+  id           String   @id @default(uuid())
+  sessionId    String   @map("session_id")
+  startMs      BigInt   @map("start_ms")
+  endMs        BigInt   @map("end_ms")
+  speakerLabel String?  @map("speaker_label")
+  content      String   @db.Text
+  confidence   Decimal? @db.Decimal(3, 2)
+  createdAt    DateTime @default(now()) @map("created_at")
 
   // Relations
-  session TrialSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session  TrialSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   insights SessionInsight[]
 
   @@index([sessionId])
@@ -350,18 +410,18 @@ model TranscriptSegment {
 }
 
 model SessionInsight {
-  id                String    @id @default(uuid())
-  sessionId         String    @map("session_id")
-  segmentId         String?   @map("segment_id")
-  insightType       String    @map("insight_type") // persona_signal | credibility | opportunity | risk
-  severity          String    // info | warning | critical
-  title             String
-  description       String    @db.Text
-  affectedPersonas  String[]  @map("affected_personas")
-  suggestedAction   String?   @map("suggested_action") @db.Text
-  isDismissed       Boolean   @default(false) @map("is_dismissed")
-  createdAt         DateTime  @default(now()) @map("created_at")
-  updatedAt         DateTime  @updatedAt @map("updated_at")
+  id               String   @id @default(uuid())
+  sessionId        String   @map("session_id")
+  segmentId        String?  @map("segment_id")
+  insightType      String   @map("insight_type") // persona_signal | credibility | opportunity | risk
+  severity         String // info | warning | critical
+  title            String
+  description      String   @db.Text
+  affectedPersonas String[] @map("affected_personas")
+  suggestedAction  String?  @map("suggested_action") @db.Text
+  isDismissed      Boolean  @default(false) @map("is_dismissed")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
   session TrialSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
@@ -373,25 +433,54 @@ model SessionInsight {
 }
 
 // ============================================
+// ARCHETYPE CONFIGURATION
+// ============================================
+
+model ArchetypeConfig {
+  id          String   @id @default(uuid())
+  configType  String   @map("config_type") // influence_matrix | conflict_matrix | alliance_matrix | deliberation_params | evidence_processing | damages_calc | composition_scenarios | regional_modifiers | case_type_modifiers
+  version     String   @default("1.0")
+  data        Json // Stores the actual configuration data
+  isActive    Boolean  @default(true) @map("is_active")
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([configType])
+  @@index([isActive])
+  @@map("archetype_configs")
+}
+
+// ============================================
 // FOCUS GROUPS
 // ============================================
 
 model FocusGroupSession {
-  id            String    @id @default(uuid())
-  caseId        String    @map("case_id")
-  name          String
-  description   String?   @db.Text
-  panelType     String    @map("panel_type") // generic | case_matched | custom
-  argumentId    String?   @map("argument_id")
-  status        String    @default("draft") // draft | running | completed
-  startedAt     DateTime? @map("started_at")
-  completedAt   DateTime? @map("completed_at")
-  createdBy     String    @map("created_by")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
+  id             String  @id @default(uuid())
+  caseId         String  @map("case_id")
+  name           String
+  description    String? @db.Text
+  panelType      String  @map("panel_type") // generic | case_matched | custom
+  argumentId     String? @map("argument_id")
+  simulationMode String  @default("detailed") @map("simulation_mode") // quick | detailed | deliberation
+
+  // Archetype-based simulation data
+  juryComposition      Json? @map("jury_composition") // Archetype distribution
+  evidenceStrength     Json? @map("evidence_strength") // Liability, damages strength
+  verdictProbabilities Json? @map("verdict_probabilities") // Predicted probabilities
+  expectedDamages      Json? @map("expected_damages") // If plaintiff wins
+  keyJurors            Json? @map("key_jurors") // Most influential, foreperson, swing votes
+  deliberationSummary  Json? @map("deliberation_summary") // Rounds, faction shifts
+
+  status      String    @default("draft") // draft | running | completed
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  createdBy   String    @map("created_by")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  case            Case                      @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case            Case                       @relation(fields: [caseId], references: [id], onDelete: Cascade)
   personas        FocusGroupPersona[]
   results         FocusGroupResult[]
   recommendations FocusGroupRecommendation[]
@@ -436,22 +525,357 @@ model FocusGroupResult {
 }
 
 model FocusGroupRecommendation {
-  id                  String   @id @default(uuid())
-  sessionId           String   @map("session_id")
-  recommendationType  String   @map("recommendation_type") // weakness | strength | reframe | add_evidence
-  priority            Int      // 1-5
-  title               String
-  description         String   @db.Text
-  affectedPersonas    String[] @map("affected_personas")
-  isAddressed         Boolean  @default(false) @map("is_addressed")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  id                 String   @id @default(uuid())
+  sessionId          String   @map("session_id")
+  recommendationType String   @map("recommendation_type") // weakness | strength | reframe | add_evidence
+  priority           Int // 1-5
+  title              String
+  description        String   @db.Text
+  affectedPersonas   String[] @map("affected_personas")
+  isAddressed        Boolean  @default(false) @map("is_addressed")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   // Relations
   session FocusGroupSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
   @@map("focus_group_recommendations")
+}
+
+// ============================================
+// JUROR RESEARCH SYSTEM
+// ============================================
+
+model Venue {
+  id               String    @id @default(uuid())
+  name             String // e.g., "Los Angeles Superior Court"
+  county           String
+  state            String    @db.Char(2) // Two-letter state code
+  courtType        String    @map("court_type") // federal | state | municipal
+  jurisdiction     String? // District or circuit identifier
+  voterRecordCount Int       @default(0) @map("voter_record_count")
+  fecDonationCount Int       @default(0) @map("fec_donation_count")
+  lastSyncedAt     DateTime? @map("last_synced_at")
+  isActive         Boolean   @default(true) @map("is_active")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  jurors       Juror[]
+  voterRecords VoterRecord[]
+  fecDonations FECDonation[]
+
+  @@index([county, state])
+  @@index([isActive])
+  @@map("venues")
+}
+
+model VoterRecord {
+  id               String    @id @default(uuid())
+  venueId          String    @map("venue_id")
+  registrationId   String?   @map("registration_id") // State registration number
+  fullName         String    @map("full_name")
+  firstName        String    @map("first_name")
+  lastName         String    @map("last_name")
+  middleName       String?   @map("middle_name")
+  nameMetaphone    String    @map("name_metaphone") // For phonetic matching
+  birthYear        Int?      @map("birth_year")
+  age              Int? // Calculated from birthYear
+  gender           String?   @db.Char(1)
+  party            String? // Political party affiliation
+  address          String?
+  city             String?
+  zipCode          String?   @map("zip_code")
+  registrationDate DateTime? @map("registration_date")
+  votingHistory    Json?     @map("voting_history") // Array of election years
+  precinct         String?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([nameMetaphone])
+  @@index([lastName, firstName])
+  @@index([birthYear])
+  @@index([zipCode])
+  @@map("voter_records")
+}
+
+model FECDonation {
+  id              String   @id @default(uuid())
+  venueId         String?  @map("venue_id") // Optional venue association
+  fecId           String   @unique @map("fec_id") // FEC transaction ID
+  donorName       String   @map("donor_name")
+  donorNameFirst  String?  @map("donor_name_first")
+  donorNameLast   String?  @map("donor_name_last")
+  nameMetaphone   String?  @map("name_metaphone")
+  donorCity       String?  @map("donor_city")
+  donorState      String?  @map("donor_state") @db.Char(2)
+  donorZipCode    String?  @map("donor_zip_code")
+  donorEmployer   String?  @map("donor_employer")
+  donorOccupation String?  @map("donor_occupation")
+  recipientName   String   @map("recipient_name")
+  recipientParty  String?  @map("recipient_party") // DEM | REP | IND | etc
+  recipientOffice String?  @map("recipient_office") // President | Senate | House | etc
+  amount          Float
+  transactionDate DateTime @map("transaction_date")
+  electionCycle   Int      @map("election_cycle") // e.g., 2024
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  venue Venue? @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([nameMetaphone])
+  @@index([donorNameLast, donorNameFirst])
+  @@index([donorZipCode])
+  @@index([electionCycle])
+  @@map("fec_donations")
+}
+
+model Candidate {
+  id             String  @id @default(uuid())
+  jurorId        String  @map("juror_id")
+  sourceType     String  @map("source_type") // voter_record | fec_donation | people_search | manual
+  sourceRecordId String? @map("source_record_id") // ID in source system
+  fullName       String  @map("full_name")
+  firstName      String? @map("first_name")
+  lastName       String? @map("last_name")
+  middleName     String? @map("middle_name")
+  age            Int?
+  birthYear      Int?    @map("birth_year")
+  occupation     String?
+  employer       String?
+  city           String?
+  state          String? @db.Char(2)
+  zipCode        String? @map("zip_code")
+  phone          String?
+  email          String?
+  address        String?
+
+  // Confidence Scoring
+  confidenceScore Int  @map("confidence_score") // 0-100
+  scoreFactors    Json @map("score_factors") // Breakdown of how score was calculated
+
+  // Match Status
+  isConfirmed Boolean   @default(false) @map("is_confirmed")
+  confirmedBy String?   @map("confirmed_by")
+  confirmedAt DateTime? @map("confirmed_at")
+  isRejected  Boolean   @default(false) @map("is_rejected")
+  rejectedBy  String?   @map("rejected_by")
+  rejectedAt  DateTime? @map("rejected_at")
+
+  // Aggregated Profile Data
+  profile Json? // Full profile from data sources
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  juror              Juror                 @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  sources            CandidateSource[]
+  synthesizedProfile SynthesizedProfile[]
+
+  @@index([jurorId])
+  @@index([confidenceScore])
+  @@index([isConfirmed])
+  @@map("candidates")
+}
+
+model CandidateSource {
+  id             String   @id @default(uuid())
+  candidateId    String   @map("candidate_id")
+  sourceType     String   @map("source_type") // voter_record | fec_donation | pipl | fullcontact | whitepages
+  sourceRecordId String?  @map("source_record_id")
+  matchStrength  Int      @map("match_strength") // 0-10 scale for entity linking
+  rawData        Json?    @map("raw_data")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([sourceType])
+  @@map("candidate_sources")
+}
+
+model SearchJob {
+  id              String    @id @default(uuid())
+  jurorId         String    @map("juror_id")
+  status          String    @default("queued") // queued | running | completed | failed
+  searchQuery     Json      @map("search_query") // Original search parameters
+  sourcesSearched String[]  @map("sources_searched")
+  candidateCount  Int       @default(0) @map("candidate_count")
+  errorMessage    String?   @map("error_message") @db.Text
+  startedAt       DateTime? @map("started_at")
+  completedAt     DateTime? @map("completed_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  juror Juror @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+
+  @@index([jurorId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("search_jobs")
+}
+
+model SynthesizedProfile {
+  id                   String   @id @default(uuid())
+  candidateId          String   @map("candidate_id")
+  caseId               String   @map("case_id")
+  profile              Json // Full juror profile matching schema
+  caseContext          Json     @map("case_context") // Case context used for synthesis
+  model                String // AI model used (e.g., "claude-sonnet-4-20250514")
+  inputTokens          Int      @map("input_tokens")
+  outputTokens         Int      @map("output_tokens")
+  webSearchCount       Int      @default(0) @map("web_search_count")
+  contextHash          String   @map("context_hash") // Hash of case context for cache invalidation
+  dataRichness         String?  @map("data_richness") // sparse | moderate | comprehensive
+  confidenceOverall    String?  @map("confidence_overall") // low | medium | high
+  concernsCount        Int      @default(0) @map("concerns_count")
+  favorableCount       Int      @default(0) @map("favorable_count")
+  status               String   @default("processing") // processing | completed | failed
+  errorMessage         String?  @map("error_message") @db.Text
+  processingTimeMs     Int?     @map("processing_time_ms")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  candidate Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@index([candidateId])
+  @@index([caseId])
+  @@index([status])
+  @@index([contextHash])
+  @@map("synthesized_profiles")
+}
+
+model Capture {
+  id           String  @id @default(uuid())
+  caseId       String  @map("case_id")
+  documentType String  @map("document_type") // questionnaire | panel_list | jury_card
+  uploadedBy   String  @map("uploaded_by")
+  fileUrl      String  @map("file_url") @db.Text
+  thumbnailUrl String? @map("thumbnail_url") @db.Text
+
+  // OCR Processing
+  status          String  @default("pending") // pending | processing | completed | failed
+  ocrProvider     String? @map("ocr_provider") // azure | aws | google
+  ocrRequestId    String? @map("ocr_request_id")
+  rawOcrResult    Json?   @map("raw_ocr_result")
+  extractedJurors Json    @default("[]") @map("extracted_jurors") // Array of parsed juror data
+  jurorCount      Int     @default(0) @map("juror_count")
+
+  // Processing Metadata
+  processedAt  DateTime? @map("processed_at")
+  errorMessage String?   @map("error_message") @db.Text
+  confidence   Int? // Overall OCR confidence 0-100
+  needsReview  Boolean   @default(false) @map("needs_review")
+  reviewedBy   String?   @map("reviewed_by")
+  reviewedAt   DateTime? @map("reviewed_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  jurors Juror[]
+
+  @@index([caseId])
+  @@index([status])
+  @@index([uploadedBy])
+  @@map("captures")
+}
+
+model BatchImport {
+  id           String  @id @default(uuid())
+  panelId      String  @map("panel_id")
+  uploadedBy   String  @map("uploaded_by")
+  fileName     String  @map("file_name")
+  fileUrl      String? @map("file_url") @db.Text
+
+  // Processing Status
+  status          String  @default("pending") // pending | processing | completed | failed
+  totalRows       Int     @default(0) @map("total_rows")
+  processedRows   Int     @default(0) @map("processed_rows")
+  successfulRows  Int     @default(0) @map("successful_rows")
+  failedRows      Int     @default(0) @map("failed_rows")
+
+  // Configuration
+  autoSearch      Boolean @default(false) @map("auto_search") // Whether to trigger searches automatically
+  venueId         String? @map("venue_id") // Optional venue for searches
+  columnMapping   Json?   @map("column_mapping") // Map CSV columns to juror fields
+
+  // Results
+  importedJurors  Json    @default("[]") @map("imported_jurors") // Array of created juror IDs
+  errors          Json    @default("[]") // Array of error messages per row
+
+  // Timestamps
+  startedAt    DateTime? @map("started_at")
+  completedAt  DateTime? @map("completed_at")
+  errorMessage String?   @map("error_message") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  panel JuryPanel @relation(fields: [panelId], references: [id], onDelete: Cascade)
+
+  @@index([panelId])
+  @@index([status])
+  @@index([uploadedBy])
+  @@map("batch_imports")
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model Notification {
+  id             String    @id @default(uuid())
+  userId         String    @map("user_id")
+  organizationId String    @map("organization_id")
+  type           String // research:started | research:completed | focus_group:completed | case:updated | etc
+  priority       String    @default("medium") // low | medium | high | urgent
+  channel        String    @default("both") // in_app | email | both
+  title          String
+  message        String    @db.Text
+  actionUrl      String?   @map("action_url") @db.Text
+  actionLabel    String?   @map("action_label")
+  metadata       Json?
+  read           Boolean   @default(false)
+  readAt         DateTime? @map("read_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+  @@index([organizationId])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model NotificationPreferences {
+  id           String   @id @default(uuid())
+  userId       String   @unique @map("user_id")
+  emailEnabled Boolean  @default(true) @map("email_enabled")
+  inAppEnabled Boolean  @default(true) @map("in_app_enabled")
+  preferences  Json?    @default("{}") // Per-notification-type preferences
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notification_preferences")
 }
 
 // ============================================
@@ -462,7 +886,7 @@ model AuditLog {
   id             String   @id @default(uuid())
   organizationId String   @map("organization_id")
   userId         String?  @map("user_id")
-  action         String   // research_initiated | persona_assigned | etc
+  action         String // research_initiated | persona_assigned | etc
   entityType     String   @map("entity_type")
   entityId       String   @map("entity_id")
   caseId         String?  @map("case_id")

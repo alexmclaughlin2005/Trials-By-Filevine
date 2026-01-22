@@ -1,11 +1,11 @@
-# TrialForge AI - Project Structure & AI Instructions
+# Juries by Filevine - Project Structure & AI Instructions
 
 **Last Updated:** 2026-01-21
 **Version:** 1.0.0
 
 ## Project Overview
 
-TrialForge AI is an AI-powered trial preparation and jury intelligence platform that helps legal teams optimize jury selection and craft persuasive arguments. The system uses Claude 4.5 models for AI capabilities.
+Juries by Filevine is an AI-powered jury intelligence platform that helps legal teams optimize jury selection and craft persuasive arguments. The system uses Claude 4.5 models for AI capabilities and is built by Filevine.
 
 ## Deployment Architecture
 
@@ -152,7 +152,7 @@ Trials by Filevine/
 
 ### Frontend Applications (`apps/`)
 
-**`apps/web/`** - Main web application
+**`apps/web/`** - Main web application (Juries by Filevine)
 - Next.js 14 with App Router and React Server Components
 - Case management, jury research, focus groups, trial support
 - Deployed to Vercel with Edge Functions
@@ -171,6 +171,50 @@ Trials by Filevine/
 - JWT authentication & rate limiting
 - Request/response validation
 - CORS and security headers
+- **Integrated AI Services (All Claude AI-powered):**
+  - `ArchetypeClassifierService` - Classifies jurors into 10 behavioral archetypes ✅
+    - POST `/api/archetypes/classify/juror`
+    - Returns primary/secondary archetype with confidence scores
+    - Includes 8 psychological dimension scores, danger levels, voir dire questions
+    - 10 Archetypes: Bootstrapper, Crusader, Scale-Balancer, Captain, Chameleon, Scarred, Calculator, Heart, Trojan Horse, Maverick
+  - `PersonaSuggesterService` - Analyzes juror data, suggests matching personas
+    - POST `/api/personas/suggest`
+    - Returns top 3 suggestions with confidence, reasoning, key matches, concerns
+  - `ResearchSummarizerService` - Extracts persona signals from research artifacts
+    - POST `/api/research/summarize` - Summarize specific artifacts
+    - POST `/api/research/batch-summarize` - Process all pending research
+    - Identifies themes, sentiment, concerns from social/professional research
+  - `QuestionGeneratorService` - Generates strategic voir dire questions
+    - POST `/api/cases/:id/generate-questions`
+    - 4 categories: opening, persona identification, case-specific, challenge for cause
+    - Includes follow-ups, listening guidance, red flags, ideal answers
+  - `FocusGroupEngineService` - Simulates jury focus groups
+    - POST `/api/focus-groups/simulate`
+    - 3 modes: quick, detailed, deliberation
+    - Generates persona reactions, deliberation discussions, recommendations
+  - `JurorSynthesisService` - Deep research synthesis with web search ✅ **TESTED**
+    - POST `/api/candidates/:candidateId/synthesize` - Start synthesis
+    - GET `/api/candidates/:candidateId/synthesis` - Poll status
+    - GET `/api/synthesis/:profileId` - Get full profile
+    - Uses Claude 4 Sonnet with web_search tool (up to 10 searches)
+    - Comprehensive profile: demographics, attitudes, affiliations, litigation relevance
+    - Strategic voir dire recommendations with severity ratings
+    - Async processing (10-60 seconds) with event emission
+    - Data quality assessment (sparse/moderate/comprehensive)
+    - Context-based caching for performance optimization
+    - Full integration with identity resolution workflow
+    - See: `DEEP_RESEARCH_TECHNICAL.md` for complete implementation details
+  - `OCRService` - Document capture and OCR processing ✅
+    - POST `/api/cases/:caseId/captures` - Create capture and upload image
+    - POST `/api/captures/:captureId/process` - Trigger OCR processing
+    - GET `/api/captures/:captureId` - Get capture status and results
+    - POST `/api/captures/:captureId/confirm` - Create jurors from extractions
+    - GET `/api/cases/:caseId/captures` - List all captures for case
+    - Uses Claude 3.5 Sonnet Vision API for document analysis
+    - Extracts juror information from photos of jury lists, questionnaires
+    - Confidence scoring (0-100) for each extraction
+    - Supports multiple document types (panel_list, questionnaire, jury_card, other)
+    - Async processing with frontend polling pattern
 
 **`services/case-service/`** - Case Management
 - CRUD operations for cases, facts, arguments, witnesses
@@ -373,15 +417,81 @@ CASE_SERVICE_URL=...
 5. **Offline-First:** PWA uses IndexedDB with background sync
 6. **Audit Trail:** All actions logged to immutable audit log
 
-## Next Steps for Initial Setup
+## Implementation Status
 
-1. Initialize monorepo structure (Turborepo or npm workspaces)
-2. Set up `packages/database` with Prisma schema
-3. Create base Next.js app in `apps/web`
-4. Set up API gateway with auth middleware
-5. Create first AI service (persona-suggester) as template
-6. Configure Railway project with PostgreSQL and Redis
-7. Set up Vercel project for frontend deployment
+### ✅ Completed
+1. **Monorepo Setup** - Turborepo with npm workspaces configured
+2. **Database Layer** (`packages/database`) - Prisma schema with 16 models, migrations, seed data
+3. **Shared Packages:**
+   - `@trialforge/types` - Shared TypeScript types
+   - `@trialforge/database` - Prisma client wrapper
+   - `@trialforge/ai-client` - Claude AI client wrapper
+4. **Next.js Web App** (`apps/web`) - Full application with:
+   - Authentication system (JWT, login, protected routes)
+   - Dashboard with real data from API
+   - Jurors list and detail pages
+   - PersonaSuggester component with AI integration
+   - Filevine design system (Tailwind config, custom colors, components)
+5. **API Gateway** (`services/api-gateway`) - Fastify server with:
+   - JWT authentication middleware
+   - Complete REST API: cases, jurors, personas, research, focus groups
+   - All AI services integrated and functional
+6. **Complete AI Service Suite:**
+   - **ArchetypeClassifierService** - Classifies jurors into 10 behavioral archetypes ✅
+     - Fully integrated with Claude 4.5 Sonnet API
+     - Rich UI showing archetype match, confidence, psychological dimensions
+     - Strategic recommendations with plaintiff/defense danger levels
+     - Cause challenge questions and voir dire guidance
+   - **PersonaSuggesterService** - Analyzes jurors, suggests matching personas ✅
+   - **ResearchSummarizerService** - Extracts signals from research artifacts ✅
+   - **QuestionGeneratorService** - Generates strategic voir dire questions ✅
+   - **FocusGroupEngineService** - Simulates jury focus groups with deliberation ✅
+   - **JurorSynthesisService** - Deep research with Claude web search ✅ **TESTED**
+     - Synthesizes candidate data into comprehensive profiles
+     - Uses Claude 4 Sonnet with web_search tool (up to 10 searches)
+     - Async processing (10-60 seconds) with event emission
+     - Structured output: profile, attitudes, litigation relevance, voir dire recommendations
+     - Data quality assessment and confidence scoring
+     - Context-based caching, full UI integration, production-ready
+     - See `DEEP_RESEARCH_TECHNICAL.md` for implementation details
+   - All services support mock fallback for development without API key
+   - UI displays AI suggestions with visual confidence indicators
+   - Persona mapping, research analysis, and focus groups save to database
+
+### ✅ Phase 4 Complete - Document Capture & OCR
+1. **OCR Service** - Claude Vision API integration for document analysis
+2. **Capture API Routes** - Complete workflow: upload → process → review → confirm
+3. **Document Capture Modal** - 4-step wizard (select type → upload → process → review)
+4. **Editable Review Interface** - Inline editing with confidence indicators
+5. **Integration with Case Page** - "Capture Document" button with camera icon
+6. **Multiple Document Types** - Jury lists, questionnaires, jury cards, handwritten notes
+7. **Confidence Scoring** - 0-100 scale with automatic review flagging
+8. **Base64 Image Storage** - Temporary solution (production will use Vercel Blob/S3)
+
+### ✅ Phase 5 Complete - Deep Research Synthesis
+1. **JurorSynthesisService** - Complete backend service with Claude web search integration
+2. **Synthesis API Routes** - 3 endpoints: start synthesis, poll status, get profile
+3. **DeepResearch Component** - Full frontend with polling, error handling, rich UI
+4. **Database Schema** - SynthesizedProfile model with all metrics
+5. **Context-Based Caching** - SHA256 hash for cache invalidation on context changes
+6. **Identity Resolution Integration** - Automatic appearance after candidate confirmation
+7. **Comprehensive Testing** - Test script validates end-to-end workflow
+8. **User Documentation** - DEEP_RESEARCH_GUIDE.md with usage instructions
+9. **Technical Documentation** - DEEP_RESEARCH_TECHNICAL.md with implementation details
+10. **Bug Fixes** - Resolved candidate ID issues and React Query cache synchronization
+11. **Production Ready** - Error handling, logging, performance optimization complete
+
+### 🚧 In Progress / Next Steps
+1. Test document capture end-to-end with real images
+2. Integrate Vercel Blob or AWS S3 for production image storage
+3. Add thumbnail generation for captures
+4. Create trial mode PWA for courtroom use
+5. Add real-time collaboration features (WebSocket - Phase 5)
+6. Implement comprehensive audit logging system
+7. Deploy to Railway (backend) and Vercel (frontend)
+8. Set up monitoring and error tracking (Sentry)
+9. Add bulk archetype classification for entire jury panels
+10. Implement archetype comparison views and panel composition analysis
 
 ## Important Notes
 

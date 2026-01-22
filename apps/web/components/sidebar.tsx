@@ -10,32 +10,28 @@ import {
   MessageSquare,
   Settings,
   Gavel,
+  FileSearch,
+  UserSearch,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: Home },
   { name: 'Cases', href: '/cases', icon: Briefcase },
-  { name: 'Personas', href: '/personas', icon: Users },
+  { name: 'Jurors', href: '/jurors', icon: Users },
+  { name: 'Personas', href: '/personas', icon: UserSearch },
   { name: 'Focus Groups', href: '/focus-groups', icon: MessageSquare },
+  { name: 'Research', href: '/research', icon: FileSearch },
   { name: 'Trial Mode', href: '/trial-mode', icon: Gavel },
-  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <div className="flex w-64 flex-col border-r bg-card">
-      {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
-        <Link href="/dashboard" className="flex items-center space-x-2">
-          <Gavel className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold">TrialForge AI</span>
-        </Link>
-      </div>
-
+    <div className="flex w-48 flex-col border-r border-filevine-gray-200 bg-white">
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 p-4">
+      <nav className="flex-1 space-y-1 px-3 py-4">
+
         {navigation.map((item) => {
           const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
           return (
@@ -43,30 +39,28 @@ export function Sidebar() {
               key={item.name}
               href={item.href}
               className={cn(
-                'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                'flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  ? 'bg-filevine-blue text-white'
+                  : 'text-filevine-gray-700 hover:bg-filevine-gray-100'
               )}
             >
-              <item.icon className="h-5 w-5" />
+              <item.icon className="h-4 w-4 flex-shrink-0" />
               <span>{item.name}</span>
             </Link>
           );
         })}
       </nav>
 
-      {/* User Section */}
-      <div className="border-t p-4">
-        <div className="flex items-center space-x-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            JA
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium">John Attorney</p>
-            <p className="text-xs text-muted-foreground">attorney@example.com</p>
-          </div>
-        </div>
+      {/* Bottom Section */}
+      <div className="border-t border-filevine-gray-200 p-3">
+        <Link
+          href="/settings"
+          className="flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium text-filevine-gray-700 hover:bg-filevine-gray-100"
+        >
+          <Settings className="h-4 w-4" />
+          <span>Settings</span>
+        </Link>
       </div>
     </div>
   );

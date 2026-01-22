@@ -2,9 +2,25 @@ import type { APIResponse, APIError } from '@trialforge/types';
 
 class APIClient {
   private baseUrl: string;
+  private token: string | null = null;
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    this.baseUrl = baseUrl || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+  }
+
+  setAuthToken(token: string | null) {
+    this.token = token;
+  }
+
+  getAuthToken(): string | null {
+    if (this.token) return this.token;
+
+    // Try to get from localStorage if in browser
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
+    }
+
+    return null;
   }
 
   private async request<T>(
@@ -12,28 +28,36 @@ class APIClient {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    const token = this.getAuthToken();
 
     const config: RequestInit = {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
     };
 
     try {
       const response = await fetch(url, config);
-      const data: APIResponse<T> = await response.json();
+
+      // Handle 204 No Content responses
+      if (response.status === 204) {
+        return undefined as T;
+      }
+
+      const data = await response.json();
 
       if (!response.ok) {
         throw new APIClientError(
-          data.error?.message || 'An error occurred',
+          data.error || 'An error occurred',
           response.status,
-          data.error
+          data
         );
       }
 
-      return data.data as T;
+      return data as T;
     } catch (error) {
       if (error instanceof APIClientError) {
         throw error;
@@ -68,11 +92,6 @@ class APIClient {
 
   async delete<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return this.request<T>(endpoint, { ...options, method: 'DELETE' });
-  }
-
-  setAuthToken(token: string) {
-    // This will be used to set the authorization header
-    // In a real implementation, you'd store this and add it to all requests
   }
 }
 

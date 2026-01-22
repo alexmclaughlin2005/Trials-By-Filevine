@@ -1,305 +1,524 @@
 # API Gateway Service
 
-Main API gateway for TrialForge AI, handling routing, authentication, and request validation.
+RESTful API Gateway for TrialForge AI platform built with Fastify.
 
-## Overview
+## Features
 
-The API Gateway serves as the single entry point for all client requests, providing:
-- Request routing to microservices
-- JWT authentication and authorization
-- Rate limiting and throttling
-- Request/response validation
-- CORS handling
-- Security headers
-- Request logging and monitoring
+- **JWT Authentication** - Secure token-based authentication
+- **Request Validation** - Zod schema validation for all endpoints
+- **Rate Limiting** - Prevent API abuse
+- **CORS Support** - Configurable cross-origin resource sharing
+- **Multi-tenancy** - Organization-level data isolation
+- **Comprehensive Logging** - Structured logging with Pino
 
-## Technology Stack
+## Getting Started
 
-- **Framework:** Fastify (Node.js)
-- **Language:** TypeScript
-- **Auth:** Auth0 SDK
-- **Validation:** Zod schemas
-- **Rate Limiting:** Redis-based
+### Prerequisites
 
-## Architecture
+- Node.js 20+
+- PostgreSQL 16+
+- Running database with Prisma schema applied
 
-```
-Client → API Gateway → [Auth Middleware] → [Rate Limiting] → [Validation] → Service
-```
-
-## Environment Variables
-
-```env
-# Server
-PORT=3000
-NODE_ENV=development
-
-# Database
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
-
-# Auth0
-AUTH0_DOMAIN=your-tenant.auth0.com
-AUTH0_AUDIENCE=https://api.trialforge.ai
-AUTH0_ISSUER=https://your-tenant.auth0.com/
-
-# Service URLs (Railway internal)
-CASE_SERVICE_URL=http://case-service:3001
-JURY_PANEL_SERVICE_URL=http://jury-panel-service:3002
-RESEARCH_SERVICE_URL=http://research-service:3003
-PERSONA_SERVICE_URL=http://persona-service:3004
-TRIAL_SESSION_SERVICE_URL=http://trial-session-service:3005
-FOCUS_GROUP_SERVICE_URL=http://focus-group-service:3006
-
-# AI Services
-IDENTITY_RESOLUTION_URL=http://identity-resolution:8000
-RESEARCH_SUMMARIZER_URL=http://research-summarizer:8001
-PERSONA_SUGGESTER_URL=http://persona-suggester:8002
-QUESTION_GENERATOR_URL=http://question-generator:8003
-FOCUS_GROUP_ENGINE_URL=http://focus-group-engine:8004
-TRIAL_INSIGHT_ENGINE_URL=http://trial-insight-engine:8005
-
-# Rate Limiting
-RATE_LIMIT_USER=100  # requests per minute per user
-RATE_LIMIT_ORG=1000  # requests per minute per org
-
-# Monitoring
-SENTRY_DSN=...
-LOG_LEVEL=info
-```
-
-## API Routes
-
-### Cases API
-- `GET /api/v1/cases` - List all cases
-- `POST /api/v1/cases` - Create new case
-- `GET /api/v1/cases/:id` - Get case details
-- `PATCH /api/v1/cases/:id` - Update case
-- `DELETE /api/v1/cases/:id` - Archive case
-
-### Jury Panel API
-- `GET /api/v1/cases/:caseId/panel` - Get jury panel
-- `POST /api/v1/cases/:caseId/panel/import` - Import jurors
-- `GET /api/v1/cases/:caseId/jurors` - List jurors
-- `PATCH /api/v1/cases/:caseId/jurors/:id` - Update juror
-
-### Research API
-- `POST /api/v1/jurors/:id/research` - Initiate research
-- `GET /api/v1/jurors/:id/artifacts` - Get research artifacts
-
-### Personas API
-- `GET /api/v1/personas` - List personas
-- `POST /api/v1/personas` - Create persona
-- `GET /api/v1/jurors/:id/persona-mappings` - Get mappings
-
-### AI Services API
-- `POST /api/v1/ai/persona-suggest` - Suggest personas
-- `POST /api/v1/ai/question-generate` - Generate questions
-- `POST /api/v1/ai/focus-group/simulate` - Run simulation
-
-## Authentication
-
-All routes require Bearer token authentication except health check:
+### Installation
 
 ```bash
-curl -H "Authorization: Bearer <token>" https://api.trialforge.ai/v1/cases
+npm install
 ```
 
-### JWT Claims Structure
+### Configuration
 
-```json
-{
-  "sub": "user-id",
-  "email": "user@example.com",
-  "org_id": "organization-id",
-  "role": "attorney",
-  "permissions": ["cases:read", "cases:write"]
-}
+Copy `.env.example` to `.env` and configure:
+
+```bash
+cp .env.example .env
 ```
 
-### Role-Based Access Control
+Required environment variables:
+- `DATABASE_URL` - PostgreSQL connection string
+- `JWT_SECRET` - Secret key for JWT signing
+- `ALLOWED_ORIGINS` - Comma-separated list of allowed origins
+- `ANTHROPIC_API_KEY` - Anthropic API key for Claude AI integration (optional, falls back to mock data)
 
-Roles:
-- `admin` - Full access to organization
-- `attorney` - Create/manage cases, full trial features
-- `paralegal` - Research, data entry, limited case access
-- `consultant` - Read-only access to specific cases
+### Development
 
-## Rate Limiting
-
-Rate limits are enforced per user and per organization:
-
-- **User limit:** 100 requests/minute
-- **Organization limit:** 1000 requests/minute
-
-Rate limit headers:
-```
-X-RateLimit-Limit: 100
-X-RateLimit-Remaining: 87
-X-RateLimit-Reset: 1642598400
+```bash
+npm run dev
 ```
 
-When rate limit exceeded:
-```json
-{
-  "error": "rate_limit_exceeded",
-  "message": "Too many requests. Please retry after 60 seconds.",
-  "retry_after": 60
-}
-```
+Server will start on `http://localhost:3001`
 
-## Request Validation
+## API Endpoints
 
-All requests are validated using Zod schemas:
+### Authentication
+
+- `POST /api/auth/login` - User login
+- `POST /api/auth/signup` - User registration
+- `GET /api/auth/me` - Get current user
+
+### Cases
+
+- `GET /api/cases` - List all cases
+- `GET /api/cases/:id` - Get case details
+- `POST /api/cases` - Create new case
+- `PATCH /api/cases/:id` - Update case
+- `DELETE /api/cases/:id` - Delete case
+
+### Jurors
+
+- `GET /api/jurors/panel/:panelId` - Get jurors for panel
+- `GET /api/jurors/:id` - Get juror details
+- `POST /api/jurors` - Create new juror
+- `PATCH /api/jurors/:id` - Update juror
+- `DELETE /api/jurors/:id` - Delete juror
+
+### Personas
+
+- `GET /api/personas` - List all personas
+- `GET /api/personas/:id` - Get persona details
+- `POST /api/personas` - Create custom persona
+- `PATCH /api/personas/:id` - Update persona
+- `DELETE /api/personas/:id` - Delete persona
+- `POST /api/personas/suggest` - AI-powered persona suggestions for juror
+
+### Juror Research
+
+- `POST /api/jurors/:id/research` - Add research artifact to juror
+- `POST /api/jurors/:id/persona-mapping` - Map persona to juror
+
+### Health
+
+- `GET /health` - Health check endpoint
+
+## AI Services
+
+### Archetype Classifier Service
+
+Located at `src/services/archetype-classifier.ts`, this service classifies jurors into 10 behavioral archetypes based on psychological research.
+
+**Features:**
+- Classifies jurors into validated behavioral archetypes with confidence scores
+- Analyzes 8 psychological dimensions (attribution orientation, just world belief, authoritarianism, etc.)
+- Provides plaintiff and defense danger levels (1-5 scale)
+- Identifies cause challenge opportunities with suggested questions
+- Generates targeted voir dire questions for each archetype
+- Detects hybrid archetypes when jurors match multiple profiles
+
+**The 10 Archetypes:**
+1. **Bootstrapper** - Personal Responsibility Enforcer (pro-defense in PI cases)
+2. **Crusader** - Systemic Thinker (pro-plaintiff vs. corporations)
+3. **Scale-Balancer** - Fair-Minded Evaluator (true swing voter)
+4. **Captain** - Authoritative Leader (likely foreperson, high influence)
+5. **Chameleon** - Compliant Follower (adopts majority position)
+6. **Scarred** - Wounded Veteran (personal experience drives view)
+7. **Calculator** - Numbers Person (data-driven, skeptical of emotion)
+8. **Heart** - Empathic Connector (narrative-focused, pro-plaintiff in injury cases)
+9. **Trojan Horse** - Stealth Juror (hides true biases)
+10. **Maverick** - Nullifier (independent, hung jury risk)
+
+**Usage:**
 
 ```typescript
-// Example: Create case validation
-const createCaseSchema = z.object({
-  name: z.string().min(1).max(255),
-  case_number: z.string().optional(),
-  jurisdiction: z.string(),
-  trial_date: z.string().datetime(),
-  case_type: z.enum(['civil', 'criminal', 'family']),
-  our_side: z.enum(['plaintiff', 'defendant'])
+import { ArchetypeClassifierService } from './services/archetype-classifier';
+
+const classifier = new ArchetypeClassifierService(process.env.ANTHROPIC_API_KEY);
+
+const classification = await classifier.classifyJuror({
+  jurorData: {
+    age: 52,
+    occupation: 'Small Business Owner',
+    education: 'High School',
+    questionnaireData: { /* responses */ },
+  },
+  caseType: 'civil',
+  jurisdiction: 'Los Angeles County',
+  ourSide: 'plaintiff',
 });
 ```
 
-Invalid requests return 400:
-```json
+**Response Format:**
+
+```typescript
 {
-  "error": "validation_error",
-  "message": "Invalid request body",
-  "details": [
+  primary: {
+    archetype: 'bootstrapper',
+    archetypeName: 'The Bootstrapper (Personal Responsibility Enforcer)',
+    confidence: 0.85,
+    strength: 0.90,
+    reasoning: "Strong indicators of personal responsibility orientation...",
+    keyIndicators: [
+      "Self-employed contractor suggests self-made success",
+      "Age and demographic profile match typical Bootstrapper"
+    ],
+    concerns: [
+      "Might have difficulty awarding damages"
+    ],
+    dimensionScores: {
+      attribution_orientation: 1.5,  // 1.0 (personal) - 5.0 (situational)
+      just_world_belief: 4.5,         // 1.0 (low) - 5.0 (high)
+      authoritarianism: 4.0,
+      institutional_trust: {
+        corporations: 4.5,
+        medical: 4.0,
+        legal_system: 3.5,
+        insurance: 3.5
+      },
+      litigation_attitude: 1.5,       // 1.0 (anti) - 5.0 (pro)
+      leadership_tendency: 4.0,
+      cognitive_style: 3.5,           // 1.0 (narrative) - 5.0 (analytical)
+      damages_orientation: 1.5        // 1.0 (conservative) - 5.0 (liberal)
+    }
+  },
+  secondary: null,  // Only if hybrid archetype detected
+  recommendations: {
+    plaintiffDangerLevel: 5,  // 1-5 scale
+    defenseDangerLevel: 1,
+    causeChallenge: {
+      vulnerability: 0.70,
+      suggestedQuestions: [
+        "Is there any amount of damages you feel you just couldn't award?"
+      ]
+    },
+    voirDireQuestions: [
+      "Have you or anyone close to you ever considered filing a lawsuit but decided not to?"
+    ]
+  }
+}
+```
+
+**Endpoints:**
+- `POST /api/archetypes/classify/juror` - Classify a single juror into archetypes
+- `POST /api/archetypes/classify/panel` - Bulk classify entire jury panel (planned)
+
+**Fallback Behavior:**
+If `ANTHROPIC_API_KEY` is not configured, uses occupation-based heuristics for development/testing.
+
+### Persona Suggester Service
+
+Located at `src/services/persona-suggester.ts`, this service uses Claude AI to analyze jurors and suggest matching personas.
+
+**Features:**
+- Analyzes juror demographics, occupation, education, and research artifacts
+- Matches against available system and custom personas
+- Returns top 3 suggestions with confidence scores (0-1)
+- Provides detailed reasoning, key matches, and potential concerns
+- Explainable AI with transparent decision-making
+
+**Usage:**
+
+```typescript
+import { PersonaSuggesterService } from './services/persona-suggester';
+
+const suggester = new PersonaSuggesterService(process.env.ANTHROPIC_API_KEY);
+
+const suggestions = await suggester.suggestPersonas({
+  juror: jurorData,
+  availablePersonas: personas,
+  caseContext: {
+    caseType: 'civil',
+    keyIssues: ['employment discrimination', 'age bias'],
+  },
+});
+```
+
+**Response Format:**
+
+```typescript
+{
+  suggestions: [
     {
-      "field": "trial_date",
-      "message": "Invalid datetime format"
+      persona: { id, name, description, attributes, signals, persuasionLevers },
+      confidence: 0.85,
+      reasoning: "Juror's technical background and analytical mindset...",
+      keyMatches: [
+        "Software engineering occupation aligns with Tech Pragmatist signals",
+        "STEM education indicates analytical thinking style"
+      ],
+      potentialConcerns: [
+        "May be overly skeptical of emotional appeals",
+        "Could focus too much on technical details"
+      ]
     }
   ]
 }
 ```
 
-## Error Handling
+**Fallback Behavior:**
+If `ANTHROPIC_API_KEY` is not configured, the endpoint returns mock suggestions for development/testing.
 
-Standard error response format:
+### Research Summarizer Service
+
+Located at `src/services/research-summarizer.ts`, this service analyzes research artifacts and extracts persona-relevant signals.
+
+**Features:**
+- Processes social media, LinkedIn, public records, and other research artifacts
+- Extracts structured persona signals with evidence and confidence scores
+- Identifies key themes, sentiment, and concerning content
+- Provides actionable insights for jury selection strategy
+- Batches processing to handle multiple artifacts efficiently
+
+**Usage:**
+
+```typescript
+import { ResearchSummarizerService } from './services/research-summarizer';
+
+const summarizer = new ResearchSummarizerService(process.env.ANTHROPIC_API_KEY);
+
+const summaries = await summarizer.summarizeResearch({
+  artifacts: researchArtifacts,
+  jurorContext: {
+    name: 'John Doe',
+    occupation: 'Software Engineer',
+    age: 35,
+  },
+  caseContext: {
+    caseType: 'civil',
+    keyIssues: ['employment discrimination'],
+  },
+});
+```
+
+**Endpoints:**
+- `POST /api/research/summarize` - Summarize specific artifacts for a juror
+- `POST /api/research/batch-summarize` - Process all pending research for a case
+
+### Question Generator Service
+
+Located at `src/services/question-generator.ts`, this service generates strategic voir dire questions tailored to target personas.
+
+**Features:**
+- Creates 4 categories of questions: opening, persona identification, case-specific, challenge for cause
+- Provides detailed guidance on what to listen for, red flags, and ideal answers
+- Includes follow-up questions based on different response scenarios
+- Considers jurisdiction-specific rules and constraints
+- Prioritizes questions by strategic importance
+
+**Usage:**
+
+```typescript
+import { QuestionGeneratorService } from './services/question-generator';
+
+const generator = new QuestionGeneratorService(process.env.ANTHROPIC_API_KEY);
+
+const questions = await generator.generateQuestions({
+  caseContext: {
+    caseType: 'civil',
+    caseName: 'Johnson v. TechCorp',
+    ourSide: 'plaintiff',
+    keyFacts: facts,
+    jurisdiction: 'California',
+  },
+  targetPersonas: personas,
+  questionLimit: 20,
+});
+```
+
+**Endpoint:**
+- `POST /api/cases/:id/generate-questions` - Generate voir dire questions for a case
+
+### Focus Group Simulation Engine
+
+Located at `src/services/focus-group-engine.ts`, this service simulates jury focus groups with AI-powered persona reactions.
+
+**Features:**
+- Three simulation modes: quick, detailed, deliberation
+- Generates realistic persona reactions to arguments
+- Simulates deliberation discussions and group dynamics
+- Identifies persuasive elements and weaknesses
+- Provides actionable recommendations for argument refinement
+- Tracks sentiment and verdict leans across personas
+
+**Simulation Modes:**
+- **Quick:** Brief initial reactions (good for rapid testing)
+- **Detailed:** Comprehensive feedback with concerns and questions (default)
+- **Deliberation:** Full simulated jury discussion with exchanges and group dynamics
+
+**Usage:**
+
+```typescript
+import { FocusGroupEngineService } from './services/focus-group-engine';
+
+const engine = new FocusGroupEngineService(process.env.ANTHROPIC_API_KEY);
+
+const result = await engine.simulateFocusGroup({
+  caseContext: caseInfo,
+  argument: argumentToTest,
+  personas: selectedPersonas,
+  simulationMode: 'deliberation',
+});
+```
+
+**Endpoints:**
+- `POST /api/focus-groups/simulate` - Run a focus group simulation
+- `GET /api/focus-groups/case/:caseId` - List focus group sessions for a case
+- `GET /api/focus-groups/:sessionId` - Get detailed session results
+
+### Juror Synthesis Service (Deep Research)
+
+Located at `src/services/juror-synthesis.ts`, this service uses Claude API with web search to synthesize raw candidate data into comprehensive, structured profiles with voir dire recommendations.
+
+**Features:**
+- Triggers AFTER user confirms a candidate match (not during initial search)
+- Runs asynchronously (10-20 seconds) with background processing
+- Calls Claude API (Sonnet 4) with web_search tool enabled (up to 10 searches)
+- Returns structured JSON profile with case-specific recommendations
+- Emits event on completion for real-time WebSocket notifications
+- Caches results based on case context hash for efficiency
+- Provides data quality assessment (sparse/moderate/comprehensive)
+
+**What It Synthesizes:**
+- **Juror Profile:** Demographics, location, occupation, education, family
+- **Attitudes & Affiliations:** Political indicators, donations, organizational memberships, social media activity, worldview indicators
+- **Litigation Relevance:** Prior jury service, lawsuit history, connections to law enforcement/legal/medical professions
+- **Voir Dire Recommendations:** Suggested questions with rationales, areas to probe, potential concerns with severity ratings, favorable indicators
+
+**Usage:**
+
+```typescript
+import { JurorSynthesisService } from './services/juror-synthesis';
+
+const synthesisService = new JurorSynthesisService(prisma);
+
+// Start synthesis (returns immediately with job ID)
+const job = await synthesisService.startSynthesis({
+  candidateId: 'uuid',
+  caseId: 'uuid',
+  caseContext: {
+    case_type: 'personal injury - medical malpractice',
+    key_issues: ['hospital negligence', 'damages valuation'],
+    client_position: 'plaintiff',
+  },
+});
+// => { id: 'job-uuid', status: 'processing' }
+
+// Poll for status
+const status = await synthesisService.getSynthesisStatus(candidateId);
+// => { id: 'job-uuid', status: 'completed', profileId: 'profile-uuid' }
+
+// Get full synthesized profile
+const profile = await synthesisService.getProfile(profileId);
+```
+
+**Example Synthesized Profile (excerpt):**
 
 ```json
 {
-  "error": "error_code",
-  "message": "Human-readable error message",
-  "details": {},
-  "request_id": "req_abc123"
+  "schema_version": "1.0",
+  "juror_profile": {
+    "name": "John Smith",
+    "age": 45,
+    "occupation": {
+      "current_title": "Senior Accountant",
+      "employer": "Deloitte",
+      "industry": "Professional Services",
+      "management_level": "individual_contributor"
+    },
+    "education": {
+      "highest_level": "bachelors",
+      "field_of_study": "Accounting",
+      "institutions": ["University of California, Berkeley"]
+    }
+  },
+  "attitudes_and_affiliations": {
+    "political_indicators": {
+      "party_registration": "democrat",
+      "donation_history": [
+        {
+          "recipient": "Biden for President",
+          "amount": 500,
+          "year": 2020,
+          "party": "democrat"
+        }
+      ],
+      "confidence": "confirmed"
+    },
+    "organizational_memberships": [
+      {
+        "organization": "American Institute of CPAs",
+        "type": "professional",
+        "role": "member",
+        "source": "LinkedIn profile"
+      }
+    ]
+  },
+  "voir_dire_recommendations": {
+    "suggested_questions": [
+      {
+        "question": "In your work as an accountant, do you find yourself more focused on following established procedures or looking at the bigger picture?",
+        "rationale": "Assesses analytical vs. holistic thinking; accountants often favor rule-based approaches which may be defense-favorable in malpractice cases"
+      }
+    ],
+    "potential_concerns": [
+      {
+        "concern": "Strong analytical mindset may favor medical defense experts",
+        "evidence": "Professional background in accounting, CPA membership",
+        "severity": "medium"
+      }
+    ],
+    "favorable_indicators": [
+      {
+        "indicator": "Political donations suggest liberal leaning on damages",
+        "evidence": "$500 donation to Biden 2020 campaign"
+      }
+    ]
+  },
+  "data_quality": {
+    "sources_consulted": ["voter records", "FEC donations", "LinkedIn", "Whitepages"],
+    "sources_count": 8,
+    "data_richness": "moderate",
+    "confidence_overall": "medium",
+    "gaps_identified": ["No social media presence found", "Prior jury service unknown"]
+  },
+  "summary": "45-year-old accountant with analytical mindset and Democratic political leanings. Professional background may favor expert testimony and structured evidence, but liberal donations suggest potential openness to plaintiff damages. Moderate data richness with confirmed political and professional affiliations."
 }
 ```
 
-HTTP status codes:
-- `400` - Bad request (validation error)
-- `401` - Unauthorized (missing/invalid token)
-- `403` - Forbidden (insufficient permissions)
-- `404` - Not found
-- `429` - Rate limit exceeded
-- `500` - Internal server error
+**Endpoints:**
+- `POST /api/candidates/:candidateId/synthesize` - Start synthesis for a confirmed candidate
+- `GET /api/candidates/:candidateId/synthesis` - Poll synthesis status
+- `GET /api/synthesis/:profileId` - Get full synthesized profile
 
-## Logging
-
-All requests are logged with:
-- Request ID (for tracing)
-- User ID and organization ID
-- HTTP method and path
-- Response status and latency
-- Error details (if applicable)
-
-Log format (JSON):
+**Request Body for Synthesis:**
 ```json
 {
-  "timestamp": "2026-01-21T10:30:00Z",
-  "level": "info",
-  "request_id": "req_abc123",
-  "user_id": "user_123",
-  "org_id": "org_456",
-  "method": "POST",
-  "path": "/api/v1/cases",
-  "status": 201,
-  "latency_ms": 145
-}
-```
-
-## Development
-
-```bash
-# Install dependencies
-npm install
-
-# Run in development mode
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-
-# Lint
-npm run lint
-```
-
-## Deployment
-
-The service is deployed to Railway as a containerized service.
-
-```bash
-# Build Docker image
-docker build -t api-gateway .
-
-# Run locally
-docker run -p 3000:3000 --env-file .env api-gateway
-```
-
-## Health Checks
-
-```bash
-# Health check endpoint (no auth required)
-GET /health
-
-# Response
-{
-  "status": "healthy",
-  "timestamp": "2026-01-21T10:30:00Z",
-  "services": {
-    "database": "connected",
-    "redis": "connected"
+  "case_context": {
+    "case_type": "personal injury - medical malpractice",
+    "key_issues": ["hospital negligence", "damages valuation"],
+    "client_position": "plaintiff"
   }
 }
 ```
 
-## Security
-
-- All endpoints use HTTPS in production
-- CORS restricted to allowed origins
-- Security headers enabled (HSTS, CSP, etc.)
-- Input sanitization on all requests
-- SQL injection prevention via parameterized queries
-- Rate limiting to prevent abuse
-
-## Monitoring
-
-Integration with:
-- **Sentry:** Error tracking
-- **Railway Logs:** Centralized logging
-- **Custom metrics:** Request counts, latency, error rates
-
-## Testing
-
-```bash
-# Unit tests
-npm run test:unit
-
-# Integration tests
-npm run test:integration
-
-# E2E tests
-npm run test:e2e
+**Response (202 Accepted):**
+```json
+{
+  "job_id": "uuid",
+  "status": "processing"
+}
 ```
 
-## Support
+**WebSocket Event on Completion:**
+```json
+{
+  "type": "synthesis_complete",
+  "candidate_id": "uuid",
+  "juror_id": "uuid",
+  "profile_id": "uuid",
+  "data_richness": "moderate",
+  "confidence_overall": "medium",
+  "concerns_count": 2,
+  "favorable_count": 1
+}
+```
 
-For issues or questions, contact the backend team or see the main project documentation.
+**Error Handling:**
+- **Claude API timeout:** Retry once, then fail job
+- **Invalid JSON response:** Retry with note to return valid JSON, then fail
+- **Rate limited:** Queue with exponential backoff
+- **Web search fails:** Continue without, note in `gaps_identified`
+
+**Configuration:**
+- Model: `claude-sonnet-4-20250514`
+- Max tokens: 4096
+- Max web searches: 10
+- Timeout: 60 seconds
+- Retry attempts: 1

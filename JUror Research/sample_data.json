@@ -1,0 +1,334 @@
+{
+  "mock_jurors": [
+    {
+      "full_name": "Maria L Garcia",
+      "first_name": "Maria",
+      "last_name": "Garcia",
+      "middle_name": "L",
+      "age": 42,
+      "city": "Houston",
+      "occupation": "Teacher",
+      "employer": "Houston ISD"
+    },
+    {
+      "full_name": "John Smith",
+      "first_name": "John",
+      "last_name": "Smith",
+      "age": 35,
+      "city": "Austin",
+      "occupation": "Software Engineer",
+      "employer": "Dell Technologies"
+    },
+    {
+      "full_name": "Sarah Johnson-Williams",
+      "first_name": "Sarah",
+      "last_name": "Johnson-Williams",
+      "age": 58,
+      "city": "Houston",
+      "occupation": "Retired"
+    },
+    {
+      "full_name": "David Lee Jr",
+      "first_name": "David",
+      "last_name": "Lee",
+      "suffix": "Jr",
+      "age": 29,
+      "city": "Katy",
+      "occupation": "Sales Manager",
+      "employer": "AutoNation"
+    },
+    {
+      "full_name": "José Rodríguez",
+      "first_name": "José",
+      "last_name": "Rodríguez",
+      "age": 45,
+      "city": "Sugar Land",
+      "occupation": "Small Business Owner"
+    }
+  ],
+
+  "mock_voter_records": [
+    {
+      "id": "voter-001",
+      "venue_id": "harris-county-tx",
+      "full_name": "Garcia, Maria Lucia",
+      "first_name": "Maria",
+      "last_name": "Garcia",
+      "middle_name": "Lucia",
+      "dob": "1982-03-15",
+      "age_computed": 42,
+      "address": "1234 Main St",
+      "city": "Houston",
+      "zip": "77001",
+      "party": "Democratic",
+      "registration_date": "2008-09-15",
+      "status": "active",
+      "vote_history": [
+        "2024-11-05 General",
+        "2024-03-05 Primary",
+        "2022-11-08 General",
+        "2022-03-01 Primary",
+        "2020-11-03 General",
+        "2020-03-03 Primary"
+      ]
+    },
+    {
+      "id": "voter-002",
+      "venue_id": "harris-county-tx",
+      "full_name": "Garcia, Maria A",
+      "first_name": "Maria",
+      "last_name": "Garcia",
+      "middle_name": "A",
+      "dob": "1985-07-22",
+      "age_computed": 39,
+      "address": "5678 Oak Lane",
+      "city": "Katy",
+      "zip": "77494",
+      "party": "Republican",
+      "registration_date": "2012-01-10",
+      "status": "active",
+      "vote_history": [
+        "2024-11-05 General",
+        "2020-11-03 General"
+      ]
+    },
+    {
+      "id": "voter-003",
+      "venue_id": "travis-county-tx",
+      "full_name": "Smith, John Robert",
+      "first_name": "John",
+      "last_name": "Smith",
+      "middle_name": "Robert",
+      "dob": "1989-05-10",
+      "age_computed": 35,
+      "address": "900 Congress Ave Apt 12",
+      "city": "Austin",
+      "zip": "78701",
+      "party": "Independent",
+      "registration_date": "2015-03-20",
+      "status": "active",
+      "vote_history": [
+        "2024-11-05 General",
+        "2022-11-08 General",
+        "2020-11-03 General"
+      ]
+    }
+  ],
+
+  "mock_fec_donations": [
+    {
+      "id": "fec-001",
+      "donor_name": "Garcia, Maria L",
+      "first_name": "Maria",
+      "last_name": "Garcia",
+      "city": "Houston",
+      "state": "TX",
+      "zip": "77001",
+      "employer": "Houston ISD",
+      "occupation": "Teacher",
+      "recipient_name": "Beto for Texas",
+      "recipient_id": "C00501197",
+      "recipient_type": "candidate",
+      "recipient_party": "Democratic",
+      "amount": 250,
+      "date": "2022-09-15"
+    },
+    {
+      "id": "fec-002",
+      "donor_name": "Garcia, Maria L",
+      "first_name": "Maria",
+      "last_name": "Garcia",
+      "city": "Houston",
+      "state": "TX",
+      "zip": "77001",
+      "employer": "Houston ISD",
+      "occupation": "Teacher",
+      "recipient_name": "Biden Victory Fund",
+      "recipient_id": "C00744946",
+      "recipient_type": "pac",
+      "recipient_party": "Democratic",
+      "amount": 250,
+      "date": "2020-10-01"
+    },
+    {
+      "id": "fec-003",
+      "donor_name": "Smith, John R",
+      "first_name": "John",
+      "last_name": "Smith",
+      "city": "Austin",
+      "state": "TX",
+      "zip": "78701",
+      "employer": "Dell Technologies",
+      "occupation": "Software Engineer",
+      "recipient_name": "ActBlue",
+      "recipient_id": "C00401224",
+      "recipient_type": "pac",
+      "recipient_party": "Democratic",
+      "amount": 100,
+      "date": "2024-06-15"
+    }
+  ],
+
+  "mock_people_search_results": [
+    {
+      "source": "pipl",
+      "query": { "first_name": "Maria", "last_name": "Garcia", "city": "Houston", "age": 42 },
+      "results": [
+        {
+          "source_record_id": "pipl-maria-garcia-1",
+          "full_name": "Maria Lucia Garcia",
+          "first_name": "Maria",
+          "last_name": "Garcia",
+          "age": 42,
+          "current_address": {
+            "full_address": "1234 Main St, Houston, TX 77001",
+            "city": "Houston",
+            "state": "TX",
+            "zip": "77001"
+          },
+          "phones": ["+1-713-555-0123"],
+          "emails": ["mgarcia@email.com"],
+          "social_profiles": [
+            {
+              "platform": "linkedin",
+              "url": "https://linkedin.com/in/mariagarcia-teacher",
+              "username": "mariagarcia-teacher"
+            },
+            {
+              "platform": "facebook",
+              "url": "https://facebook.com/maria.garcia.77001"
+            }
+          ],
+          "employment": [
+            {
+              "employer": "Houston Independent School District",
+              "title": "Elementary School Teacher",
+              "current": true
+            }
+          ],
+          "photo_url": "https://example.com/photos/maria-garcia-1.jpg"
+        },
+        {
+          "source_record_id": "pipl-maria-garcia-2",
+          "full_name": "Maria Garcia Rodriguez",
+          "first_name": "Maria",
+          "last_name": "Garcia Rodriguez",
+          "age": 44,
+          "current_address": {
+            "full_address": "4500 Richmond Ave, Houston, TX 77027",
+            "city": "Houston",
+            "state": "TX",
+            "zip": "77027"
+          },
+          "phones": ["+1-713-555-0456"],
+          "emails": ["mariagr@gmail.com"],
+          "social_profiles": [
+            {
+              "platform": "linkedin",
+              "url": "https://linkedin.com/in/maria-garcia-rodriguez"
+            }
+          ],
+          "employment": [
+            {
+              "employer": "Self-employed",
+              "title": "Consultant",
+              "current": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "mock_ocr_results": {
+    "jury_list_table": {
+      "document_type": "jury_list",
+      "raw_text": "JURY PANEL - CAUSE NO. 2024-12345\n\n#  NAME                AGE  CITY        OCCUPATION\n1  Garcia, Maria L     42   Houston     Teacher\n2  Smith, John         35   Austin      Engineer\n3  Johnson, Sarah      58   Houston     Retired\n4  Lee, David Jr       29   Katy        Sales",
+      "tables": [
+        {
+          "rows": [
+            ["#", "NAME", "AGE", "CITY", "OCCUPATION"],
+            ["1", "Garcia, Maria L", "42", "Houston", "Teacher"],
+            ["2", "Smith, John", "35", "Austin", "Engineer"],
+            ["3", "Johnson, Sarah", "58", "Houston", "Retired"],
+            ["4", "Lee, David Jr", "29", "Katy", "Sales"]
+          ]
+        }
+      ],
+      "confidence": 0.94
+    },
+    "handwritten_notes": {
+      "document_type": "notes",
+      "raw_text": "Maria Garcia - 42 - teacher - seems friendly\nJohn Smith - 35 - engineer - asked about tech industry\nSarah J - 58 - retired - knows plaintiff?",
+      "confidence": 0.72
+    }
+  },
+
+  "mock_candidates": [
+    {
+      "id": "candidate-001",
+      "juror_id": "juror-001",
+      "full_name": "Maria Lucia Garcia",
+      "first_name": "Maria",
+      "last_name": "Garcia",
+      "age": 42,
+      "city": "Houston",
+      "state": "TX",
+      "occupation": "Teacher",
+      "employer": "Houston ISD",
+      "confidence_score": 87,
+      "score_factors": [
+        { "factor": "name", "score": 35, "max_score": 40, "detail": "Last name exact; First name exact" },
+        { "factor": "age", "score": 20, "max_score": 20, "detail": "Exact age match" },
+        { "factor": "location", "score": 18, "max_score": 20, "detail": "Same city" },
+        { "factor": "occupation", "score": 8, "max_score": 10, "detail": "Occupation matches" },
+        { "factor": "corroboration", "score": 6, "max_score": 10, "detail": "Found in 2 source(s)" }
+      ],
+      "sources": ["voter_record", "fec", "pipl"],
+      "is_confirmed": false,
+      "photo_url": "https://example.com/photos/maria-garcia-1.jpg",
+      "social_profiles": [
+        { "platform": "linkedin", "url": "https://linkedin.com/in/mariagarcia-teacher" }
+      ],
+      "voter_registration": {
+        "party": "Democratic",
+        "registration_date": "2008-09-15",
+        "status": "active"
+      },
+      "donations": [
+        { "recipient": "Beto for Texas", "amount": 250, "date": "2022-09-15", "recipient_party": "Democratic" },
+        { "recipient": "Biden Victory Fund", "amount": 250, "date": "2020-10-01", "recipient_party": "Democratic" }
+      ]
+    },
+    {
+      "id": "candidate-002",
+      "juror_id": "juror-001",
+      "full_name": "Maria Garcia Rodriguez",
+      "first_name": "Maria",
+      "last_name": "Garcia Rodriguez",
+      "age": 44,
+      "city": "Houston",
+      "state": "TX",
+      "occupation": "Consultant",
+      "confidence_score": 58,
+      "score_factors": [
+        { "factor": "name", "score": 25, "max_score": 40, "detail": "Last name partial; First name exact" },
+        { "factor": "age", "score": 15, "max_score": 20, "detail": "Age within 2 years" },
+        { "factor": "location", "score": 18, "max_score": 20, "detail": "Same city" },
+        { "factor": "occupation", "score": 0, "max_score": 10, "detail": "Occupation differs" },
+        { "factor": "corroboration", "score": 0, "max_score": 10, "detail": "Found in 1 source(s)" }
+      ],
+      "sources": ["pipl"],
+      "is_confirmed": false
+    }
+  ],
+
+  "test_name_parsing": [
+    { "input": "Garcia, Maria L", "expected": { "first": "Maria", "last": "Garcia", "middle": "L" } },
+    { "input": "JOHN SMITH JR", "expected": { "first": "John", "last": "Smith", "suffix": "Jr" } },
+    { "input": "María Elena García-Rodríguez", "expected": { "first": "María", "middle": "Elena", "last": "García-Rodríguez" } },
+    { "input": "O'Brien, Patrick", "expected": { "first": "Patrick", "last": "O'Brien" } },
+    { "input": "Smith III, Robert James", "expected": { "first": "Robert", "middle": "James", "last": "Smith", "suffix": "III" } },
+    { "input": "Madonna", "expected": { "last": "Madonna", "confidence": "low" } }
+  ]
+}
