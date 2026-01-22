@@ -58,6 +58,10 @@ export function useCreateVersion(promptId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['versions', promptId] });
     },
+    onError: () => {
+      // Refetch versions on error in case version already exists
+      queryClient.invalidateQueries({ queryKey: ['versions', promptId] });
+    },
   });
 }
 

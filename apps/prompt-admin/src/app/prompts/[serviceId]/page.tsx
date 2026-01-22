@@ -34,6 +34,7 @@ export default function PromptDetailPage({
   const [systemPrompt, setSystemPrompt] = useState('');
   const [versionNotes, setVersionNotes] = useState('');
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const currentVersion = versions?.find((v) => v.id === prompt?.currentVersionId);
 
@@ -68,6 +69,7 @@ export default function PromptDetailPage({
     const newVersion = `v${maxVersion.major}.${maxVersion.minor}.${maxVersion.patch + 1}`;
 
     try {
+      setSaveError(null);
       await createVersion.mutateAsync({
         version: newVersion,
         systemPrompt: systemPrompt || undefined,
@@ -83,6 +85,7 @@ export default function PromptDetailPage({
       setVersionNotes('');
     } catch (error) {
       console.error('Failed to save version:', error);
+      setSaveError(error instanceof Error ? error.message : 'Failed to save version');
     }
   };
 
@@ -195,6 +198,24 @@ export default function PromptDetailPage({
         <div className="grid grid-cols-3 gap-6">
           {/* Main Editor */}
           <div className="col-span-2 space-y-6">
+            {saveError && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-red-800 font-semibold">Failed to save version</h3>
+                    <p className="text-red-600 text-sm mt-1">{saveError}</p>
+                    <button
+                      onClick={() => setSaveError(null)}
+                      className="text-sm text-red-700 underline mt-2"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {isEditing && (
               <div className="bg-white rounded-lg p-6 border">
                 <label className="block text-sm font-medium text-gray-700 mb-2">

@@ -15,7 +15,7 @@ import path from 'path';
 const SCHEMA_PATH = path.join(__dirname, '../../../../../../packages/database/prisma/schema.prisma');
 
 console.log('=========================================');
-console.log('API Gateway Startup');
+console.log('API Gateway Startup v2 - Multiple Failed Migrations Fix');
 console.log('=========================================');
 console.log('');
 console.log('DEBUG: __dirname =', __dirname);
