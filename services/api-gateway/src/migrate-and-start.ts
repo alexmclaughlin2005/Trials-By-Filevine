@@ -17,6 +17,9 @@ console.log('=========================================');
 console.log('API Gateway Startup');
 console.log('=========================================');
 console.log('');
+console.log('DEBUG: __dirname =', __dirname);
+console.log('DEBUG: process.cwd() =', process.cwd());
+console.log('');
 
 async function runCommand(command: string, args: string[]): Promise<void> {
   return new Promise((resolve, reject) => {
