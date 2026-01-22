@@ -276,7 +276,7 @@ export default function SettingsPage() {
               </p>
               <Button
                 onClick={() => setShowFilevineModal(true)}
-                className="bg-filevine-primary-600 hover:bg-filevine-primary-700"
+                className="bg-filevine-primary-600 hover:bg-filevine-primary-700 text-white"
               >
                 <Link2 className="mr-2 h-4 w-4" />
                 Connect to Filevine
