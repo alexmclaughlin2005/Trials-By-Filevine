@@ -62,6 +62,23 @@ export class PromptService {
   }
 
   /**
+   * Get prompt by internal UUID
+   */
+  async getPromptById(id: string) {
+    const prompt = await this.prisma.prompt.findUnique({
+      where: { id },
+      include: {
+        versions: {
+          where: { isDraft: false },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    return prompt;
+  }
+
+  /**
    * Get specific version of a prompt
    */
   async getPromptVersion(serviceId: string, version: string = 'latest') {

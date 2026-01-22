@@ -48,9 +48,22 @@ async function runCommand(command: string, args: string[]): Promise<void> {
 
 async function main() {
   try {
-    // Step 1: Run migrations
-    console.log('Step 1: Running database migrations...');
+    // Step 1: Resolve any failed migrations first
+    console.log('Step 1a: Checking for failed migrations...');
     console.log(`Schema path: ${SCHEMA_PATH}`);
+    console.log('');
+
+    try {
+      await runCommand('npx', ['prisma', 'migrate', 'resolve', '--rolled-back', '20260121164817_init', `--schema=${SCHEMA_PATH}`]);
+      console.log('✅ Resolved failed migration');
+    } catch (e) {
+      console.log('No failed migrations to resolve (or already resolved)');
+    }
+
+    console.log('');
+
+    // Step 1b: Run migrations
+    console.log('Step 1b: Running database migrations...');
     console.log('');
 
     await runCommand('npx', ['prisma', 'migrate', 'deploy', `--schema=${SCHEMA_PATH}`]);

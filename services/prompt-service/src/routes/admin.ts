@@ -105,7 +105,7 @@ export async function adminRoutes(
     const { id } = request.params as { id: string };
 
     try {
-      const prompt = await promptService.getPrompt(id);
+      const prompt = await promptService.getPromptById(id);
 
       if (!prompt) {
         return reply.status(404).send({
