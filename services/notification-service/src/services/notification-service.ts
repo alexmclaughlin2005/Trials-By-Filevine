@@ -1,6 +1,6 @@
 import Redis from 'ioredis';
 import { prisma } from '@juries/database';
-import type { Notification as PrismaNotification } from '@prisma/client';
+import type { Notification as PrismaNotification } from '@juries/database';
 import {
   Notification,
   CreateNotificationRequest,

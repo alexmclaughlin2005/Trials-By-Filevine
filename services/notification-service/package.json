@@ -5,6 +5,7 @@
   "main": "dist/services/notification-service/src/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
+    "prebuild": "cd ../../packages/database && npx prisma generate && npm run build",
     "build": "tsc",
     "start": "node dist/services/notification-service/src/index.js",
     "lint": "eslint src --ext .ts",
