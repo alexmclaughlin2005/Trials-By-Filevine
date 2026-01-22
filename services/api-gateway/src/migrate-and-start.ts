@@ -15,7 +15,7 @@ import path from 'path';
 const SCHEMA_PATH = path.join(__dirname, '../../../../../../packages/database/prisma/schema.prisma');
 
 console.log('=========================================');
-console.log('API Gateway Startup v2 - Multiple Failed Migrations Fix');
+console.log('API Gateway Startup v3 - Add batch_import_model Migration');
 console.log('=========================================');
 console.log('');
 console.log('DEBUG: __dirname =', __dirname);
@@ -62,6 +62,7 @@ async function main() {
       '20260121180910_add_password_hash_to_users',
       '20260121185647_add_juror_research_models',
       '20260121190520_add_deep_research_and_prompt_management',
+      '20260121202730_add_batch_import_model',
       '20260122011423_add_synthesized_profiles',
       '20260122030445_add_filevine_oauth_sessions',
       '20260122135711_add_document_capture',
