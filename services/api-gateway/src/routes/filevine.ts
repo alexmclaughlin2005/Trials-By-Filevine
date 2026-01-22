@@ -92,9 +92,11 @@ export async function filevineRoutes(server: FastifyInstance) {
     try {
       // @ts-ignore
       const user = request.user;
+
+      // Allow unauthenticated access - return disconnected state
       if (!user) {
-        reply.code(401);
-        return { error: 'Unauthorized' };
+        console.log('[Filevine] Connection status check without authentication - returning disconnected');
+        return { connected: false };
       }
 
       const filevineService = createFilevineService(user.organizationId);
