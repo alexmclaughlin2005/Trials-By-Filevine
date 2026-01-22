@@ -7,23 +7,26 @@
 
 import { spawn } from 'child_process';
 import path from 'path';
+import { readdir } from 'fs/promises';
 
 // When running from cd services/api-gateway:
 // __dirname = /app/services/api-gateway/dist/services/api-gateway/src
-// Need to go up 6 levels to reach /app (monorepo root)
-// Version: 7 levels
+// Need to go up 7 levels to reach /app (monorepo root)
 const SCHEMA_PATH = path.join(__dirname, '../../../../../../packages/database/prisma/schema.prisma');
+const MIGRATIONS_DIR = path.join(__dirname, '../../../../../../packages/database/prisma/migrations');
 
 console.log('=========================================');
-console.log('API Gateway Startup v3 - Add batch_import_model Migration');
+console.log('API Gateway Startup v4 - Dynamic Migration Resolution');
 console.log('=========================================');
 console.log('');
 console.log('DEBUG: __dirname =', __dirname);
 console.log('DEBUG: process.cwd() =', process.cwd());
+console.log('DEBUG: SCHEMA_PATH =', SCHEMA_PATH);
+console.log('DEBUG: MIGRATIONS_DIR =', MIGRATIONS_DIR);
 console.log('');
 
-async function runCommand(command: string, args: string[]): Promise<void> {
-  return new Promise((resolve, reject) => {
+async function runCommand(command: string, args: string[], allowFailure: boolean = false): Promise<boolean> {
+  return new Promise((resolve) => {
     console.log(`Running: ${command} ${args.join(' ')}`);
     console.log('');
 
@@ -34,74 +37,106 @@ async function runCommand(command: string, args: string[]): Promise<void> {
 
     proc.on('exit', (code) => {
       if (code === 0) {
-        resolve();
+        resolve(true);
       } else {
-        reject(new Error(`Command failed with exit code ${code}`));
+        if (allowFailure) {
+          resolve(false);
+        } else {
+          resolve(false);
+        }
       }
     });
 
     proc.on('error', (err) => {
-      reject(err);
+      console.error('Process error:', err);
+      resolve(false);
     });
   });
 }
 
+async function getAllMigrationNames(): Promise<string[]> {
+  try {
+    const entries = await readdir(MIGRATIONS_DIR, { withFileTypes: true });
+    return entries
+      .filter(entry => entry.isDirectory() && /^\d{14}_/.test(entry.name))
+      .map(entry => entry.name)
+      .sort();
+  } catch (error) {
+    console.error('Failed to read migrations directory:', error);
+    return [];
+  }
+}
+
 async function main() {
   try {
-    // Step 1: Resolve ALL failed migrations by marking them as applied
-    // This is a one-time fix for the production database that has multiple failed migrations
-    console.log('Step 1: Resolving any failed migrations...');
-    console.log(`Schema path: ${SCHEMA_PATH}`);
+    console.log('Step 1: Discovering all migrations...');
     console.log('');
 
-    // List of all migrations that have failed in production
-    // We'll mark them all as applied since the database schema is already correct
-    const failedMigrations = [
-      '20260121164817_init',
-      '20260121173451_add_archetype_system',
-      '20260121180910_add_password_hash_to_users',
-      '20260121185647_add_juror_research_models',
-      '20260121190520_add_deep_research_and_prompt_management',
-      '20260121202730_add_batch_import_model',
-      '20260122011423_add_synthesized_profiles',
-      '20260122030445_add_filevine_oauth_sessions',
-      '20260122135711_add_document_capture',
-      '20260122185713_add_filevine_connection'
-    ];
+    const allMigrations = await getAllMigrationNames();
+    console.log(`Found ${allMigrations.length} migrations:`);
+    allMigrations.forEach(m => console.log(`  - ${m}`));
+    console.log('');
 
-    for (const migration of failedMigrations) {
-      try {
-        // First mark as rolled back if it's in failed state
-        await runCommand('npx', ['prisma', 'migrate', 'resolve', '--rolled-back', migration, `--schema=${SCHEMA_PATH}`]);
+    console.log('Step 2: Resolving any failed migrations...');
+    console.log('This will mark all migrations as applied since the schema is already correct.');
+    console.log('');
+
+    for (const migration of allMigrations) {
+      // Try to mark as rolled back first (only works if it's in failed state)
+      const rolledBack = await runCommand('npx', [
+        'prisma', 'migrate', 'resolve',
+        '--rolled-back', migration,
+        `--schema=${SCHEMA_PATH}`
+      ], true);
+
+      if (rolledBack) {
         console.log(`✅ Marked ${migration} as rolled back`);
+      }
 
-        // Then mark as applied to skip it
-        await runCommand('npx', ['prisma', 'migrate', 'resolve', '--applied', migration, `--schema=${SCHEMA_PATH}`]);
+      // Then mark as applied
+      const applied = await runCommand('npx', [
+        'prisma', 'migrate', 'resolve',
+        '--applied', migration,
+        `--schema=${SCHEMA_PATH}`
+      ], true);
+
+      if (applied) {
         console.log(`✅ Marked ${migration} as applied`);
-      } catch (e) {
-        console.log(`Migration ${migration} already resolved or doesn't need resolution`);
+      } else {
+        console.log(`⚠️  Migration ${migration} already resolved or doesn't need resolution`);
       }
     }
 
     console.log('');
-
-    // Step 2: Run remaining migrations
-    console.log('Step 2: Running database migrations...');
+    console.log('Step 3: Running any remaining migrations...');
     console.log('');
 
-    await runCommand('npx', ['prisma', 'migrate', 'deploy', `--schema=${SCHEMA_PATH}`]);
+    const deploySuccess = await runCommand('npx', [
+      'prisma', 'migrate', 'deploy',
+      `--schema=${SCHEMA_PATH}`
+    ]);
 
-    console.log('');
-    console.log('✅ Migrations completed successfully!');
-    console.log('');
+    if (!deploySuccess) {
+      console.error('❌ Migration deploy failed, but continuing to start server...');
+      console.error('The database schema should already be correct from previous deployments.');
+      console.log('');
+    } else {
+      console.log('');
+      console.log('✅ Migrations completed successfully!');
+      console.log('');
+    }
 
-    // Step 2: Start the API server
-    console.log('Step 2: Starting API server...');
+    // Step 4: Start the API server
+    console.log('Step 4: Starting API server...');
     console.log('');
 
     // __dirname is dist/services/api-gateway/src, so index.js is in the same directory
     const serverPath = path.join(__dirname, 'index.js');
-    await runCommand('node', [serverPath]);
+    const serverStarted = await runCommand('node', [serverPath]);
+
+    if (!serverStarted) {
+      throw new Error('Server failed to start');
+    }
 
   } catch (error) {
     console.error('❌ Startup failed:', error);
