@@ -39,7 +39,7 @@ export interface FilevineConnectionSetupResponse {
 export interface FilevineTestResponse {
   success: boolean;
   message?: string;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
@@ -55,7 +55,7 @@ export interface FilevineProject {
   phaseId?: number;
   phaseName?: string;
   createDate?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface FilevineProjectsResponse {

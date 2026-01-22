@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { X, CheckCircle2, AlertCircle, Loader2, ExternalLink } from 'lucide-react';
+import { X, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { setupFilevineConnection, type FilevineConnectionSetup } from '@/lib/filevine-client';
 
 interface FilevineConnectionModalProps {
@@ -91,8 +91,9 @@ export function FilevineConnectionModal({
         setError(result.error || 'Failed to setup connection');
         setStep('credentials');
       }
-    } catch (err: any) {
-      setError(err.message || 'An error occurred while setting up the connection');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'An error occurred while setting up the connection');
       setStep('credentials');
     }
   };
@@ -133,7 +134,7 @@ export function FilevineConnectionModal({
                   Before You Begin
                 </h3>
                 <p className="text-filevine-gray-700 mb-4">
-                  You'll need to obtain API credentials from your Filevine account. Follow these steps:
+                  You&apos;ll need to obtain API credentials from your Filevine account. Follow these steps:
                 </p>
               </div>
 
@@ -177,7 +178,7 @@ export function FilevineConnectionModal({
                       Copy your credentials
                     </p>
                     <p className="mt-1 text-sm text-filevine-gray-600">
-                      You'll need: <strong>Client ID</strong>, <strong>Client Secret</strong>, and <strong>Personal Access Token</strong>
+                      You&apos;ll need: <strong>Client ID</strong>, <strong>Client Secret</strong>, and <strong>Personal Access Token</strong>
                     </p>
                   </div>
                 </div>
@@ -336,7 +337,7 @@ export function FilevineConnectionModal({
                 Testing Connection...
               </h3>
               <p className="text-sm text-filevine-gray-600 text-center max-w-md">
-                We're verifying your credentials and testing the connection to Filevine.
+                We&apos;re verifying your credentials and testing the connection to Filevine.
                 This may take a few seconds.
               </p>
             </div>
