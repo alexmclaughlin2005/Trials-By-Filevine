@@ -164,6 +164,80 @@ export async function casesRoutes(server: FastifyInstance) {
   // Note: Facts, arguments, and witnesses routes are now in dedicated route files
   // (case-facts.ts, case-arguments.ts, case-witnesses.ts)
 
+  // ============================================
+  // JURY PANEL ROUTES
+  // ============================================
+
+  // Get all jury panels for a case
+  server.get('/:id/panels', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+
+      // Verify case belongs to organization
+      const caseData = await server.prisma.case.findFirst({
+        where: { id, organizationId },
+      });
+
+      if (!caseData) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      const panels = await server.prisma.juryPanel.findMany({
+        where: { caseId: id },
+        include: {
+          jurors: {
+            include: {
+              personaMappings: {
+                include: {
+                  persona: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: { panelDate: 'desc' },
+      });
+
+      return { panels };
+    },
+  });
+
+  // Create a new jury panel
+  server.post('/:id/panels', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const { panelDate, source, version } = request.body as any;
+
+      // Verify case belongs to organization
+      const caseData = await server.prisma.case.findFirst({
+        where: { id, organizationId },
+      });
+
+      if (!caseData) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      const panel = await server.prisma.juryPanel.create({
+        data: {
+          caseId: id,
+          panelDate: panelDate ? new Date(panelDate) : new Date(),
+          source: source || 'manual',
+          version: version || 1,
+          totalJurors: 0,
+        },
+      });
+
+      reply.code(201);
+      return { panel };
+    },
+  });
+
   // Generate voir dire questions for a case
   server.post('/:id/generate-questions', {
     onRequest: [server.authenticate],

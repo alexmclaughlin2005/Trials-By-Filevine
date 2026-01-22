@@ -8,6 +8,7 @@ import { FocusGroupSimulator } from '@/components/focus-group-simulator';
 import { FactsTab } from '@/components/case/facts-tab';
 import { ArgumentsTab } from '@/components/case/arguments-tab';
 import { WitnessesTab } from '@/components/case/witnesses-tab';
+import { JurorsTab } from '@/components/case/jurors-tab';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useCaseCollaboration } from '@/hooks/use-case-collaboration';
 import { ConnectionStatus } from '@/components/collaboration/connection-status';
@@ -239,6 +240,9 @@ export default function CaseDetailPageEnhanced() {
               <TabsTrigger value="witnesses">
                 Witnesses ({data.witnesses?.length || 0})
               </TabsTrigger>
+              <TabsTrigger value="jurors">
+                Jurors ({data.juryPanels?.[0]?.totalJurors || 0})
+              </TabsTrigger>
               <TabsTrigger value="questions">Voir Dire Questions</TabsTrigger>
               <TabsTrigger value="focus-groups">Focus Groups</TabsTrigger>
             </TabsList>
@@ -359,6 +363,10 @@ export default function CaseDetailPageEnhanced() {
 
             <TabsContent value="witnesses">
               <WitnessesTab caseId={caseId} witnesses={data.witnesses || []} />
+            </TabsContent>
+
+            <TabsContent value="jurors">
+              <JurorsTab caseId={caseId} />
             </TabsContent>
 
             <TabsContent value="questions">
