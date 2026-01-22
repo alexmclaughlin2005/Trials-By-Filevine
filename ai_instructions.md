@@ -25,7 +25,9 @@ Juries by Filevine is an AI-powered jury intelligence platform that helps legal 
 Trials by Filevine/
 ├── ai_instructions.md              # THIS FILE - Project structure & directory map
 ├── CLAUDE.md                       # AI assistant instructions for documentation
-├── RAILWAY_DEPLOYMENT.md           # Railway deployment guide & best practices
+├── RAILWAY_DEPLOYMENT.md           # Railway deployment guide & best practices (500+ lines)
+├── RAILWAY_QUICK_START.md          # Quick reference for Railway deployment
+├── DEPLOYMENT_SUMMARY.md           # Lessons learned and deployment strategy
 ├── Trials by Filevine_AI_PRD.md            # Product requirements document
 ├── Trials by Filevine_AI_Architecture.md   # System architecture document
 ├── Trials by Filevine_AI_Technical_Design.md # Technical specifications
