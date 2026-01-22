@@ -81,13 +81,14 @@ model Case {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization       Organization        @relation(fields: [organizationId], references: [id])
+  organization       Organization         @relation(fields: [organizationId], references: [id])
   facts              CaseFact[]
   arguments          CaseArgument[]
   witnesses          CaseWitness[]
   juryPanels         JuryPanel[]
   trialSessions      TrialSession[]
   focusGroupSessions FocusGroupSession[]
+  filevineProject    CaseFilevineProject?
 
   @@index([organizationId])
   @@index([status])
@@ -916,6 +917,83 @@ model FilevineConnection {
 
   @@index([organizationId, isActive])
   @@map("filevine_connections")
+}
+
+model CaseFilevineProject {
+  id                 String   @id @default(uuid())
+  caseId             String   @unique @map("case_id") // One project per case
+  organizationId     String   @map("organization_id")
+
+  // Filevine Project Details
+  filevineProjectId  String   @map("filevine_project_id") // Project ID from Filevine
+  projectName        String   @map("project_name")
+  projectTypeName    String?  @map("project_type_name")
+  clientName         String?  @map("client_name")
+
+  // Sync Metadata
+  linkedBy           String   @map("linked_by") // User ID who linked
+  linkedAt           DateTime @default(now()) @map("linked_at")
+  lastSyncedAt       DateTime? @map("last_synced_at")
+  syncStatus         String   @default("active") // active | error
+  syncErrorMessage   String?  @map("sync_error_message") @db.Text
+
+  // Settings
+  autoSyncDocuments  Boolean  @default(false) @map("auto_sync_documents")
+  syncFolderIds      Json?    @map("sync_folder_ids") // Array of folder IDs to sync
+
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case               Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  documents          ImportedDocument[]
+
+  @@index([caseId])
+  @@index([organizationId])
+  @@index([filevineProjectId])
+  @@map("case_filevine_projects")
+}
+
+model ImportedDocument {
+  id                    String   @id @default(uuid())
+  caseFilevineProjectId String   @map("case_filevine_project_id")
+
+  // Filevine Document Details
+  filevineDocumentId    String   @map("filevine_document_id")
+  fivevineFolderId      String   @map("filevine_folder_id")
+  filename              String
+  folderName            String?  @map("folder_name")
+  currentVersion        String?  @map("current_version")
+  uploadDate            DateTime? @map("upload_date")
+  uploaderFullname      String?  @map("uploader_fullname")
+  size                  BigInt?  // File size in bytes
+
+  // Local Storage
+  localFileUrl          String?  @map("local_file_url") @db.Text // URL to stored file (S3/Vercel Blob)
+  thumbnailUrl          String?  @map("thumbnail_url") @db.Text
+
+  // Import Metadata
+  importedBy            String   @map("imported_by") // User ID
+  importedAt            DateTime @default(now()) @map("imported_at")
+  status                String   @default("pending") // pending | downloading | completed | failed
+  downloadAttempts      Int      @default(0) @map("download_attempts")
+  errorMessage          String?  @map("error_message") @db.Text
+
+  // Categorization
+  documentCategory      String?  @map("document_category") // evidence | pleading | discovery | expert | other
+  tags                  Json?    @default("[]") // Array of tags
+  notes                 String?  @db.Text
+
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  caseFilevineProject   CaseFilevineProject @relation(fields: [caseFilevineProjectId], references: [id], onDelete: Cascade)
+
+  @@index([caseFilevineProjectId])
+  @@index([filevineDocumentId])
+  @@index([status])
+  @@map("imported_documents")
 }
 
 // ============================================

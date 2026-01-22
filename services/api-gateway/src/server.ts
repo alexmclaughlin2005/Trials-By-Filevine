@@ -21,6 +21,7 @@ import { archetypeRoutes } from './routes/archetypes';
 import { capturesRoutes } from './routes/captures';
 import { synthesisRoutes } from './routes/synthesis';
 import { filevineRoutes } from './routes/filevine';
+import { caseFilevineRoutes } from './routes/case-filevine';
 // import { jurorResearchRoutes } from './routes/juror-research'; // Disabled - conflicts with jurorsRoutes
 
 export async function buildServer() {
@@ -92,6 +93,7 @@ export async function buildServer() {
   await server.register(capturesRoutes, { prefix: '/api' });
   await server.register(synthesisRoutes, { prefix: '/api' });
   await server.register(filevineRoutes, { prefix: '/api/filevine' });
+  await server.register(caseFilevineRoutes, { prefix: '/api/cases' });
   // await server.register(jurorResearchRoutes); // Disabled - conflicts with jurorsRoutes
 
   // Error handler

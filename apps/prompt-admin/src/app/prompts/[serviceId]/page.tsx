@@ -35,7 +35,7 @@ export default function PromptDetailPage({
   const [versionNotes, setVersionNotes] = useState('');
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<{ message: string; deployed: boolean } | null>(null);
 
   const currentVersion = versions?.find((v) => v.id === prompt?.currentVersionId);
 
@@ -47,7 +47,7 @@ export default function PromptDetailPage({
     setIsEditing(true);
   };
 
-  const handleSave = async () => {
+  const handleSave = async (deploy: boolean = false) => {
     if (!prompt || !currentVersion || !versions) return;
 
     // Find the highest version number from all versions
@@ -71,9 +71,9 @@ export default function PromptDetailPage({
 
     try {
       setSaveError(null);
-      setSaveSuccess(false);
+      setSaveSuccess(null);
 
-      await createVersion.mutateAsync({
+      const newVersionData = await createVersion.mutateAsync({
         version: newVersion,
         systemPrompt: systemPrompt || undefined,
         userPromptTemplate: editedPrompt,
@@ -84,12 +84,25 @@ export default function PromptDetailPage({
         isDraft: false,
       });
 
+      // If deploy flag is true, deploy the new version immediately
+      if (deploy && newVersionData.id) {
+        await deployVersion.mutateAsync({
+          serviceId: prompt.serviceId,
+          versionId: newVersionData.id,
+        });
+      }
+
       setIsEditing(false);
       setVersionNotes('');
-      setSaveSuccess(true);
+      setSaveSuccess({
+        message: deploy
+          ? `Version ${newVersion} saved and deployed successfully!`
+          : `Version ${newVersion} saved as draft. Click "Deploy" to make it live.`,
+        deployed: deploy,
+      });
 
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => setSaveSuccess(false), 3000);
+      // Auto-hide success message after 5 seconds
+      setTimeout(() => setSaveSuccess(null), 5000);
     } catch (error) {
       console.error('Failed to save version:', error);
       setSaveError(error instanceof Error ? error.message : 'Failed to save version');
@@ -182,16 +195,28 @@ export default function PromptDetailPage({
                     Cancel
                   </button>
                   <button
-                    onClick={handleSave}
-                    disabled={createVersion.isPending}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50"
+                    onClick={() => handleSave(false)}
+                    disabled={createVersion.isPending || deployVersion.isPending}
+                    className="px-4 py-2 text-gray-700 bg-white border rounded-lg hover:bg-gray-50 flex items-center gap-2 disabled:opacity-50"
                   >
                     {createVersion.isPending ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Save className="w-4 h-4" />
                     )}
-                    Save New Version
+                    Save Draft
+                  </button>
+                  <button
+                    onClick={() => handleSave(true)}
+                    disabled={createVersion.isPending || deployVersion.isPending}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2 disabled:opacity-50"
+                  >
+                    {createVersion.isPending || deployVersion.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Rocket className="w-4 h-4" />
+                    )}
+                    Save & Deploy
                   </button>
                 </>
               )}
@@ -206,12 +231,28 @@ export default function PromptDetailPage({
           {/* Main Editor */}
           <div className="col-span-2 space-y-6">
             {saveSuccess && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div className={`border rounded-lg p-4 ${
+                saveSuccess.deployed
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-blue-50 border-blue-200'
+              }`}>
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  {saveSuccess.deployed ? (
+                    <Rocket className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  ) : (
+                    <CheckCircle2 className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                  )}
                   <div>
-                    <h3 className="text-green-800 font-semibold">Version saved successfully!</h3>
-                    <p className="text-green-600 text-sm mt-1">Your changes have been saved as a new version.</p>
+                    <h3 className={`font-semibold ${
+                      saveSuccess.deployed ? 'text-green-800' : 'text-blue-800'
+                    }`}>
+                      {saveSuccess.deployed ? 'Deployed!' : 'Draft Saved'}
+                    </h3>
+                    <p className={`text-sm mt-1 ${
+                      saveSuccess.deployed ? 'text-green-600' : 'text-blue-600'
+                    }`}>
+                      {saveSuccess.message}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -298,12 +339,17 @@ export default function PromptDetailPage({
             )}
           </div>
 
-          {/* Sidebar - Version History */}
+          {/* Sidebar - Version & Deployment Management */}
           <div className="space-y-6">
             <div className="bg-white rounded-lg p-6 border">
-              <div className="flex items-center gap-2 mb-4">
-                <History className="w-5 h-5 text-gray-600" />
-                <h2 className="text-lg font-semibold text-gray-900">Version History</h2>
+              <div className="mb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <History className="w-5 h-5 text-gray-600" />
+                  <h2 className="text-lg font-semibold text-gray-900">Version & Deployment</h2>
+                </div>
+                <p className="text-xs text-gray-500">
+                  Manage versions and deploy changes. Only the deployed version (✓) is live.
+                </p>
               </div>
               {versionsLoading ? (
                 <div className="flex justify-center py-4">
@@ -338,25 +384,31 @@ export default function PromptDetailPage({
                           </p>
                         </div>
                         <div className="flex flex-col gap-1">
-                          {version.id !== prompt.currentVersionId && (
+                          {version.id !== prompt.currentVersionId ? (
                             <>
                               <button
                                 onClick={() => handleDeploy(version.id)}
                                 disabled={deployVersion.isPending}
-                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                                title="Deploy this version"
+                                className="px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded border border-blue-200 flex items-center gap-1 justify-center"
+                                title="Deploy this version to production"
                               >
-                                <Rocket className="w-4 h-4" />
+                                <Rocket className="w-3 h-3" />
+                                Deploy
                               </button>
                               <button
                                 onClick={() => handleRollback(version.id)}
                                 disabled={rollbackVersion.isPending}
-                                className="p-1 text-orange-600 hover:bg-orange-50 rounded"
-                                title="Rollback to this version"
+                                className="px-2 py-1 text-xs text-orange-600 hover:bg-orange-50 rounded border border-orange-200 flex items-center gap-1 justify-center"
+                                title="Rollback to this version (same as deploy)"
                               >
-                                <RotateCcw className="w-4 h-4" />
+                                <RotateCcw className="w-3 h-3" />
+                                Revert
                               </button>
                             </>
+                          ) : (
+                            <span className="px-2 py-1 text-xs text-green-700 bg-green-100 rounded font-medium text-center">
+                              Deployed
+                            </span>
                           )}
                         </div>
                       </div>

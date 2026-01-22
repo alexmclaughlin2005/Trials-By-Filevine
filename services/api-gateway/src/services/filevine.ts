@@ -499,6 +499,53 @@ export class FilevineService {
 
     return connection;
   }
+
+  /**
+   * Get folders for a project
+   */
+  async getProjectFolders(projectId: string): Promise<any> {
+    return this.request('/Folders/list', {
+      method: 'GET',
+      params: {
+        projectId,
+        limit: 1000,
+        includeArchivedFolders: false,
+      },
+    });
+  }
+
+  /**
+   * Get documents in a folder
+   */
+  async getFolderDocuments(
+    projectId: string,
+    folderId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+    }
+  ): Promise<any> {
+    return this.request('/Documents', {
+      method: 'GET',
+      params: {
+        projectId,
+        folderId,
+        limit: options?.limit || 50,
+        offset: options?.offset || 0,
+      },
+    });
+  }
+
+  /**
+   * Get document download URL
+   * Note: Filevine may return the file directly or a download URL
+   */
+  async getDocumentDownloadUrl(documentId: string): Promise<string> {
+    const response = await this.request(`/Documents/${documentId}/download`, {
+      method: 'GET',
+    });
+    return response.downloadUrl || response;
+  }
 }
 
 /**
