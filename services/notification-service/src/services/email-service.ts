@@ -2,17 +2,23 @@ import { Resend } from 'resend';
 import { EmailNotification } from '../types/notification';
 
 export class EmailService {
-  private resend: Resend;
+  private resend: Resend | null;
   private defaultFrom: string;
   private defaultFromName: string;
+  private enabled: boolean;
 
   constructor() {
     const apiKey = process.env.RESEND_API_KEY;
+
     if (!apiKey) {
-      throw new Error('RESEND_API_KEY environment variable is required');
+      console.warn('RESEND_API_KEY not set - email notifications will be disabled');
+      this.resend = null;
+      this.enabled = false;
+    } else {
+      this.resend = new Resend(apiKey);
+      this.enabled = true;
     }
 
-    this.resend = new Resend(apiKey);
     this.defaultFrom = process.env.DEFAULT_FROM_EMAIL || 'notifications@trialforge.ai';
     this.defaultFromName = process.env.DEFAULT_FROM_NAME || 'TrialForge AI';
   }
@@ -21,6 +27,11 @@ export class EmailService {
    * Send an email
    */
   async sendEmail(email: EmailNotification): Promise<{ id: string }> {
+    if (!this.enabled || !this.resend) {
+      console.warn('Email service is disabled - skipping email send');
+      return { id: 'disabled' };
+    }
+
     try {
       const result = await this.resend.emails.send({
         from: email.from
