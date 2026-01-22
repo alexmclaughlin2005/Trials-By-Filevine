@@ -20,7 +20,7 @@ interface CollaborationContextValue {
   leaveRoom: (resourceType: string, resourceId: string) => void;
   startTyping: (resourceType: string, resourceId: string) => void;
   stopTyping: (resourceType: string, resourceId: string) => void;
-  onCollaborationEvent: (event: string, handler: (data: any) => void) => void;
+  onCollaborationEvent: (event: string, handler: (data: unknown) => void) => void;
 }
 
 const CollaborationContext = createContext<CollaborationContextValue | undefined>(undefined);
@@ -160,7 +160,7 @@ export function CollaborationProvider({
   );
 
   const onCollaborationEvent = useCallback(
-    (event: string, handler: (data: any) => void) => {
+    (event: string, handler: (data: unknown) => void) => {
       if (socket) {
         socket.on(event, handler);
         return () => {

@@ -341,7 +341,7 @@ export function ArchetypeClassifier({
             <div className="space-y-3">
               {Object.entries(result.primary.dimensionScores).map(([dimension, score]) => {
                 if (dimension === 'institutional_trust') {
-                  const trust = score as any;
+                  const trust = score as Record<string, unknown>;
                   return (
                     <div key={dimension}>
                       <div className="mb-2 text-sm font-medium text-filevine-gray-700">

@@ -301,7 +301,7 @@ export function FocusGroupSimulator({ caseId, arguments: caseArguments }: FocusG
                       {exchange.speakerPersona}:
                     </p>
                     <p className="mt-1 text-sm text-filevine-gray-700">
-                      "{exchange.statement}"
+                      &quot;{exchange.statement}&quot;
                     </p>
                     {exchange.influence.length > 0 && (
                       <p className="mt-2 text-xs italic text-filevine-gray-600">

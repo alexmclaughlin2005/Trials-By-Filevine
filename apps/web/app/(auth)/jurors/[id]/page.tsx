@@ -1,15 +1,26 @@
 'use client';
 
-import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
-import { PersonaSuggester } from '@/components/persona-suggester';
 import { ResearchSummarizer } from '@/components/research-summarizer';
 import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
-import { Button } from '@/components/ui/button';
+
+interface ScoreFactors {
+  nameScore: number;
+  nameReason: string;
+  ageScore: number;
+  ageReason: string;
+  locationScore: number;
+  locationReason: string;
+  occupationScore: number;
+  occupationReason: string;
+  corroborationScore: number;
+  corroborationReason: string;
+  totalScore: number;
+}
 
 interface Juror {
   id: string;
@@ -22,7 +33,7 @@ interface Juror {
   city: string | null;
   zipCode: string | null;
   status: string;
-  questionnaireData: Record<string, any> | null;
+  questionnaireData: Record<string, unknown> | null;
   notes: string | null;
   panel: {
     id: string;
@@ -59,7 +70,7 @@ interface Juror {
     sourceType: string;
     isConfirmed: boolean;
     isRejected: boolean;
-    scoreFactors: any;
+    scoreFactors: ScoreFactors;
   }>;
 }
 
@@ -70,7 +81,6 @@ interface JurorResponse {
 export default function JurorDetailPage() {
   const params = useParams();
   const jurorId = params.id as string;
-  const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['juror', jurorId],
@@ -79,20 +89,6 @@ export default function JurorDetailPage() {
       return response.juror;
     },
   });
-
-  const handlePersonaSelected = async (personaId: string, suggestion: any) => {
-    try {
-      await apiClient.post(`/jurors/${jurorId}/persona-mapping`, {
-        personaId,
-        confidence: suggestion.confidence,
-        reasoning: suggestion.reasoning,
-      });
-      setSelectedPersonaId(personaId);
-      alert(`Persona "${suggestion.persona.name}" successfully mapped to juror!`);
-    } catch (error) {
-      alert(`Failed to save persona mapping: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
 
   if (isLoading) {
     return (

@@ -44,7 +44,7 @@ export default function DashboardPage() {
             Welcome back, {user?.name?.split(' ')[0]}
           </h1>
           <p className="mt-1 text-filevine-gray-600">
-            Here's an overview of your trial preparation
+            Here&apos;s an overview of your trial preparation
           </p>
         </div>
         <Link href="/cases/new">

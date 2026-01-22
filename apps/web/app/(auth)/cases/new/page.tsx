@@ -31,10 +31,10 @@ export default function NewCasePage() {
     setError(null);
 
     try {
-      const response = await apiClient.post<{ case: any }>('/cases', formData);
+      const response = await apiClient.post<{ case: { id: string } }>('/cases', formData);
       router.push(`/cases/${response.case.id}`);
-    } catch (err: any) {
-      setError(err.message || 'Failed to create case');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create case');
       setIsSubmitting(false);
     }
   };

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Sparkles, Loader2, ExternalLink, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 interface DeepResearchProps {
@@ -16,7 +16,14 @@ interface DeepResearchProps {
 interface SynthesisProfile {
   id: string;
   status: 'processing' | 'completed' | 'failed';
-  profile?: any;
+  profile?: {
+    summary?: string;
+    voir_dire_recommendations?: {
+      suggested_questions?: Array<{ question: string; rationale: string }>;
+      potential_concerns?: Array<{ concern: string; evidence: string; severity?: string }>;
+      favorable_indicators?: Array<{ indicator: string; evidence: string }>;
+    };
+  };
   data_richness?: string;
   confidence_overall?: string;
   concerns_count?: number;
@@ -43,19 +50,20 @@ export function DeepResearch({
   // Check if synthesis already exists on mount
   useEffect(() => {
     checkExistingProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [candidateId]);
 
   const checkExistingProfile = async () => {
     try {
-      const result = await apiClient.get<any>(`/candidates/${candidateId}/synthesis`);
+      const result = await apiClient.get<{ status: string; profile_id?: string; job_id?: string }>(`/candidates/${candidateId}/synthesis`);
       if (result.status === 'completed' && result.profile_id) {
         const profileData = await apiClient.get<SynthesisProfile>(`/synthesis/${result.profile_id}`);
         setProfile(profileData);
       } else if (result.status === 'processing') {
-        setProfile({ id: result.job_id, status: 'processing' });
+        setProfile({ id: result.job_id || '', status: 'processing' });
         startPolling();
       }
-    } catch (err) {
+    } catch {
       // No existing profile, that's fine
     }
   };
@@ -65,7 +73,7 @@ export function DeepResearch({
       setIsStarting(true);
       setError(null);
 
-      const result = await apiClient.post<any>(`/candidates/${candidateId}/synthesize`, {
+      const result = await apiClient.post<{ job_id: string }>(`/candidates/${candidateId}/synthesize`, {
         case_context: {
           case_type: caseType || 'general civil',
           key_issues: caseIssues.length > 0 ? caseIssues : ['liability', 'damages'],
@@ -99,7 +107,7 @@ export function DeepResearch({
       }
 
       try {
-        const result = await apiClient.get<any>(`/candidates/${candidateId}/synthesis`);
+        const result = await apiClient.get<{ status: string; profile_id?: string; error?: string }>(`/candidates/${candidateId}/synthesis`);
 
         if (result.status === 'completed' && result.profile_id) {
           const profileData = await apiClient.get<SynthesisProfile>(`/synthesis/${result.profile_id}`);
@@ -258,7 +266,7 @@ export function DeepResearch({
                 Suggested Voir Dire Questions
               </h3>
               <div className="space-y-3">
-                {profile.profile.voir_dire_recommendations.suggested_questions.slice(0, 3).map((q: any, i: number) => (
+                {profile.profile.voir_dire_recommendations.suggested_questions.slice(0, 3).map((q, i: number) => (
                   <div key={i} className="bg-filevine-gray-50 rounded-md p-3">
                     <p className="text-sm font-medium text-filevine-gray-900 mb-1">
                       {i + 1}. {q.question}
@@ -275,7 +283,7 @@ export function DeepResearch({
             <div className="border border-orange-200 rounded-lg p-4 bg-orange-50">
               <h3 className="text-sm font-semibold text-orange-900 mb-3">Potential Concerns</h3>
               <div className="space-y-2">
-                {profile.profile.voir_dire_recommendations.potential_concerns.map((c: any, i: number) => (
+                {profile.profile.voir_dire_recommendations.potential_concerns.map((c, i: number) => (
                   <div key={i} className="bg-white rounded-md p-3 border border-orange-200">
                     <div className="flex items-start gap-2">
                       <span className={`text-xs font-semibold px-2 py-1 rounded ${
@@ -301,7 +309,7 @@ export function DeepResearch({
             <div className="border border-green-200 rounded-lg p-4 bg-green-50">
               <h3 className="text-sm font-semibold text-green-900 mb-3">Favorable Indicators</h3>
               <div className="space-y-2">
-                {profile.profile.voir_dire_recommendations.favorable_indicators.map((f: any, i: number) => (
+                {profile.profile.voir_dire_recommendations.favorable_indicators.map((f, i: number) => (
                   <div key={i} className="bg-white rounded-md p-3 border border-green-200">
                     <p className="text-sm font-medium text-filevine-gray-900">{f.indicator}</p>
                     <p className="text-xs text-filevine-gray-600 mt-1">{f.evidence}</p>

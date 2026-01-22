@@ -104,7 +104,7 @@ export function useFocusGroupSession(sessionId: string) {
   return useQuery({
     queryKey: ['focus-group-session', sessionId],
     queryFn: async () => {
-      const data = await apiClient.get<{ session: any }>(`/focus-groups/${sessionId}`);
+      const data = await apiClient.get<{ session: Record<string, unknown> }>(`/focus-groups/${sessionId}`);
       return data.session;
     },
     enabled: !!sessionId,

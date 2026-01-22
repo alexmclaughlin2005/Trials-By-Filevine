@@ -126,9 +126,19 @@ export function QuestionGenerator({ caseId }: QuestionGeneratorProps) {
           {/* Questions List */}
           <div className="space-y-4">
             {Array.isArray(currentQuestions) && currentQuestions.length > 0 ? (
-              currentQuestions
-                .sort((a: any, b: any) => b.priority - a.priority)
-                .map((q: any, index: number) => {
+              (currentQuestions as Array<{
+                question: string;
+                purpose: string;
+                priority: number;
+                targetPersonas?: string[];
+                listenFor: string[];
+                redFlags: string[];
+                idealAnswers: string[];
+                legalNotes?: string;
+                followUps?: Array<{ question: string; trigger: string; listenFor?: string[] }>;
+              }>)
+                .sort((a, b) => b.priority - a.priority)
+                .map((q, index: number) => {
                   const isExpanded = expandedQuestions.has(index);
 
                   return (
@@ -242,7 +252,7 @@ export function QuestionGenerator({ caseId }: QuestionGeneratorProps) {
                                 Follow-up Questions:
                               </p>
                               <div className="mt-3 space-y-3">
-                                {q.followUps.map((followUp: any, i: number) => (
+                                {q.followUps.map((followUp, i: number) => (
                                   <div
                                     key={i}
                                     className="rounded-md border-l-4 border-filevine-blue bg-white p-3"

@@ -94,7 +94,7 @@ export default function LoginPage() {
           </Button>
 
           <div className="text-center text-sm text-filevine-gray-600">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-filevine-blue hover:underline">
               Sign up
             </Link>

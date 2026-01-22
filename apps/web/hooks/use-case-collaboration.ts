@@ -29,8 +29,9 @@ export function useCaseCollaboration(caseId: string) {
   useEffect(() => {
     if (!onCollaborationEvent) return;
 
-    const handleCaseUpdate = (data: any) => {
-      if (data.resourceType === 'case' && data.resourceId === caseId) {
+    const handleCaseUpdate = (data: unknown) => {
+      const update = data as { resourceType?: string; resourceId?: string };
+      if (update.resourceType === 'case' && update.resourceId === caseId) {
         console.log('Case update:', data);
         // Handle case-specific updates here
       }

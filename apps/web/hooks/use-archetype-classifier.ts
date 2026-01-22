@@ -175,7 +175,7 @@ export function useArchetypeConfig(configType: string) {
         id: string;
         configType: string;
         version: string;
-        data: any;
+        data: Record<string, unknown>;
         description: string;
       }>(`/archetypes/config/${configType}`);
       return data;

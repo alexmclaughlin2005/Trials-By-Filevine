@@ -66,7 +66,11 @@ export function BatchImportModal({ panelId, isOpen, onClose, onSuccess }: BatchI
       const csvContent = await file.text();
 
       // Send to API using authenticated client
-      const result = await apiClient.post(`/jurors/panel/${panelId}/batch`, {
+      const result = await apiClient.post<{
+        totalRows: number;
+        successfulRows: number;
+        failedRows: number;
+      }>(`/jurors/panel/${panelId}/batch`, {
         csvContent,
         fileName: file.name,
         autoSearch,

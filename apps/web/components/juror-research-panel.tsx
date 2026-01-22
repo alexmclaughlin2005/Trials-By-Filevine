@@ -37,7 +37,7 @@ interface Candidate {
   isConfirmed: boolean;
   isRejected: boolean;
   scoreFactors: ScoreFactors;
-  profile?: any;
+  profile?: Record<string, unknown>;
 }
 
 interface JurorResearchPanelProps {
@@ -57,8 +57,6 @@ interface JurorResearchPanelProps {
 
 export function JurorResearchPanel({
   jurorId,
-  jurorName,
-  jurorInfo,
   initialCandidates = [],
   onCandidateConfirmed,
 }: JurorResearchPanelProps) {
@@ -73,7 +71,7 @@ export function JurorResearchPanel({
       setError(null);
 
       console.log('Starting search for juror:', jurorId);
-      const result = await apiClient.post<any>(`/jurors/${jurorId}/search`, {});
+      const result = await apiClient.post<{ candidates: Candidate[] }>(`/jurors/${jurorId}/search`, {});
       console.log('Search result:', result);
       setCandidates(result.candidates || []);
     } catch (err) {
@@ -187,7 +185,7 @@ export function JurorResearchPanel({
           <p className="text-sm">
             No candidate matches found.
             <br />
-            Click "Search Public Records" to find potential identity matches.
+            Click &quot;Search Public Records&quot; to find potential identity matches.
           </p>
         </div>
       ) : (

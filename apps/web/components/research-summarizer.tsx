@@ -10,8 +10,8 @@ interface ResearchArtifact {
   sourceName: string | null;
   sourceUrl: string | null;
   rawContent: string | null;
-  extractedSnippets?: any;
-  signals?: any;
+  extractedSnippets?: unknown;
+  signals?: unknown;
   matchRationale?: string | null;
 }
 
@@ -253,7 +253,7 @@ export function ResearchSummarizer({
                           key={i}
                           className="rounded-md border-l-4 border-filevine-blue bg-filevine-gray-50 p-3"
                         >
-                          <p className="text-sm text-filevine-gray-900">"{snippet.text}"</p>
+                          <p className="text-sm text-filevine-gray-900">&quot;{snippet.text}&quot;</p>
                           <p className="mt-1 text-xs text-filevine-gray-600">{snippet.context}</p>
                           <span
                             className={`mt-1 inline-block text-xs font-medium ${

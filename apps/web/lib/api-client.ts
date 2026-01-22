@@ -1,4 +1,4 @@
-import type { APIResponse, APIError } from '@trialforge/types';
+import type { APIError } from '@trialforge/types';
 
 class APIClient {
   private baseUrl: string;
@@ -86,6 +86,14 @@ class APIClient {
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  async put<T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'PUT',
       body: data ? JSON.stringify(data) : undefined,
     });
   }

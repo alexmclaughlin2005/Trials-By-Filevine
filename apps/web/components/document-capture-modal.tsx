@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Button } from './ui/button';
 import { apiClient } from '@/lib/api-client';
 
@@ -94,7 +95,7 @@ export function DocumentCaptureModal({
 
       // Create capture
       setProcessingStatus('Creating capture...');
-      const createResponse = await apiClient.post(`/cases/${caseId}/captures`, {
+      const createResponse = await apiClient.post<{ capture: { id: string } }>(`/cases/${caseId}/captures`, {
         caseId,
         documentType,
         imageData: base64Data,
@@ -119,7 +120,7 @@ export function DocumentCaptureModal({
 
       // Set extracted jurors with include flag
       setExtractedJurors(
-        results.extractedJurors.map((j: any) => ({
+        results.extractedJurors.map((j: ExtractedJuror) => ({
           ...j,
           include: true, // Default to including all jurors
         }))
@@ -133,11 +134,11 @@ export function DocumentCaptureModal({
     }
   };
 
-  const pollCaptureResults = async (captureId: string, maxAttempts = 30): Promise<any> => {
+  const pollCaptureResults = async (captureId: string, maxAttempts = 30): Promise<{ extractedJurors: ExtractedJuror[] }> => {
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
 
-      const response = await apiClient.get(`/captures/${captureId}`);
+      const response = await apiClient.get<{ capture: { status: string; errorMessage?: string; extractedJurors: ExtractedJuror[] } }>(`/captures/${captureId}`);
       const capture = response.capture;
 
       if (capture.status === 'completed') {
@@ -162,7 +163,7 @@ export function DocumentCaptureModal({
     });
   };
 
-  const handleJurorChange = (index: number, field: string, value: any) => {
+  const handleJurorChange = (index: number, field: string, value: string | number | boolean) => {
     const updated = [...extractedJurors];
     updated[index] = { ...updated[index], [field]: value };
     setExtractedJurors(updated);
@@ -232,7 +233,7 @@ export function DocumentCaptureModal({
                 <div className="space-y-3">
                   {[
                     { value: 'panel_list', label: 'Jury Panel List/Roster', description: 'A list of multiple jurors with their information' },
-                    { value: 'questionnaire', label: 'Single Questionnaire', description: 'One juror\'s questionnaire form' },
+                    { value: 'questionnaire', label: 'Single Questionnaire', description: 'One juror&apos;s questionnaire form' },
                     { value: 'jury_card', label: 'Jury Card', description: 'Individual juror identification card' },
                     { value: 'other', label: 'Other Document', description: 'Any other document with juror information' },
                   ].map((type) => (
@@ -311,10 +312,13 @@ export function DocumentCaptureModal({
                 ) : (
                   <div className="space-y-4">
                     <div className="relative">
-                      <img
+                      <Image
                         src={imagePreview}
                         alt="Document preview"
                         className="w-full rounded-lg border"
+                        width={800}
+                        height={600}
+                        style={{ width: '100%', height: 'auto' }}
                       />
                     </div>
                     <div className="flex gap-3">
@@ -370,7 +374,7 @@ export function DocumentCaptureModal({
                   Review Extracted Information ({extractedJurors.filter((j) => j.include).length} of {extractedJurors.length} selected)
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Review and edit the extracted juror information. Uncheck any entries you don't want to import.
+                  Review and edit the extracted juror information. Uncheck any entries you don&apos;t want to import.
                 </p>
 
                 <div className="space-y-3 max-h-96 overflow-y-auto">

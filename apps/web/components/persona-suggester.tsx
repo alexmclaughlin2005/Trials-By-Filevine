@@ -9,7 +9,7 @@ interface Persona {
   name: string;
   description: string;
   type: string;
-  attributes: Record<string, any>;
+  attributes: Record<string, unknown>;
 }
 
 interface PersonaSuggestion {
