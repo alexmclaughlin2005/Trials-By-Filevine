@@ -70,6 +70,9 @@ interface Case {
     panelDate: string;
     status: string;
     totalJurors: number;
+    jurors?: Array<{
+      id: string;
+    }>;
   }>;
 }
 
