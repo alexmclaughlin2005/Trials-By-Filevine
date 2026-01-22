@@ -28,13 +28,17 @@ export default function SettingsPage() {
   const loadConnectionStatus = async () => {
     try {
       setLoadingStatus(true);
+      console.log('[Filevine] Loading connection status...');
       const status = await getFilevineConnectionStatus();
+      console.log('[Filevine] Connection status:', status);
       setConnectionStatus(status);
     } catch (error) {
-      console.error('Failed to load Filevine connection status:', error);
+      console.error('[Filevine] Failed to load connection status:', error);
+      // Even on error, show the UI with disconnected state
       setConnectionStatus({ connected: false });
     } finally {
       setLoadingStatus(false);
+      console.log('[Filevine] Loading complete');
     }
   };
 
@@ -138,6 +142,7 @@ export default function SettingsPage() {
           {loadingStatus ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-filevine-gray-400" />
+              <span className="ml-2 text-sm text-filevine-gray-500">Loading connection status...</span>
             </div>
           ) : connectionStatus?.connected ? (
             // Connected State
