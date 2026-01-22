@@ -8,7 +8,9 @@
 import { spawn } from 'child_process';
 import path from 'path';
 
-const SCHEMA_PATH = path.join(__dirname, '../../../packages/database/prisma/schema.prisma');
+// __dirname will be dist/services/api-gateway/src when compiled
+// We need to go up to root and find packages/database in the source tree
+const SCHEMA_PATH = path.join(__dirname, '../../../../packages/database/prisma/schema.prisma');
 
 console.log('=========================================');
 console.log('API Gateway Startup');
@@ -56,7 +58,8 @@ async function main() {
     console.log('Step 2: Starting API server...');
     console.log('');
 
-    const serverPath = path.join(__dirname, '../services/api-gateway/src/index.js');
+    // __dirname is dist/services/api-gateway/src, so index.js is in the same directory
+    const serverPath = path.join(__dirname, 'index.js');
     await runCommand('node', [serverPath]);
 
   } catch (error) {
