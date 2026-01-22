@@ -378,6 +378,69 @@ All AI services are Python FastAPI applications that integrate with Claude 4.5 m
 - **File Storage:** Vercel Blob or S3
 - **Monitoring:** Railway logs, Sentry for errors
 
+## Critical Package Dependencies
+
+### Monorepo Packages (Internal)
+**Build Order:** database → ai-client → utils → types → services
+
+1. **`@juries/database`** - Prisma client and database utilities
+   - Dependencies: `@prisma/client@^5.8.1`, `typescript@^5.3.3`
+   - Must be built FIRST (generates Prisma client)
+
+2. **`@juries/ai-client`** - Claude API wrapper
+   - Dependencies: `@anthropic-ai/sdk@^0.71.2`, `@juries/types`
+   - Must use SDK version `0.71.2+` for `/resources` exports
+
+3. **`@juries/utils`** - Shared utilities
+   - Dependencies: Minimal (TypeScript only)
+
+4. **`@juries/types`** - Shared TypeScript types
+   - Dependencies: None (pure types)
+
+### Service Dependencies
+
+**API Gateway** (`services/api-gateway`)
+- `fastify@^4.26.0` - Web framework
+- `@fastify/jwt@^8.0.0` - JWT authentication (v8 for Fastify v4)
+- `@fastify/cors@^9.0.1`
+- `@fastify/helmet@^11.1.1`
+- `@anthropic-ai/sdk@^0.71.2` - Must match ai-client version
+- `@juries/database`, `@juries/ai-client`, `@juries/types`, `@juries/utils`
+
+**Notification Service** (`services/notification-service`)
+- `fastify@^4.26.0`
+- `@fastify/jwt@^8.0.0` - **MUST be v8.x for Fastify v4 compatibility**
+- `ioredis@^5.3.2` - Redis client (supports Railway env vars)
+- `resend@^3.2.0` - Email provider (optional)
+- `@juries/database`, `@juries/types`
+
+### Version Compatibility Matrix
+
+| Package | API Gateway | Notification | ai-client | Notes |
+|---------|-------------|--------------|-----------|-------|
+| `fastify` | 4.26.0 | 4.26.0 | - | v4.x required |
+| `@fastify/jwt` | 8.0.0 | 8.0.0 | - | **v8 for Fastify v4, v10 needs v5** |
+| `@anthropic-ai/sdk` | 0.71.2 | - | 0.71.2 | **Must match across packages** |
+| `@prisma/client` | 5.8.1 | 5.8.1 | - | Generated, keep in sync |
+
+### Common Dependency Issues
+
+1. **Fastify Plugin Version Mismatch**
+   - Error: `fastify-plugin: @fastify/jwt - expected '5.x' fastify version, '4.x' is installed`
+   - Fix: Use `@fastify/jwt@^8.0.0` with Fastify v4.x
+
+2. **Anthropic SDK Version Mismatch**
+   - Error: `Cannot find module '@anthropic-ai/sdk/resources'`
+   - Fix: Update to `@anthropic-ai/sdk@^0.71.2` in all packages
+
+3. **TypeScript Output Path Issues**
+   - Without `rootDir`: Output goes to `dist/services/*/src/`
+   - Start commands must match: `node dist/services/{service}/src/index.js`
+
+4. **Prisma Client Not Generated**
+   - Always run `npx prisma generate` before building services
+   - Build order matters: database package must build first
+
 ## Environment Variables Structure
 
 Each service maintains its own `.env` file. See individual service `README.md` files for specific variables.
