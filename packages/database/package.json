@@ -2,9 +2,10 @@
   "name": "@juries/database",
   "version": "1.0.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
     "generate": "prisma generate",
     "migrate:dev": "prisma migrate dev",
     "migrate:deploy": "prisma migrate deploy",
@@ -17,11 +18,11 @@
     "studio": "prisma studio"
   },
   "dependencies": {
-    "@prisma/client": "^5.8.1"
+    "@prisma/client": "^5.8.1",
+    "typescript": "^5.3.3"
   },
   "devDependencies": {
     "prisma": "^5.8.1",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.3"
+    "tsx": "^4.7.0"
   }
 }

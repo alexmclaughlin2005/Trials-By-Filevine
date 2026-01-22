@@ -7,6 +7,7 @@ cmds = ["npm install"]
 [phases.build]
 cmds = [
   "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
+  "npm run build --workspace=@juries/database",
   "npm run build --workspace=@juries/collaboration-service"
 ]
 
