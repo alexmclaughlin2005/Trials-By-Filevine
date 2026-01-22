@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePrompt, useVersions, useCreateVersion, useDeployVersion, useRollbackVersion } from '@/hooks/usePrompts';
 import { PromptEditor } from '@/components/PromptEditor';
@@ -19,10 +19,9 @@ import {
 export default function PromptDetailPage({
   params,
 }: {
-  params: Promise<{ serviceId: string }>;
+  params: { serviceId: string };
 }) {
-  const resolvedParams = use(params);
-  const { serviceId } = resolvedParams;
+  const { serviceId } = params;
 
   const { data: prompt, isLoading: promptLoading } = usePrompt(serviceId);
   const { data: versions, isLoading: versionsLoading } = useVersions(prompt?.id || null);
