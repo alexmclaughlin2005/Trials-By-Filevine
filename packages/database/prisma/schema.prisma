@@ -3,13 +3,15 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  // Temporarily disabled pgvector extension
+  // previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider   = "postgresql"
   url        = env("DATABASE_URL")
-  extensions = [pgvector(map: "vector")]
+  // Temporarily disabled pgvector extension - can re-enable when Railway supports it
+  // extensions = [pgvector(map: "vector")]
 }
 
 // ============================================

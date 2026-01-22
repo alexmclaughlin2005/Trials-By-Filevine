@@ -145,47 +145,54 @@ async function main() {
   ];
 
   for (const personaData of personas) {
-    await prisma.persona.upsert({
+    // Check if persona already exists
+    const existing = await prisma.persona.findFirst({
       where: {
-        name_organizationId: {
-          name: personaData.name,
-          organizationId: null as any
-        }
-      },
-      update: {},
-      create: {
-        ...personaData,
-        organizationId: null, // System persona
-      },
+        name: personaData.name,
+        organizationId: null
+      }
     });
+
+    if (!existing) {
+      await prisma.persona.create({
+        data: {
+          ...personaData,
+          organizationId: null, // System persona
+        },
+      });
+    }
   }
-  console.log('✅ Created', personas.length, 'system personas');
+  console.log('✅ Created system personas');
 
   // Create sample case
-  const sampleCase = await prisma.case.upsert({
+  let sampleCase = await prisma.case.findFirst({
     where: {
-      caseNumber_organizationId: {
-        caseNumber: '2024-CV-12345',
-        organizationId: org.id,
-      }
-    },
-    update: {},
-    create: {
-      organizationId: org.id,
-      name: 'Johnson v. TechCorp Industries',
       caseNumber: '2024-CV-12345',
-      jurisdiction: 'Superior Court of California, County of San Francisco',
-      venue: 'San Francisco',
-      trialDate: new Date('2026-03-15'),
-      caseType: 'civil',
-      plaintiffName: 'Robert Johnson',
-      defendantName: 'TechCorp Industries, Inc.',
-      ourSide: 'plaintiff',
-      createdBy: attorney.id,
-      status: 'active',
-    },
+      organizationId: org.id,
+    }
   });
-  console.log('✅ Created sample case:', sampleCase.name);
+
+  if (!sampleCase) {
+    sampleCase = await prisma.case.create({
+      data: {
+        organizationId: org.id,
+        name: 'Johnson v. TechCorp Industries',
+        caseNumber: '2024-CV-12345',
+        jurisdiction: 'Superior Court of California, County of San Francisco',
+        venue: 'San Francisco',
+        trialDate: new Date('2026-03-15'),
+        caseType: 'civil',
+        plaintiffName: 'Robert Johnson',
+        defendantName: 'TechCorp Industries, Inc.',
+        ourSide: 'plaintiff',
+        createdBy: attorney.id,
+        status: 'active',
+      },
+    });
+    console.log('✅ Created sample case:', sampleCase.name);
+  } else {
+    console.log('✅ Sample case already exists:', sampleCase.name);
+  }
 
   // Add case facts
   const existingFacts = await prisma.caseFact.count({
@@ -218,23 +225,25 @@ async function main() {
   }
 
   // Create jury panel
-  const juryPanel = await prisma.juryPanel.upsert({
+  let juryPanel = await prisma.juryPanel.findFirst({
     where: {
-      caseId_version: {
-        caseId: sampleCase.id,
-        version: 1,
-      }
-    },
-    update: {},
-    create: {
       caseId: sampleCase.id,
-      panelDate: new Date('2026-02-01'),
-      source: 'Court-provided jury list',
       version: 1,
-      totalJurors: 5,
-      status: 'active',
-    },
+    }
   });
+
+  if (!juryPanel) {
+    juryPanel = await prisma.juryPanel.create({
+      data: {
+        caseId: sampleCase.id,
+        panelDate: new Date('2026-02-01'),
+        source: 'Court-provided jury list',
+        version: 1,
+        totalJurors: 5,
+        status: 'active',
+      },
+    });
+  }
 
   // Add sample jurors
   const existingJurors = await prisma.juror.count({
