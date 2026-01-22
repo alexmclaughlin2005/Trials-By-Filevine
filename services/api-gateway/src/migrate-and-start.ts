@@ -11,7 +11,8 @@ import path from 'path';
 // When running from cd services/api-gateway:
 // __dirname = /app/services/api-gateway/dist/services/api-gateway/src
 // Need to go up 6 levels to reach /app (monorepo root)
-const SCHEMA_PATH = path.join(__dirname, '../../../../../packages/database/prisma/schema.prisma');
+// Version: 7 levels
+const SCHEMA_PATH = path.join(__dirname, '../../../../../../packages/database/prisma/schema.prisma');
 
 console.log('=========================================');
 console.log('API Gateway Startup');
