@@ -60,8 +60,8 @@ export default function JurorsPage() {
 
   // Flatten all jurors from all cases
   const allJurors = data?.flatMap((c) =>
-    c.juryPanels.flatMap((panel) =>
-      panel.jurors.map((juror) => ({
+    (c.juryPanels || []).flatMap((panel) =>
+      (panel.jurors || []).map((juror) => ({
         ...juror,
         caseName: c.name,
         caseNumber: c.caseNumber,
