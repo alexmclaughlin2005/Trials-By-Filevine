@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Calendar, Loader2 } from 'lucide-react';
+import { Plus, Users, Calendar, Loader2, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
+import Link from 'next/link';
 
 interface Juror {
   id: string;
@@ -228,6 +229,9 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                             <th className="px-4 py-3 text-left text-xs font-medium uppercase">
                               Status
                             </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium uppercase">
+                              Actions
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border bg-background">
@@ -250,6 +254,13 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                               </td>
                               <td className="px-4 py-3 text-sm">
                                 <span className="capitalize">{juror.status}</span>
+                              </td>
+                              <td className="px-4 py-3 text-sm">
+                                <Link href={`/jurors/${juror.id}`}>
+                                  <Button size="sm" variant="ghost">
+                                    <ExternalLink className="h-4 w-4" />
+                                  </Button>
+                                </Link>
                               </td>
                             </tr>
                           ))}
