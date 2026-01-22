@@ -60,6 +60,7 @@ async function main() {
       '20260121164817_init',
       '20260121173451_add_archetype_system',
       '20260121180910_add_password_hash_to_users',
+      '20260121185647_add_juror_research_models',
       '20260121190520_add_deep_research_and_prompt_management',
       '20260122011423_add_synthesized_profiles',
       '20260122030445_add_filevine_oauth_sessions',
