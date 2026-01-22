@@ -2,10 +2,10 @@
 nixPkgs = ["nodejs", "npm"]
 
 [phases.install]
-cmds = ["npm install"]
+cmds = ["cd ../.. && npm install"]
 
 [phases.build]
-cmds = ["npm run build --workspace=@juries/collaboration-service"]
+cmds = ["cd ../.. && npm run build --workspace=@juries/collaboration-service"]
 
 [start]
-cmd = "npm run start --workspace=@juries/collaboration-service"
+cmd = "cd ../.. && npm run start --workspace=@juries/collaboration-service"
