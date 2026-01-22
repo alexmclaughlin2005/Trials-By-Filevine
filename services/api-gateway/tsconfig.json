@@ -12,7 +12,13 @@
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@juries/database": ["../../packages/database/dist"],
+      "@juries/types": ["../../packages/types/src"],
+      "@juries/ai-client": ["../../packages/ai-client/src"]
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
