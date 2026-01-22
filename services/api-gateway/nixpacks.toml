@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["cd ../.. && npm install"]
+
+[phases.build]
+cmds = ["cd ../.. && npm run build --workspace=@juries/api-gateway"]
+
+[start]
+cmd = "cd ../.. && npm run start --workspace=@juries/api-gateway"
