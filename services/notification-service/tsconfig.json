@@ -15,7 +15,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
-      "@juries/database": ["../../packages/database/dist"],
+      "@juries/database": ["../../packages/database/src"],
       "@juries/types": ["../../packages/types/src"]
     }
   },
