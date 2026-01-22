@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "tsc && ls -la dist/ && echo 'Build completed successfully'",
+    "postbuild": "test -f dist/index.js && echo 'dist/index.js exists' || echo 'ERROR: dist/index.js not found'",
     "start": "node dist/index.js",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
