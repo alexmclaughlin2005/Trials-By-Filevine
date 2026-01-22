@@ -7,10 +7,10 @@ cmds = ["npm install"]
 [phases.build]
 cmds = [
   "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
-  "npm run build --workspace=@juries/database",
-  "npm run build --workspace=@juries/utils",
-  "npm run build --workspace=@juries/api-gateway"
+  "cd packages/database && npm run build && cd ../..",
+  "cd packages/utils && npm run build && cd ../..",
+  "cd services/api-gateway && npm run build && cd ../.."
 ]
 
 [start]
-cmd = "npm run start --workspace=@juries/api-gateway"
+cmd = "cd services/api-gateway && node dist/index.js"
