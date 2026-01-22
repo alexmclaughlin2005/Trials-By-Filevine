@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully integrated a sophisticated **Juror Archetype Classification and Deliberation Simulation System** into TrialForge AI. This system uses behavioral psychology, influence matrices, and AI-powered analysis to predict jury behavior and deliberation outcomes.
+Successfully integrated a sophisticated **Juror Archetype Classification and Deliberation Simulation System** into Trials by Filevine AI. This system uses behavioral psychology, influence matrices, and AI-powered analysis to predict jury behavior and deliberation outcomes.
 
 ---
 
@@ -519,7 +519,7 @@ The Archetype System is **fully operational** and ready for production use. The 
 4. **Visual Intelligence** - Beautiful UI with actionable insights
 5. **Scalable Architecture** - Easy to add more personas and features
 
-The system transforms TrialForge AI from a basic case management tool into a **sophisticated trial preparation platform** powered by behavioral psychology and AI.
+The system transforms Trials by Filevine AI from a basic case management tool into a **sophisticated trial preparation platform** powered by behavioral psychology and AI.
 
 ---
 

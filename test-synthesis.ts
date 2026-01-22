@@ -1,4 +1,4 @@
-import { PrismaClient } from '@trialforge/database';
+import { PrismaClient } from '@juries/database';
 
 const prisma = new PrismaClient();
 

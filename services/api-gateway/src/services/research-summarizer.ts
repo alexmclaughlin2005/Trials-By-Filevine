@@ -1,4 +1,4 @@
-import { ClaudeClient } from '@trialforge/ai-client';
+import { ClaudeClient } from '@juries/ai-client';
 
 interface ResearchArtifact {
   id: string;
@@ -80,7 +80,7 @@ export class ResearchSummarizerService {
     const prompt = this.buildPrompt(artifacts, jurorContext, caseContext);
 
     const response = await this.claudeClient.complete({
-      prompt,
+      messages: [{ role: 'user', content: prompt }],
       maxTokens: 4000,
       temperature: 0.2, // Low temperature for consistent extraction
     });

@@ -1,7 +1,7 @@
 {
-  "name": "@trialforge/utils",
+  "name": "@juries/utils",
   "version": "0.1.0",
-  "description": "Shared utilities for TrialForge AI",
+  "description": "Shared utilities for Trials by Filevine AI",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "keywords": ["trialforge", "utilities"],
-  "author": "TrialForge AI",
+  "author": "Trials by Filevine AI",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.10.0",

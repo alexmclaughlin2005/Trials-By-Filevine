@@ -1,6 +1,6 @@
 **Architecture Overview**
 
-**TrialForge AI**
+**Trials by Filevine AI**
 
 _System Architecture & Infrastructure Design_
 
@@ -11,7 +11,7 @@ _System Architecture & Infrastructure Design_
 
 # 1\. Executive Summary
 
-TrialForge AI is a cloud-native, microservices-based platform designed to support trial attorneys through jury selection and trial preparation. The architecture prioritizes security (handling sensitive legal data), reliability (courtroom use demands high availability), offline capability (courthouse connectivity challenges), and AI-first design (multiple ML services power core functionality).
+Trials by Filevine AI is a cloud-native, microservices-based platform designed to support trial attorneys through jury selection and trial preparation. The architecture prioritizes security (handling sensitive legal data), reliability (courtroom use demands high availability), offline capability (courthouse connectivity challenges), and AI-first design (multiple ML services power core functionality).
 
 This document outlines the high-level system architecture, component interactions, technology recommendations, and infrastructure considerations for the engineering team.
 
@@ -41,7 +41,7 @@ This document outlines the high-level system architecture, component interaction
 
 ## 3.1 System Context
 
-TrialForge AI operates as a standalone SaaS platform with integrations to external data sources and future connections to case management systems.
+Trials by Filevine AI operates as a standalone SaaS platform with integrations to external data sources and future connections to case management systems.
 
 | **External System** | **Integration Type** |
 | --- | --- |

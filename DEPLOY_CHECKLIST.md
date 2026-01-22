@@ -1,6 +1,6 @@
 # 🚀 Quick Deployment Checklist
 
-Use this checklist to deploy TrialForge AI to production.
+Use this checklist to deploy Trials by Filevine AI to production.
 
 For detailed instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md).
 

@@ -1,6 +1,6 @@
-# Getting Started with TrialForge AI Development
+# Getting Started with Trials by Filevine AI Development
 
-This guide will help you set up your local development environment and start building TrialForge AI.
+This guide will help you set up your local development environment and start building Trials by Filevine AI.
 
 ## Prerequisites Checklist
 
@@ -104,7 +104,7 @@ NEXTAUTH_SECRET="generate-with-openssl-rand-base64-32"
    - Allowed Web Origins: `http://localhost:3000`
 4. Copy Client ID and Client Secret to `.env.local`
 5. Create an API:
-   - Name: "TrialForge AI API"
+   - Name: "Trials by Filevine AI API"
    - Identifier: `https://api.trialforge.ai`
 6. Enable RBAC in API settings
 
@@ -394,9 +394,9 @@ kill -9 <PID>
 Now that you have the basics set up:
 
 1. **Read the architecture docs:**
-   - [TrialForge_AI_Architecture.md](./TrialForge_AI_Architecture.md)
-   - [TrialForge_AI_PRD.md](./TrialForge_AI_PRD.md)
-   - [TrialForge_AI_Technical_Design.md](./TrialForge_AI_Technical_Design.md)
+   - [Trials by Filevine_AI_Architecture.md](./Trials by Filevine_AI_Architecture.md)
+   - [Trials by Filevine_AI_PRD.md](./Trials by Filevine_AI_PRD.md)
+   - [Trials by Filevine_AI_Technical_Design.md](./Trials by Filevine_AI_Technical_Design.md)
 
 2. **Explore the codebase:**
    - Start with `apps/web` (frontend)
@@ -432,7 +432,7 @@ Stuck? Here's how to get help:
 
 ## Welcome to the Team! 🎉
 
-You're now ready to start contributing to TrialForge AI. Happy coding!
+You're now ready to start contributing to Trials by Filevine AI. Happy coding!
 
 ---
 

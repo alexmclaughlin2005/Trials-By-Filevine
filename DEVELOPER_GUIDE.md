@@ -1,6 +1,6 @@
-# Developer Guide - TrialForge AI
+# Developer Guide - Trials by Filevine AI
 
-Quick reference for developers working on the TrialForge AI platform.
+Quick reference for developers working on the Trials by Filevine AI platform.
 
 ---
 

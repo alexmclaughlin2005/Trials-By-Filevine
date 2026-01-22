@@ -1,4 +1,4 @@
-# @trialforge/database
+# @juries/database
 
 Database package containing Prisma schema, migrations, and database utilities.
 
@@ -72,7 +72,7 @@ Juror PII fields (`first_name`, `last_name`) are encrypted at the application la
 ## Usage
 
 ```typescript
-import { prisma } from '@trialforge/database';
+import { prisma } from '@juries/database';
 
 // Query with automatic tenant isolation
 const cases = await prisma.case.findMany({

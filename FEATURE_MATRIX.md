@@ -1,8 +1,8 @@
-# TrialForge AI - Feature Comparison Matrix
+# Trials by Filevine AI - Feature Comparison Matrix
 
 ## Traditional vs. AI-Assisted Trial Preparation
 
-| Task | Traditional Method | TrialForge AI | Time Saved |
+| Task | Traditional Method | Trials by Filevine AI | Time Saved |
 |------|-------------------|---------------|------------|
 | **Juror Persona Analysis** | 15-30 min per juror<br>Manual review of demographics, questionnaire, notes | 3-5 seconds per juror<br>Automated analysis with confidence scores | **97% faster** |
 | **Research Review** | 30-60 min per juror<br>Read all artifacts, take notes, identify patterns | 5-10 seconds per artifact<br>Structured signals extracted automatically | **95% faster** |
@@ -143,7 +143,7 @@
 | **Total** | **$6,000 - $15,000** |
 | **Timeline** | **2-4 weeks** |
 
-### TrialForge AI Focus Group
+### Trials by Filevine AI Focus Group
 
 | Item | Cost |
 |------|------|

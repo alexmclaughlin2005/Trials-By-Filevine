@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { prisma } from '@trialforge/database';
+import { prisma } from '@juries/database';
 import {
   Notification,
   CreateNotificationRequest,

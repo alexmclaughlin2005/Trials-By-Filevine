@@ -1,6 +1,6 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
-import { PrismaClient } from '@trialforge/database';
+import { PrismaClient } from '@juries/database';
 import { OCRService } from '../services/ocr-service';
 
 const prisma = new PrismaClient();
@@ -32,10 +32,10 @@ export async function capturesRoutes(server: FastifyInstance) {
   // Create a new capture and upload image
   server.post('/cases/:caseId/captures', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId, userId } = request.user;
-      const { caseId } = request.params;
-      const body = createCaptureSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const { caseId } = (request.params as any);
+      const body = createCaptureSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const caseExists = await server.prisma.case.findFirst({
@@ -74,17 +74,26 @@ export async function capturesRoutes(server: FastifyInstance) {
   // Trigger OCR processing for a capture
   server.post('/captures/:captureId/process', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { captureId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { captureId } = (request.params as any);
 
       // Verify capture belongs to organization
       const capture = await server.prisma.capture.findFirst({
         where: {
           id: captureId,
-          case: { organizationId },
         },
       });
+
+      if (capture) {
+        const caseRecord = await server.prisma.case.findFirst({
+          where: { id: capture.caseId, organizationId }
+        });
+        if (!caseRecord) {
+          reply.code(404);
+          return { error: 'Capture not found' };
+        }
+      }
 
       if (!capture) {
         reply.code(404);
@@ -127,18 +136,31 @@ export async function capturesRoutes(server: FastifyInstance) {
   // Get capture status and results
   server.get('/captures/:captureId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { captureId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { captureId } = (request.params as any);
 
       const capture = await server.prisma.capture.findFirst({
         where: {
           id: captureId,
-          case: { organizationId },
+          caseId: { not: undefined },
         },
       });
 
       if (!capture) {
+        reply.code(404);
+        return { error: 'Capture not found' };
+      }
+
+      // Verify the case belongs to the organization
+      const caseRecord = await server.prisma.case.findFirst({
+        where: {
+          id: capture.caseId,
+          organizationId,
+        },
+      });
+
+      if (!caseRecord) {
         reply.code(404);
         return { error: 'Capture not found' };
       }
@@ -150,20 +172,30 @@ export async function capturesRoutes(server: FastifyInstance) {
   // Confirm extracted jurors and create juror records
   server.post('/captures/:captureId/confirm', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId, userId } = request.user;
-      const { captureId } = request.params;
-      const body = confirmJurorsSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const { captureId } = request.params as any;
+      const body = confirmJurorsSchema.parse(request.body as any);
 
       // Verify capture belongs to organization
-      const capture = await server.prisma.capture.findFirst({
-        where: {
-          id: captureId,
-          case: { organizationId },
-        },
+      const capture = await server.prisma.capture.findUnique({
+        where: { id: captureId },
       });
 
       if (!capture) {
+        reply.code(404);
+        return { error: 'Capture not found' };
+      }
+
+      // Verify the case belongs to the organization
+      const caseRecord = await server.prisma.case.findFirst({
+        where: {
+          id: capture.caseId,
+          organizationId,
+        },
+      });
+
+      if (!caseRecord) {
         reply.code(404);
         return { error: 'Capture not found' };
       }
@@ -223,9 +255,9 @@ export async function capturesRoutes(server: FastifyInstance) {
   // Get all captures for a case
   server.get('/cases/:caseId/captures', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
 
       // Verify case belongs to organization
       const caseExists = await server.prisma.case.findFirst({

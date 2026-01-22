@@ -1,4 +1,4 @@
-# TrialForge AI - Demo & Walkthrough Guide
+# Trials by Filevine AI - Demo & Walkthrough Guide
 
 **Version:** 1.0.0
 **Last Updated:** 2026-01-21
@@ -16,7 +16,7 @@
 
 ## Overview
 
-TrialForge AI is an AI-powered trial preparation platform that helps legal teams optimize jury selection and craft persuasive arguments. The system uses Claude 4.5 models to provide intelligent insights throughout the trial preparation process.
+Trials by Filevine AI is an AI-powered trial preparation platform that helps legal teams optimize jury selection and craft persuasive arguments. The system uses Claude 4.5 models to provide intelligent insights throughout the trial preparation process.
 
 ### Key Features
 

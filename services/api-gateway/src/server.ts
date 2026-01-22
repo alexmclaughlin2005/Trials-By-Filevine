@@ -1,10 +1,10 @@
-import Fastify from 'fastify';
+import Fastify, { FastifyRequest, FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import { config } from './config';
-import { prisma } from '@trialforge/database';
+import { prisma } from '@juries/database';
 
 // Import route modules
 import { casesRoutes } from './routes/cases';
@@ -59,7 +59,7 @@ export async function buildServer() {
   });
 
   // Add JWT authentication decorator
-  server.decorate('authenticate', async function (request: any, reply: any) {
+  server.decorate('authenticate', async function (request: FastifyRequest, reply: FastifyReply) {
     try {
       await request.jwtVerify();
     } catch (err) {
@@ -105,7 +105,18 @@ export async function buildServer() {
 // Type augmentation for Fastify
 declare module 'fastify' {
   interface FastifyInstance {
-    authenticate: (request: any, reply: any) => Promise<void>;
+    authenticate: (request: FastifyRequest, reply: FastifyReply) => Promise<void>;
     prisma: typeof prisma;
+  }
+}
+
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    user: {
+      id: string;
+      organizationId: string;
+      email: string;
+      role: string;
+    };
   }
 }

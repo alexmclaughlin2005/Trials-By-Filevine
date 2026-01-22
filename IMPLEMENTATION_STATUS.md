@@ -1,11 +1,11 @@
-# TrialForge AI - Implementation Status
+# Trials by Filevine AI - Implementation Status
 
 **Last Updated:** January 21, 2026
 **Version:** 1.0.0-alpha
 
 ## Overview
 
-TrialForge AI (formerly "Trials by Filevine") is an AI-powered jury intelligence platform built with Next.js, Fastify, and Claude 4.5. This document tracks the current implementation status of all major features.
+Trials by Filevine AI (formerly "Trials by Filevine") is an AI-powered jury intelligence platform built with Next.js, Fastify, and Claude 4.5. This document tracks the current implementation status of all major features.
 
 ---
 
@@ -13,7 +13,7 @@ TrialForge AI (formerly "Trials by Filevine") is an AI-powered jury intelligence
 
 ### Monorepo Setup
 - ✅ npm workspaces configured
-- ✅ Shared packages structure (`@trialforge/*`)
+- ✅ Shared packages structure (`@juries/*`)
 - ✅ TypeScript configured across all packages
 - ✅ Development scripts and tooling
 
@@ -25,10 +25,10 @@ TrialForge AI (formerly "Trials by Filevine") is an AI-powered jury intelligence
 - ✅ Multi-tenant design (organization_id filtering)
 
 ### Shared Packages
-- ✅ `@trialforge/types` - Shared TypeScript types
-- ✅ `@trialforge/database` - Prisma client wrapper
-- ✅ `@trialforge/ai-client` - Claude API client with retry logic
-- ✅ `@trialforge/utils` - Name parsing, metaphone, shared utilities
+- ✅ `@juries/types` - Shared TypeScript types
+- ✅ `@juries/database` - Prisma client wrapper
+- ✅ `@juries/ai-client` - Claude API client with retry logic
+- ✅ `@juries/utils` - Name parsing, metaphone, shared utilities
 
 ---
 
@@ -205,7 +205,7 @@ All AI services are integrated into the API Gateway and use Claude 4.5 Sonnet.
 ### Fixed Issues ✅
 1. ✅ **Claude API Integration** - Fixed Messages API format (messages array vs. prompt)
 2. ✅ **Button Visibility** - Fixed Tailwind classes (filevine-primary → filevine-blue)
-3. ✅ **Server Startup** - Built @trialforge/utils package
+3. ✅ **Server Startup** - Built @juries/utils package
 4. ✅ **Duplicate Routes** - Disabled conflicting juror-research routes
 5. ✅ **Prisma Relations** - Fixed juryPanel → panel naming
 6. ✅ **Authentication** - Added passwordHash field to User model

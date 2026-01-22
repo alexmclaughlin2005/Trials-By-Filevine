@@ -1,4 +1,4 @@
-# TrialForge AI - Complete System Overview
+# Trials by Filevine AI - Complete System Overview
 
 **AI-Powered Jury Intelligence Platform**
 
@@ -26,7 +26,7 @@ Status: Production-Ready (Phases 1-4 Complete)
 
 ## Executive Summary
 
-TrialForge AI is a comprehensive jury intelligence platform that helps legal teams optimize jury selection through AI-powered research, persona mapping, and focus group simulation. The platform combines public records search, OCR document capture, behavioral archetypes, and real-time collaboration to transform jury selection from art to science.
+Trials by Filevine AI is a comprehensive jury intelligence platform that helps legal teams optimize jury selection through AI-powered research, persona mapping, and focus group simulation. The platform combines public records search, OCR document capture, behavioral archetypes, and real-time collaboration to transform jury selection from art to science.
 
 ### Key Value Propositions
 

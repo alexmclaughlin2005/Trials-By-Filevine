@@ -5,10 +5,10 @@
  * Performance target: <100ms (indexed phonetic search)
  */
 
-import type { PrismaClient } from '@trialforge/database';
+import type { PrismaClient } from '@juries/database';
 import { DataSourceAdapter, SearchParams } from './data-source-adapter';
 import { DataSourceMatch } from '../services/confidence-scorer';
-import { metaphone } from '@trialforge/utils';
+import { metaphone } from '@juries/utils';
 
 export class VoterRecordAdapter implements DataSourceAdapter {
   readonly name = 'voter_record';

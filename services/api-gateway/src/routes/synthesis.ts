@@ -1,7 +1,7 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { JurorSynthesisService } from '../services/juror-synthesis';
-import { PrismaClient } from '@trialforge/database';
+import { PrismaClient } from '@juries/database';
 
 const prisma = new PrismaClient();
 const synthesisService = new JurorSynthesisService(prisma);
@@ -18,10 +18,10 @@ export async function synthesisRoutes(server: FastifyInstance) {
   // Start synthesis for a candidate
   server.post('/candidates/:candidateId/synthesize', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { candidateId } = request.params;
-      const body = synthesizeRequestSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { candidateId } = request.params as any;
+      const body = synthesizeRequestSchema.parse(request.body as any);
 
       // Verify candidate belongs to organization
       const candidate = await server.prisma.candidate.findUnique({
@@ -72,9 +72,9 @@ export async function synthesisRoutes(server: FastifyInstance) {
   // Get synthesis status
   server.get('/candidates/:candidateId/synthesis', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { candidateId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { candidateId } = request.params as any;
 
       // Verify candidate belongs to organization
       const candidate = await server.prisma.candidate.findUnique({
@@ -116,9 +116,9 @@ export async function synthesisRoutes(server: FastifyInstance) {
   // Get synthesized profile by ID
   server.get('/synthesis/:profileId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { profileId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { profileId } = request.params as any;
 
       const profile = await server.prisma.synthesizedProfile.findUnique({
         where: { id: profileId },

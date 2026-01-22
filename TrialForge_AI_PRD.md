@@ -1,6 +1,6 @@
 **Product Requirements Document**
 
-**TrialForge AI**
+**Trials by Filevine AI**
 
 _AI-Powered Trial Preparation & Jury Intelligence Platform_
 
@@ -12,9 +12,9 @@ _AI-Powered Trial Preparation & Jury Intelligence Platform_
 
 # 1\. Executive Summary
 
-TrialForge AI is a comprehensive trial preparation platform designed to help legal teams optimize jury selection and craft persuasive arguments. The application combines AI-powered juror research, behavioral persona mapping, simulated focus groups, and real-time trial support to give attorneys an unprecedented advantage in the courtroom.
+Trials by Filevine AI is a comprehensive trial preparation platform designed to help legal teams optimize jury selection and craft persuasive arguments. The application combines AI-powered juror research, behavioral persona mapping, simulated focus groups, and real-time trial support to give attorneys an unprecedented advantage in the courtroom.
 
-The platform serves two primary objectives: (1) selecting optimal jurors during voir dire, and (2) ensuring legal arguments resonate with the seated jury. By integrating deep juror intelligence with psychological persona modeling and AI-driven simulation, TrialForge AI transforms trial preparation from intuition-based to data-driven.
+The platform serves two primary objectives: (1) selecting optimal jurors during voir dire, and (2) ensuring legal arguments resonate with the seated jury. By integrating deep juror intelligence with psychological persona modeling and AI-driven simulation, Trials by Filevine AI transforms trial preparation from intuition-based to data-driven.
 
 # 2\. Product Vision & Goals
 

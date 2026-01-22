@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { QuestionGeneratorService } from '../services/question-generator';
 
@@ -19,8 +19,8 @@ export async function casesRoutes(server: FastifyInstance) {
   // Get all cases for the user's organization
   server.get('/', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
 
       const cases = await server.prisma.case.findMany({
         where: { organizationId },
@@ -43,9 +43,9 @@ export async function casesRoutes(server: FastifyInstance) {
   // Get a single case by ID
   server.get('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       const caseData = await server.prisma.case.findFirst({
         where: {
@@ -85,9 +85,9 @@ export async function casesRoutes(server: FastifyInstance) {
   // Create a new case
   server.post('/', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId, userId } = request.user;
-      const body = createCaseSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const body = createCaseSchema.parse(request.body as any);
 
       const caseData = await server.prisma.case.create({
         data: {
@@ -107,10 +107,10 @@ export async function casesRoutes(server: FastifyInstance) {
   // Update a case
   server.patch('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
-      const body = updateCaseSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const body = updateCaseSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -137,9 +137,9 @@ export async function casesRoutes(server: FastifyInstance) {
   // Delete a case
   server.delete('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -166,10 +166,10 @@ export async function casesRoutes(server: FastifyInstance) {
   // Generate voir dire questions for a case
   server.post('/:id/generate-questions', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
-      const { targetPersonaIds, focusAreas, questionLimit } = request.body as any;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const { targetPersonaIds, focusAreas, questionLimit } = request.body as any as any;
 
       // Verify case belongs to organization and fetch with related data
       const caseData = await server.prisma.case.findFirst({
@@ -196,7 +196,7 @@ export async function casesRoutes(server: FastifyInstance) {
           })
         : await server.prisma.persona.findMany({
             where: {
-              OR: [{ organizationId }, { type: 'system' }],
+              OR: [{ organizationId }, { sourceType: 'system' }],
               isActive: true,
             },
             take: 5, // Use top 5 personas if none specified

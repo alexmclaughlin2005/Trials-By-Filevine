@@ -283,7 +283,7 @@ COLLABORATION_SERVICE_URL=http://localhost:3003
 JWT_SECRET=development-secret-change-in-production
 CORS_ORIGIN=http://localhost:3000
 DEFAULT_FROM_EMAIL=notifications@trialforge.ai
-DEFAULT_FROM_NAME=TrialForge AI
+DEFAULT_FROM_NAME=Trials by Filevine AI
 LOG_LEVEL=info
 ```
 

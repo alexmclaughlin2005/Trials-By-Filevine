@@ -86,13 +86,13 @@ export class PeopleSearchAdapter implements DataSourceAdapter {
       return [];
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // Parse Pipl response
     const matches: DataSourceMatch[] = [];
 
     if (data.person) {
-      const person = data.person;
+      const person = data.person as any;
 
       // Extract names
       const name = person.names?.[0] || {};
@@ -202,7 +202,7 @@ export class PeopleSearchAdapter implements DataSourceAdapter {
       return [];
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // Parse FullContact response
     const matches: DataSourceMatch[] = [];
@@ -269,7 +269,7 @@ export class PeopleSearchAdapter implements DataSourceAdapter {
       return [];
     }
 
-    const data = await response.json();
+    const data = await response.json() as any;
 
     // Parse Whitepages response
     const matches: DataSourceMatch[] = [];

@@ -104,7 +104,7 @@ export class FECAPIAdapter implements DataSourceAdapter {
         return [];
       }
 
-      const data: FECResponse = await response.json();
+      const data = await response.json() as FECResponse;
       const elapsedMs = Date.now() - startTime;
 
       console.log(

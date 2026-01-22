@@ -1,6 +1,6 @@
 # Notification Service
 
-Notification delivery service for TrialForge AI, handling in-app and email notifications with queue-based processing.
+Notification delivery service for Trials by Filevine AI, handling in-app and email notifications with queue-based processing.
 
 ## Features
 
@@ -99,7 +99,7 @@ COLLABORATION_SERVICE_URL=http://localhost:3003
 JWT_SECRET=your-jwt-secret-here
 CORS_ORIGIN=http://localhost:3000
 DEFAULT_FROM_EMAIL=notifications@trialforge.ai
-DEFAULT_FROM_NAME=TrialForge AI
+DEFAULT_FROM_NAME=Trials by Filevine AI
 ```
 
 ### Resend Setup
@@ -272,7 +272,7 @@ The `QueueProcessor` runs as a background worker:
 
 Email notifications use responsive HTML templates with:
 
-- Branded header with TrialForge AI logo
+- Branded header with Trials by Filevine AI logo
 - Clear title and message
 - Optional action button linking to the app
 - Footer with sender information

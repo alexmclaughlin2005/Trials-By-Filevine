@@ -1,4 +1,4 @@
-import { parseName, calculateNameSimilarity } from '@trialforge/utils';
+import { parseName, calculateNameSimilarity } from '@juries/utils';
 
 export interface JurorSearchQuery {
   fullName?: string;
@@ -14,11 +14,13 @@ export interface DataSourceMatch {
   fullName: string;
   firstName?: string;
   lastName?: string;
+  middleName?: string;
   age?: number;
   birthYear?: number;
   city?: string;
   state?: string;
   zipCode?: string;
+  address?: string;
   occupation?: string;
   employer?: string;
   email?: string;

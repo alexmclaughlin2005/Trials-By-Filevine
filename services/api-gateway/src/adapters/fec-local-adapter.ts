@@ -5,10 +5,10 @@
  * Performance target: <100ms (indexed phonetic search)
  */
 
-import type { PrismaClient } from '@trialforge/database';
+import type { PrismaClient } from '@juries/database';
 import { DataSourceAdapter, SearchParams } from './data-source-adapter';
 import { DataSourceMatch } from '../services/confidence-scorer';
-import { metaphone } from '@trialforge/utils';
+import { metaphone } from '@juries/utils';
 
 export class FECLocalAdapter implements DataSourceAdapter {
   readonly name = 'fec_local';
@@ -187,7 +187,7 @@ export class FECLocalAdapter implements DataSourceAdapter {
 
     // Get unique donor count (approximate using distinct donor names)
     const uniqueDonors = await this.prisma.fECDonation.groupBy({
-      by: ['donorName', 'city', 'state'],
+      by: ['donorName', 'city', 'state'] as any,
       _count: true,
     });
 

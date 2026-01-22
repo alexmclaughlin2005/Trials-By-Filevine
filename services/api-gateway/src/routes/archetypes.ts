@@ -57,7 +57,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
     onRequest: [server.authenticate],
     handler: async (request, reply) => {
       const { jurorId, includeResearch, caseType, jurisdiction, ourSide } = request.body;
-      const organizationId = request.user.organizationId;
+      const organizationId = (request.user as any).organizationId;
 
       // Fetch juror with related data
       const juror = await server.prisma.juror.findFirst({
@@ -119,12 +119,12 @@ export async function archetypeRoutes(server: FastifyInstance) {
           employer: juror.employer || undefined,
           city: juror.city || undefined,
           zipCode: juror.zipCode || undefined,
-          questionnaireData: juror.questionnaireData || undefined,
+          questionnaireData: (juror.questionnaireData as Record<string, any>) || undefined,
           researchSummary,
         },
         caseType: caseType || juror.panel.case.caseType || undefined,
         jurisdiction: jurisdiction || juror.panel.case.jurisdiction || undefined,
-        ourSide: ourSide || juror.panel.case.ourSide || undefined,
+        ourSide: (ourSide || juror.panel.case.ourSide || undefined) as 'plaintiff' | 'defense' | undefined,
       };
 
       // Classify juror
@@ -141,7 +141,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
         data: {
           classifiedArchetype: result.primary.archetype,
           archetypeConfidence: result.primary.confidence,
-          dimensionScores: result.primary.dimensionScores,
+          dimensionScores: result.primary.dimensionScores as any,
           classifiedAt: result.classifiedAt,
         },
       });
@@ -150,7 +150,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
       await server.prisma.auditLog.create({
         data: {
           organizationId,
-          userId: request.user.id,
+          userId: (request.user as any).id,
           action: 'archetype_classified',
           entityType: 'juror',
           entityId: jurorId,
@@ -179,7 +179,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
     onRequest: [server.authenticate],
     handler: async (request, reply) => {
       const { jurorData, caseType, jurisdiction, ourSide } = request.body;
-      const organizationId = request.user.organizationId;
+      const organizationId = (request.user as any).organizationId;
 
       const input: ClassificationInput = {
         jurorData,
@@ -200,7 +200,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
       await server.prisma.auditLog.create({
         data: {
           organizationId,
-          userId: request.user.id,
+          userId: (request.user as any).id,
           action: 'archetype_classified_data',
           entityType: 'juror_data',
           entityId: 'n/a',
@@ -334,7 +334,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
     onRequest: [server.authenticate],
     handler: async (request, reply) => {
       const { panelId } = request.params;
-      const organizationId = request.user.organizationId;
+      const organizationId = (request.user as any).organizationId;
 
       // Fetch panel with jurors
       const panel = await server.prisma.juryPanel.findFirst({

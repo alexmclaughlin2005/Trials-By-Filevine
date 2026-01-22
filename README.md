@@ -1,4 +1,4 @@
-# TrialForge AI
+# Trials by Filevine AI
 
 AI-Powered Trial Preparation & Jury Intelligence Platform
 
@@ -6,7 +6,7 @@ AI-Powered Trial Preparation & Jury Intelligence Platform
 
 ## Overview
 
-TrialForge AI is a comprehensive platform that helps legal teams:
+Trials by Filevine AI is a comprehensive platform that helps legal teams:
 - **Automate juror research** - Reduce manual research time by 80%
 - **Map juror personas** - AI-powered behavioral classification
 - **Test trial arguments** - Simulate jury deliberations before trial
@@ -186,9 +186,9 @@ See [infrastructure/railway/README.md](./infrastructure/railway/README.md) for d
 
 - **[ai_instructions.md](./ai_instructions.md)** - Complete project structure and AI assistant instructions
 - **[claude.md](./claude.md)** - Documentation management protocol for AI assistants
-- **[TrialForge_AI_PRD.md](./TrialForge_AI_PRD.md)** - Product requirements
-- **[TrialForge_AI_Architecture.md](./TrialForge_AI_Architecture.md)** - System architecture
-- **[TrialForge_AI_Technical_Design.md](./TrialForge_AI_Technical_Design.md)** - Technical specifications
+- **[Trials by Filevine_AI_PRD.md](./Trials by Filevine_AI_PRD.md)** - Product requirements
+- **[Trials by Filevine_AI_Architecture.md](./Trials by Filevine_AI_Architecture.md)** - System architecture
+- **[Trials by Filevine_AI_Technical_Design.md](./Trials by Filevine_AI_Technical_Design.md)** - Technical specifications
 
 ### Service Documentation
 

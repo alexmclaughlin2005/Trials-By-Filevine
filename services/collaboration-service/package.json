@@ -1,7 +1,7 @@
 {
-  "name": "@trialforge/collaboration-service",
+  "name": "@juries/collaboration-service",
   "version": "1.0.0",
-  "description": "Real-time collaboration service for TrialForge AI",
+  "description": "Real-time collaboration service for Trials by Filevine AI",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -15,8 +15,8 @@
     "@fastify/helmet": "^11.1.1",
     "@fastify/jwt": "^8.0.0",
     "@fastify/websocket": "^10.0.1",
-    "@trialforge/database": "*",
-    "@trialforge/types": "*",
+    "@juries/database": "*",
+    "@juries/types": "*",
     "dotenv": "^16.4.1",
     "fastify": "^4.26.0",
     "ioredis": "^5.3.2",

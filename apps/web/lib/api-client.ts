@@ -1,4 +1,4 @@
-import type { APIError } from '@trialforge/types';
+import type { APIError } from '@juries/types';
 
 class APIClient {
   private baseUrl: string;

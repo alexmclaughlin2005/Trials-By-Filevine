@@ -1,4 +1,4 @@
-# TrialForge AI - Presentation Script
+# Trials by Filevine AI - Presentation Script
 
 **Duration:** 15 minutes
 **Audience:** Investors, Stakeholders, Legal Executives
@@ -26,7 +26,7 @@
 ### The Solution
 
 **Script:**
-> "TrialForge AI changes everything. We use Claude 4.5 - the most advanced AI model - to provide instant, data-driven insights for trial preparation."
+> "Trials by Filevine AI changes everything. We use Claude 4.5 - the most advanced AI model - to provide instant, data-driven insights for trial preparation."
 >
 > *[Click to show platform screenshot]*
 >
@@ -43,7 +43,7 @@
 >
 > *[Show case overview page]*
 >
-> "We have 5 potential jurors on our jury panel. Let's see how TrialForge AI helps us analyze them."
+> "We have 5 potential jurors on our jury panel. Let's see how Trials by Filevine AI helps us analyze them."
 
 ### Part 2: AI Persona Analysis (2 minutes)
 
@@ -52,7 +52,7 @@
 >
 > *[Navigate to Michael Chen's profile]*
 >
-> "With TrialForge AI, watch this..."
+> "With Trials by Filevine AI, watch this..."
 >
 > *[Click "Analyze with AI"]*
 >
@@ -80,7 +80,7 @@
 >
 > *[Show research artifacts]*
 >
-> "TrialForge AI can extract structured insights from any research artifact."
+> "Trials by Filevine AI can extract structured insights from any research artifact."
 >
 > *[Click "Analyze Research"]*
 >
@@ -100,7 +100,7 @@
 >
 > *[Navigate to case, switch to Questions tab]*
 >
-> "Watch how fast TrialForge AI can do this..."
+> "Watch how fast Trials by Filevine AI can do this..."
 >
 > *[Click "Generate Questions"]*
 >
@@ -128,7 +128,7 @@
 >
 > *[Switch to Focus Groups tab]*
 >
-> "With TrialForge AI, we can simulate a 6-person jury panel representing diverse personas."
+> "With Trials by Filevine AI, we can simulate a 6-person jury panel representing diverse personas."
 >
 > *[Select opening statement argument]*
 >
@@ -180,7 +180,7 @@
 > - Total: $48,000
 > - Timeline: 3-4 weeks
 >
-> **TrialForge AI:**
+> **Trials by Filevine AI:**
 > - Juror analysis: 10 minutes @ $50 in AI costs = $50
 > - Focus groups: 5 simulations @ $0.50 = $2.50
 > - Total: $52.50

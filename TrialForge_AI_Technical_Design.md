@@ -1,6 +1,6 @@
 **Technical Design Document**
 
-**TrialForge AI**
+**Trials by Filevine AI**
 
 _Data Models, API Specifications & Service Design_
 
@@ -11,7 +11,7 @@ _Data Models, API Specifications & Service Design_
 
 # 1\. Document Overview
 
-This technical design document provides detailed specifications for implementing TrialForge AI. It covers database schemas, API contracts, service interfaces, and key implementation details for the engineering team.
+This technical design document provides detailed specifications for implementing Trials by Filevine AI. It covers database schemas, API contracts, service interfaces, and key implementation details for the engineering team.
 
 # 2\. Database Schema
 

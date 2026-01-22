@@ -3,7 +3,7 @@
  * Coordinates searches across multiple data sources and performs entity linking
  */
 
-import { PrismaClient } from '@trialforge/database';
+import { PrismaClient } from '@juries/database';
 import { DataSourceAdapter } from '../adapters/data-source-adapter';
 import {
   scoreCandidate,
@@ -130,7 +130,7 @@ export class SearchOrchestrator {
       return {
         jurorId,
         searchJobId: searchJob.id,
-        candidates: savedCandidates,
+        candidates: savedCandidates as any as ScoredCandidate[],
         totalCandidates: savedCandidates.length,
         sourcesSearched,
         searchDurationMs,

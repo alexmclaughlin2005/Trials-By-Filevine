@@ -23,9 +23,9 @@ Juries by Filevine is an AI-powered jury intelligence platform that helps legal 
 Trials by Filevine/
 ├── ai_instructions.md              # THIS FILE - Project structure & directory map
 ├── claude.md                        # AI assistant instructions for documentation
-├── TrialForge_AI_PRD.md            # Product requirements document
-├── TrialForge_AI_Architecture.md   # System architecture document
-├── TrialForge_AI_Technical_Design.md # Technical specifications
+├── Trials by Filevine_AI_PRD.md            # Product requirements document
+├── Trials by Filevine_AI_Architecture.md   # System architecture document
+├── Trials by Filevine_AI_Technical_Design.md # Technical specifications
 │
 ├── apps/
 │   ├── web/                        # Next.js 14 web application (Vercel)
@@ -423,9 +423,9 @@ CASE_SERVICE_URL=...
 1. **Monorepo Setup** - Turborepo with npm workspaces configured
 2. **Database Layer** (`packages/database`) - Prisma schema with 16 models, migrations, seed data
 3. **Shared Packages:**
-   - `@trialforge/types` - Shared TypeScript types
-   - `@trialforge/database` - Prisma client wrapper
-   - `@trialforge/ai-client` - Claude AI client wrapper
+   - `@juries/types` - Shared TypeScript types
+   - `@juries/database` - Prisma client wrapper
+   - `@juries/ai-client` - Claude AI client wrapper
 4. **Next.js Web App** (`apps/web`) - Full application with:
    - Authentication system (JWT, login, protected routes)
    - Dashboard with real data from API

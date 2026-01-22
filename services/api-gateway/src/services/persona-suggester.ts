@@ -1,5 +1,5 @@
-import { ClaudeClient } from '@trialforge/ai-client';
-import type { Juror, Persona, ResearchArtifact } from '@trialforge/database';
+import { ClaudeClient } from '@juries/ai-client';
+import type { Juror, Persona, ResearchArtifact } from '@juries/database';
 
 interface PersonaSuggestion {
   persona: Persona;
@@ -35,7 +35,7 @@ export class PersonaSuggesterService {
 
     try {
       const response = await this.claudeClient.complete({
-        prompt,
+        messages: [{ role: 'user', content: prompt }],
         maxTokens: 2000,
         temperature: 0.3, // Lower temperature for more consistent analysis
       });
@@ -102,22 +102,34 @@ Respond ONLY with valid JSON in this exact format:
   private formatJurorInfo(juror: PersonaSuggesterInput['juror']): string {
     const parts: string[] = [];
 
-    if (juror.name) {
-      parts.push(`Name: ${juror.name}`);
+    // Use firstName and lastName instead of name
+    const fullName = `${juror.firstName} ${juror.lastName}`.trim();
+    if (fullName) {
+      parts.push(`Name: ${fullName}`);
     }
 
-    parts.push(`Juror Number: ${juror.jurorNumber}`);
+    if (juror.jurorNumber) {
+      parts.push(`Juror Number: ${juror.jurorNumber}`);
+    }
+
+    if (juror.age) {
+      parts.push(`Age: ${juror.age}`);
+    }
 
     if (juror.occupation) {
       parts.push(`Occupation: ${juror.occupation}`);
     }
 
-    if (juror.education) {
-      parts.push(`Education: ${juror.education}`);
+    if (juror.employer) {
+      parts.push(`Employer: ${juror.employer}`);
     }
 
-    if (juror.demographics && Object.keys(juror.demographics as object).length > 0) {
-      parts.push(`Demographics: ${JSON.stringify(juror.demographics, null, 2)}`);
+    if (juror.city) {
+      parts.push(`City: ${juror.city}`);
+    }
+
+    if (juror.questionnaireData && typeof juror.questionnaireData === 'object' && Object.keys(juror.questionnaireData as object).length > 0) {
+      parts.push(`Questionnaire Data: ${JSON.stringify(juror.questionnaireData, null, 2)}`);
     }
 
     if (juror.notes) {
@@ -127,7 +139,7 @@ Respond ONLY with valid JSON in this exact format:
     if (juror.researchArtifacts && juror.researchArtifacts.length > 0) {
       parts.push('\nResearch Artifacts:');
       juror.researchArtifacts.forEach((artifact, i) => {
-        parts.push(`  ${i + 1}. [${artifact.artifactType}] ${artifact.source}: ${artifact.content}`);
+        parts.push(`  ${i + 1}. [${artifact.sourceType}] ${artifact.sourceName || 'Unknown'}: ${artifact.rawContent || 'No content'}`);
       });
     }
 
@@ -177,7 +189,7 @@ Attributes: ${attrs}
             potentialConcerns: suggestion.potentialConcerns || [],
           };
         })
-        .filter((s): s is PersonaSuggestion => s !== null)
+        .filter((s: PersonaSuggestion | null): s is PersonaSuggestion => s !== null)
         .slice(0, 3); // Top 3 suggestions
 
       return suggestions;

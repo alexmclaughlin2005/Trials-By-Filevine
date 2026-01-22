@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 const createArgumentSchema = z.object({
@@ -18,10 +18,10 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
   // Create an argument
   server.post('/:caseId/arguments', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
-      const body = createArgumentSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
+      const body = createArgumentSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -50,10 +50,10 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
   // Update an argument (creates new version)
   server.put('/:caseId/arguments/:argumentId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, argumentId } = request.params;
-      const body = updateArgumentSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId } = request.params as any;
+      const body = updateArgumentSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -102,9 +102,9 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
   // Delete an argument (and all its versions)
   server.delete('/:caseId/arguments/:argumentId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, argumentId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId } = request.params as any;
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -144,9 +144,9 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
   // Get argument version history
   server.get('/:caseId/arguments/:argumentId/versions', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, argumentId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId } = request.params as any;
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({

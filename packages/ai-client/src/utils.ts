@@ -1,4 +1,4 @@
-import type { AIResponse } from '@trialforge/types';
+import type { AIResponse } from '@juries/types';
 
 /**
  * Create a structured prompt that instructs Claude to return JSON in our standard format

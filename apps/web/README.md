@@ -1,6 +1,6 @@
-# TrialForge AI - Web Application
+# Trials by Filevine AI - Web Application
 
-Main web application for TrialForge AI, built with Next.js 14 and deployed to Vercel.
+Main web application for Trials by Filevine AI, built with Next.js 14 and deployed to Vercel.
 
 ## Quick Start
 

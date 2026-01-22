@@ -1,7 +1,7 @@
 {
-  "name": "@trialforge/api-gateway",
+  "name": "@juries/api-gateway",
   "version": "1.0.0",
-  "description": "API Gateway for TrialForge AI",
+  "description": "API Gateway for Trials by Filevine",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -16,9 +16,9 @@
     "@fastify/helmet": "^11.1.1",
     "@fastify/jwt": "^8.0.0",
     "@fastify/rate-limit": "^9.1.0",
-    "@trialforge/ai-client": "^1.0.0",
-    "@trialforge/database": "*",
-    "@trialforge/types": "*",
+    "@juries/ai-client": "^1.0.0",
+    "@juries/database": "*",
+    "@juries/types": "*",
     "csv-parse": "^6.1.0",
     "dotenv": "^16.4.1",
     "fastify": "^4.26.0",

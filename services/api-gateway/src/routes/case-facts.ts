@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 const createFactSchema = z.object({
@@ -13,10 +13,10 @@ export async function caseFactsRoutes(server: FastifyInstance) {
   // Create a fact
   server.post('/:caseId/facts', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
-      const body = createFactSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
+      const body = createFactSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -51,10 +51,10 @@ export async function caseFactsRoutes(server: FastifyInstance) {
   // Update a fact
   server.put('/:caseId/facts/:factId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, factId } = request.params;
-      const body = updateFactSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, factId } = request.params as any;
+      const body = updateFactSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -88,9 +88,9 @@ export async function caseFactsRoutes(server: FastifyInstance) {
   // Delete a fact
   server.delete('/:caseId/facts/:factId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, factId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, factId } = request.params as any;
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -124,10 +124,10 @@ export async function caseFactsRoutes(server: FastifyInstance) {
   // Reorder facts
   server.patch('/:caseId/facts/reorder', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
-      const { factIds } = request.body as { factIds: string[] };
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
+      const { factIds } = request.body as any as { factIds: string[] };
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({

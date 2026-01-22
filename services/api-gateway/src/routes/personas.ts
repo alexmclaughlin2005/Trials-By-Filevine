@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 const createPersonaSchema = z.object({
@@ -15,22 +15,22 @@ export async function personasRoutes(server: FastifyInstance) {
   // Get all personas (system + organization-specific)
   server.get('/', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
 
       const personas = await server.prisma.persona.findMany({
         where: {
-          OR: [{ organizationId }, { type: 'system' }],
+          OR: [{ organizationId }, { sourceType: 'system' }],
         },
         include: {
           _count: {
             select: {
               jurorMappings: true,
-              focusGroupResults: true,
+              focusGroupPersonas: true,
             },
           },
         },
-        orderBy: [{ type: 'asc' }, { createdAt: 'desc' }],
+        orderBy: [{ sourceType: 'asc' }, { createdAt: 'desc' }],
       });
 
       return { personas };
@@ -40,14 +40,14 @@ export async function personasRoutes(server: FastifyInstance) {
   // Get a single persona
   server.get('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       const persona = await server.prisma.persona.findFirst({
         where: {
           id,
-          OR: [{ organizationId }, { type: 'system' }],
+          OR: [{ organizationId }, { sourceType: 'system' }],
         },
         include: {
           jurorMappings: {
@@ -65,7 +65,7 @@ export async function personasRoutes(server: FastifyInstance) {
           },
           _count: {
             select: {
-              focusGroupResults: true,
+              focusGroupPersonas: true,
             },
           },
         },
@@ -83,16 +83,15 @@ export async function personasRoutes(server: FastifyInstance) {
   // Create a new custom persona
   server.post('/', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId, userId } = request.user;
-      const body = createPersonaSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const body = createPersonaSchema.parse(request.body as any);
 
       const persona = await server.prisma.persona.create({
         data: {
           ...body,
-          type: 'custom',
+          sourceType: 'user_created',
           organizationId,
-          createdBy: userId,
         },
       });
 
@@ -104,17 +103,17 @@ export async function personasRoutes(server: FastifyInstance) {
   // Update a persona
   server.patch('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
-      const body = updatePersonaSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const body = updatePersonaSchema.parse(request.body as any);
 
       // Verify persona belongs to organization (can't update system personas)
       const existingPersona = await server.prisma.persona.findFirst({
         where: {
           id,
           organizationId,
-          type: 'custom',
+          sourceType: 'user_created',
         },
       });
 
@@ -135,16 +134,16 @@ export async function personasRoutes(server: FastifyInstance) {
   // Delete a persona
   server.delete('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       // Verify persona belongs to organization (can't delete system personas)
       const existingPersona = await server.prisma.persona.findFirst({
         where: {
           id,
           organizationId,
-          type: 'custom',
+          sourceType: 'user_created',
         },
       });
 
@@ -165,9 +164,9 @@ export async function personasRoutes(server: FastifyInstance) {
   // Get persona suggestions for a juror (AI-powered)
   server.post('/suggest', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { jurorId, caseId } = request.body as any;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { jurorId, caseId } = request.body as any as any;
 
       // Verify juror belongs to organization
       const juror = await server.prisma.juror.findFirst({
@@ -228,7 +227,7 @@ export async function personasRoutes(server: FastifyInstance) {
           juror,
           availablePersonas: personas,
           caseContext: {
-            caseType: juror.panel.case.caseType,
+            caseType: juror.panel.case.caseType || 'civil',
             keyIssues: [], // Could be expanded
           },
         });

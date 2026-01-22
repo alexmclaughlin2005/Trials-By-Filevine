@@ -1,4 +1,4 @@
-import { ClaudeClient } from '@trialforge/ai-client';
+import { ClaudeClient } from '@juries/ai-client';
 
 interface Persona {
   id: string;
@@ -88,7 +88,7 @@ export class FocusGroupEngineService {
     const maxTokens = input.simulationMode === 'deliberation' ? 8000 : 5000;
 
     const response = await this.claudeClient.complete({
-      prompt,
+      messages: [{ role: 'user', content: prompt }],
       maxTokens,
       temperature: 0.6, // Higher for more creative/varied reactions
     });

@@ -1,4 +1,4 @@
-# @trialforge/ai-client
+# @juries/ai-client
 
 Claude API client wrapper for consistent AI service integration across the platform.
 
@@ -15,7 +15,7 @@ This package provides a standardized interface for interacting with Anthropic's 
 ## Installation
 
 ```bash
-npm install @trialforge/ai-client
+npm install @juries/ai-client
 ```
 
 ## Environment Variables
@@ -32,7 +32,7 @@ AI_TEMPERATURE=0.7
 ### Basic Claude Call
 
 ```typescript
-import { ClaudeClient } from '@trialforge/ai-client';
+import { ClaudeClient } from '@juries/ai-client';
 
 const client = new ClaudeClient({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -69,7 +69,7 @@ interface AIResponse<T> {
 ### Using Structured Responses
 
 ```typescript
-import { createStructuredPrompt, parseStructuredResponse } from '@trialforge/ai-client';
+import { createStructuredPrompt, parseStructuredResponse } from '@juries/ai-client';
 
 // Create prompt with expected response structure
 const prompt = createStructuredPrompt({
@@ -146,7 +146,7 @@ const cost = response.usage.total_tokens * COST_PER_TOKEN;
 ### Error Handling
 
 ```typescript
-import { ClaudeError, RateLimitError, InvalidRequestError } from '@trialforge/ai-client';
+import { ClaudeError, RateLimitError, InvalidRequestError } from '@juries/ai-client';
 
 try {
   const response = await client.complete({...});
@@ -235,7 +235,7 @@ npm test
 Mock client for testing:
 
 ```typescript
-import { MockClaudeClient } from '@trialforge/ai-client/testing';
+import { MockClaudeClient } from '@juries/ai-client/testing';
 
 const mockClient = new MockClaudeClient({
   mockResponse: {

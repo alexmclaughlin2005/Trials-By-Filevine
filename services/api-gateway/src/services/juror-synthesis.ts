@@ -1,5 +1,5 @@
-import { ClaudeClient } from '@trialforge/ai-client';
-import { PrismaClient } from '@trialforge/database';
+import { ClaudeClient } from '@juries/ai-client';
+import { PrismaClient } from '@juries/database';
 import Anthropic from '@anthropic-ai/sdk';
 import { createHash } from 'crypto';
 import { EventEmitter } from 'events';

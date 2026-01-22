@@ -11,7 +11,7 @@
  * with confidence scores and reasoning.
  */
 
-import { ClaudeClient } from '@trialforge/ai-client';
+import { ClaudeClient } from '@juries/ai-client';
 
 // ============================================
 // TYPE DEFINITIONS

@@ -1,7 +1,7 @@
 import Redis from 'ioredis';
 import { NotificationService } from './notification-service';
 import { Notification } from '../types/notification';
-import { prisma } from '@trialforge/database';
+import { prisma } from '@juries/database';
 
 export class QueueProcessor {
   private redis: Redis;

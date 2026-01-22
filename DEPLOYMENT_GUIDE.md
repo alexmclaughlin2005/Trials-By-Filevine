@@ -1,6 +1,6 @@
-# TrialForge AI - Deployment Guide
+# Trials by Filevine AI - Deployment Guide
 
-Complete guide to deploying TrialForge AI to production on Railway (backend) and Vercel (frontend).
+Complete guide to deploying Trials by Filevine AI to production on Railway (backend) and Vercel (frontend).
 
 ---
 

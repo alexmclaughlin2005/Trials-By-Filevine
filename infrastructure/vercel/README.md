@@ -1,6 +1,6 @@
 # Vercel Deployment Configuration
 
-Configuration and documentation for deploying the TrialForge AI web application to Vercel.
+Configuration and documentation for deploying the Trials by Filevine AI web application to Vercel.
 
 ## Overview
 
@@ -136,7 +136,7 @@ Vercel automatically provisions and renews SSL certificates.
 // apps/web/next.config.js
 module.exports = {
   reactStrictMode: true,
-  transpilePackages: ['@trialforge/types', '@trialforge/utils'],
+  transpilePackages: ['@juries/types', '@juries/utils'],
   images: {
     domains: ['blob.vercel-storage.com'],
   },

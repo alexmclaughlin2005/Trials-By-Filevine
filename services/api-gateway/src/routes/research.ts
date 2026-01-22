@@ -1,13 +1,13 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { ResearchSummarizerService } from '../services/research-summarizer';
 
 export async function researchRoutes(server: FastifyInstance) {
   // Summarize research artifacts for a juror
   server.post('/summarize', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { jurorId, artifactIds } = request.body;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { jurorId, artifactIds } = request.body as any;
 
       if (!jurorId) {
         reply.code(400);
@@ -18,7 +18,7 @@ export async function researchRoutes(server: FastifyInstance) {
       const juror = await server.prisma.juror.findFirst({
         where: {
           id: jurorId,
-          juryPanel: {
+          panel: {
             case: { organizationId },
           },
         },
@@ -26,7 +26,7 @@ export async function researchRoutes(server: FastifyInstance) {
           researchArtifacts: {
             where: artifactIds ? { id: { in: artifactIds } } : undefined,
           },
-          juryPanel: {
+          panel: {
             include: {
               case: true,
             },
@@ -96,7 +96,7 @@ export async function researchRoutes(server: FastifyInstance) {
           age: juror.age || undefined,
         },
         caseContext: {
-          caseType: juror.juryPanel.case.caseType || 'unknown',
+          caseType: juror.panel.case.caseType || 'unknown',
           keyIssues: [],
         },
       });
@@ -106,8 +106,8 @@ export async function researchRoutes(server: FastifyInstance) {
         await server.prisma.researchArtifact.update({
           where: { id: summary.artifactId },
           data: {
-            extractedSnippets: summary.extractedSnippets,
-            signals: summary.personaSignals,
+            extractedSnippets: summary.extractedSnippets as any,
+            signals: summary.personaSignals as any,
             matchRationale: summary.summary,
           },
         });
@@ -120,9 +120,9 @@ export async function researchRoutes(server: FastifyInstance) {
   // Batch summarize all pending research artifacts
   server.post('/batch-summarize', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.body;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.body as any;
 
       if (!caseId) {
         reply.code(400);
@@ -147,7 +147,7 @@ export async function researchRoutes(server: FastifyInstance) {
         where: {
           userAction: 'pending',
           juror: {
-            juryPanel: {
+            panel: {
               caseId,
             },
           },
@@ -155,7 +155,7 @@ export async function researchRoutes(server: FastifyInstance) {
         include: {
           juror: {
             include: {
-              juryPanel: true,
+              panel: true,
             },
           },
         },
@@ -220,10 +220,10 @@ export async function researchRoutes(server: FastifyInstance) {
           await server.prisma.researchArtifact.update({
             where: { id: summary.artifactId },
             data: {
-              extractedSnippets: summary.extractedSnippets,
-              signals: summary.personaSignals,
+              extractedSnippets: summary.extractedSnippets as any,
+              signals: summary.personaSignals as any,
               matchRationale: summary.summary,
-              userAction: 'pending_review', // Change status to indicate AI processing complete
+              userAction: 'pending', // Change status to indicate AI processing complete
             },
           });
           processed++;

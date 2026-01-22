@@ -13,6 +13,7 @@ export interface SearchParams {
   state?: string;
   zipCode?: string;
   occupation?: string;
+  venueId?: number;
 }
 
 export interface DataSourceAdapter {

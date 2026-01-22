@@ -9,7 +9,7 @@
  */
 
 import Anthropic from '@anthropic-ai/sdk';
-import { PrismaClient } from '@trialforge/database';
+import { PrismaClient } from '@juries/database';
 
 export interface OCRResult {
   success: boolean;
@@ -116,7 +116,7 @@ export class OCRService {
    */
   private async fetchImageAsBase64(imageUrl: string): Promise<{
     base64: string;
-    mediaType: string;
+    mediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp';
   }> {
     // If it's a local file path, read it directly
     if (imageUrl.startsWith('/') || imageUrl.startsWith('file://')) {
@@ -127,7 +127,14 @@ export class OCRService {
 
       // Determine media type from file extension
       const ext = path.split('.').pop()?.toLowerCase();
-      const mediaType = ext === 'png' ? 'image/png' : 'image/jpeg';
+      let mediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp' = 'image/jpeg';
+      if (ext === 'png') {
+        mediaType = 'image/png';
+      } else if (ext === 'gif') {
+        mediaType = 'image/gif';
+      } else if (ext === 'webp') {
+        mediaType = 'image/webp';
+      }
 
       return { base64, mediaType };
     }
@@ -140,7 +147,17 @@ export class OCRService {
 
     const buffer = await response.arrayBuffer();
     const base64 = Buffer.from(buffer).toString('base64');
-    const mediaType = response.headers.get('content-type') || 'image/jpeg';
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+
+    // Map content type to supported media types
+    let mediaType: 'image/png' | 'image/jpeg' | 'image/gif' | 'image/webp' = 'image/jpeg';
+    if (contentType.includes('png')) {
+      mediaType = 'image/png';
+    } else if (contentType.includes('gif')) {
+      mediaType = 'image/gif';
+    } else if (contentType.includes('webp')) {
+      mediaType = 'image/webp';
+    }
 
     return { base64, mediaType };
   }
@@ -268,7 +285,7 @@ Important:
       data: {
         status: result.success ? 'completed' : 'failed',
         ocrProvider: 'claude-vision',
-        extractedJurors: result.extractedJurors,
+        extractedJurors: result.extractedJurors as any,
         jurorCount: result.extractedJurors.length,
         confidence: result.confidence,
         needsReview: result.confidence < 80 || result.extractedJurors.some((j) => j.needsReview),

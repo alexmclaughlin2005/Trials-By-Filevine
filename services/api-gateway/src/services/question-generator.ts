@@ -1,4 +1,4 @@
-import { ClaudeClient } from '@trialforge/ai-client';
+import { ClaudeClient } from '@juries/ai-client';
 
 interface Persona {
   id: string;
@@ -68,7 +68,7 @@ export class QuestionGeneratorService {
     const prompt = this.buildPrompt(input);
 
     const response = await this.claudeClient.complete({
-      prompt,
+      messages: [{ role: 'user', content: prompt }],
       maxTokens: 6000,
       temperature: 0.4, // Balance creativity with consistency
     });

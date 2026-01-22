@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -135,8 +135,8 @@ export async function authRoutes(server: FastifyInstance) {
   // Get current user
   server.get('/me', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const userId = request.user.userId;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const userId = (request.user as any).userId;
 
       const user = await server.prisma.user.findUnique({
         where: { id: userId },

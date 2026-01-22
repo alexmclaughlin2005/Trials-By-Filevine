@@ -1,6 +1,6 @@
 # API Gateway Service
 
-RESTful API Gateway for TrialForge AI platform built with Fastify.
+RESTful API Gateway for Trials by Filevine AI platform built with Fastify.
 
 ## Features
 

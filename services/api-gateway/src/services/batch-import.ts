@@ -9,7 +9,7 @@
  * - Progress tracking
  */
 
-import { PrismaClient } from '@trialforge/database';
+import { PrismaClient } from '@juries/database';
 import { parse } from 'csv-parse/sync';
 import { SearchOrchestrator } from './search-orchestrator';
 
@@ -54,7 +54,7 @@ export class BatchImportService {
         columns: true,
         skip_empty_lines: true,
         trim: true,
-      });
+      }) as CSVRow[];
       return records;
     } catch (error) {
       throw new Error(`CSV parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -64,7 +64,7 @@ export class BatchImportService {
   /**
    * Map CSV columns to juror fields using column mapping
    */
-  private mapRow(row: CSVRow, columnMapping?: Record<string, string>): any {
+  private mapRow(row: CSVRow, columnMapping?: Record<string, string>): Record<string, any> {
     // Default column mapping
     const defaultMapping: Record<string, string> = {
       'Juror Number': 'jurorNumber',
@@ -114,7 +114,7 @@ export class BatchImportService {
   /**
    * Validate a mapped juror row
    */
-  private validateRow(row: any, rowIndex: number): string | null {
+  private validateRow(row: Record<string, any>, rowIndex: number): string | null {
     // Required fields
     if (!row.firstName || !row.lastName) {
       return `Row ${rowIndex + 1}: Missing required fields (firstName, lastName)`;
@@ -324,17 +324,16 @@ export class BatchImportService {
       }
 
       // Execute search
-      const candidates = await this.searchOrchestrator.search({
-        jurorId: juror.id,
+      const result = await this.searchOrchestrator.searchJuror(juror.id, {
         firstName: juror.firstName,
         lastName: juror.lastName,
         age: juror.age || undefined,
         city: juror.city || undefined,
         zipCode: juror.zipCode || undefined,
         occupation: juror.occupation || undefined,
-        employer: juror.employer || undefined,
-        venueId: juror.venueId || undefined,
       });
+
+      const candidates = result.candidates;
 
       // Update search job
       await this.prisma.searchJob.update({
@@ -343,7 +342,7 @@ export class BatchImportService {
           status: 'completed',
           completedAt: new Date(),
           candidateCount: candidates.length,
-          sourcesSearched: [...new Set(candidates.map((c) => c.sourceType))],
+          sourcesSearched: result.sourcesSearched,
         },
       });
 

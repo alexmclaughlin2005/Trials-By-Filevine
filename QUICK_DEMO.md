@@ -1,4 +1,4 @@
-# TrialForge AI - 5-Minute Quick Demo
+# Trials by Filevine AI - 5-Minute Quick Demo
 
 ## Setup (1 minute)
 

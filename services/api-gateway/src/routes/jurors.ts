@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 import { SearchOrchestrator } from '../services/search-orchestrator';
 import { MockDataSourceAdapter } from '../adapters/mock-data-source';
@@ -6,7 +6,8 @@ import { VoterRecordAdapter } from '../adapters/voter-record-adapter';
 import { FECLocalAdapter } from '../adapters/fec-local-adapter';
 import { FECAPIAdapter } from '../adapters/fec-api-adapter';
 import { PeopleSearchAdapter } from '../adapters/people-search-adapter';
-import { PrismaClient } from '@trialforge/database';
+import { DataSourceAdapter } from '../adapters/data-source-adapter';
+import { PrismaClient } from '@juries/database';
 
 // Initialize data source adapters
 const prisma = new PrismaClient();
@@ -15,7 +16,7 @@ const prisma = new PrismaClient();
 const mockDataSource = new MockDataSourceAdapter();
 
 // Phase 2: Real data sources
-const dataSources = [mockDataSource]; // Start with mock
+const dataSources: DataSourceAdapter[] = [mockDataSource]; // Start with mock
 
 // Voter records (Tier 1 - local database)
 const voterRecordAdapter = new VoterRecordAdapter(prisma);
@@ -55,11 +56,15 @@ const searchOrchestrator = new SearchOrchestrator(dataSources);
 
 const createJurorSchema = z.object({
   panelId: z.string(),
-  jurorNumber: z.number().int().positive(),
-  name: z.string().optional(),
-  demographics: z.record(z.any()).optional(),
+  jurorNumber: z.string().optional(),
+  firstName: z.string(),
+  lastName: z.string(),
+  age: z.number().int().positive().optional(),
   occupation: z.string().optional(),
-  education: z.string().optional(),
+  employer: z.string().optional(),
+  city: z.string().optional(),
+  zipCode: z.string().optional(),
+  questionnaireData: z.record(z.any()).optional(),
   notes: z.string().optional(),
 });
 
@@ -69,9 +74,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get all jurors for a jury panel
   server.get('/panel/:panelId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { panelId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params as any;
 
       // Verify panel belongs to organization
       const panel = await server.prisma.juryPanel.findFirst({
@@ -106,9 +111,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get a single juror
   server.get('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       const juror = await server.prisma.juror.findFirst({
         where: {
@@ -155,9 +160,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Create a new juror
   server.post('/', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const body = createJurorSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const body = createJurorSchema.parse(request.body as any);
 
       // Verify panel belongs to organization
       const panel = await server.prisma.juryPanel.findFirst({
@@ -184,16 +189,16 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Update a juror
   server.patch('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
-      const body = updateJurorSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const body = updateJurorSchema.parse(request.body as any);
 
       // Verify juror belongs to organization
       const existingJuror = await server.prisma.juror.findFirst({
         where: {
           id,
-          juryPanel: {
+          panel: {
             case: { organizationId },
           },
         },
@@ -216,15 +221,15 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Delete a juror
   server.delete('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       // Verify juror belongs to organization
       const existingJuror = await server.prisma.juror.findFirst({
         where: {
           id,
-          juryPanel: {
+          panel: {
             case: { organizationId },
           },
         },
@@ -247,16 +252,16 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Add research artifact to juror
   server.post('/:id/research', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
-      const { artifactType, source, content, url, confidence } = request.body as any;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const { sourceType, sourceName, rawContent, sourceUrl, matchConfidence } = request.body as any;
 
       // Verify juror belongs to organization
       const existingJuror = await server.prisma.juror.findFirst({
         where: {
           id,
-          juryPanel: {
+          panel: {
             case: { organizationId },
           },
         },
@@ -269,11 +274,12 @@ export async function jurorsRoutes(server: FastifyInstance) {
 
       const artifact = await server.prisma.researchArtifact.create({
         data: {
-          artifactType,
-          source,
-          content,
-          url,
-          confidence: confidence || 0.5,
+          sourceType,
+          sourceName,
+          rawContent,
+          sourceUrl,
+          matchConfidence: matchConfidence || 0.5,
+          retrievedAt: new Date(),
           jurorId: id,
         },
       });
@@ -286,16 +292,16 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Map juror to persona
   server.post('/:id/persona-mapping', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
-      const { personaId, confidence, reasoning } = request.body as any;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const { personaId, confidence, rationale, mappingType, source } = request.body as any;
 
       // Verify juror belongs to organization
       const existingJuror = await server.prisma.juror.findFirst({
         where: {
           id,
-          juryPanel: {
+          panel: {
             case: { organizationId },
           },
         },
@@ -310,7 +316,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
       const persona = await server.prisma.persona.findFirst({
         where: {
           id: personaId,
-          OR: [{ organizationId }, { type: 'system' }],
+          OR: [{ organizationId }, { sourceType: 'system' }],
         },
       });
 
@@ -323,8 +329,10 @@ export async function jurorsRoutes(server: FastifyInstance) {
         data: {
           jurorId: id,
           personaId,
+          mappingType: mappingType || 'primary',
+          source: source || 'user_assigned',
           confidence: confidence || 0.5,
-          reasoning,
+          rationale,
         },
         include: {
           persona: true,
@@ -339,9 +347,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Search for juror identity matches
   server.post('/:id/search', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { id } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
 
       // Verify juror belongs to organization
       const juror = await server.prisma.juror.findFirst({
@@ -379,10 +387,10 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Confirm a candidate match
   server.post('/candidates/:candidateId/confirm', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { candidateId } = request.params;
-      const { userId } = request.user;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { candidateId } = request.params as any;
+      const { userId } = request.user as any;
 
       // Verify candidate's juror belongs to organization
       const candidate = await server.prisma.candidate.findUnique({
@@ -416,10 +424,10 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Reject a candidate match
   server.post('/candidates/:candidateId/reject', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { candidateId } = request.params;
-      const { userId } = request.user;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { candidateId } = request.params as any;
+      const { userId } = request.user as any;
 
       // Verify candidate's juror belongs to organization
       const candidate = await server.prisma.candidate.findUnique({
@@ -457,10 +465,10 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Import jurors from CSV (Phase 3)
   server.post('/panel/:panelId/batch', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId, userId } = request.user;
-      const { panelId } = request.params;
-      const { csvContent, fileName, autoSearch, venueId, columnMapping } = request.body as any;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const { panelId } = request.params as any;
+      const { csvContent, fileName, autoSearch, venueId, columnMapping } = request.body as any as any;
 
       // Verify panel belongs to organization
       const panel = await server.prisma.juryPanel.findFirst({
@@ -506,9 +514,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get batch import status
   server.get('/batch/:batchId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { batchId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { batchId } = request.params as any;
 
       const batch = await server.prisma.batchImport.findFirst({
         where: {
@@ -540,9 +548,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get all batch imports for a panel
   server.get('/panel/:panelId/batches', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { panelId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params as any;
 
       // Verify panel belongs to organization
       const panel = await server.prisma.juryPanel.findFirst({

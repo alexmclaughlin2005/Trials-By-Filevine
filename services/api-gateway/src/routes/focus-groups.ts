@@ -1,13 +1,13 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { FocusGroupEngineService } from '../services/focus-group-engine';
 
 export async function focusGroupsRoutes(server: FastifyInstance) {
   // Run a focus group simulation
   server.post('/simulate', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, argumentId, personaIds, simulationMode } = request.body;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId, personaIds, simulationMode } = request.body as any;
 
       if (!caseId || !argumentId) {
         reply.code(400);
@@ -47,12 +47,12 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         ? await server.prisma.persona.findMany({
             where: {
               id: { in: personaIds },
-              OR: [{ organizationId }, { type: 'system' }],
+              OR: [{ organizationId }, { sourceType: 'system' }],
             },
           })
         : await server.prisma.persona.findMany({
             where: {
-              OR: [{ organizationId }, { type: 'system' }],
+              OR: [{ organizationId }, { sourceType: 'system' }],
               isActive: true,
             },
             take: 6, // Default panel size
@@ -74,7 +74,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
             personaReactions: personas.map((p) => ({
               personaId: p.id,
               personaName: p.name,
-              initialReaction: `${p.name} would likely respond based on their ${p.attributes?.decisionStyle || 'mixed'} decision style`,
+              initialReaction: `${p.name} would likely respond based on their ${(p.attributes as any)?.decisionStyle || 'mixed'} decision style`,
               sentimentScore: 0.6,
               concerns: ['Sample concern about argument clarity'],
               questions: ['Sample question about evidence'],
@@ -136,7 +136,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           panelType: 'simulated',
           argumentId,
           status: 'completed',
-          createdBy: request.user.userId,
+          createdBy: (request.user as any).id,
           completedAt: new Date(),
         },
       });
@@ -192,9 +192,9 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
   // Get focus group sessions for a case
   server.get('/case/:caseId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
 
       // Verify case belongs to organization
       const caseData = await server.prisma.case.findFirst({
@@ -227,9 +227,9 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
   // Get focus group session details
   server.get('/:sessionId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { sessionId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params as any;
 
       const session = await server.prisma.focusGroupSession.findFirst({
         where: {
@@ -242,16 +242,11 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
               persona: true,
             },
           },
-          results: {
-            include: {
-              persona: true,
-            },
-          },
+          results: true,
           recommendations: {
             orderBy: { priority: 'desc' },
           },
           case: true,
-          argument: true,
         },
       });
 

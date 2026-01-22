@@ -8,7 +8,7 @@
  * Based on the juror archetype system with 10 behavioral archetypes.
  */
 
-import { ClaudeClient } from '@trialforge/ai-client';
+import { ClaudeClient } from '@juries/ai-client';
 import type { Archetype } from './archetype-classifier';
 
 // ============================================
@@ -280,7 +280,7 @@ export class DeliberationSimulatorService {
     const prompt = this.buildDeliberationPrompt(input);
 
     const response = await this.claudeClient.complete({
-      prompt,
+      messages: [{ role: 'user', content: prompt }],
       maxTokens: 10000, // Large token budget for detailed deliberation
       temperature: 0.5,
     });

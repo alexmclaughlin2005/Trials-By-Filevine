@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
 
 const createWitnessSchema = z.object({
@@ -16,10 +16,10 @@ export async function caseWitnessesRoutes(server: FastifyInstance) {
   // Create a witness
   server.post('/:caseId/witnesses', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
-      const body = createWitnessSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
+      const body = createWitnessSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -54,10 +54,10 @@ export async function caseWitnessesRoutes(server: FastifyInstance) {
   // Update a witness
   server.put('/:caseId/witnesses/:witnessId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, witnessId } = request.params;
-      const body = updateWitnessSchema.parse(request.body);
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, witnessId } = request.params as any;
+      const body = updateWitnessSchema.parse(request.body as any);
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -91,9 +91,9 @@ export async function caseWitnessesRoutes(server: FastifyInstance) {
   // Delete a witness
   server.delete('/:caseId/witnesses/:witnessId', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId, witnessId } = request.params;
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, witnessId } = request.params as any;
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({
@@ -127,10 +127,10 @@ export async function caseWitnessesRoutes(server: FastifyInstance) {
   // Reorder witnesses
   server.patch('/:caseId/witnesses/reorder', {
     onRequest: [server.authenticate],
-    handler: async (request: any, reply) => {
-      const { organizationId } = request.user;
-      const { caseId } = request.params;
-      const { witnessIds } = request.body as { witnessIds: string[] };
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.params as any;
+      const { witnessIds } = request.body as any as { witnessIds: string[] };
 
       // Verify case belongs to organization
       const existingCase = await server.prisma.case.findFirst({

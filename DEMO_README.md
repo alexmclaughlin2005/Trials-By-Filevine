@@ -1,6 +1,6 @@
 # Demo & Presentation Materials
 
-This directory contains comprehensive demo and presentation materials for TrialForge AI.
+This directory contains comprehensive demo and presentation materials for Trials by Filevine AI.
 
 ## 📚 Available Guides
 

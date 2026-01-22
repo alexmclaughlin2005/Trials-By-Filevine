@@ -6,7 +6,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { metaphone } from '@trialforge/utils';
+import { metaphone } from '@juries/utils';
 
 const prisma = new PrismaClient();
 

@@ -1,6 +1,6 @@
 # Railway Deployment Configuration
 
-Configuration files and documentation for deploying TrialForge AI services to Railway.
+Configuration files and documentation for deploying Trials by Filevine AI services to Railway.
 
 ## Overview
 
@@ -14,7 +14,7 @@ Railway hosts all backend services:
 ## Project Structure on Railway
 
 ```
-TrialForge AI (Project)
+Trials by Filevine AI (Project)
 ├── PostgreSQL (Plugin)
 ├── Redis (Plugin)
 ├── api-gateway (Service)

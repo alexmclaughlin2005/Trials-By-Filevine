@@ -1,6 +1,6 @@
 # Collaboration Service
 
-Real-time collaboration service for TrialForge AI, enabling WebSocket-based communication, user presence tracking, and multi-user collaboration features.
+Real-time collaboration service for Trials by Filevine AI, enabling WebSocket-based communication, user presence tracking, and multi-user collaboration features.
 
 ## Features
 
