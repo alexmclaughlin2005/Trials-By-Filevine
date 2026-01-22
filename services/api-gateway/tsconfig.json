@@ -17,7 +17,8 @@
     "paths": {
       "@juries/database": ["../../packages/database/src"],
       "@juries/types": ["../../packages/types/src"],
-      "@juries/ai-client": ["../../packages/ai-client/src"]
+      "@juries/ai-client": ["../../packages/ai-client/src"],
+      "@juries/utils": ["../../packages/utils/src"]
     }
   },
   "include": ["src/**/*"],

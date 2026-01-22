@@ -12,8 +12,10 @@
   "keywords": ["trialforge", "utilities"],
   "author": "Trials by Filevine AI",
   "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^20.10.0",
+  "dependencies": {
     "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0"
   }
 }
