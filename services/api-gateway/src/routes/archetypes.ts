@@ -376,10 +376,11 @@ export async function archetypeRoutes(server: FastifyInstance) {
 
       // Count archetype distribution
       const archetypeDistribution: Record<string, number> = {};
-      panel.jurors.forEach((juror) => {
-        if (juror.classifiedArchetype) {
-          archetypeDistribution[juror.classifiedArchetype] =
-            (archetypeDistribution[juror.classifiedArchetype] || 0) + 1;
+      panel.jurors.forEach((juror: Record<string, unknown>) => {
+        const archetype = juror.classifiedArchetype as string | null;
+        if (archetype) {
+          archetypeDistribution[archetype] =
+            (archetypeDistribution[archetype] || 0) + 1;
         }
       });
 

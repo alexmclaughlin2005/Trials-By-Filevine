@@ -225,10 +225,10 @@ export async function personasRoutes(server: FastifyInstance) {
 
         const suggestions = await suggester.suggestPersonas({
           juror,
-          availablePersonas: personas.map(p => ({
-            id: p.id,
-            name: p.name,
-            description: p.description,
+          availablePersonas: personas.map((p: Record<string, unknown>) => ({
+            id: p.id as string,
+            name: p.name as string,
+            description: p.description as string,
             attributes: (p.attributes as Record<string, unknown>) || {},
             persuasionLevers: (p.persuasionLevers as Record<string, unknown>) || {},
             pitfalls: (p.pitfalls as Record<string, unknown>) || {},
