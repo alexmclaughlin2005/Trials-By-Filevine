@@ -35,6 +35,7 @@ export default function PromptDetailPage({
   const [versionNotes, setVersionNotes] = useState('');
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const currentVersion = versions?.find((v) => v.id === prompt?.currentVersionId);
 
@@ -70,6 +71,8 @@ export default function PromptDetailPage({
 
     try {
       setSaveError(null);
+      setSaveSuccess(false);
+
       await createVersion.mutateAsync({
         version: newVersion,
         systemPrompt: systemPrompt || undefined,
@@ -83,6 +86,10 @@ export default function PromptDetailPage({
 
       setIsEditing(false);
       setVersionNotes('');
+      setSaveSuccess(true);
+
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
     } catch (error) {
       console.error('Failed to save version:', error);
       setSaveError(error instanceof Error ? error.message : 'Failed to save version');
@@ -198,6 +205,18 @@ export default function PromptDetailPage({
         <div className="grid grid-cols-3 gap-6">
           {/* Main Editor */}
           <div className="col-span-2 space-y-6">
+            {saveSuccess && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h3 className="text-green-800 font-semibold">Version saved successfully!</h3>
+                    <p className="text-green-600 text-sm mt-1">Your changes have been saved as a new version.</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {saveError && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                 <div className="flex items-start gap-3">

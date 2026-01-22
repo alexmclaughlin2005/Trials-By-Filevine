@@ -56,7 +56,9 @@ export function useCreateVersion(promptId: string) {
     mutationFn: (data: Parameters<typeof promptApi.createVersion>[1]) =>
       promptApi.createVersion(promptId, data),
     onSuccess: () => {
+      // Invalidate both versions and prompts to refresh the UI
       queryClient.invalidateQueries({ queryKey: ['versions', promptId] });
+      queryClient.invalidateQueries({ queryKey: ['prompts'] });
     },
     onError: () => {
       // Refetch versions on error in case version already exists

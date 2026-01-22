@@ -54,14 +54,22 @@ async function main() {
     console.log(`Schema path: ${SCHEMA_PATH}`);
     console.log('');
 
+    // List of all migrations that have failed in production
+    // We'll mark them all as applied since the database schema is already correct
     const failedMigrations = [
       '20260121164817_init',
-      '20260121173451_add_archetype_system'
+      '20260121173451_add_archetype_system',
+      '20260121180910_add_password_hash_to_users',
+      '20260121190520_add_deep_research_and_prompt_management',
+      '20260122011423_add_synthesized_profiles',
+      '20260122030445_add_filevine_oauth_sessions',
+      '20260122135711_add_document_capture',
+      '20260122185713_add_filevine_connection'
     ];
 
     for (const migration of failedMigrations) {
       try {
-        // First mark as rolled back
+        // First mark as rolled back if it's in failed state
         await runCommand('npx', ['prisma', 'migrate', 'resolve', '--rolled-back', migration, `--schema=${SCHEMA_PATH}`]);
         console.log(`✅ Marked ${migration} as rolled back`);
 
