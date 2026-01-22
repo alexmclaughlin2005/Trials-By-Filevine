@@ -209,7 +209,7 @@ export async function personasRoutes(server: FastifyInstance) {
       if (!apiKey) {
         // Fallback to mock response if no API key
         server.log.warn('ANTHROPIC_API_KEY not set, using mock suggestions');
-        const mockSuggestions = personas.slice(0, 3).map((persona) => ({
+        const mockSuggestions = personas.slice(0, 3).map((persona: Record<string, unknown>) => ({
           persona,
           confidence: Math.random() * 0.3 + 0.7,
           reasoning: `Mock analysis: Based on juror demographics and profile, this persona appears to match key characteristics.`,
@@ -225,7 +225,14 @@ export async function personasRoutes(server: FastifyInstance) {
 
         const suggestions = await suggester.suggestPersonas({
           juror,
-          availablePersonas: personas,
+          availablePersonas: personas.map(p => ({
+            id: p.id,
+            name: p.name,
+            description: p.description,
+            attributes: (p.attributes as Record<string, unknown>) || {},
+            persuasionLevers: (p.persuasionLevers as Record<string, unknown>) || {},
+            pitfalls: (p.pitfalls as Record<string, unknown>) || {},
+          })),
           caseContext: {
             caseType: juror.panel.case.caseType || 'civil',
             keyIssues: [], // Could be expanded

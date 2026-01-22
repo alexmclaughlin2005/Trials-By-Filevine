@@ -284,7 +284,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
 
       return {
         archetype,
-        personas: personas.map((p) => ({
+        personas: personas.map((p: Record<string, unknown>) => ({
           ...p,
           archetypeStrength: p.archetypeStrength ? parseFloat(p.archetypeStrength.toString()) : null,
         })),
@@ -408,7 +408,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
       let avgPlaintiffDanger = 0;
       let avgDefenseDanger = 0;
 
-      panel.jurors.forEach((juror) => {
+      panel.jurors.forEach((juror: Record<string, unknown>) => {
         if (juror.classifiedArchetype) {
           const levels = dangerLevels[juror.classifiedArchetype as Archetype];
           avgPlaintiffDanger += levels.plaintiff;
@@ -437,7 +437,7 @@ export async function archetypeRoutes(server: FastifyInstance) {
               ? 'Panel leans plaintiff-favorable'
               : 'Balanced panel',
         },
-        jurors: panel.jurors.map((j) => ({
+        jurors: panel.jurors.map((j: Record<string, unknown>) => ({
           ...j,
           archetypeConfidence: j.archetypeConfidence ? parseFloat(j.archetypeConfidence.toString()) : null,
         })),

@@ -195,7 +195,7 @@ export class FECLocalAdapter implements DataSourceAdapter {
       totalDonations,
       uniqueDonors: uniqueDonors.length,
       totalAmount: aggregatedSum._sum.amount || 0,
-      venueCount: venues.filter((v) => v.venueId).length,
+      venueCount: venues.filter((v: { venueId: string | null }) => v.venueId).length,
     };
   }
 }

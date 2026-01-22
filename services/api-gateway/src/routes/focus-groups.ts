@@ -71,7 +71,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           result: {
             overallReception: 'Mock simulation - configure ANTHROPIC_API_KEY for AI-powered focus groups',
             averageSentiment: 0.6,
-            personaReactions: personas.map((p) => ({
+            personaReactions: personas.map((p: Record<string, unknown>) => ({
               personaId: p.id,
               personaName: p.name,
               initialReaction: `${p.name} would likely respond based on their ${(p.attributes as any)?.decisionStyle || 'mixed'} decision style`,
@@ -89,7 +89,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
                 category: 'strengthen',
                 title: 'Add more concrete examples',
                 description: 'The argument would benefit from specific case examples',
-                affectedPersonas: personas.map((p) => p.name),
+                affectedPersonas: personas.map((p: Record<string, unknown>) => p.name as string),
               },
             ],
             strengthsToEmphasize: ['Clear narrative', 'Strong facts'],
@@ -105,9 +105,9 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           caseName: caseData.name,
           caseType: caseData.caseType || 'unknown',
           ourSide: caseData.ourSide || 'unknown',
-          facts: caseData.facts.map((f) => ({
-            content: f.content,
-            factType: f.factType,
+          facts: caseData.facts.map((f: Record<string, unknown>) => ({
+            content: f.content as string,
+            factType: f.factType as string,
           })),
         },
         argument: {
@@ -116,13 +116,13 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           content: argument.content,
           argumentType: argument.argumentType,
         },
-        personas: personas.map((p) => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          attributes: p.attributes,
-          persuasionLevers: p.persuasionLevers,
-          pitfalls: p.pitfalls,
+        personas: personas.map((p: Record<string, unknown>) => ({
+          id: p.id as string,
+          name: p.name as string,
+          description: p.description as string,
+          attributes: p.attributes as Record<string, unknown>,
+          persuasionLevers: p.persuasionLevers as Record<string, unknown>,
+          pitfalls: p.pitfalls as Record<string, unknown>,
         })),
         simulationMode: simulationMode || 'detailed',
       });

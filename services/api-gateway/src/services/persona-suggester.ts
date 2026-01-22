@@ -1,5 +1,13 @@
 import { ClaudeClient } from '@juries/ai-client';
-import type { Juror, Persona, ResearchArtifact } from '@juries/database';
+
+interface Persona {
+  id: string;
+  name: string;
+  description: string;
+  attributes: Record<string, unknown>;
+  persuasionLevers: Record<string, unknown>;
+  pitfalls: Record<string, unknown>;
+}
 
 interface PersonaSuggestion {
   persona: Persona;
@@ -10,8 +18,8 @@ interface PersonaSuggestion {
 }
 
 interface PersonaSuggesterInput {
-  juror: Juror & {
-    researchArtifacts?: ResearchArtifact[];
+  juror: Record<string, unknown> & {
+    researchArtifacts?: Record<string, unknown>[];
   };
   availablePersonas: Persona[];
   caseContext?: {
@@ -138,7 +146,7 @@ Respond ONLY with valid JSON in this exact format:
 
     if (juror.researchArtifacts && juror.researchArtifacts.length > 0) {
       parts.push('\nResearch Artifacts:');
-      juror.researchArtifacts.forEach((artifact, i) => {
+      juror.researchArtifacts.forEach((artifact: Record<string, unknown>, i: number) => {
         parts.push(`  ${i + 1}. [${artifact.sourceType}] ${artifact.sourceName || 'Unknown'}: ${artifact.rawContent || 'No content'}`);
       });
     }

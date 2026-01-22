@@ -50,7 +50,7 @@ export async function researchRoutes(server: FastifyInstance) {
 
       // Mock response if no API key
       if (!apiKey) {
-        const mockSummaries = juror.researchArtifacts.map((artifact) => ({
+        const mockSummaries = juror.researchArtifacts.map((artifact: Record<string, unknown>) => ({
           artifactId: artifact.id,
           summary: `Mock summary for ${artifact.sourceType} artifact from ${artifact.sourceName}`,
           personaSignals: [
@@ -80,12 +80,12 @@ export async function researchRoutes(server: FastifyInstance) {
       // Use AI service
       const summarizer = new ResearchSummarizerService(apiKey);
 
-      const artifacts = juror.researchArtifacts.map((artifact) => ({
-        id: artifact.id,
-        artifactType: artifact.sourceType,
-        source: artifact.sourceName || artifact.sourceType,
-        content: artifact.rawContent || '',
-        url: artifact.sourceUrl || undefined,
+      const artifacts = juror.researchArtifacts.map((artifact: Record<string, unknown>) => ({
+        id: artifact.id as string,
+        artifactType: artifact.sourceType as string,
+        source: (artifact.sourceName as string | null) || (artifact.sourceType as string),
+        content: (artifact.rawContent as string | null) || '',
+        url: (artifact.sourceUrl as string | null) || undefined,
       }));
 
       const summaries = await summarizer.summarizeResearch({
@@ -197,12 +197,12 @@ export async function researchRoutes(server: FastifyInstance) {
         const juror = artifacts[0].juror;
 
         const summaries = await summarizer.summarizeResearch({
-          artifacts: artifacts.map((a) => ({
-            id: a.id,
-            artifactType: a.sourceType,
-            source: a.sourceName || a.sourceType,
-            content: a.rawContent || '',
-            url: a.sourceUrl || undefined,
+          artifacts: artifacts.map((a: Record<string, unknown>) => ({
+            id: a.id as string,
+            artifactType: a.sourceType as string,
+            source: (a.sourceName as string | null) || (a.sourceType as string),
+            content: (a.rawContent as string | null) || '',
+            url: (a.sourceUrl as string | null) || undefined,
           })),
           jurorContext: {
             name: `${juror.firstName} ${juror.lastName}`,

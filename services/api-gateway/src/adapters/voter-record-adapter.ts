@@ -99,22 +99,22 @@ export class VoterRecordAdapter implements DataSourceAdapter {
       console.log(`[VoterRecordAdapter] Found ${records.length} matches in ${elapsedMs}ms`);
 
       // Convert to DataSourceMatch format
-      return records.map((record) => ({
-        fullName: record.fullName,
-        firstName: record.firstName,
-        lastName: record.lastName,
-        middleName: record.middleName || undefined,
-        age: record.age || undefined,
-        birthYear: record.birthYear || undefined,
-        city: record.city || undefined,
+      return records.map((record: Record<string, unknown>) => ({
+        fullName: record.fullName as string,
+        firstName: record.firstName as string,
+        lastName: record.lastName as string,
+        middleName: (record.middleName as string | null) || undefined,
+        age: (record.age as number | null) || undefined,
+        birthYear: (record.birthYear as number | null) || undefined,
+        city: (record.city as string | null) || undefined,
         state: 'CA', // TODO: add state field to VoterRecord model or get from venue
-        zipCode: record.zipCode || undefined,
+        zipCode: (record.zipCode as string | null) || undefined,
         sourceType: 'voter_record',
         rawData: {
-          party: record.party || undefined,
-          registrationDate: record.registrationDate?.toISOString().split('T')[0],
-          votingHistory: record.votingHistory || [],
-          address: record.address || undefined,
+          party: (record.party as string | null) || undefined,
+          registrationDate: (record.registrationDate as Date | null)?.toISOString().split('T')[0],
+          votingHistory: (record.votingHistory as string[]) || [],
+          address: (record.address as string | null) || undefined,
         },
       }));
     } catch (error) {
