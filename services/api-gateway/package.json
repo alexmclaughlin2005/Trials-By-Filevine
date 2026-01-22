@@ -7,8 +7,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc && ls -la dist/ && echo 'Build completed successfully'",
     "postbuild": "test -f dist/index.js && echo 'dist/index.js exists' || echo 'ERROR: dist/index.js not found'",
-    "prestart": "test -f dist/index.js || npm run build",
-    "start": "node dist/index.js",
+    "prestart": "pwd && ls -la && (test -f dist/index.js && echo 'dist found' || (echo 'dist not found, building...' && npm run build))",
+    "start": "pwd && ls -la dist/ && node dist/index.js",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },
