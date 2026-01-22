@@ -44,9 +44,15 @@ export async function buildServer() {
     contentSecurityPolicy: config.nodeEnv === 'production',
   });
 
+  // Log CORS configuration
+  server.log.info({ allowedOrigins: config.allowedOrigins }, 'CORS configuration');
+
   await server.register(cors, {
     origin: config.allowedOrigins,
     credentials: true,
+    preflight: true,
+    strictPreflight: false,
+    preflightContinue: false,
   });
 
   await server.register(rateLimit, {

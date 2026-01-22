@@ -10,7 +10,7 @@ const configSchema = z.object({
   databaseUrl: z.string(),
   jwtSecret: z.string(),
   jwtExpiresIn: z.string().default('7d'),
-  allowedOrigins: z.string().transform((val) => val.split(',')),
+  allowedOrigins: z.string().transform((val) => val.split(',').map(s => s.trim())),
   rateLimitMax: z.number().default(100),
   rateLimitWindow: z.string().default('15m'),
   logLevel: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
