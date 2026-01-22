@@ -28,10 +28,11 @@ model Organization {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   // Relations
-  users          User[]
-  cases          Case[]
-  personas       Persona[]
-  notifications  Notification[]
+  users               User[]
+  cases               Case[]
+  personas            Persona[]
+  notifications       Notification[]
+  filevineConnections FilevineConnection[]
 
   @@map("organizations")
 }
@@ -878,6 +879,43 @@ model NotificationPreferences {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notification_preferences")
+}
+
+// ============================================
+// FILEVINE INTEGRATION
+// ============================================
+
+model FilevineConnection {
+  id                    String    @id @default(uuid())
+  organizationId        String    @unique @map("organization_id") // One connection per org
+
+  // OAuth Credentials (encrypted at rest)
+  clientId              String    @map("client_id")
+  clientSecret          String    @db.Text @map("client_secret") // Encrypted
+  personalAccessToken   String    @db.Text @map("personal_access_token") // Encrypted, 64-char hex
+
+  // Cached Authentication Data
+  accessToken           String?   @db.Text @map("access_token")
+  sessionId             String?   @map("session_id") // JWT 'jti' claim
+  numericUserId         String?   @map("numeric_user_id") // From GetUserOrgsWithToken
+  filevineOrgId         String?   @map("filevine_org_id") // Filevine's org ID
+  tokenExpiresAt        DateTime? @map("token_expires_at")
+
+  // Metadata
+  connectionName        String    @default("Filevine Integration") @map("connection_name")
+  isActive              Boolean   @default(true) @map("is_active")
+  lastSyncedAt          DateTime? @map("last_synced_at")
+  lastTestSuccessful    Boolean?  @map("last_test_successful")
+  lastTestAt            DateTime? @map("last_test_at")
+  lastErrorMessage      String?   @db.Text @map("last_error_message")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  organization          Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+  @@map("filevine_connections")
 }
 
 // ============================================
