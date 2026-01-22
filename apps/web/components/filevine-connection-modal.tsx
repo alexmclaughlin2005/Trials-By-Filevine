@@ -207,7 +207,7 @@ export function FilevineConnectionModal({
                 </Button>
                 <Button
                   onClick={handleContinueToCredentials}
-                  className="bg-filevine-primary-600 hover:bg-filevine-primary-700"
+                  className="bg-filevine-primary-600 hover:bg-filevine-primary-700 text-white"
                 >
                   I Have My Credentials
                 </Button>
@@ -321,7 +321,7 @@ export function FilevineConnectionModal({
                 </Button>
                 <Button
                   onClick={handleSubmitCredentials}
-                  className="bg-filevine-primary-600 hover:bg-filevine-primary-700"
+                  className="bg-filevine-primary-600 hover:bg-filevine-primary-700 text-white"
                 >
                   Connect & Test
                 </Button>
@@ -381,7 +381,7 @@ export function FilevineConnectionModal({
               <div className="flex justify-end gap-3 pt-4 border-t border-filevine-gray-200">
                 <Button
                   onClick={handleFinish}
-                  className="bg-filevine-primary-600 hover:bg-filevine-primary-700"
+                  className="bg-filevine-primary-600 hover:bg-filevine-primary-700 text-white"
                 >
                   Done
                 </Button>
