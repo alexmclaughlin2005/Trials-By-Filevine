@@ -31,8 +31,9 @@ export function FilevineFolderBrowser({
         setLoading(true);
         const data = await getFilevineProjectFolders(caseId);
         setFolders(data.items);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch folders');
+      } catch (err) {
+        const error = err as Error;
+        setError(error.message || 'Failed to fetch folders');
       } finally {
         setLoading(false);
       }

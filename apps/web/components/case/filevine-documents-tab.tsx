@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import { FilevineProjectSelector } from '@/components/filevine-project-selector';
 import { FilevineFolderBrowser } from '@/components/filevine-folder-browser';
 import { FilevineDocumentBrowser } from '@/components/filevine-document-browser';
-import { getCaseFilevineLink, getImportedDocuments } from '@/lib/filevine-client';
+import {
+  getCaseFilevineLink,
+  getImportedDocuments,
+  type CaseFilevineLink,
+  type ImportedDocument
+} from '@/lib/filevine-client';
 import { FolderOpen, Download, FileText } from 'lucide-react';
 
 interface FilevineDocumentsTabProps {
@@ -15,8 +20,8 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const [selectedFolderName, setSelectedFolderName] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'browse' | 'imported'>('browse');
-  const [linkStatus, setLinkStatus] = useState<{ linked: boolean; link?: any } | null>(null);
-  const [importedDocs, setImportedDocs] = useState<any[]>([]);
+  const [linkStatus, setLinkStatus] = useState<{ linked: boolean; link?: CaseFilevineLink } | null>(null);
+  const [importedDocs, setImportedDocs] = useState<ImportedDocument[]>([]);
 
   // Check link status
   React.useEffect(() => {

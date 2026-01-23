@@ -34,8 +34,9 @@ export function FilevineDocumentBrowser({
         setLoading(true);
         const data = await getFilevineFolderDocuments(caseId, folderId);
         setDocuments(data.items);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch documents');
+      } catch (err) {
+        const error = err as Error;
+        setError(error.message || 'Failed to fetch documents');
       } finally {
         setLoading(false);
       }
@@ -60,8 +61,9 @@ export function FilevineDocumentBrowser({
       });
 
       // TODO: Show success message or update UI
-    } catch (err: any) {
-      console.error('Failed to import document:', err);
+    } catch (err) {
+      const error = err as Error;
+      console.error('Failed to import document:', error);
       // TODO: Show error message
     } finally {
       setImporting((prev) => {
