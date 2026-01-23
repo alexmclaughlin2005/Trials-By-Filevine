@@ -2,10 +2,10 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "npm install && npx prisma generate --schema=./packages/database/prisma/schema.prisma && npm run build --workspace=@juries/database && npm run build --workspace=@juries/prompt-service"
+    "buildCommand": "npm install && npx prisma generate --schema=./packages/database/prisma/schema.prisma && cd packages/database && npm run build && cd ../.. && cd services/prompt-service && npm run build && cd ../.."
   },
   "deploy": {
-    "startCommand": "npm run start --workspace=@juries/prompt-service",
+    "startCommand": "cd services/prompt-service && node dist/index.js",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }
