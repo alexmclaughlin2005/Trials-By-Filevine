@@ -195,15 +195,15 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
                       <History className="h-4 w-4" />
                       <span>{new Date(session.createdAt).toLocaleDateString()}</span>
                     </div>
-                    {session._count?.results > 0 && (
+                    {(session._count?.results ?? 0) > 0 && (
                       <div className="flex items-center gap-2">
-                        <span className="font-medium">{session._count.results} reactions</span>
+                        <span className="font-medium">{session._count?.results ?? 0} reactions</span>
                       </div>
                     )}
-                    {session._count?.recommendations > 0 && (
+                    {(session._count?.recommendations ?? 0) > 0 && (
                       <div className="flex items-center gap-2">
                         <span className="font-medium">
-                          {session._count.recommendations} recommendations
+                          {session._count?.recommendations ?? 0} recommendations
                         </span>
                       </div>
                     )}
