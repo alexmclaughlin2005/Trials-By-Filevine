@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Filter, AlertTriangle, Shield, X, Copy, Edit, FileText } from 'lucide-react';
+import { Plus, Filter, AlertTriangle, Shield, Copy, Edit, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Select } from '@/components/ui/select';
@@ -264,7 +264,7 @@ export default function PersonasPage() {
   const handleOpenNotes = (persona: Persona) => {
     setNotesPersona(persona);
     // Get existing notes from attributes if they exist
-    const existingNotes = (persona.attributes as any)?.user_notes || '';
+    const existingNotes = (persona.attributes as Record<string, unknown>)?.user_notes as string || '';
     setNotesForm(existingNotes);
     setSelectedPersona(null); // Close detail modal if open
   };
