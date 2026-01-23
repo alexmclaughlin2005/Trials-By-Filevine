@@ -266,13 +266,23 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
         },
       });
 
+      // Log document status for debugging
+      console.log(`[DOCUMENT_ATTACH] Document ${document.filename} (${document.id})`);
+      console.log(`[DOCUMENT_ATTACH]   - status: ${document.status}`);
+      console.log(`[DOCUMENT_ATTACH]   - textExtractionStatus: ${document.textExtractionStatus}`);
+      console.log(`[DOCUMENT_ATTACH]   - has localFileUrl: ${!!document.localFileUrl}`);
+
       // Trigger text extraction if not already done
-      if (
+      const shouldExtract =
         document.localFileUrl &&
         document.textExtractionStatus === 'pending' &&
-        document.status === 'completed'
-      ) {
+        document.status === 'completed';
+
+      console.log(`[DOCUMENT_ATTACH]   - will trigger extraction: ${shouldExtract}`);
+
+      if (shouldExtract) {
         // Run text extraction in the background
+        console.log(`[DOCUMENT_ATTACH] Triggering text extraction for ${document.filename}`);
         extractTextInBackground(
           server,
           textExtractionService,
@@ -280,6 +290,8 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
           document.localFileUrl,
           document.filename
         );
+      } else {
+        console.log(`[DOCUMENT_ATTACH] Skipping extraction - conditions not met`);
       }
 
       reply.code(201);
