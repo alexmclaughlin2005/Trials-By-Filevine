@@ -785,13 +785,12 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Auto-fill empty positions in jury box
   server.put('/panel/:panelId/jury-box/auto-fill', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       try {
-      const { organizationId } = request.user as any;
-      const { panelId } = request.params;
-
         console.log('[Auto-fill] Request received:', { 
           panelId: request.params?.panelId,
+          method: request.method,
+          url: request.url,
         });
         const { organizationId } = request.user as any;
         const { panelId } = request.params as any;
@@ -930,14 +929,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
           details: errorMessage,
           ...(process.env.NODE_ENV === 'development' && { stack: errorStack }),
         };
-        const errorResponse: { error: string; details: string; stack?: string } = { 
-          error: 'Failed to auto-fill positions',
-          details: errorMessage,
-        };
-        if (process.env.NODE_ENV === 'development' && errorStack) {
-          errorResponse.stack = errorStack;
-        }
-        return errorResponse;
+      }
     },
   });
 }
