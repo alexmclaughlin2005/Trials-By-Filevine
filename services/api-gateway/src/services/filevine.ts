@@ -541,51 +541,25 @@ export class FilevineService {
    * Note: Filevine may return the file directly or a download URL
    */
   async getDocumentDownloadUrl(documentId: string, projectId?: string): Promise<string> {
-    // Try multiple endpoint patterns to find the correct download URL
-    const endpointsToTry = [
-      // Pattern 1: Project-scoped document endpoint
-      projectId ? `/Projects/${projectId}/Documents/${documentId}` : null,
-      // Pattern 2: Direct document endpoint
-      `/Documents/${documentId}`,
-      // Pattern 3: Native download endpoint
-      `/Documents/${documentId}/native`,
-      // Pattern 4: Download endpoint
-      `/Documents/${documentId}/download`,
-    ].filter(Boolean) as string[];
+    // Use the correct Filevine endpoint: /Documents/{documentId}/locator
+    // This returns a response with a Url field containing the download URL
+    console.log(`[FILEVINE] Getting download locator for document ${documentId}`);
 
-    let lastError: Error | null = null;
+    const response = await this.request(`/Documents/${documentId}/locator`, {
+      method: 'GET',
+    });
 
-    for (const endpoint of endpointsToTry) {
-      try {
-        console.log(`[FILEVINE] Trying endpoint: ${endpoint}`);
-        const response = await this.request(endpoint, {
-          method: 'GET',
-        });
+    // Extract the download URL from the response
+    // According to Filevine API docs, the response has a "Url" field (capital U)
+    const downloadUrl = response.Url || response.url;
 
-        // Check various possible download URL fields
-        const downloadUrl = response.downloadUrl || response.url || response.nativeFileUrl || response.fileUrl;
-
-        if (downloadUrl) {
-          console.log(`[FILEVINE] Found download URL at ${endpoint}`);
-          return downloadUrl;
-        }
-
-        // If the response itself looks like a URL, return it
-        if (typeof response === 'string' && response.startsWith('http')) {
-          console.log(`[FILEVINE] Response is a URL: ${endpoint}`);
-          return response;
-        }
-
-        console.log(`[FILEVINE] No download URL in response from ${endpoint}`);
-      } catch (error) {
-        console.log(`[FILEVINE] Endpoint ${endpoint} failed:`, (error as Error).message);
-        lastError = error as Error;
-      }
+    if (!downloadUrl) {
+      console.error('[FILEVINE] No download URL in locator response:', response);
+      throw new Error('Download URL not found in Filevine locator response');
     }
 
-    // All endpoints failed
-    console.error(`[FILEVINE] All endpoints failed for document ${documentId}`);
-    throw lastError || new Error('Could not find document download URL');
+    console.log(`[FILEVINE] Got download URL from locator`);
+    return downloadUrl;
   }
 }
 
