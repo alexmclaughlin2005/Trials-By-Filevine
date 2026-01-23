@@ -589,6 +589,11 @@ Verify test status is `running` and `trafficSplit` is set correctly.
 
 ## Related Documentation
 
+### For Service Developers
+- **[INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)** - 5-minute quick start guide
+- **[API_CONTRACT.md](./API_CONTRACT.md)** - Complete API reference and best practices
+
+### For Architecture
 - [PROMPT_MANAGEMENT_PROPOSAL.md](../../docs/PROMPT_MANAGEMENT_PROPOSAL.md) - Full proposal
 - [PROMPT_MANAGEMENT_QUICK_REF.md](../../docs/PROMPT_MANAGEMENT_QUICK_REF.md) - Quick reference
 - [ai_instructions.md](../../ai_instructions.md) - Project structure
@@ -596,4 +601,5 @@ Verify test status is `running` and `trafficSplit` is set correctly.
 ---
 
 **Version:** 1.0.0
-**Last Updated:** 2026-01-22
+**Last Updated:** 2026-01-23
+**Production URL:** https://prompt-service-production-a2e3.up.railway.app
