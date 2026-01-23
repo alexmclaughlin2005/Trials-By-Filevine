@@ -56,7 +56,10 @@ export function FocusGroupSetupWizard({
     queryKey: ['personas', caseId],
     queryFn: async () => {
       console.log('[useQuery personas] Fetching personas for caseId:', caseId);
-      const result = await apiClient.get(`/focus-groups/personas?caseId=${caseId}`);
+      const result = await apiClient.get(`/focus-groups/personas?caseId=${caseId}`) as {
+        personas: PersonaOption[];
+        source: string;
+      };
       console.log('[useQuery personas] Response:', result);
       return result;
     },
