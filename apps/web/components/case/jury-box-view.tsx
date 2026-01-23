@@ -80,41 +80,43 @@ function Seat({ row, seat, juror, nextJuror, isDragging }: SeatProps) {
   );
 }
 
+type JuryBoxData = {
+  panel: { id: string; juryBoxSize: number; juryBoxRows: number; juryBoxLayout?: Record<string, unknown> };
+  jurorsInBox: Array<{
+    id: string;
+    jurorNumber?: string | null;
+    firstName: string;
+    lastName: string;
+    age?: number | null;
+    occupation?: string | null;
+    status: string;
+    classifiedArchetype?: string | null;
+    boxRow?: number | null;
+    boxSeat?: number | null;
+  }>;
+  jurorsInPool: Array<{
+    id: string;
+    jurorNumber?: string | null;
+    firstName: string;
+    lastName: string;
+    age?: number | null;
+    occupation?: string | null;
+    status: string;
+    classifiedArchetype?: string | null;
+    boxRow?: number | null;
+    boxSeat?: number | null;
+  }>;
+};
+
 export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   // Fetch jury box state
-  const { data, isLoading } = useQuery<{
-    panel: { id: string; juryBoxSize: number; juryBoxRows: number; juryBoxLayout?: Record<string, unknown> };
-    jurorsInBox: Array<{
-      id: string;
-      jurorNumber?: string | null;
-      firstName: string;
-      lastName: string;
-      age?: number | null;
-      occupation?: string | null;
-      status: string;
-      classifiedArchetype?: string | null;
-      boxRow?: number | null;
-      boxSeat?: number | null;
-    }>;
-    jurorsInPool: Array<{
-      id: string;
-      jurorNumber?: string | null;
-      firstName: string;
-      lastName: string;
-      age?: number | null;
-      occupation?: string | null;
-      status: string;
-      classifiedArchetype?: string | null;
-      boxRow?: number | null;
-      boxSeat?: number | null;
-    }>;
-  }>({
+  const { data, isLoading } = useQuery<JuryBoxData>({
     queryKey: ['panel', panelId, 'jury-box'],
     queryFn: async () => {
-      const response = await apiClient.get(`/jurors/panel/${panelId}/jury-box`);
+      const response = await apiClient.get<JuryBoxData>(`/jurors/panel/${panelId}/jury-box`);
       return response;
     },
   });
