@@ -9,7 +9,25 @@ export class TextExtractionService {
     // Use require for better CommonJS compatibility
     try {
       const pdfParseModule = require('pdf-parse');
-      this.pdfParser = pdfParseModule.default || pdfParseModule;
+
+      // pdf-parse exports a function directly, but might be wrapped
+      // Try different export patterns
+      if (typeof pdfParseModule === 'function') {
+        this.pdfParser = pdfParseModule;
+      } else if (typeof pdfParseModule.default === 'function') {
+        this.pdfParser = pdfParseModule.default;
+      } else {
+        // Log what we actually got
+        console.error('[TEXT_EXTRACTION] pdf-parse structure:', {
+          type: typeof pdfParseModule,
+          keys: Object.keys(pdfParseModule),
+          hasDefault: !!pdfParseModule.default,
+          defaultType: typeof pdfParseModule.default
+        });
+        throw new Error('Could not find pdf-parse function in module exports');
+      }
+
+      console.log('[TEXT_EXTRACTION] Successfully loaded pdf-parse');
     } catch (error) {
       console.error('[TEXT_EXTRACTION] Failed to load pdf-parse:', error);
       throw new Error('PDF parser could not be loaded');
