@@ -660,9 +660,6 @@ function QuestionsStep({
 // Review Step Component
 function ReviewStep({
   session,
-  arguments: _caseArguments,
-  onStart: _onStart,
-  isStarting: _isStarting,
 }: {
   session: FocusGroupSession;
   arguments: Array<{ id: string; title: string; content: string; argumentType: string }>;

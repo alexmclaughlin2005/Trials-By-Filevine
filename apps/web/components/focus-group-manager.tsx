@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { FocusGroupSetupWizard } from './focus-group-setup-wizard';
 import { FocusGroupSimulator } from './focus-group-simulator';
+import { FocusGroupSession } from '@/types/focus-group';
 import { Plus, History, PlayCircle } from 'lucide-react';
 
 interface Argument {
@@ -149,7 +150,7 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
         </div>
       ) : (
         <div className="space-y-3">
-          {sessions.map((session: any) => (
+          {sessions.map((session: FocusGroupSession) => (
             <div
               key={session.id}
               className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"

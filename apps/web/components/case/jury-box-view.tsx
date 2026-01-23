@@ -204,14 +204,15 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
 
   // Create seat grid
   const seatsPerRow = Math.ceil(juryBoxSize / juryBoxRows);
+  type JurorType = typeof jurorsInBox[0];
   const seatGrid = useMemo(() => {
-    const grid: Array<Array<{ row: number; seat: number; juror: any }>> = [];
+    const grid: Array<Array<{ row: number; seat: number; juror: JurorType | null }>> = [];
     
     for (let row = 1; row <= juryBoxRows; row++) {
-      const rowSeats: Array<{ row: number; seat: number; juror: any }> = [];
+      const rowSeats: Array<{ row: number; seat: number; juror: JurorType | null }> = [];
       for (let seat = 1; seat <= seatsPerRow; seat++) {
         const juror = jurorsInBox.find(
-          (j: any) => j.boxRow === row && j.boxSeat === seat
+          (j) => j.boxRow === row && j.boxSeat === seat
         );
         rowSeats.push({ row, seat, juror: juror || null });
       }
@@ -300,7 +301,7 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
           {activeId ? (
             (() => {
               const juror = [...jurorsInBox, ...jurorsInPool].find(
-                (j: any) => j.id === activeId
+                (j) => j.id === activeId
               );
               return juror ? <JurorCard juror={juror} isDragging /> : null;
             })()
