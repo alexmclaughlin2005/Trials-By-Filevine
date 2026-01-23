@@ -143,3 +143,144 @@ export async function listFilevineProjects(params?: {
 export async function getFilevineProject(projectId: string): Promise<FilevineProject> {
   return apiClient.get<FilevineProject>(`/filevine/projects/${projectId}`);
 }
+
+// ============================================
+// CASE-FILEVINE INTEGRATION
+// ============================================
+
+export interface CaseFilevineLink {
+  id: string;
+  caseId: string;
+  filevineProjectId: string;
+  projectName: string;
+  projectTypeName?: string;
+  clientName?: string;
+  linkedAt: string;
+  lastSyncedAt?: string;
+  autoSyncDocuments: boolean;
+}
+
+export interface FilevineFolder {
+  folderId: { native: number };
+  parentId?: { native: number };
+  projectId: { native: number };
+  name: string;
+  isArchived: boolean;
+}
+
+export interface FilevineDocument {
+  documentId: { native: number };
+  filename: string;
+  folderId: { native: number };
+  folderName?: string;
+  currentVersion?: string;
+  uploadDate?: string;
+  uploaderFullname?: string;
+  size?: number;
+}
+
+export interface ImportedDocument {
+  id: string;
+  filevineDocumentId: string;
+  filename: string;
+  folderName?: string;
+  localFileUrl?: string;
+  thumbnailUrl?: string;
+  status: 'pending' | 'downloading' | 'completed' | 'failed';
+  importedAt: string;
+  documentCategory?: string;
+  tags?: string[];
+  size?: string;
+}
+
+/**
+ * Link a case to a Filevine project
+ */
+export async function linkCaseToFilevineProject(
+  caseId: string,
+  projectData: {
+    filevineProjectId: string;
+    projectName: string;
+    projectTypeName?: string;
+    clientName?: string;
+    autoSyncDocuments?: boolean;
+  }
+): Promise<{ link: CaseFilevineLink }> {
+  return apiClient.post(`/cases/${caseId}/filevine/link`, projectData);
+}
+
+/**
+ * Get case Filevine link status
+ */
+export async function getCaseFilevineLink(
+  caseId: string
+): Promise<{ linked: boolean; link?: CaseFilevineLink }> {
+  return apiClient.get(`/cases/${caseId}/filevine/link`);
+}
+
+/**
+ * Unlink a case from a Filevine project
+ */
+export async function unlinkCaseFromFilevineProject(
+  caseId: string
+): Promise<{ success: boolean }> {
+  return apiClient.delete(`/cases/${caseId}/filevine/link`);
+}
+
+/**
+ * Get folder structure for a linked Filevine project
+ */
+export async function getFilevineProjectFolders(
+  caseId: string
+): Promise<{ items: FilevineFolder[]; count: number }> {
+  return apiClient.get(`/cases/${caseId}/filevine/folders`);
+}
+
+/**
+ * Get documents in a folder
+ */
+export async function getFilevineFolderDocuments(
+  caseId: string,
+  folderId: string,
+  options?: { limit?: number; offset?: number }
+): Promise<{ items: FilevineDocument[]; count: number }> {
+  const params = new URLSearchParams();
+  if (options?.limit) params.append('limit', options.limit.toString());
+  if (options?.offset) params.append('offset', options.offset.toString());
+
+  const query = params.toString();
+  return apiClient.get(
+    `/cases/${caseId}/filevine/folders/${folderId}/documents${query ? `?${query}` : ''}`
+  );
+}
+
+/**
+ * Import a document from Filevine
+ */
+export async function importFilevineDocument(
+  caseId: string,
+  documentData: {
+    filevineDocumentId: string;
+    fivevineFolderId: string;
+    filename: string;
+    folderName?: string;
+    currentVersion?: string;
+    uploadDate?: string;
+    uploaderFullname?: string;
+    size?: number;
+    documentCategory?: string;
+    tags?: string[];
+    notes?: string;
+  }
+): Promise<{ document: ImportedDocument }> {
+  return apiClient.post(`/cases/${caseId}/filevine/documents/import`, documentData);
+}
+
+/**
+ * Get list of imported documents for a case
+ */
+export async function getImportedDocuments(
+  caseId: string
+): Promise<{ documents: ImportedDocument[] }> {
+  return apiClient.get(`/cases/${caseId}/filevine/documents`);
+}

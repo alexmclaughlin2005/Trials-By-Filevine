@@ -9,6 +9,7 @@ import { FactsTab } from '@/components/case/facts-tab';
 import { ArgumentsTab } from '@/components/case/arguments-tab';
 import { WitnessesTab } from '@/components/case/witnesses-tab';
 import { JurorsTab } from '@/components/case/jurors-tab';
+import { FilevineDocumentsTab } from '@/components/case/filevine-documents-tab';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useCaseCollaboration } from '@/hooks/use-case-collaboration';
 import { ConnectionStatus } from '@/components/collaboration/connection-status';
@@ -248,6 +249,7 @@ export default function CaseDetailPageEnhanced() {
               </TabsTrigger>
               <TabsTrigger value="questions">Voir Dire Questions</TabsTrigger>
               <TabsTrigger value="focus-groups">Focus Groups</TabsTrigger>
+              <TabsTrigger value="filevine">Filevine Documents</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -381,6 +383,10 @@ export default function CaseDetailPageEnhanced() {
                 caseId={caseId}
                 arguments={data.arguments || []}
               />
+            </TabsContent>
+
+            <TabsContent value="filevine">
+              <FilevineDocumentsTab caseId={caseId} />
             </TabsContent>
           </Tabs>
         </div>
