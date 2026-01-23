@@ -16,6 +16,7 @@ import {
   linkCaseToFilevineProject,
   getCaseFilevineLink,
   type FilevineProject,
+  type CaseFilevineLink,
 } from '@/lib/filevine-client';
 
 interface FilevineProjectSelectorProps {
