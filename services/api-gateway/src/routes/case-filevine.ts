@@ -355,7 +355,13 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
       // 3. Uploads to Vercel Blob or S3
       // 4. Updates the ImportedDocument record with localFileUrl and status
 
-      return { document: importedDoc };
+      // Convert BigInt to string for JSON serialization
+      const documentResponse = {
+        ...importedDoc,
+        size: importedDoc.size ? importedDoc.size.toString() : null,
+      };
+
+      return { document: documentResponse };
     } catch (error: any) {
       console.error('[IMPORT] Error importing Filevine document:', error);
       console.error('[IMPORT] Error stack:', error.stack);
