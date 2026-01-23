@@ -155,24 +155,48 @@ export class TurnManager {
   /**
    * Check if conversation should continue
    * Must continue if anyone hasn't spoken
-   * Can continue if leaders haven't maxed and no stagnation detected
+   * Can continue if we have eligible speakers and haven't hit minimum rounds
    */
   shouldContinue(): boolean {
+    const totalStatements = this.conversationHistory.length;
+    const personaCount = this.personas.length;
+
     // Must continue if anyone hasn't spoken
     if (this.getUnspokenPersonas().length > 0) {
       return true;
     }
 
-    // Check if leaders have maxed out
-    const leaders = this.personas.filter(p => p.leadershipLevel === LeadershipLevel.LEADER);
-    const leadersMaxed = leaders.every(l => this.getSpeakCount(l.personaId) >= MAX_STATEMENTS_PER_PERSONA);
+    // Ensure at least 2 rounds per persona (initial + at least 1 follow-up each)
+    const minTotalStatements = personaCount * 2;
+    if (totalStatements < minTotalStatements) {
+      return this.getEligiblePersonas().length > 0;
+    }
 
-    if (leadersMaxed) {
+    // After minimum rounds, check if we should continue
+    // Stop if no one can speak anymore
+    if (this.getEligiblePersonas().length === 0) {
       return false;
     }
 
-    // Check for stagnation
-    if (this.detectStagnation()) {
+    // Check if leaders and influencers have maxed out (let them drive conversation)
+    const activePersonas = this.personas.filter(
+      p => p.leadershipLevel === LeadershipLevel.LEADER ||
+           p.leadershipLevel === LeadershipLevel.INFLUENCER
+    );
+
+    // If we have active personas (leaders/influencers), continue if they can still speak
+    if (activePersonas.length > 0) {
+      const activeMaxed = activePersonas.every(
+        p => this.getSpeakCount(p.personaId) >= MAX_STATEMENTS_PER_PERSONA
+      );
+
+      if (activeMaxed) {
+        return false;
+      }
+    }
+
+    // Check for stagnation (but only after minimum rounds)
+    if (totalStatements >= minTotalStatements * 1.5 && this.detectStagnation()) {
       return false;
     }
 
@@ -181,32 +205,40 @@ export class TurnManager {
 
   /**
    * Detect if conversation is going in circles or has naturally concluded
-   * Uses simple heuristic: if last 3 statements are very short, conversation is winding down
+   * Uses heuristics: very short statements + repetitive patterns
    */
   private detectStagnation(): boolean {
-    if (this.conversationHistory.length < 4) {
+    // Need more data to detect stagnation
+    if (this.conversationHistory.length < 8) {
       return false;
     }
 
-    const recentStatements = this.conversationHistory.slice(-3);
+    const recentStatements = this.conversationHistory.slice(-4);
 
-    // Check if recent statements are getting shorter (sign of conversation winding down)
-    const avgLength = recentStatements.reduce((sum, s) => sum + s.content.length, 0) / recentStatements.length;
-
-    // If average length is less than 100 chars, conversation is winding down
-    if (avgLength < 100) {
+    // Check if recent statements are ALL very short (sign of conversation winding down)
+    const allVeryShort = recentStatements.every(s => s.content.length < 50);
+    if (allVeryShort) {
       return true;
     }
 
-    // Check for repetitive sentiment (everyone agreeing quickly)
+    // Check average length - if consistently short, conversation may be done
+    const avgLength = recentStatements.reduce((sum, s) => sum + s.content.length, 0) / recentStatements.length;
+
+    // Lower threshold to 60 chars average (more lenient)
+    if (avgLength < 60) {
+      return true;
+    }
+
+    // Check for repetitive sentiment only with more data
     const sentiments = recentStatements
       .map(s => s.sentiment)
       .filter(s => s && s !== 'neutral');
 
-    if (sentiments.length >= 2) {
+    // Only consider stagnation if we have 3+ non-neutral sentiments that are all the same
+    if (sentiments.length >= 3) {
       const allSame = sentiments.every(s => s === sentiments[0]);
       if (allSame) {
-        return true; // Consensus reached
+        return true; // Strong consensus reached
       }
     }
 
