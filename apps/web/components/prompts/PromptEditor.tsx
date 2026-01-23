@@ -4,9 +4,9 @@ import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 
 const Editor = dynamic(
-  () => import('@monaco-editor/react').then((mod) => mod.default as any),
+  () => import('@monaco-editor/react').then((mod) => mod.default as unknown),
   { ssr: false }
-) as any;
+) as unknown;
 
 interface PromptEditorProps {
   value: string;
