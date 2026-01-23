@@ -12,9 +12,10 @@ export function getSocket(token: string): Socket {
       },
       transports: ['websocket', 'polling'],
       reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      reconnectionAttempts: 3, // Reduced from 5 to 3
+      timeout: 5000, // Add connection timeout
     });
 
     // Heartbeat to keep connection alive

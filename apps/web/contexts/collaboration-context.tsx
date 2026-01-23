@@ -63,6 +63,12 @@ export function CollaborationProvider({
       setActiveViewers([]);
     };
 
+    const handleConnectError = (error: Error) => {
+      console.warn('Collaboration service unavailable:', error.message);
+      // Silently fail - collaboration features just won't be available
+      setIsConnected(false);
+    };
+
     // Collaboration event handlers
     const handleUserJoined = (data: UserPresence) => {
       console.log('User joined:', data);
@@ -89,6 +95,7 @@ export function CollaborationProvider({
 
     newSocket.on('connect', handleConnect);
     newSocket.on('disconnect', handleDisconnect);
+    newSocket.on('connect_error', handleConnectError);
     newSocket.on('user:joined', handleUserJoined);
     newSocket.on('user:left', handleUserLeft);
     newSocket.on('room:viewers', handleRoomViewers);
@@ -101,6 +108,7 @@ export function CollaborationProvider({
     return () => {
       newSocket.off('connect', handleConnect);
       newSocket.off('disconnect', handleDisconnect);
+      newSocket.off('connect_error', handleConnectError);
       newSocket.off('user:joined', handleUserJoined);
       newSocket.off('user:left', handleUserLeft);
       newSocket.off('room:viewers', handleRoomViewers);
