@@ -786,100 +786,134 @@ export async function jurorsRoutes(server: FastifyInstance) {
   server.put('/panel/:panelId/jury-box/auto-fill', {
     onRequest: [server.authenticate],
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
-      const { organizationId } = request.user as any;
-      const { panelId } = request.params as any;
+      try {
+        const { organizationId } = request.user as any;
+        const { panelId } = request.params as any;
 
-      // Verify panel belongs to organization
-      const panel = await server.prisma.juryPanel.findFirst({
-        where: {
-          id: panelId,
-          case: { organizationId },
-        },
-      });
-
-      if (!panel) {
-        reply.code(404);
-        return { error: 'Jury panel not found' };
-      }
-
-      // Get all jurors
-      const allJurors = await server.prisma.juror.findMany({
-        where: {
-          panelId,
-          status: {
-            notIn: ['struck_for_cause', 'peremptory_strike', 'dismissed'],
+        // Verify panel belongs to organization
+        const panel = await server.prisma.juryPanel.findFirst({
+          where: {
+            id: panelId,
+            case: { organizationId },
           },
-        },
-        orderBy: [
-          { jurorNumber: 'asc' },
-          { createdAt: 'asc' },
-        ],
-      });
+        });
 
-      // Get occupied positions
-      const occupiedPositions = new Set<string>();
-      allJurors.forEach((juror) => {
-        if (juror.boxRow !== null && juror.boxSeat !== null) {
-          occupiedPositions.add(`${juror.boxRow}-${juror.boxSeat}`);
+        if (!panel) {
+          reply.code(404);
+          return { error: 'Jury panel not found' };
         }
-      });
 
-      // Get available jurors (not in box)
-      const availableJurors = allJurors.filter(
-        (j) => j.boxRow === null || j.boxSeat === null
-      );
+        // Get all jurors (excluding struck/dismissed)
+        const allJurors = await server.prisma.juror.findMany({
+          where: {
+            panelId,
+            status: {
+              notIn: ['struck_for_cause', 'peremptory_strike', 'dismissed'],
+            },
+          },
+          orderBy: [
+            { jurorNumber: 'asc' },
+            { createdAt: 'asc' },
+          ],
+        });
 
-      // Calculate seats per row
-      const seatsPerRow = Math.ceil(panel.juryBoxSize / panel.juryBoxRows);
-      let availableIndex = 0;
-      const updates: Array<{ id: string; boxRow: number; boxSeat: number; boxOrder: number }> = [];
+        // Get occupied positions
+        const occupiedPositions = new Set<string>();
+        allJurors.forEach((juror) => {
+          if (juror.boxRow !== null && juror.boxSeat !== null) {
+            occupiedPositions.add(`${juror.boxRow}-${juror.boxSeat}`);
+          }
+        });
 
-      // Fill empty positions
-      for (let row = 1; row <= panel.juryBoxRows; row++) {
-        for (let seat = 1; seat <= seatsPerRow; seat++) {
-          const positionKey = `${row}-${seat}`;
+        // Get available jurors (not in box)
+        const availableJurors = allJurors.filter(
+          (j) => j.boxRow === null || j.boxSeat === null
+        );
+
+        if (availableJurors.length === 0) {
+          return { 
+            message: 'No available jurors to fill positions',
+            jurors: allJurors,
+          };
+        }
+
+        // Calculate seats per row
+        const seatsPerRow = Math.ceil(panel.juryBoxSize / panel.juryBoxRows);
+        let availableIndex = 0;
+        const updates: Array<{ id: string; boxRow: number; boxSeat: number; boxOrder: number }> = [];
+
+        // Fill empty positions (only up to juryBoxSize)
+        for (let row = 1; row <= panel.juryBoxRows; row++) {
+          for (let seat = 1; seat <= seatsPerRow; seat++) {
+            // Stop if we've filled all available seats or run out of jurors
+            if (updates.length >= panel.juryBoxSize || availableIndex >= availableJurors.length) {
+              break;
+            }
+
+            const positionKey = `${row}-${seat}`;
+            
+            if (!occupiedPositions.has(positionKey) && availableIndex < availableJurors.length) {
+              const juror = availableJurors[availableIndex];
+              const boxOrder = (row - 1) * seatsPerRow + seat;
+              
+              // Only fill positions within the jury box size
+              if (boxOrder <= panel.juryBoxSize) {
+                updates.push({
+                  id: juror.id,
+                  boxRow: row,
+                  boxSeat: seat,
+                  boxOrder,
+                });
+                
+                availableIndex++;
+              }
+            }
+          }
           
-          if (!occupiedPositions.has(positionKey) && availableIndex < availableJurors.length) {
-            const juror = availableJurors[availableIndex];
-            const boxOrder = (row - 1) * seatsPerRow + seat;
-            
-            updates.push({
-              id: juror.id,
-              boxRow: row,
-              boxSeat: seat,
-              boxOrder,
-            });
-            
-            availableIndex++;
+          // Break outer loop if we've filled all available seats
+          if (updates.length >= panel.juryBoxSize || availableIndex >= availableJurors.length) {
+            break;
           }
         }
+
+        // Apply updates
+        if (updates.length > 0) {
+          await Promise.all(
+            updates.map((update) =>
+              server.prisma.juror.update({
+                where: { id: update.id },
+                data: {
+                  boxRow: update.boxRow,
+                  boxSeat: update.boxSeat,
+                  boxOrder: update.boxOrder,
+                  status: 'seated',
+                },
+              })
+            )
+          );
+        }
+
+        // Get updated jurors
+        const updatedJurors = await server.prisma.juror.findMany({
+          where: { panelId },
+          orderBy: [
+            { boxRow: 'asc' },
+            { boxSeat: 'asc' },
+          ],
+        });
+
+        return { 
+          message: `Filled ${updates.length} position(s)`,
+          jurors: updatedJurors,
+        };
+      } catch (error) {
+        console.error('[Auto-fill] Error:', error);
+        reply.code(400);
+        return { 
+          error: 'Failed to auto-fill positions',
+          details: error instanceof Error ? error.message : 'Unknown error',
+        };
       }
-
-      // Apply updates
-      await Promise.all(
-        updates.map((update) =>
-          server.prisma.juror.update({
-            where: { id: update.id },
-            data: {
-              boxRow: update.boxRow,
-              boxSeat: update.boxSeat,
-              boxOrder: update.boxOrder,
-              status: update.boxOrder <= panel.juryBoxSize ? 'seated' : 'available',
-            },
-          })
-        )
-      );
-
-      // Get updated jurors
-      const updatedJurors = await server.prisma.juror.findMany({
-        where: { panelId },
-        orderBy: [
-          { boxRow: 'asc' },
-          { boxSeat: 'asc' },
-        ],
-      });
-
-      return { jurors: updatedJurors };
-    },
+    },,
   });
 }
