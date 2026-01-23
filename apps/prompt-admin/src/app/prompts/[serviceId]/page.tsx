@@ -50,6 +50,15 @@ export default function PromptDetailPage({
   const handleSave = async (deploy: boolean = false) => {
     if (!prompt || !currentVersion || !versions) return;
 
+    // Confirm deployment if deploying
+    if (deploy) {
+      const confirmed = window.confirm(
+        'Are you sure you want to save and deploy this version to production?\n\n' +
+        'This will immediately affect all live prompts using this template.'
+      );
+      if (!confirmed) return;
+    }
+
     // Find the highest version number from all versions
     const versionNumbers = versions.map((v) => {
       const parts = v.version.replace(/^v/, '').split('.');
