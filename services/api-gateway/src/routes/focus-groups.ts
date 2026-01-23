@@ -466,19 +466,19 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { archetypes, source: 'case_jurors' };
       }
 
-      // Otherwise return system archetypes (from archetype config)
-      const archetypeConfigs = await server.prisma.archetypeConfig.findMany({
-        where: {
-          isActive: true,
-          configType: 'system',
-        },
-      });
-
-      const archetypes = archetypeConfigs.map((config) => ({
-        name: config.archetypeName,
-        description: config.description,
-        category: config.category,
-      }));
+      // Otherwise return system archetypes (standard list)
+      const archetypes = [
+        { name: 'bootstrapper', description: 'Personal Responsibility Enforcer', category: 'defense_friendly' },
+        { name: 'crusader', description: 'Systemic Thinker', category: 'plaintiff_friendly' },
+        { name: 'scale_balancer', description: 'Fair-Minded Evaluator', category: 'neutral' },
+        { name: 'captain', description: 'Authoritative Leader', category: 'neutral' },
+        { name: 'chameleon', description: 'Compliant Follower', category: 'neutral' },
+        { name: 'scarred', description: 'Wounded Veteran', category: 'variable' },
+        { name: 'calculator', description: 'Numbers Person', category: 'neutral' },
+        { name: 'heart', description: 'Empathic Connector', category: 'plaintiff_friendly' },
+        { name: 'trojan_horse', description: 'Stealth Juror', category: 'defense_friendly' },
+        { name: 'maverick', description: 'Nullifier', category: 'variable' },
+      ];
 
       return { archetypes, source: 'system' };
     },

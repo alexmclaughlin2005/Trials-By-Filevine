@@ -66,6 +66,10 @@ const createJurorSchema = z.object({
   zipCode: z.string().optional(),
   questionnaireData: z.record(z.any()).optional(),
   notes: z.string().optional(),
+  status: z.string().optional(),
+  boxRow: z.number().int().positive().nullable().optional(),
+  boxSeat: z.number().int().positive().nullable().optional(),
+  boxOrder: z.number().int().positive().nullable().optional(),
 });
 
 const updateJurorSchema = createJurorSchema.partial().omit({ panelId: true });
