@@ -361,23 +361,31 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
    * Extract statement from AI response
    */
   private extractStatement(result: any): string {
-    console.log('[EXTRACT_STATEMENT] Received result type:', typeof result);
-    console.log('[EXTRACT_STATEMENT] Result value:', JSON.stringify(result, null, 2));
-
+    // Handle direct string response
     if (typeof result === 'string') {
-      console.log('[EXTRACT_STATEMENT] Returning string result');
       return result;
     }
+
+    // Handle Anthropic API response format
+    if (result && Array.isArray(result.content) && result.content.length > 0) {
+      const firstContent = result.content[0];
+      if (firstContent && typeof firstContent.text === 'string') {
+        return firstContent.text;
+      }
+    }
+
+    // Handle structured response with statement field
     if (result && typeof result.statement === 'string') {
-      console.log('[EXTRACT_STATEMENT] Returning result.statement');
       return result.statement;
     }
+
+    // Handle structured response with content field as string
     if (result && typeof result.content === 'string') {
-      console.log('[EXTRACT_STATEMENT] Returning result.content');
       return result.content;
     }
-    console.warn('[EXTRACT_STATEMENT] Unexpected result format, using fallback');
-    console.warn('[EXTRACT_STATEMENT] Result keys:', result ? Object.keys(result) : 'null');
+
+    // Fallback
+    console.warn('[EXTRACT_STATEMENT] Unexpected result format:', result ? Object.keys(result) : 'null');
     return 'I need more time to think about this.';
   }
 
