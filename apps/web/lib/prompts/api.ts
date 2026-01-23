@@ -35,8 +35,8 @@ export interface PromptVersion {
     topP?: number;
     topK?: number;
   };
-  variables: Record<string, any>;
-  outputSchema: any;
+  variables: Record<string, unknown>;
+  outputSchema: unknown;
   createdBy: string | null;
   createdAt: string;
   isDraft: boolean;
@@ -105,8 +105,8 @@ export const promptApi = {
         topP?: number;
         topK?: number;
       };
-      variables: Record<string, any>;
-      outputSchema?: any;
+      variables: Record<string, unknown>;
+      outputSchema?: unknown;
       notes?: string;
       isDraft?: boolean;
     }
@@ -139,7 +139,7 @@ export const promptApi = {
   // Test render prompt
   renderPrompt: async (
     serviceId: string,
-    variables: Record<string, any>,
+    variables: Record<string, unknown>,
     version?: string
   ): Promise<{
     promptId: string;
@@ -147,7 +147,7 @@ export const promptApi = {
     version: string;
     systemPrompt: string | null;
     userPrompt: string;
-    config: any;
+    config: unknown;
   }> => {
     const response = await api.post(`/api/v1/prompts/${serviceId}/render`, {
       variables,
