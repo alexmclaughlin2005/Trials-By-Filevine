@@ -58,13 +58,24 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
     argumentType: 'opening',
     changeNotes: '',
   });
+  const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
 
   // Create argument mutation
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
       return await apiClient.post(`/cases/${caseId}/arguments`, data);
     },
-    onSuccess: () => {
+    onSuccess: async (response: { argument: CaseArgument }) => {
+      // Attach selected documents
+      if (selectedDocumentIds.length > 0) {
+        for (const docId of selectedDocumentIds) {
+          try {
+            await attachDocumentToArgument(caseId, response.argument.id, docId);
+          } catch (error) {
+            console.error('Failed to attach document:', error);
+          }
+        }
+      }
       queryClient.invalidateQueries({ queryKey: ['case', caseId] });
       setIsDialogOpen(false);
       resetForm();
@@ -76,7 +87,33 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
     mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
       return await apiClient.put(`/cases/${caseId}/arguments/${id}`, data);
     },
-    onSuccess: () => {
+    onSuccess: async (response: { argument: CaseArgument }) => {
+      // Get current attachments
+      const currentAttachments = await getArgumentDocuments(caseId, response.argument.id);
+      const currentDocIds = currentAttachments.attachments.map((att) => att.document.id);
+
+      // Attach new documents
+      const toAttach = selectedDocumentIds.filter((id) => !currentDocIds.includes(id));
+      for (const docId of toAttach) {
+        try {
+          await attachDocumentToArgument(caseId, response.argument.id, docId);
+        } catch (error) {
+          console.error('Failed to attach document:', error);
+        }
+      }
+
+      // Detach removed documents
+      const toDetach = currentAttachments.attachments.filter(
+        (att) => !selectedDocumentIds.includes(att.document.id)
+      );
+      for (const attachment of toDetach) {
+        try {
+          await detachDocumentFromArgument(caseId, response.argument.id, attachment.id);
+        } catch (error) {
+          console.error('Failed to detach document:', error);
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ['case', caseId] });
       setIsDialogOpen(false);
       setEditingArgument(null);
@@ -101,9 +138,10 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
       argumentType: 'opening',
       changeNotes: '',
     });
+    setSelectedDocumentIds([]);
   };
 
-  const handleOpenDialog = (argument?: CaseArgument) => {
+  const handleOpenDialog = async (argument?: CaseArgument) => {
     if (argument) {
       setEditingArgument(argument);
       setFormData({
@@ -112,9 +150,20 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
         argumentType: argument.argumentType,
         changeNotes: '',
       });
+      // Load existing attachments for editing
+      try {
+        const result = await getArgumentDocuments(caseId, argument.id);
+        setSelectedDocumentIds(result.attachments.map((att) => att.document.id));
+      } catch (error) {
+        console.error('Failed to load argument documents:', error);
+      }
     } else {
       setEditingArgument(null);
       resetForm();
+    }
+    // Load available documents for selection
+    if (availableDocuments.length === 0) {
+      await loadAvailableDocuments();
     }
     setIsDialogOpen(true);
   };
@@ -494,6 +543,68 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
                 </p>
               </div>
             )}
+
+            {/* Supporting Documents Section */}
+            <div className="border-t border-filevine-gray-200 pt-4">
+              <label className="block text-sm font-medium text-filevine-gray-700 mb-2">
+                Supporting Documents
+              </label>
+              <p className="text-xs text-filevine-gray-500 mb-3">
+                Select documents that support this argument. Text will be automatically extracted for AI analysis.
+              </p>
+
+              {availableDocuments.length === 0 ? (
+                <div className="text-center py-6 bg-filevine-gray-50 rounded-lg border border-dashed border-filevine-gray-300">
+                  <FileText className="h-8 w-8 mx-auto text-filevine-gray-400 mb-2" />
+                  <p className="text-sm text-filevine-gray-600">No documents available</p>
+                  <p className="text-xs text-filevine-gray-500 mt-1">
+                    Import documents from Filevine in the Documents tab
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-64 overflow-y-auto space-y-2 border border-filevine-gray-200 rounded-lg p-3">
+                  {availableDocuments.map((doc) => (
+                    <label
+                      key={doc.id}
+                      className="flex items-start gap-3 p-3 rounded-md border border-filevine-gray-200 hover:bg-filevine-gray-50 cursor-pointer transition-colors"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedDocumentIds.includes(doc.id)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedDocumentIds([...selectedDocumentIds, doc.id]);
+                          } else {
+                            setSelectedDocumentIds(
+                              selectedDocumentIds.filter((id) => id !== doc.id)
+                            );
+                          }
+                        }}
+                        className="mt-1 h-4 w-4 text-blue-600 border-filevine-gray-300 rounded focus:ring-blue-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-filevine-gray-500 flex-shrink-0" />
+                          <span className="text-sm font-medium text-filevine-gray-900 truncate">
+                            {doc.filename}
+                          </span>
+                        </div>
+                        {doc.folderName && (
+                          <p className="text-xs text-filevine-gray-500 mt-0.5 ml-6 truncate">
+                            {doc.folderName}
+                          </p>
+                        )}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+              {selectedDocumentIds.length > 0 && (
+                <p className="text-xs text-blue-600 mt-2">
+                  {selectedDocumentIds.length} document{selectedDocumentIds.length !== 1 ? 's' : ''} selected
+                </p>
+              )}
+            </div>
 
             <DialogFooter>
               <Button
