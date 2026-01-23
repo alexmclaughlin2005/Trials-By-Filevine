@@ -24,7 +24,8 @@
     "convert-personas-v2": "npx tsx scripts/convert-markdown-to-json-v2.ts",
     "import-personas": "npx tsx scripts/import-personas.ts",
     "list-personas": "npx tsx scripts/list-personas.ts",
-    "cleanup-personas": "npx tsx scripts/cleanup-duplicate-personas.ts"
+    "cleanup-personas": "npx tsx scripts/cleanup-duplicate-personas.ts",
+    "deploy-personas": "npx tsx scripts/deploy-personas-to-production.ts"
   },
   "devDependencies": {
     "prettier": "^3.2.4",

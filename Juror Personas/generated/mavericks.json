@@ -1,0 +1,769 @@
+{
+  "archetype": "maverick",
+  "archetype_display_name": "The Maverick",
+  "archetype_tagline": "I answer to a higher law",
+  "archetype_description": "Nullifiers who decide based on personal principles rather than legal instructions. Will follow conscience over evidence. Can cause hung juries. Unpredictable and difficult to move once position is formed.",
+  
+  "core_characteristics": {
+    "instruction_compliance": "Very Low (0.2-0.4)",
+    "key_dynamic": "Personal moral/philosophical framework overrides legal instructions",
+    "hung_jury_risk": "High (0.3-0.5 if opposed to majority)",
+    "persuadability": "Very Low (0.1-0.2)",
+    "plaintiff_favorability": "Unpredictable - depends on moral framework",
+    "defense_favorability": "Unpredictable - depends on moral framework"
+  },
+  
+  "subtypes": [
+    {
+      "subtype": "MORAL_NULLIFIER",
+      "description": "Decides based on personal sense of justice/morality regardless of law",
+      "typical_lean": "Often plaintiff in cases involving perceived injustice"
+    },
+    {
+      "subtype": "ANTI_GOVERNMENT_NULLIFIER",
+      "description": "Rejects government authority including legal instructions",
+      "typical_lean": "Often defense in cases involving regulations"
+    },
+    {
+      "subtype": "RACIAL_JUSTICE_NULLIFIER",
+      "description": "Views case through lens of systemic racism",
+      "typical_lean": "Pro-plaintiff against institutions"
+    },
+    {
+      "subtype": "PRO_DEFENSE_NULLIFIER",
+      "description": "Believes lawsuits are fundamentally illegitimate",
+      "typical_lean": "Defense regardless of evidence"
+    }
+  ],
+  
+  "detection_indicators": [
+    "Expresses strong personal moral or philosophical framework",
+    "Questions legitimacy of legal system or instructions",
+    "States that conscience/God/principles come before law",
+    "Has history of civil disobedience or activism",
+    "Expresses views that 'the system is broken'",
+    "Extreme positions on either end of political spectrum",
+    "References 'jury nullification' or 'citizen's duty'",
+    "States they would have trouble following instructions they disagree with"
+  ],
+  
+  "voir_dire_detection_questions": [
+    "If the judge instructs you to apply a rule of law you personally disagree with, could you follow that instruction?",
+    "Do you believe there are situations where a juror should follow their conscience instead of the law?",
+    "Have you ever heard of jury nullification? What do you think about it?",
+    "Is there any law or legal principle you feel so strongly about that you couldn't set it aside?"
+  ],
+  
+  "personas": [
+    {
+      "persona_id": "MAVE_10.1_ConscienceFirstClarence",
+      "nickname": "Conscience-First Clarence",
+      "full_name": "Reverend Carlton James",
+      "tagline": "The law isn't always just. I've seen unjust laws before.",
+      "archetype": "maverick",
+      "subtype": "MORAL_NULLIFIER",
+      "archetype_strength": 0.8,
+      "variant": "CIVIL_RIGHTS_MORAL",
+      
+      "demographics": {
+        "age": 67,
+        "gender": "male",
+        "race_ethnicity": "black",
+        "location_city": "Birmingham",
+        "location_state": "AL",
+        "location_region": "deep_south",
+        "location_type": "urban",
+        "education_level": "graduate",
+        "education_field": "Master of Divinity",
+        "occupation": "Retired Pastor",
+        "occupation_industry": "religious",
+        "years_in_occupation": 40,
+        "income": 42000,
+        "marital_status": "married",
+        "years_married": 44,
+        "children": 4,
+        "children_ages": "adult",
+        "religion": "Baptist",
+        "religion_activity": "clergy_retired",
+        "political_affiliation": "Democrat",
+        "political_engagement": "civil_rights_background"
+      },
+      
+      "dimensions": {
+        "attribution_orientation": 4.0,
+        "just_world_belief": 2.0,
+        "jwb_subtype": null,
+        "authoritarianism": 1.5,
+        "institutional_trust": {
+          "corporations": 2.0,
+          "medical": 3.0,
+          "legal_system": 2.0,
+          "insurance": 2.0
+        },
+        "litigation_attitude": 4.0,
+        "leadership_tendency": 4.5,
+        "cognitive_style": 2.0,
+        "damages_orientation": 4.0
+      },
+      
+      "life_experiences": [
+        "Grew up during Jim Crow, participated in civil rights movement",
+        "Has seen unjust laws and defied them on moral grounds",
+        "40 years as pastor, strong moral framework",
+        "Explicitly endorsed jury nullification in sermons",
+        "Believes jurors should follow conscience, not just law",
+        "Taught that law isn't always right"
+      ],
+      
+      "nullification_philosophy": {
+        "core_belief": "There is a higher moral law than what is written in legal books",
+        "historical_reference": "Civil rights movement showed that unjust laws must be opposed",
+        "application": "Will prioritize justice over legal instructions if they conflict",
+        "likely_direction": "Pro-plaintiff in cases involving perceived injustice against individuals"
+      },
+      
+      "characteristic_phrases": [
+        "The law isn't always just",
+        "There's a higher law than what's written in books",
+        "We have to follow our conscience",
+        "I've seen unjust laws before",
+        "Justice requires more than following instructions",
+        "I answer to God before I answer to any judge"
+      ],
+      
+      "voir_dire_responses": {
+        "instruction_question": {
+          "question": "If the judge instructs you to apply a rule you disagree with, could you follow that instruction?",
+          "response": "I would listen respectfully to the judge. But ultimately, I answer to God and my conscience. I've seen unjust laws before. I'd have to do what I believed was right.",
+          "red_flag_level": "HIGH"
+        },
+        "nullification_question": {
+          "question": "Have you ever heard of jury nullification?",
+          "response": "Yes, I have. I believe it's one of the most important powers citizens have. It's how we keep the legal system accountable to justice.",
+          "red_flag_level": "CRITICAL"
+        },
+        "fairness_question": {
+          "question": "Can you be fair to both sides?",
+          "response": "I believe in fairness. But fairness and following instructions aren't always the same thing. Sometimes being fair means standing up for what's right even when the system says otherwise."
+        }
+      },
+      
+      "deliberation_behavior": {
+        "predicted_role": "moral_authority_potential_holdout",
+        "foreperson_candidate": false,
+        "deliberation_style": "moral_philosophical_framing",
+        "influence_tactics": [
+          "Appeals to higher moral principles",
+          "References civil rights history",
+          "Religious/ethical authority",
+          "Refuses to be moved by legal arguments"
+        ],
+        "likely_statements": [
+          "I don't care what the instructions say—this is about justice",
+          "I've seen what happens when people just follow rules without thinking",
+          "My conscience won't let me rule that way",
+          "This is about right and wrong, not technicalities"
+        ],
+        "holdout_behavior": {
+          "likelihood": 0.7,
+          "resistance_to_pressure": 0.9,
+          "hung_jury_risk": 0.5
+        }
+      },
+      
+      "simulation_parameters": {
+        "liability_threshold": "conscience_based",
+        "instruction_compliance": 0.4,
+        "conscience_override": 0.7,
+        "moral_framework_dominance": 0.85,
+        
+        "evidence_processing": {
+          "legal_standards_weight": 0.4,
+          "moral_evaluation_weight": 1.8,
+          "emotional_evidence_weight": 1.4,
+          "institutional_defendant_penalty": 0.3
+        },
+        
+        "deliberation": {
+          "influence_weight": 2.0,
+          "persuadability": 0.2,
+          "position_stability": 0.9,
+          "speaking_share": 0.12,
+          "moral_authority_effect": 1.5,
+          "holdout_potential": 0.7
+        }
+      },
+      
+      "case_type_predictions": {
+        "plaintiff_vs_corporation": {
+          "likely_position": "pro_plaintiff",
+          "reasoning": "Will see as individual vs powerful institution, invoke justice"
+        },
+        "civil_rights_adjacent": {
+          "likely_position": "pro_plaintiff",
+          "reasoning": "Strong identification with civil rights framing"
+        },
+        "regulatory_compliance_defense": {
+          "likely_position": "may_reject_defense",
+          "reasoning": "May view regulatory compliance as insufficient if moral wrong occurred"
+        }
+      },
+      
+      "strategy_guidance": {
+        "plaintiff_danger_level": 2,
+        "defense_danger_level": 4,
+        "cause_challenge_vulnerability": 0.85,
+        "strike_priority": "LIKELY_CHALLENGEABLE_FOR_CAUSE",
+        
+        "cause_challenge_approach": {
+          "strategy": "His own statements reveal nullification intent. Use his words.",
+          "script": [
+            "You mentioned you've endorsed jury nullification. Does that mean you might not follow the judge's instructions?",
+            "You said you answer to God before any judge. Does that mean you might decide this case based on your religious beliefs rather than the law?",
+            "If the law required a result your conscience disagreed with, would you follow your conscience instead?"
+          ],
+          "expected_outcome": "High likelihood of successful cause challenge based on stated views"
+        },
+        
+        "warning": "Statements likely support cause challenge. If retained, high risk of hung jury if he opposes majority."
+      }
+    },
+    
+    {
+      "persona_id": "MAVE_10.2_LibertarianLarry",
+      "nickname": "Libertarian Larry",
+      "full_name": "Lawrence Bridger",
+      "tagline": "The government has no business telling me how to live or how to judge.",
+      "archetype": "maverick",
+      "subtype": "ANTI_GOVERNMENT_NULLIFIER",
+      "archetype_strength": 0.85,
+      "variant": "LIBERTARIAN_SKEPTIC",
+      
+      "demographics": {
+        "age": 52,
+        "gender": "male",
+        "race_ethnicity": "white",
+        "location_city": "Bozeman area",
+        "location_state": "MT",
+        "location_region": "mountain_west",
+        "location_type": "rural",
+        "education_level": "some_college",
+        "education_field": "Agricultural studies",
+        "occupation": "Cattle Rancher",
+        "occupation_industry": "agriculture",
+        "years_in_occupation": 30,
+        "income": 65000,
+        "marital_status": "married",
+        "years_married": 25,
+        "children": 3,
+        "children_ages": "mixed",
+        "religion": "non_denominational",
+        "religion_activity": "sporadic",
+        "political_affiliation": "Libertarian",
+        "political_engagement": "anti_government_activist"
+      },
+      
+      "dimensions": {
+        "attribution_orientation": 1.5,
+        "just_world_belief": 3.5,
+        "jwb_subtype": null,
+        "authoritarianism": 1.0,
+        "institutional_trust": {
+          "corporations": 3.0,
+          "medical": 2.5,
+          "legal_system": 1.5,
+          "insurance": 2.5
+        },
+        "litigation_attitude": 2.0,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 3.0,
+        "damages_orientation": 2.0
+      },
+      
+      "life_experiences": [
+        "Third-generation Montana rancher",
+        "Deeply distrusts government and large institutions",
+        "Believes in personal freedom and personal consequences",
+        "Has fought with government agencies over land use, regulations",
+        "Libertarian political philosophy",
+        "May refuse to apply laws he views as government overreach"
+      ],
+      
+      "nullification_philosophy": {
+        "core_belief": "Government has no right to tell citizens how to run their lives or businesses",
+        "constitutional_reference": "Strict constructionist; if not in Constitution, government can't do it",
+        "application": "May refuse to enforce regulations he sees as illegitimate government overreach",
+        "likely_direction": "Defense in cases involving government regulations; variable otherwise"
+      },
+      
+      "characteristic_phrases": [
+        "The government has no right to tell people how to run their business",
+        "Where does it say in the Constitution...",
+        "This is just lawyers making money",
+        "People should be free to make their own choices and live with consequences",
+        "Another government regulation that doesn't make sense",
+        "I don't trust the government to tell me what's right"
+      ],
+      
+      "voir_dire_responses": {
+        "regulation_question": {
+          "question": "This case involves whether the defendant violated federal safety regulations. Do you have any feelings about government regulations?",
+          "response": "I think there are way too many regulations. The government has no business telling people how to run their businesses. Half these regulations are written by bureaucrats who've never done a day of real work.",
+          "red_flag_level": "HIGH"
+        },
+        "instruction_question": {
+          "question": "Could you follow the judge's instructions even if you disagreed with the underlying law?",
+          "response": "Depends on the instruction. If the judge tells me to enforce some regulation I think is unconstitutional, I'd have a hard time with that. A man's got to follow his principles.",
+          "red_flag_level": "HIGH"
+        },
+        "lawsuit_question": {
+          "question": "What do you think about lawsuits generally?",
+          "response": "Too many of them. People should handle their own problems, not run to courts. And lawyers take too much. The whole system is rigged."
+        }
+      },
+      
+      "deliberation_behavior": {
+        "predicted_role": "unpredictable_contrarian",
+        "foreperson_candidate": false,
+        "deliberation_style": "anti_authority_skeptical",
+        "influence_tactics": [
+          "Questions legitimacy of regulations at issue",
+          "Appeals to freedom and personal responsibility",
+          "Dismisses 'government rules' as overreach",
+          "May refuse to engage with legal framework"
+        ],
+        "likely_statements": [
+          "Why should we enforce this regulation anyway?",
+          "The government shouldn't be involved in this",
+          "Both sides are wrong—people should handle this themselves",
+          "I'm not going to be the government's tool"
+        ],
+        "holdout_behavior": {
+          "likelihood": 0.6,
+          "resistance_to_pressure": 0.8,
+          "hung_jury_risk": 0.4
+        }
+      },
+      
+      "simulation_parameters": {
+        "liability_threshold": "principle_based",
+        "instruction_compliance": 0.3,
+        "regulatory_skepticism": 0.95,
+        "government_authority_rejection": 0.8,
+        
+        "evidence_processing": {
+          "regulatory_violation_weight": 0.3,
+          "personal_responsibility_weight": 1.5,
+          "government_expert_discount": 0.4,
+          "individual_freedom_weight": 1.6
+        },
+        
+        "deliberation": {
+          "influence_weight": 1.2,
+          "persuadability": 0.25,
+          "position_stability": 0.85,
+          "speaking_share": 0.10,
+          "unpredictability": 0.8,
+          "holdout_potential": 0.6
+        }
+      },
+      
+      "case_type_predictions": {
+        "regulatory_violation": {
+          "likely_position": "pro_defense",
+          "reasoning": "May refuse to enforce regulations he views as illegitimate"
+        },
+        "individual_vs_government": {
+          "likely_position": "pro_individual",
+          "reasoning": "Deep anti-government bias"
+        },
+        "individual_vs_individual": {
+          "likely_position": "personal_responsibility_frame",
+          "reasoning": "May expect plaintiff to have handled it themselves"
+        },
+        "corporate_negligence": {
+          "likely_position": "variable",
+          "reasoning": "Dislikes both corporations and lawsuits; unpredictable"
+        }
+      },
+      
+      "strategy_guidance": {
+        "plaintiff_danger_level": 4,
+        "defense_danger_level": 2,
+        "cause_challenge_vulnerability": 0.7,
+        "strike_priority": "CONSIDER_CAUSE_CHALLENGE",
+        
+        "cause_challenge_approach": {
+          "strategy": "Focus on refusal to follow legal instructions regarding regulations",
+          "script": [
+            "You mentioned you'd have a hard time enforcing regulations you disagree with. This case involves federal safety regulations. Can you apply them?",
+            "If the judge instructs you that violation of a regulation can establish negligence, could you follow that instruction?",
+            "It sounds like you have strong views about government overreach. Would those views prevent you from being fair in a case involving regulations?"
+          ]
+        },
+        
+        "warning": "Unpredictable. May nullify in either direction depending on how case is framed. High risk of hung jury."
+      }
+    },
+    
+    {
+      "persona_id": "MAVE_10.3_JusticeWarriorJasmine",
+      "nickname": "Justice-Warrior Jasmine",
+      "full_name": "Jasmine Williams",
+      "tagline": "The system has never been fair to people who look like me.",
+      "archetype": "maverick",
+      "subtype": "RACIAL_JUSTICE_NULLIFIER",
+      "archetype_strength": 0.75,
+      "variant": "SOCIAL_JUSTICE_ACTIVIST",
+      
+      "demographics": {
+        "age": 34,
+        "gender": "female",
+        "race_ethnicity": "black",
+        "location_city": "Oakland",
+        "location_state": "CA",
+        "location_region": "pacific",
+        "location_type": "urban",
+        "education_level": "bachelors",
+        "education_field": "Sociology, African American Studies",
+        "occupation": "Community Organizer",
+        "occupation_industry": "nonprofit",
+        "years_in_occupation": 10,
+        "income": 48000,
+        "marital_status": "single",
+        "years_married": 0,
+        "children": 0,
+        "children_ages": null,
+        "religion": "spiritual_not_religious",
+        "religion_activity": "none",
+        "political_affiliation": "Democrat",
+        "political_engagement": "activist"
+      },
+      
+      "dimensions": {
+        "attribution_orientation": 5.0,
+        "just_world_belief": 1.0,
+        "jwb_subtype": null,
+        "authoritarianism": 1.0,
+        "institutional_trust": {
+          "corporations": 1.0,
+          "medical": 2.0,
+          "legal_system": 1.0,
+          "insurance": 1.5
+        },
+        "litigation_attitude": 5.0,
+        "leadership_tendency": 4.0,
+        "cognitive_style": 2.5,
+        "damages_orientation": 5.0
+      },
+      
+      "life_experiences": [
+        "Degree in sociology with focus on systemic racism",
+        "10 years as community organizer in Oakland",
+        "Active in Black Lives Matter movement",
+        "Views legal system as fundamentally racist",
+        "Believes in using any available tool to achieve racial justice",
+        "Family members have had negative experiences with legal system"
+      ],
+      
+      "nullification_philosophy": {
+        "core_belief": "The legal system has always been a tool of oppression against Black people",
+        "historical_reference": "From slavery to mass incarceration, the law has never been just",
+        "application": "Will prioritize racial justice over legal technicalities",
+        "likely_direction": "Pro-plaintiff against institutions; may nullify to protect defendants of color"
+      },
+      
+      "characteristic_phrases": [
+        "The system has never been fair to people who look like me",
+        "We need to talk about the racial dynamics here",
+        "This is about more than just this case",
+        "Justice means something different when you've been oppressed",
+        "I'm not going to participate in an unjust system",
+        "We have a chance to do something right for once"
+      ],
+      
+      "voir_dire_responses": {
+        "fairness_question": {
+          "question": "Can you be fair to both sides regardless of their race?",
+          "response": "That question assumes the system is fair to begin with. It's not. I'll try to do what's right, but I'm not going to pretend history doesn't exist.",
+          "red_flag_level": "MODERATE"
+        },
+        "corporation_question": {
+          "question": "Could you be fair to a corporate defendant?",
+          "response": "Corporations have been exploiting communities of color forever. I can listen to the evidence, but I know how these institutions operate.",
+          "red_flag_level": "MODERATE"
+        },
+        "instruction_question": {
+          "question": "Could you follow the judge's instructions on the law?",
+          "response": "If the instructions are just, yes. If they perpetuate injustice, I'd have to think about that.",
+          "red_flag_level": "HIGH"
+        }
+      },
+      
+      "deliberation_behavior": {
+        "predicted_role": "justice_advocate",
+        "foreperson_candidate": false,
+        "deliberation_style": "social_justice_framing",
+        "influence_tactics": [
+          "Frames issues in terms of systemic justice",
+          "Appeals to racial equity",
+          "May introduce arguments about broader social context",
+          "Challenges 'colorblind' legal analysis"
+        ],
+        "likely_statements": [
+          "We need to consider what justice really means here",
+          "This is bigger than just one case",
+          "The law doesn't operate the same way for everyone",
+          "I'm not going to help perpetuate an unjust system"
+        ],
+        "holdout_behavior": {
+          "likelihood": 0.5,
+          "resistance_to_pressure": 0.75,
+          "hung_jury_risk": 0.35
+        }
+      },
+      
+      "simulation_parameters": {
+        "liability_threshold": "justice_based",
+        "instruction_compliance": 0.5,
+        "racial_justice_framework": 0.9,
+        
+        "evidence_processing": {
+          "institutional_defendant_penalty": 0.4,
+          "systemic_context_weight": 1.6,
+          "individual_plaintiff_bonus": 0.3
+        },
+        
+        "deliberation": {
+          "influence_weight": 1.5,
+          "persuadability": 0.3,
+          "position_stability": 0.8,
+          "speaking_share": 0.12,
+          "holdout_potential": 0.5
+        }
+      },
+      
+      "case_type_predictions": {
+        "plaintiff_poc_vs_institution": {
+          "likely_position": "strongly_pro_plaintiff",
+          "reasoning": "Will see as justice issue"
+        },
+        "corporate_defendant_any_plaintiff": {
+          "likely_position": "pro_plaintiff",
+          "reasoning": "Deep distrust of corporate institutions"
+        },
+        "individual_vs_individual": {
+          "likely_position": "variable",
+          "reasoning": "Less ideologically driven when no institutional defendant"
+        }
+      },
+      
+      "strategy_guidance": {
+        "plaintiff_danger_level": 1,
+        "defense_danger_level": 4,
+        "cause_challenge_vulnerability": 0.55,
+        "strike_priority": "LIKELY_DEFENSE_STRIKE",
+        
+        "cause_challenge_approach": {
+          "strategy": "Focus on statements suggesting inability to follow instructions",
+          "script": [
+            "You mentioned you might not follow instructions you see as unjust. How would you decide what's unjust?",
+            "Could you set aside your views about systemic racism and just evaluate the evidence in this case?",
+            "If the law required a result you felt was unfair, could you follow the law?"
+          ]
+        },
+        
+        "notes": "May be challengeable for cause depending on statements. Defense will likely use peremptory strike."
+      }
+    },
+    
+    {
+      "persona_id": "MAVE_10.4_AntiLawsuitAl",
+      "nickname": "Anti-Lawsuit Al",
+      "full_name": "Albert Kowalski",
+      "tagline": "Lawsuits are destroying this country. I won't be part of it.",
+      "archetype": "maverick",
+      "subtype": "PRO_DEFENSE_NULLIFIER",
+      "archetype_strength": 0.8,
+      "variant": "TORT_REFORM_EXTREMIST",
+      
+      "demographics": {
+        "age": 70,
+        "gender": "male",
+        "race_ethnicity": "white",
+        "location_city": "Tucson",
+        "location_state": "AZ",
+        "location_region": "southwest",
+        "location_type": "suburban",
+        "education_level": "bachelors",
+        "education_field": "Business",
+        "occupation": "Retired Business Owner",
+        "occupation_industry": "manufacturing",
+        "years_in_occupation": 35,
+        "income": 85000,
+        "marital_status": "married",
+        "years_married": 45,
+        "children": 3,
+        "children_ages": "adult",
+        "religion": "Catholic",
+        "religion_activity": "weekly",
+        "political_affiliation": "Republican",
+        "political_engagement": "tort_reform_advocate"
+      },
+      
+      "dimensions": {
+        "attribution_orientation": 1.0,
+        "just_world_belief": 4.5,
+        "jwb_subtype": "others",
+        "authoritarianism": 4.0,
+        "institutional_trust": {
+          "corporations": 4.5,
+          "medical": 4.0,
+          "legal_system": 2.0,
+          "insurance": 4.0
+        },
+        "litigation_attitude": 1.0,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 3.0,
+        "damages_orientation": 1.0
+      },
+      
+      "life_experiences": [
+        "Owned manufacturing business for 35 years",
+        "Sued multiple times, considers all lawsuits against him frivolous",
+        "Active in tort reform advocacy",
+        "Believes trial lawyers are parasites",
+        "Views plaintiff litigation as fundamentally illegitimate",
+        "May refuse to find for any plaintiff on principle"
+      ],
+      
+      "nullification_philosophy": {
+        "core_belief": "Lawsuits are destroying American business and society",
+        "moral_framework": "Plaintiffs and their lawyers are gaming the system for money",
+        "application": "Will not help 'lottery justice' succeed regardless of evidence",
+        "likely_direction": "Pro-defense in all cases; may nullify to prevent any plaintiff verdict"
+      },
+      
+      "characteristic_phrases": [
+        "Lawsuits are destroying this country",
+        "Another money grab by trial lawyers",
+        "I won't be part of this lawsuit lottery",
+        "People used to handle problems themselves",
+        "Trial lawyers are parasites",
+        "No matter what the evidence shows, I can't support this kind of lawsuit"
+      ],
+      
+      "voir_dire_responses": {
+        "lawsuit_views_question": {
+          "question": "What are your views on personal injury lawsuits?",
+          "response": "I think they're out of control. Trial lawyers are destroying businesses, driving up costs for everyone. It's legalized extortion. I've been sued multiple times for nothing.",
+          "red_flag_level": "HIGH"
+        },
+        "fairness_question": {
+          "question": "Could you be fair to a plaintiff bringing a personal injury lawsuit?",
+          "response": "I don't know. Honestly, I look at these cases and I just see money grabs. I've been on the other side of it. I know how the game works.",
+          "red_flag_level": "CRITICAL"
+        },
+        "instruction_question": {
+          "question": "If the evidence showed the defendant was negligent, could you find for the plaintiff?",
+          "response": "I'd have a hard time. I just don't believe in this whole system. Even if someone was technically negligent, these lawsuits do more harm than good.",
+          "red_flag_level": "CRITICAL"
+        }
+      },
+      
+      "deliberation_behavior": {
+        "predicted_role": "defense_holdout",
+        "foreperson_candidate": false,
+        "deliberation_style": "anti_plaintiff_absolutist",
+        "influence_tactics": [
+          "Dismisses all plaintiff evidence as exaggerated",
+          "Appeals to 'lawsuit abuse' narrative",
+          "Refuses to engage with liability analysis",
+          "May simply announce he won't vote for plaintiff regardless"
+        ],
+        "likely_statements": [
+          "I'm not going to help these trial lawyers",
+          "This is just another lottery ticket lawsuit",
+          "I don't care what the evidence shows—these lawsuits are wrong",
+          "You can't make me vote for the plaintiff"
+        ],
+        "holdout_behavior": {
+          "likelihood": 0.85,
+          "resistance_to_pressure": 0.95,
+          "hung_jury_risk": 0.6
+        }
+      },
+      
+      "simulation_parameters": {
+        "liability_threshold": 0.99,
+        "instruction_compliance": 0.2,
+        "anti_litigation_absolutism": 0.9,
+        
+        "evidence_processing": {
+          "plaintiff_testimony_weight": 0.2,
+          "plaintiff_expert_weight": 0.3,
+          "damages_evidence_weight": 0.2,
+          "defense_credibility_boost": 1.5
+        },
+        
+        "deliberation": {
+          "influence_weight": 0.8,
+          "persuadability": 0.05,
+          "position_stability": 0.98,
+          "speaking_share": 0.08,
+          "holdout_potential": 0.85,
+          "immovable": true
+        }
+      },
+      
+      "case_type_predictions": {
+        "all_plaintiff_cases": {
+          "likely_position": "defense_regardless_of_evidence",
+          "reasoning": "Rejects legitimacy of plaintiff litigation entirely"
+        }
+      },
+      
+      "strategy_guidance": {
+        "plaintiff_danger_level": 5,
+        "defense_danger_level": 1,
+        "cause_challenge_vulnerability": 0.95,
+        "strike_priority": "CHALLENGE_FOR_CAUSE_PLAINTIFF",
+        
+        "cause_challenge_approach": {
+          "strategy": "His own statements are clear grounds for cause challenge",
+          "script": [
+            "You said you'd have a hard time finding for a plaintiff even if the evidence showed negligence. Is that accurate?",
+            "You mentioned you 'don't believe in this whole system.' Does that mean you've already decided against the plaintiff?",
+            "You said you won't help 'trial lawyers' regardless of evidence. Can you give the plaintiff a fair hearing?"
+          ],
+          "expected_outcome": "Clear cause challenge. His statements admit inability to be fair."
+        },
+        
+        "warning": "Should be removed for cause. His statements explicitly admit he cannot follow the law or be fair to plaintiffs. If somehow seated, will hang jury to prevent plaintiff verdict."
+      }
+    }
+  ],
+  
+  "strategic_summary": {
+    "detection_priority": "HIGH - Mavericks can cause hung juries and unpredictable outcomes",
+    
+    "key_voir_dire_questions": [
+      "If the judge instructs you to apply a rule of law you disagree with, could you follow that instruction?",
+      "Do you believe there are situations where a juror should follow their conscience instead of the law?",
+      "Is there anything about lawsuits in general that would make it difficult for you to be fair to either side?"
+    ],
+    
+    "cause_challenge_triggers": [
+      "Explicit endorsement of jury nullification",
+      "Statement that conscience/God/principles come before legal instructions",
+      "Admission of inability to be fair to one side regardless of evidence",
+      "History of civil disobedience with stated intent to continue"
+    ],
+    
+    "if_seated_risks": {
+      "hung_jury_probability": "High if Maverick opposes majority",
+      "deliberation_disruption": "May refuse to engage with legal framework",
+      "unpredictability": "Outcome may not correlate with evidence strength"
+    }
+  }
+}
