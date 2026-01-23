@@ -33,7 +33,6 @@ export default function PromptDetailPage({
   const [editedPrompt, setEditedPrompt] = useState('');
   const [systemPrompt, setSystemPrompt] = useState('');
   const [versionNotes, setVersionNotes] = useState('');
-  const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState<{ message: string; deployed: boolean } | null>(null);
 
@@ -161,7 +160,7 @@ export default function PromptDetailPage({
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
             <h3 className="text-red-800 font-semibold">Prompt not found</h3>
             <p className="text-red-600 text-sm mt-1">
-              The prompt "{serviceId}" does not exist.
+              The prompt &quot;{serviceId}&quot; does not exist.
             </p>
           </div>
         </div>
