@@ -9,6 +9,7 @@ cmds = [
   "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
   "cd packages/database && npm run build && cd ../..",
   "cd packages/ai-client && npm run build && cd ../..",
+  "cd packages/prompt-client && npm run build && cd ../..",
   "cd packages/utils && npm run build && cd ../..",
   "cd services/api-gateway && npm run build && cd ../.."
 ]
