@@ -394,6 +394,140 @@ Rules:
 
   console.log('✅ Created conversation synthesis prompt:', conversationSynthesisPrompt.serviceId);
 
+  // 6. Persona Summary Prompt (Per-persona journey analysis)
+  const personaSummaryPrompt = await prisma.prompt.upsert({
+    where: { serviceId: 'roundtable-persona-summary' },
+    update: {},
+    create: {
+      serviceId: 'roundtable-persona-summary',
+      name: 'Roundtable Persona Summary',
+      description: 'Generate a comprehensive summary of one persona\'s participation and journey through the conversation',
+      category: 'focus-group',
+      versions: {
+        create: {
+          version: 'v1.0.0',
+          systemPrompt: `You are an expert at analyzing jury deliberation dynamics and tracking individual juror journeys through complex discussions.`,
+          userPromptTemplate: `Analyze one participant's journey through a jury deliberation discussion.
+
+ARGUMENT BEING DISCUSSED:
+"{{argumentContent}}"
+
+OUR SIDE: {{ourSide}}
+
+PERSONA: {{personaName}}
+TOTAL STATEMENTS: {{totalStatements}}
+
+THEIR STATEMENTS (in order):
+{{personaStatements}}
+
+FULL CONVERSATION CONTEXT (what everyone said):
+{{conversationTranscript}}
+
+Provide a comprehensive analysis in the following JSON format:
+{
+  "initialPosition": "favorable" | "neutral" | "unfavorable" | "mixed",
+  "finalPosition": "favorable" | "neutral" | "unfavorable" | "mixed",
+  "positionShifted": true | false,
+  "shiftDescription": "Explanation of why/how position changed (only if shifted)",
+  "mainPoints": ["Key point 1 they made", "Key point 2", ...],
+  "concernsRaised": ["Concern 1", "Concern 2", ...],
+  "questionsAsked": ["Question 1", "Question 2", ...],
+  "influenceLevel": "high" | "medium" | "low",
+  "agreedWithMost": ["PersonaName1", "PersonaName2", ...],
+  "disagreedWithMost": ["PersonaName1", "PersonaName2", ...],
+  "influencedBy": ["PersonaName1 who changed their mind", ...],
+  "summary": "2-3 paragraph narrative summary of their journey"
+}
+
+Rules:
+- initialPosition: Their stance in first 1-2 statements (favorable = supports argument, unfavorable = opposes)
+- finalPosition: Their stance in last 1-2 statements
+- positionShifted: true if they changed from initial to final (e.g., neutral→favorable, unfavorable→neutral)
+- shiftDescription: Only if shifted; explain what caused the change (which points, which person's argument)
+- mainPoints: Key arguments THEY made (not what others said)
+- concernsRaised: Specific doubts or worries THEY voiced
+- questionsAsked: Actual questions THEY posed (even rhetorical)
+- influenceLevel: high = others responded to their points often; medium = moderate engagement; low = minimal impact
+- agreedWithMost: Names of personas whose points they explicitly agreed with or built upon
+- disagreedWithMost: Names of personas they challenged or pushed back against
+- influencedBy: Names of personas whose arguments seemed to change their mind (only if position shifted)
+- summary: Write 2-3 paragraphs describing their arc through the conversation. Include:
+  * How they started (initial reaction and tone)
+  * Key moments (statements that reveal their thinking)
+  * How they ended (final position and confidence level)
+  * What influenced them (if position shifted)`,
+          config: {
+            model: 'claude-sonnet-4-20250514',
+            maxTokens: 2000,
+            temperature: 0.4
+          },
+          variables: {
+            personaName: 'string',
+            argumentContent: 'string',
+            ourSide: 'string',
+            totalStatements: 'number',
+            personaStatements: 'string',
+            conversationTranscript: 'string'
+          },
+          outputSchema: {
+            type: 'object',
+            properties: {
+              initialPosition: {
+                type: 'string',
+                enum: ['favorable', 'neutral', 'unfavorable', 'mixed']
+              },
+              finalPosition: {
+                type: 'string',
+                enum: ['favorable', 'neutral', 'unfavorable', 'mixed']
+              },
+              positionShifted: {
+                type: 'boolean'
+              },
+              shiftDescription: {
+                type: 'string'
+              },
+              mainPoints: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              concernsRaised: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              questionsAsked: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              influenceLevel: {
+                type: 'string',
+                enum: ['high', 'medium', 'low']
+              },
+              agreedWithMost: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              disagreedWithMost: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              influencedBy: {
+                type: 'array',
+                items: { type: 'string' }
+              },
+              summary: {
+                type: 'string'
+              }
+            },
+            required: ['initialPosition', 'finalPosition', 'positionShifted', 'mainPoints', 'influenceLevel', 'summary']
+          },
+          isDraft: false
+        }
+      }
+    }
+  });
+
+  console.log('✅ Created persona summary prompt:', personaSummaryPrompt.serviceId);
+
   // Set current versions for all prompts
   await prisma.prompt.update({
     where: { serviceId: 'roundtable-persona-system' },
@@ -440,6 +574,15 @@ Rules:
     }
   });
 
+  await prisma.prompt.update({
+    where: { serviceId: 'roundtable-persona-summary' },
+    data: {
+      currentVersionId: (await prisma.promptVersion.findFirst({
+        where: { prompt: { serviceId: 'roundtable-persona-summary' } }
+      }))!.id
+    }
+  });
+
   console.log('\n✨ All roundtable conversation prompts created successfully!');
   console.log('\nPrompts created:');
   console.log('  1. roundtable-persona-system - Persona identity system prompt');
@@ -447,6 +590,7 @@ Rules:
   console.log('  3. roundtable-conversation-turn - Ongoing conversation responses');
   console.log('  4. roundtable-statement-analysis - Post-generation statement analysis');
   console.log('  5. roundtable-conversation-synthesis - Final conversation synthesis');
+  console.log('  6. roundtable-persona-summary - Per-persona journey analysis');
 }
 
 main()

@@ -237,35 +237,56 @@ Database (Railway)
 
 ---
 
-### 7. Focus Group Simulation
-**Status:** ✅ Complete + AI Question Generation ⭐ NEW (Jan 23, 2026)
+### 7. Roundtable Conversations (Focus Groups)
+**Status:** ✅ **LIVE IN PRODUCTION** ⭐ Major Update (Jan 23, 2026)
 **What it does:**
-- Simulates jury deliberation with 6 diverse personas
-- 3 modes: quick, detailed, deliberation
-- Tests trial arguments before court
-- Provides per-persona reactions
-- Generates recommendations for improvement
-- **NEW:** AI-generated question suggestions based on case and personas
+- Multi-turn AI jury deliberations (not single-turn reactions)
+- 6-12 personas debate arguments with authentic back-and-forth
+- Leadership-based turn management (LEADER → INFLUENCER → FOLLOWER → PASSIVE)
+- Real-time sentiment tracking and social signal detection
+- Consensus & fracture point analysis
+- AI-generated custom questions for focus group setup
 
-**AI Question Generation:**
-- Click "Generate Questions with AI" during focus group setup
-- Receives 10-15 contextual questions in 2-4 seconds
-- Questions tailored to:
-  - Case facts and context
-  - Selected behavioral personas
-  - Focus group purpose
-- Questions are editable before finalizing focus group
+**Key Features:**
+- ✅ **Roundtable Conversations:** 18-25 statements per conversation (60-90 seconds)
+- ✅ **Multi-turn Deliberation:** Personas respond to each other naturally
+- ✅ **Sentiment Analysis:** Plaintiff/defense leaning, neutral, conflicted
+- ✅ **Social Dynamics:** Agreement/disagreement signals, influential personas
+- ✅ **Consensus Detection:** What unites or divides the panel
+- ✅ **AI Question Generation:** 10-15 contextual questions in 2-4 seconds
+- ✅ **Conversation Synthesis:** Key debate points, verdict prediction
+
+**User Experience:**
+1. Create focus group session with setup wizard
+2. Select argument to test
+3. Click "Start Roundtable Discussion"
+4. Watch personas deliberate (60-90 seconds)
+5. View results: full transcript, sentiment, consensus, fractures
 
 **Key Files:**
-- `services/api-gateway/src/services/focus-group-engine-service.ts` - Backend service
-- `services/api-gateway/src/services/focus-group-question-generator.ts` - AI question generator
-- `apps/web/components/focus-group-simulator.tsx` - Frontend component
+- `services/api-gateway/src/services/roundtable/conversation-orchestrator.ts` - Orchestrates conversations
+- `services/api-gateway/src/services/roundtable/turn-manager.ts` - Manages speaking turns
+- `apps/web/components/roundtable-conversation-trigger.tsx` - Initiates conversations
+- `apps/web/components/roundtable-conversation-viewer.tsx` - Displays results
 - `apps/web/components/focus-group-setup-wizard.tsx` - Setup wizard with AI generation
 
-**Cost:** ~$0.02-0.04 per question generation (800-1200 tokens)
+**Performance:**
+- **Duration:** 60-90 seconds per conversation
+- **Tokens:** 25,000-30,000 per conversation (~$0.50-1.50)
+- **Question Generation:** 800-1200 tokens (~$0.02-0.04)
+- **Success Rate:** 100% with fallback handling
+
+**Recent Bug Fixes (Jan 23):**
+- ✅ Fixed persona assignment to sessions
+- ✅ Fixed Anthropic API response parsing
+- ✅ Updated to correct model: `claude-sonnet-4-20250514`
+- ✅ Resolved service stability issues
 
 **Documentation:**
-- [SESSION_SUMMARY_2026-01-23_FOCUS_GROUP_QUESTIONS_DEPLOYMENT.md](./SESSION_SUMMARY_2026-01-23_FOCUS_GROUP_QUESTIONS_DEPLOYMENT.md) - Deployment details
+- [ROUNDTABLE_CONVERSATIONS.md](./ROUNDTABLE_CONVERSATIONS.md) - **Complete guide**
+- [SESSION_SUMMARY_2026-01-23_ROUNDTABLE_CONVERSATIONS.md](./SESSION_SUMMARY_2026-01-23_ROUNDTABLE_CONVERSATIONS.md) - Implementation details
+- [FOCUS_GROUP_TESTING_GUIDE.md](./FOCUS_GROUP_TESTING_GUIDE.md) - Testing procedures
+- Archived docs: `docs/archive/roundtable-development/`
 
 ---
 

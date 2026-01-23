@@ -287,7 +287,7 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
           server,
           textExtractionService,
           document.id,
-          document.localFileUrl,
+          document.localFileUrl || '',
           document.filename
         );
       } else {

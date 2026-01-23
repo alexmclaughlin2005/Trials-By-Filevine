@@ -7,3 +7,4 @@
 export * from './turn-manager';
 export * from './conversation-orchestrator';
 export * from './statement-analyzer';
+export * from './persona-summarizer';

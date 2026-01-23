@@ -870,6 +870,9 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           statements: {
             orderBy: { sequenceNumber: 'asc' }
           },
+          personaSummaries: {
+            orderBy: { totalStatements: 'desc' }
+          },
           session: {
             include: {
               case: {
@@ -892,6 +895,29 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         a => a.id === conversation.argumentId
       );
 
+      // Group statements by persona for easy lookup
+      const statementsByPersona = new Map<string, any[]>();
+      for (const statement of conversation.statements) {
+        if (!statementsByPersona.has(statement.personaId)) {
+          statementsByPersona.set(statement.personaId, []);
+        }
+        statementsByPersona.get(statement.personaId)!.push({
+          id: statement.id,
+          personaId: statement.personaId,
+          personaName: statement.personaName,
+          sequenceNumber: statement.sequenceNumber,
+          content: statement.content,
+          sentiment: statement.sentiment,
+          emotionalIntensity: statement.emotionalIntensity,
+          keyPoints: statement.keyPoints,
+          addressedTo: statement.addressedTo,
+          agreementSignals: statement.agreementSignals,
+          disagreementSignals: statement.disagreementSignals,
+          speakCount: statement.speakCount,
+          createdAt: statement.createdAt
+        });
+      }
+
       return {
         id: conversation.id,
         argumentId: conversation.argumentId,
@@ -900,11 +926,42 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         completedAt: conversation.completedAt,
         converged: conversation.converged,
         convergenceReason: conversation.convergenceReason,
-        consensusAreas: conversation.consensusAreas,
-        fracturePoints: conversation.fracturePoints,
-        keyDebatePoints: conversation.keyDebatePoints,
-        influentialPersonas: conversation.influentialPersonas,
-        statements: conversation.statements.map(s => ({
+
+        // Persona summaries with their statements
+        personaSummaries: conversation.personaSummaries.map(ps => ({
+          personaId: ps.personaId,
+          personaName: ps.personaName,
+          totalStatements: ps.totalStatements,
+          firstStatement: ps.firstStatement,
+          lastStatement: ps.lastStatement,
+          initialPosition: ps.initialPosition,
+          finalPosition: ps.finalPosition,
+          positionShifted: ps.positionShifted,
+          shiftDescription: ps.shiftDescription,
+          mainPoints: ps.mainPoints,
+          concernsRaised: ps.concernsRaised,
+          questionsAsked: ps.questionsAsked,
+          influenceLevel: ps.influenceLevel,
+          agreedWithMost: ps.agreedWithMost,
+          disagreedWithMost: ps.disagreedWithMost,
+          influencedBy: ps.influencedBy,
+          averageSentiment: ps.averageSentiment,
+          averageEmotionalIntensity: ps.averageEmotionalIntensity,
+          mostEmotionalStatement: ps.mostEmotionalStatement,
+          summary: ps.summary,
+          statements: statementsByPersona.get(ps.personaId) || []
+        })),
+
+        // Overall analysis
+        overallAnalysis: {
+          consensusAreas: conversation.consensusAreas,
+          fracturePoints: conversation.fracturePoints,
+          keyDebatePoints: conversation.keyDebatePoints,
+          influentialPersonas: conversation.influentialPersonas
+        },
+
+        // All statements chronologically (for timeline view)
+        allStatements: conversation.statements.map(s => ({
           id: s.id,
           personaId: s.personaId,
           personaName: s.personaName,

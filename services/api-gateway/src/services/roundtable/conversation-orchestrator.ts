@@ -10,6 +10,7 @@
 import { PrismaClient } from '@juries/database';
 import { PromptClient } from '@juries/prompt-client';
 import { TurnManager, LeadershipLevel, PersonaTurnInfo, Statement } from './turn-manager';
+import { PersonaSummarizer, PersonaSummary } from './persona-summarizer';
 
 export interface PersonaInfo {
   id: string;
@@ -47,6 +48,7 @@ export interface ConversationInput {
 export interface ConversationResult {
   conversationId: string;
   statements: Statement[];
+  personaSummaries: PersonaSummary[];
   consensusAreas: string[];
   fracturePoints: string[];
   keyDebatePoints: string[];
@@ -79,10 +81,12 @@ export class ConversationOrchestrator {
   private prisma: PrismaClient;
   private promptClient: PromptClient;
   private turnManager?: TurnManager;
+  private personaSummarizer: PersonaSummarizer;
 
   constructor(prisma: PrismaClient, promptClient: PromptClient) {
     this.prisma = prisma;
     this.promptClient = promptClient;
+    this.personaSummarizer = new PersonaSummarizer(prisma, promptClient);
   }
 
   /**
@@ -117,8 +121,12 @@ export class ConversationOrchestrator {
     console.log('💬 Phase 2: Dynamic deliberation...');
     await this.runDynamicDeliberation(conversation.id, input);
 
-    // Phase 3: Analyze and synthesize conversation
-    console.log('📊 Phase 3: Analyzing conversation...');
+    // Phase 3: Generate per-persona summaries
+    console.log('👤 Phase 3: Generating persona summaries...');
+    const personaSummaries = await this.personaSummarizer.summarizePersonas(conversation.id);
+
+    // Phase 4: Analyze and synthesize conversation
+    console.log('📊 Phase 4: Analyzing overall conversation...');
     const synthesis = await this.synthesizeConversation(conversation.id, input);
 
     // Update conversation record with synthesis
@@ -140,6 +148,7 @@ export class ConversationOrchestrator {
     return {
       conversationId: conversation.id,
       statements: this.turnManager.getConversationHistory(),
+      personaSummaries,
       ...synthesis,
       converged: true
     };
