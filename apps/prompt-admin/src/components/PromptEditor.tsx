@@ -1,7 +1,12 @@
 'use client';
 
-import Editor from '@monaco-editor/react';
+import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
+
+const Editor = dynamic(
+  () => import('@monaco-editor/react').then((mod) => mod.default as any),
+  { ssr: false }
+) as any;
 
 interface PromptEditorProps {
   value: string;

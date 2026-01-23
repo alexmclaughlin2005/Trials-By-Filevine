@@ -7,22 +7,15 @@
     "module": "ES2022",
     "target": "ES2022",
     "lib": ["ES2022"],
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "strict": true,
     "resolveJsonModule": true,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true
+    "sourceMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"],
-  "references": [
-    { "path": "../../packages/database" },
-    { "path": "../../packages/types" },
-    { "path": "../../packages/utils" }
-  ]
+  "exclude": ["node_modules", "dist"]
 }
