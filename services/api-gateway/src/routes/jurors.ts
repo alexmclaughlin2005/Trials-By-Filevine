@@ -785,11 +785,11 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Auto-fill empty positions in jury box
   server.put('/panel/:panelId/jury-box/auto-fill', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      try {
+        console.log('[Auto-fill] Request received:', { 
+          panelId: request.params?.panelId,
           method: request.method,
-      const { organizationId } = request.user as any;
-      const { panelId } = request.params;
-
           url: request.url,
         });
         const { organizationId } = request.user as any;
