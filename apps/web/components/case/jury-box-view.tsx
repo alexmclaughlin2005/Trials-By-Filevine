@@ -156,11 +156,24 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
 
   const autoFillMutation = useMutation({
     mutationFn: async () => {
-      return await apiClient.put(`/jurors/panel/${panelId}/jury-box/auto-fill`);
+      try {
+        return await apiClient.put(`/jurors/panel/${panelId}/jury-box/auto-fill`, {});
+      } catch (error: any) {
+        console.error('[Auto-fill] Request error:', error);
+        console.error('[Auto-fill] Error response:', error?.response || error?.data || error);
+        console.error('[Auto-fill] Full error object:', JSON.stringify(error, null, 2));
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['panel', panelId, 'jury-box'] });
       queryClient.invalidateQueries({ queryKey: ['case', panelId, 'panels'] });
+    },
+    onError: (error: any) => {
+      console.error('[Auto-fill] Frontend error:', error);
+      console.error('[Auto-fill] Error message:', error?.message);
+      console.error('[Auto-fill] Error status:', error?.status);
+      console.error('[Auto-fill] Error data:', error?.data || error?.response?.data);
     },
   });
 

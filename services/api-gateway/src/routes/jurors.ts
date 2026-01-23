@@ -787,8 +787,18 @@ export async function jurorsRoutes(server: FastifyInstance) {
     onRequest: [server.authenticate],
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       try {
+        console.log('[Auto-fill] Request received:', { 
+          panelId: request.params?.panelId,
+          method: request.method,
+          url: request.url,
+        });
         const { organizationId } = request.user as any;
         const { panelId } = request.params as any;
+        
+        if (!panelId) {
+          reply.code(400);
+          return { error: 'Panel ID is required' };
+        }
 
         // Verify panel belongs to organization
         const panel = await server.prisma.juryPanel.findFirst({
@@ -907,11 +917,17 @@ export async function jurorsRoutes(server: FastifyInstance) {
           jurors: updatedJurors,
         };
       } catch (error) {
-        console.error('[Auto-fill] Error:', error);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        console.error('[Auto-fill] Error caught:', error);
+        console.error('[Auto-fill] Error message:', errorMessage);
+        console.error('[Auto-fill] Error stack:', errorStack);
+        console.error('[Auto-fill] Panel ID:', panelId);
         reply.code(400);
         return { 
           error: 'Failed to auto-fill positions',
-          details: error instanceof Error ? error.message : 'Unknown error',
+          details: errorMessage,
+          ...(process.env.NODE_ENV === 'development' && { stack: errorStack }),
         };
       }
     },
