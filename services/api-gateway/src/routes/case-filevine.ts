@@ -285,28 +285,46 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
    */
   server.post('/:caseId/filevine/documents/import', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
+      console.log('[IMPORT] Starting document import request');
+
       // Verify JWT token
       await request.jwtVerify();
 
       // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
-      if (!user) {
+      console.log('[IMPORT] User from JWT:', { userId: user?.userId, orgId: user?.organizationId });
+
+      if (!user || !user.userId) {
+        console.error('[IMPORT] Unauthorized - missing user or userId');
         reply.code(401);
         return { error: 'Unauthorized' };
       }
 
       // @ts-ignore
       const { caseId } = request.params;
+      console.log('[IMPORT] Case ID:', caseId);
+      console.log('[IMPORT] Request body:', JSON.stringify(request.body, null, 2));
+
       const body = importDocumentSchema.parse(request.body);
+      console.log('[IMPORT] Parsed body:', JSON.stringify(body, null, 2));
 
       const link = await server.prisma.caseFilevineProject.findFirst({
         where: { caseId, organizationId: user.organizationId },
       });
+      console.log('[IMPORT] Found link:', link ? link.id : 'NOT FOUND');
 
       if (!link) {
         reply.code(404);
         return { error: 'Case not linked to a Filevine project' };
       }
+
+      console.log('[IMPORT] Creating import record with data:', {
+        caseFilevineProjectId: link.id,
+        filevineDocumentId: body.filevineDocumentId,
+        fivevineFolderId: body.fivevineFolderId,
+        filename: body.filename,
+        importedBy: user.userId,
+      });
 
       // Create import record
       const importedDoc = await server.prisma.importedDocument.create({
@@ -328,6 +346,8 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
         },
       });
 
+      console.log('[IMPORT] Successfully created import record:', importedDoc.id);
+
       // TODO: Trigger async document download job
       // This would be handled by a background worker that:
       // 1. Gets download URL from Filevine
@@ -337,9 +357,11 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
 
       return { document: importedDoc };
     } catch (error: any) {
-      console.error('Error importing Filevine document:', error);
+      console.error('[IMPORT] Error importing Filevine document:', error);
+      console.error('[IMPORT] Error stack:', error.stack);
 
       if (error instanceof z.ZodError) {
+        console.error('[IMPORT] Zod validation error:', JSON.stringify(error.errors, null, 2));
         reply.code(400);
         return { error: 'Invalid input', details: error.errors };
       }
