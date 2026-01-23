@@ -46,7 +46,7 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
 
       // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
-      if (!user || !user.id) {
+      if (!user || !user.userId) {
         console.error('Invalid user from JWT:', user);
         reply.code(401);
         return { error: 'Unauthorized - missing user ID' };
@@ -56,7 +56,7 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
       const { caseId } = request.params;
       const body = linkProjectSchema.parse(request.body);
 
-      console.log('Linking case:', { caseId, userId: user.id, orgId: user.organizationId });
+      console.log('Linking case:', { caseId, userId: user.userId, orgId: user.organizationId });
 
       // Verify case belongs to organization
       const caseData = await server.prisma.case.findFirst({
@@ -87,7 +87,7 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
           projectName: body.projectName,
           projectTypeName: body.projectTypeName || null,
           clientName: body.clientName || null,
-          linkedBy: user.id,
+          linkedBy: user.userId,
           autoSyncDocuments: body.autoSyncDocuments || false,
         },
       });
@@ -323,7 +323,7 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
           documentCategory: body.documentCategory,
           tags: body.tags || [],
           notes: body.notes,
-          importedBy: user.id,
+          importedBy: user.userId,
           status: 'pending',
         },
       });
