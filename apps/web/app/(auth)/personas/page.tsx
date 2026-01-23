@@ -16,11 +16,15 @@ interface Persona {
   archetypeStrength?: number;
   secondaryArchetype?: string;
   sourceType: string;
-  attributes?: any;
+  attributes?: Record<string, unknown>;
   signals?: string[];
   plaintiffDangerLevel?: number;
   defenseDangerLevel?: number;
-  demographics?: any;
+  demographics?: {
+    occupation?: string;
+    age_range?: string;
+    [key: string]: unknown;
+  };
 }
 
 const ARCHETYPE_LABELS: Record<string, string> = {
