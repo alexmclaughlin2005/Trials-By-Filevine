@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Filter, AlertTriangle, Shield, X } from 'lucide-react';
+import { Plus, Filter, AlertTriangle, Shield, X, Copy, Edit } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Select } from '@/components/ui/select';
@@ -54,6 +54,8 @@ export default function PersonasPage() {
   const [selectedArchetype, setSelectedArchetype] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
+  const [isCloning, setIsCloning] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     async function fetchPersonas() {
@@ -91,6 +93,45 @@ export default function PersonasPage() {
     },
     {} as Record<string, number>
   );
+
+  const handleClone = async (persona: Persona) => {
+    if (isCloning) return;
+
+    setIsCloning(true);
+    try {
+      // Create a cloned persona with modified name
+      const clonedPersona = {
+        ...persona,
+        name: `${persona.name} (Copy)`,
+        nickname: persona.nickname ? `${persona.nickname} (Copy)` : undefined,
+        sourceType: 'user_created',
+      };
+
+      // Remove ID so a new one is generated
+      const { id, ...personaData } = clonedPersona;
+
+      const response = await apiClient.post<{ persona: Persona }>('/personas', personaData);
+
+      // Add to list
+      setPersonas([...personas, response.persona]);
+      setFilteredPersonas([...filteredPersonas, response.persona]);
+
+      // Close modal and show success
+      setSelectedPersona(null);
+      alert('Persona cloned successfully!');
+    } catch (error) {
+      console.error('Error cloning persona:', error);
+      alert('Failed to clone persona. Please try again.');
+    } finally {
+      setIsCloning(false);
+    }
+  };
+
+  const handleEdit = (persona: Persona) => {
+    // For now, just alert - you can implement a full edit form later
+    alert('Edit functionality coming soon! This will open an editor to modify the persona details.');
+    // TODO: Implement edit form
+  };
 
   return (
     <div className="p-8">
@@ -286,7 +327,27 @@ export default function PersonasPage() {
                 )}
               </div>
 
-              <div className="mt-6 flex justify-end gap-2">
+              <div className="mt-6 flex justify-between">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleClone(selectedPersona)}
+                    disabled={isCloning}
+                  >
+                    <Copy className="mr-2 h-4 w-4" />
+                    {isCloning ? 'Cloning...' : 'Clone'}
+                  </Button>
+                  {selectedPersona.sourceType === 'user_created' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEdit(selectedPersona)}
+                      disabled={isEditing}
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
                 <Button variant="outline" onClick={() => setSelectedPersona(null)}>
                   Close
                 </Button>
