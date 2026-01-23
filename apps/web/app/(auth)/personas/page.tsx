@@ -31,6 +31,9 @@ interface Persona {
   demographics?: {
     occupation?: string;
     age_range?: string;
+    gender?: string;
+    location?: string;
+    income?: string;
     [key: string]: unknown;
   };
 }
