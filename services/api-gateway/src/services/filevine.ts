@@ -541,10 +541,28 @@ export class FilevineService {
    * Note: Filevine may return the file directly or a download URL
    */
   async getDocumentDownloadUrl(documentId: string): Promise<string> {
-    const response = await this.request(`/Documents/${documentId}/download`, {
-      method: 'GET',
-    });
-    return response.downloadUrl || response;
+    // Try getting document metadata first to find download URL
+    try {
+      const docResponse = await this.request(`/Documents/${documentId}`, {
+        method: 'GET',
+      });
+
+      // Check if document metadata has a download URL
+      if (docResponse.downloadUrl) {
+        return docResponse.downloadUrl;
+      }
+
+      // If no download URL in metadata, try the native download endpoint
+      const downloadResponse = await this.request(`/Documents/${documentId}/native`, {
+        method: 'GET',
+      });
+
+      return downloadResponse.downloadUrl || downloadResponse.url || downloadResponse;
+    } catch (error) {
+      // If both fail, log the error and rethrow
+      console.error(`[FILEVINE] Failed to get download URL for document ${documentId}:`, error);
+      throw error;
+    }
   }
 }
 
