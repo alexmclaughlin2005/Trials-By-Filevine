@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { FocusGroupEngineService } from '../services/focus-group-engine';
+import { FocusGroupQuestionGeneratorService } from '../services/focus-group-question-generator';
 
 export async function focusGroupsRoutes(server: FastifyInstance) {
   // Run a focus group simulation
@@ -220,7 +221,15 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         orderBy: { createdAt: 'desc' },
       });
 
-      return { sessions };
+      // Map database fields to new API field names
+      const mappedSessions = sessions.map((session) => ({
+        ...session,
+        panelSelectionMode: session.archetypeSelectionMode,
+        selectedPersonas: session.selectedArchetypes,
+        panelSize: session.archetypeCount,
+      }));
+
+      return { sessions: mappedSessions };
     },
   });
 
@@ -255,7 +264,15 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'Focus group session not found' };
       }
 
-      return { session };
+      // Map database fields to new API field names
+      const mappedSession = {
+        ...session,
+        panelSelectionMode: session.archetypeSelectionMode,
+        selectedPersonas: session.selectedArchetypes,
+        panelSize: session.archetypeCount,
+      };
+
+      return { session: mappedSession };
     },
   });
 
@@ -300,7 +317,15 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         },
       });
 
-      return { session };
+      // Return with new field names for frontend
+      return {
+        session: {
+          ...session,
+          panelSelectionMode: session.archetypeSelectionMode,
+          selectedPersonas: session.selectedArchetypes,
+          panelSize: session.archetypeCount,
+        },
+      };
     },
   });
 
@@ -313,13 +338,30 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       const {
         name,
         description,
+        // Support both old and new field names for backward compatibility
         archetypeSelectionMode,
+        panelSelectionMode,
         selectedArchetypes,
+        selectedPersonas,
         archetypeCount,
+        panelSize,
         selectedArguments,
         customQuestions,
         configurationStep,
       } = request.body as any;
+
+      // Use new field names if provided, otherwise fall back to old names
+      const selectionMode = panelSelectionMode || archetypeSelectionMode;
+      const personas = selectedPersonas || selectedArchetypes;
+      const size = panelSize || archetypeCount;
+
+      console.log('[PATCH /sessions/:sessionId/config] Received:', {
+        sessionId,
+        selectionMode,
+        personas,
+        personasLength: personas?.length,
+        size,
+      });
 
       // Verify session exists and belongs to organization
       const existingSession = await server.prisma.focusGroupSession.findFirst({
@@ -340,14 +382,14 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'Cannot update configuration of non-draft session' };
       }
 
-      // Update session
+      // Update session (map new field names to database column names)
       const updateData: any = {};
       if (name !== undefined) updateData.name = name;
       if (description !== undefined) updateData.description = description;
-      if (archetypeSelectionMode !== undefined)
-        updateData.archetypeSelectionMode = archetypeSelectionMode;
-      if (selectedArchetypes !== undefined) updateData.selectedArchetypes = selectedArchetypes;
-      if (archetypeCount !== undefined) updateData.archetypeCount = archetypeCount;
+      if (selectionMode !== undefined)
+        updateData.archetypeSelectionMode = selectionMode;
+      if (personas !== undefined) updateData.selectedArchetypes = personas;
+      if (size !== undefined) updateData.archetypeCount = size;
       if (selectedArguments !== undefined) updateData.selectedArguments = selectedArguments;
       if (customQuestions !== undefined) updateData.customQuestions = customQuestions;
       if (configurationStep !== undefined) updateData.configurationStep = configurationStep;
@@ -357,7 +399,22 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         data: updateData,
       });
 
-      return { session };
+      console.log('[PATCH /sessions/:sessionId/config] Updated session:', {
+        sessionId: session.id,
+        selectionMode: session.archetypeSelectionMode,
+        personas: session.selectedArchetypes,
+        personasLength: session.selectedArchetypes ? (session.selectedArchetypes as any[]).length : 0,
+      });
+
+      // Return with new field names for frontend
+      return {
+        session: {
+          ...session,
+          panelSelectionMode: session.archetypeSelectionMode,
+          selectedPersonas: session.selectedArchetypes,
+          panelSize: session.archetypeCount,
+        },
+      };
     },
   });
 
@@ -418,69 +475,47 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
     },
   });
 
-  // Get available archetypes for panel configuration
-  server.get('/archetypes', {
+  // Get available personas for panel configuration
+  server.get('/personas', {
     onRequest: [server.authenticate],
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { caseId } = request.query as any;
 
-      // If caseId provided, get archetypes from case jurors
-      if (caseId) {
-        const caseData = await server.prisma.case.findFirst({
-          where: { id: caseId, organizationId },
-        });
+      // Always return all active system personas + org-specific personas
+      // (case-matched personas will be a separate feature in the wizard)
+      const personas = await server.prisma.persona.findMany({
+        where: {
+          isActive: true,
+          OR: [
+            { organizationId: null },           // System personas
+            { organizationId: organizationId }, // Org-specific personas
+          ],
+        },
+        orderBy: [
+          { archetype: 'asc' },
+          { name: 'asc' },
+        ],
+      });
 
-        if (!caseData) {
-          reply.code(404);
-          return { error: 'Case not found' };
-        }
+      const personaList = personas.map((persona) => ({
+        id: persona.id,
+        name: persona.name,
+        nickname: persona.nickname,
+        description: persona.description,
+        tagline: persona.tagline,
+        archetype: persona.archetype,
+        archetypeStrength: persona.archetypeStrength
+          ? parseFloat(persona.archetypeStrength.toString())
+          : 0,
+        demographics: persona.demographics,
+        plaintiffDangerLevel: persona.plaintiffDangerLevel,
+        defenseDangerLevel: persona.defenseDangerLevel,
+        sourceType: persona.sourceType,
+        source: persona.organizationId ? 'organization' : 'system',
+      }));
 
-        // Get classified jurors from case
-        const jurors = await server.prisma.juror.findMany({
-          where: {
-            panel: {
-              caseId,
-            },
-            classifiedArchetype: {
-              not: null,
-            },
-          },
-          select: {
-            classifiedArchetype: true,
-            archetypeConfidence: true,
-            firstName: true,
-            lastName: true,
-          },
-        });
-
-        // Extract unique archetypes with juror info
-        const archetypes = jurors.map((juror) => ({
-          name: juror.classifiedArchetype!,
-          confidence: juror.archetypeConfidence
-            ? parseFloat(juror.archetypeConfidence.toString())
-            : 0,
-          jurorName: `${juror.firstName} ${juror.lastName}`,
-        }));
-
-        return { archetypes, source: 'case_jurors' };
-      }
-
-      // Otherwise return system archetypes (standard list)
-      const archetypes = [
-        { name: 'bootstrapper', description: 'Personal Responsibility Enforcer', category: 'defense_friendly' },
-        { name: 'crusader', description: 'Systemic Thinker', category: 'plaintiff_friendly' },
-        { name: 'scale_balancer', description: 'Fair-Minded Evaluator', category: 'neutral' },
-        { name: 'captain', description: 'Authoritative Leader', category: 'neutral' },
-        { name: 'chameleon', description: 'Compliant Follower', category: 'neutral' },
-        { name: 'scarred', description: 'Wounded Veteran', category: 'variable' },
-        { name: 'calculator', description: 'Numbers Person', category: 'neutral' },
-        { name: 'heart', description: 'Empathic Connector', category: 'plaintiff_friendly' },
-        { name: 'trojan_horse', description: 'Stealth Juror', category: 'defense_friendly' },
-        { name: 'maverick', description: 'Nullifier', category: 'variable' },
-      ];
-
-      return { archetypes, source: 'system' };
+      return { personas: personaList, source: 'system' };
     },
   });
 
@@ -514,6 +549,121 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       });
 
       return { message: 'Focus group session deleted' };
+    },
+  });
+
+  // Generate AI-suggested questions for arguments
+  server.post('/sessions/:sessionId/generate-questions', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params as any;
+
+      // Get session with case and arguments
+      const session = await server.prisma.focusGroupSession.findFirst({
+        where: {
+          id: sessionId,
+          case: { organizationId },
+        },
+        include: {
+          case: {
+            include: {
+              facts: {
+                orderBy: { sortOrder: 'asc' },
+              },
+            },
+          },
+        },
+      });
+
+      if (!session) {
+        reply.code(404);
+        return { error: 'Focus group session not found' };
+      }
+
+      // Get selected arguments
+      const selectedArguments = (session.selectedArguments as any[]) || [];
+      if (selectedArguments.length === 0) {
+        reply.code(400);
+        return { error: 'No arguments selected. Please select arguments first.' };
+      }
+
+      // Fetch full argument details from database
+      const argumentIds = selectedArguments.map((arg) => arg.argumentId);
+      const caseArguments = await server.prisma.caseArgument.findMany({
+        where: {
+          id: { in: argumentIds },
+          caseId: session.caseId,
+        },
+      });
+
+      if (caseArguments.length === 0) {
+        reply.code(404);
+        return { error: 'No arguments found for this session' };
+      }
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+
+      if (!apiKey) {
+        // Mock response for development without API key
+        return {
+          suggestedQuestions: caseArguments.map((arg) => [
+            {
+              id: `mock-${arg.id}-1`,
+              question: `What is your initial reaction to this ${arg.argumentType} argument?`,
+              purpose: 'Gauge overall impression',
+              targetArchetypes: ['all'],
+              argumentId: arg.id,
+              argumentTitle: arg.title,
+              isAISuggested: true,
+            },
+            {
+              id: `mock-${arg.id}-2`,
+              question: 'What concerns or doubts does this raise for you?',
+              purpose: 'Identify potential objections',
+              targetArchetypes: ['Scarred', 'Trojan Horse'],
+              argumentId: arg.id,
+              argumentTitle: arg.title,
+              isAISuggested: true,
+            },
+          ]).flat(),
+        };
+      }
+
+      // Generate questions using AI
+      console.log('========================================');
+      console.log('[API Route] Starting question generation');
+      console.log('[API Route] Case:', session.case.name);
+      console.log('[API Route] Arguments:', caseArguments.length);
+      console.log('[API Route] API Key present:', !!apiKey);
+      console.log('========================================');
+
+      const questionGenerator = new FocusGroupQuestionGeneratorService(apiKey);
+
+      const suggestedQuestions = await questionGenerator.generateQuestions({
+        caseContext: {
+          caseName: session.case.name,
+          caseType: session.case.caseType || 'unknown',
+          ourSide: session.case.ourSide || 'unknown',
+          facts: session.case.facts.map((f: any) => ({
+            content: f.content,
+            factType: f.factType,
+          })),
+        },
+        arguments: caseArguments.map((arg) => ({
+          id: arg.id,
+          title: arg.title,
+          content: arg.content,
+          argumentType: arg.argumentType,
+        })),
+      });
+
+      console.log('========================================');
+      console.log('[API Route] Question generation complete');
+      console.log('[API Route] Questions returned:', suggestedQuestions.length);
+      console.log('========================================');
+
+      return { suggestedQuestions };
     },
   });
 }

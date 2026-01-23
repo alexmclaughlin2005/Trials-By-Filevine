@@ -30,6 +30,11 @@ export class TemplateEngine {
     this.handlebars.registerHelper('join', function(array, separator) {
       return array.join(separator);
     });
+
+    // Helper: Add numbers
+    this.handlebars.registerHelper('add', function(a, b) {
+      return a + b;
+    });
   }
 
   /**
@@ -55,7 +60,7 @@ export class TemplateEngine {
     for (const match of matches) {
       const varName = match[1].trim().split('.')[0].split(' ')[0];
       // Skip Handlebars helpers
-      if (!['#if', '#each', '#unless', '/if', '/each', '/unless', 'else'].includes(varName)) {
+      if (!['#if', '#each', '#unless', '/if', '/each', '/unless', 'else', 'this', 'add', 'json', 'join', '@index'].includes(varName)) {
         requiredVariables.add(varName);
       }
     }
@@ -81,7 +86,7 @@ export class TemplateEngine {
     for (const match of matches) {
       const varName = match[1].trim().split('.')[0].split(' ')[0];
       // Skip Handlebars helpers and keywords
-      if (!['#if', '#each', '#unless', '/if', '/each', '/unless', 'else', 'this'].includes(varName)) {
+      if (!['#if', '#each', '#unless', '/if', '/each', '/unless', 'else', 'this', 'add', 'json', 'join', '@index'].includes(varName)) {
         variables.add(varName);
       }
     }

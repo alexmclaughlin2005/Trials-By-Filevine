@@ -1,6 +1,6 @@
 // Focus Group Configuration Types
 
-export type ArchetypeSelectionMode = 'random' | 'configured' | 'case_matched';
+export type PanelSelectionMode = 'random' | 'configured' | 'case_matched';
 
 export type ConfigurationStep = 'setup' | 'panel' | 'arguments' | 'questions' | 'review' | 'confirm' | 'ready';
 
@@ -16,13 +16,31 @@ export interface CustomQuestion {
   id: string;
   question: string;
   order: number;
-  targetArchetypes?: string[]; // Empty or null = all archetypes
+  targetPersonas?: string[]; // Empty or null = all personas
 }
 
-export interface SelectedArchetype {
+export interface SuggestedQuestion {
+  id: string;
+  question: string;
+  purpose: string;
+  targetArchetypes: string[];
+  argumentId: string;
+  argumentTitle: string;
+  isAISuggested: true;
+}
+
+export interface SelectedPersona {
+  id: string;
   name: string;
+  nickname?: string;
   description?: string;
-  source?: 'system' | 'case_juror';
+  tagline?: string;
+  archetype: string;
+  archetypeStrength?: number;
+  demographics?: any;
+  plaintiffDangerLevel?: number;
+  defenseDangerLevel?: number;
+  source?: 'system' | 'case_juror' | 'organization';
   jurorId?: string;
   jurorName?: string;
   confidence?: number;
@@ -38,9 +56,9 @@ export interface FocusGroupSession {
   simulationMode: 'quick' | 'detailed' | 'deliberation';
 
   // Configuration
-  archetypeSelectionMode: ArchetypeSelectionMode;
-  selectedArchetypes: SelectedArchetype[] | null;
-  archetypeCount: number;
+  panelSelectionMode: PanelSelectionMode;
+  selectedPersonas: SelectedPersona[] | null;
+  panelSize: number;
   selectedArguments: SelectedArgument[] | null;
   customQuestions: CustomQuestion[] | null;
   configurationStep: ConfigurationStep;
@@ -54,11 +72,19 @@ export interface FocusGroupSession {
   updatedAt: string;
 }
 
-export interface ArchetypeOption {
+export interface PersonaOption {
+  id: string;
   name: string;
+  nickname?: string;
   description: string;
-  category?: string;
-  source?: 'system' | 'case_juror';
+  tagline?: string;
+  archetype: string;
+  archetypeStrength?: number;
+  demographics?: any;
+  plaintiffDangerLevel?: number;
+  defenseDangerLevel?: number;
+  sourceType?: string;
+  source?: 'system' | 'case_juror' | 'organization';
   jurorName?: string;
   confidence?: number;
 }
@@ -66,9 +92,9 @@ export interface ArchetypeOption {
 export interface FocusGroupConfigUpdate {
   name?: string;
   description?: string;
-  archetypeSelectionMode?: ArchetypeSelectionMode;
-  selectedArchetypes?: SelectedArchetype[];
-  archetypeCount?: number;
+  panelSelectionMode?: PanelSelectionMode;
+  selectedPersonas?: SelectedPersona[];
+  panelSize?: number;
   selectedArguments?: SelectedArgument[];
   customQuestions?: CustomQuestion[];
   configurationStep?: ConfigurationStep;
