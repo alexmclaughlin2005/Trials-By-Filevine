@@ -224,6 +224,11 @@ export class PersonaSummarizer {
       // Extract and validate response
       const summary = this.extractSummary(result);
 
+      // Filter out self-references from social dynamics
+      const agreedWithMost = summary.agreedWithMost.filter(name => name !== personaName);
+      const disagreedWithMost = summary.disagreedWithMost.filter(name => name !== personaName);
+      const influencedBy = summary.influencedBy.filter(name => name !== personaName);
+
       return {
         personaId,
         personaName,
@@ -238,9 +243,9 @@ export class PersonaSummarizer {
         concernsRaised: summary.concernsRaised,
         questionsAsked: summary.questionsAsked,
         influenceLevel: summary.influenceLevel,
-        agreedWithMost: summary.agreedWithMost,
-        disagreedWithMost: summary.disagreedWithMost,
-        influencedBy: summary.influencedBy,
+        agreedWithMost,
+        disagreedWithMost,
+        influencedBy,
         averageSentiment: dominantSentiment,
         averageEmotionalIntensity,
         mostEmotionalStatement,

@@ -24,10 +24,16 @@ export class TextExtractionService {
       const buffer = Buffer.from(arrayBuffer);
       console.log(`[TEXT_EXTRACTION] Downloaded ${buffer.length} bytes`);
 
-      // Parse the PDF (handle both default and named exports)
-      const parser = typeof pdfParse === 'function' ? pdfParse : (pdfParse as any).default;
-      if (typeof parser !== 'function') {
-        console.error('[TEXT_EXTRACTION] pdfParse is not a function:', typeof pdfParse, Object.keys(pdfParse || {}));
+      // Parse the PDF (handle various export formats)
+      let parser: any;
+      if (typeof pdfParse === 'function') {
+        parser = pdfParse;
+      } else if ((pdfParse as any).default && typeof (pdfParse as any).default === 'function') {
+        parser = (pdfParse as any).default;
+      } else if ((pdfParse as any).PDFParse && typeof (pdfParse as any).PDFParse === 'function') {
+        parser = (pdfParse as any).PDFParse;
+      } else {
+        console.error('[TEXT_EXTRACTION] Could not find parser function. Available keys:', Object.keys(pdfParse || {}));
         throw new Error('PDF parser not properly imported');
       }
 

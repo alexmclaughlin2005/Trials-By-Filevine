@@ -14,7 +14,7 @@ interface ConversationTabsProps {
 type TabType = 'personas' | 'timeline' | 'analysis';
 
 export function ConversationTabs({ personaSummaries, allStatements, overallAnalysis }: ConversationTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('personas');
+  const [activeTab, setActiveTab] = useState<TabType>('timeline');
 
   const tabs = [
     { id: 'personas' as TabType, label: 'By Persona', icon: Users, count: personaSummaries.length },
@@ -106,30 +106,42 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
               </div>
             ) : (
               <div className="space-y-4">
-                {allStatements.map((statement) => (
-                  <div key={statement.id} className="bg-white border rounded-lg p-4 shadow-sm">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
-                          {statement.sequenceNumber}
-                        </span>
-                        <div>
-                          <h4 className="font-semibold text-gray-900">{statement.personaName}</h4>
-                          <p className="text-xs text-gray-500">Round {statement.speakCount}</p>
+                {allStatements.map((statement) => {
+                  // Find matching persona summary to get archetype info
+                  const personaSummary = personaSummaries.find(ps => ps.personaId === statement.personaId);
+                  const archetype = personaSummary?.persona?.archetype;
+
+                  return (
+                    <div key={statement.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold flex-shrink-0">
+                            {statement.sequenceNumber}
+                          </span>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <div>
+                              <h4 className="font-semibold text-gray-900">{statement.personaName}</h4>
+                              <p className="text-xs text-gray-500">Round {statement.speakCount}</p>
+                            </div>
+                            {archetype && (
+                              <span className="px-2 py-1 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200">
+                                {archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                              </span>
+                            )}
+                          </div>
                         </div>
+                        {statement.sentiment && (
+                          <span className={`px-2 py-1 text-xs font-medium border rounded flex-shrink-0 ${
+                            statement.sentiment === 'plaintiff_leaning' ? 'bg-green-50 text-green-700 border-green-200' :
+                            statement.sentiment === 'defense_leaning' ? 'bg-red-50 text-red-700 border-red-200' :
+                            statement.sentiment === 'conflicted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                            'bg-gray-50 text-gray-700 border-gray-200'
+                          }`}>
+                            {statement.sentiment.replace('_', ' ')}
+                          </span>
+                        )}
                       </div>
-                      {statement.sentiment && (
-                        <span className={`px-2 py-1 text-xs font-medium border rounded ${
-                          statement.sentiment === 'plaintiff_leaning' ? 'bg-green-50 text-green-700 border-green-200' :
-                          statement.sentiment === 'defense_leaning' ? 'bg-red-50 text-red-700 border-red-200' :
-                          statement.sentiment === 'conflicted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                          'bg-gray-50 text-gray-700 border-gray-200'
-                        }`}>
-                          {statement.sentiment.replace('_', ' ')}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-gray-700 text-sm leading-relaxed">{statement.content}</p>
+                      <p className="text-gray-700 text-sm leading-relaxed">{statement.content}</p>
 
                     {/* Key Points */}
                     {statement.keyPoints && Array.isArray(statement.keyPoints) && statement.keyPoints.length > 0 && (
@@ -181,7 +193,8 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
                       </div>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

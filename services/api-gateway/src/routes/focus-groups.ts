@@ -884,6 +884,11 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
                 include: {
                   arguments: true
                 }
+              },
+              personas: {
+                include: {
+                  persona: true
+                }
               }
             }
           }
@@ -899,6 +904,12 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       const argument = conversation.session.case.arguments.find(
         a => a.id === conversation.argumentId
       );
+
+      // Create persona lookup map
+      const personaLookup = new Map();
+      for (const fp of conversation.session.personas) {
+        personaLookup.set(fp.persona.id, fp.persona);
+      }
 
       // Group statements by persona for easy lookup
       const statementsByPersona = new Map<string, any[]>();
@@ -933,29 +944,45 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         convergenceReason: conversation.convergenceReason,
 
         // Persona summaries with their statements
-        personaSummaries: conversation.personaSummaries.map(ps => ({
-          personaId: ps.personaId,
-          personaName: ps.personaName,
-          totalStatements: ps.totalStatements,
-          firstStatement: ps.firstStatement,
-          lastStatement: ps.lastStatement,
-          initialPosition: ps.initialPosition,
-          finalPosition: ps.finalPosition,
-          positionShifted: ps.positionShifted,
-          shiftDescription: ps.shiftDescription,
-          mainPoints: ps.mainPoints,
-          concernsRaised: ps.concernsRaised,
-          questionsAsked: ps.questionsAsked,
-          influenceLevel: ps.influenceLevel,
-          agreedWithMost: ps.agreedWithMost,
-          disagreedWithMost: ps.disagreedWithMost,
-          influencedBy: ps.influencedBy,
-          averageSentiment: ps.averageSentiment,
-          averageEmotionalIntensity: ps.averageEmotionalIntensity,
-          mostEmotionalStatement: ps.mostEmotionalStatement,
-          summary: ps.summary,
-          statements: statementsByPersona.get(ps.personaId) || []
-        })),
+        personaSummaries: conversation.personaSummaries.map(ps => {
+          const persona = personaLookup.get(ps.personaId);
+          return {
+            personaId: ps.personaId,
+            personaName: ps.personaName,
+            totalStatements: ps.totalStatements,
+            firstStatement: ps.firstStatement,
+            lastStatement: ps.lastStatement,
+            initialPosition: ps.initialPosition,
+            finalPosition: ps.finalPosition,
+            positionShifted: ps.positionShifted,
+            shiftDescription: ps.shiftDescription,
+            mainPoints: ps.mainPoints,
+            concernsRaised: ps.concernsRaised,
+            questionsAsked: ps.questionsAsked,
+            influenceLevel: ps.influenceLevel,
+            agreedWithMost: ps.agreedWithMost,
+            disagreedWithMost: ps.disagreedWithMost,
+            influencedBy: ps.influencedBy,
+            averageSentiment: ps.averageSentiment,
+            averageEmotionalIntensity: ps.averageEmotionalIntensity,
+            mostEmotionalStatement: ps.mostEmotionalStatement,
+            summary: ps.summary,
+            statements: statementsByPersona.get(ps.personaId) || [],
+            // Full persona details
+            persona: persona ? {
+              description: persona.description,
+              tagline: persona.tagline,
+              archetype: persona.archetype,
+              archetypeStrength: persona.archetypeStrength ? parseFloat(persona.archetypeStrength.toString()) : null,
+              secondaryArchetype: persona.secondaryArchetype,
+              variant: persona.variant,
+              demographics: persona.demographics,
+              attributes: persona.attributes,
+              leadershipLevel: persona.leadershipLevel,
+              communicationStyle: persona.communicationStyle
+            } : null
+          };
+        }),
 
         // Overall analysis
         overallAnalysis: {

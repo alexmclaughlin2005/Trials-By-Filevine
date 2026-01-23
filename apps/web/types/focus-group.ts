@@ -121,6 +121,19 @@ export interface ConversationStatement {
 export type PersonaPosition = 'favorable' | 'neutral' | 'unfavorable' | 'mixed';
 export type InfluenceLevel = 'high' | 'medium' | 'low';
 
+export interface PersonaDetails {
+  description: string;
+  tagline?: string | null;
+  archetype?: string | null;
+  archetypeStrength?: number | null;
+  secondaryArchetype?: string | null;
+  variant?: string | null;
+  demographics?: any;
+  attributes?: any;
+  leadershipLevel?: string | null;
+  communicationStyle?: string | null;
+}
+
 export interface PersonaSummary {
   personaId: string;
   personaName: string;
@@ -143,6 +156,7 @@ export interface PersonaSummary {
   mostEmotionalStatement?: string;
   summary: string;
   statements: ConversationStatement[];
+  persona?: PersonaDetails | null;
 }
 
 export interface InfluentialPersona {

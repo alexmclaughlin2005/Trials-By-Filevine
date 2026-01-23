@@ -63,10 +63,20 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
       <div className="p-6 border-b bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
               <h3 className="text-lg font-semibold text-gray-900">
                 {summary.personaName}
               </h3>
+              {summary.persona?.tagline && (
+                <span className="text-sm text-gray-500 italic">
+                  "{summary.persona.tagline}"
+                </span>
+              )}
+              {summary.persona?.archetype && (
+                <span className="px-2 py-1 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200">
+                  {summary.persona.archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                </span>
+              )}
               <span className={`px-2 py-1 text-xs font-medium border rounded ${getInfluenceColor(summary.influenceLevel)}`}>
                 {summary.influenceLevel.charAt(0).toUpperCase() + summary.influenceLevel.slice(1)} Influence
               </span>
