@@ -35,7 +35,7 @@ interface Conversation {
   consensusAreas?: string[];
   fracturePoints?: string[];
   keyDebatePoints?: string[];
-  influentialPersonas?: any[];
+  influentialPersonas?: Array<{ personaId: string; personaName: string; influence: string }>;
   statements: Statement[];
 }
 
@@ -245,7 +245,7 @@ export function RoundtableConversationViewer({ conversationId }: RoundtableConve
 
                 {/* Statement Content */}
                 <div className="text-filevine-gray-700 italic mb-3">
-                  "{statement.content}"
+                  &ldquo;{statement.content}&rdquo;
                 </div>
 
                 {/* Expanded Details */}

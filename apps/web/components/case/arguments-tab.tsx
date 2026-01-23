@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -183,9 +183,10 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
       await attachDocumentToArgument(caseId, argumentId, documentId);
       await loadAttachedDocuments(argumentId);
       setShowAttachDialog(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to attach document:', error);
-      alert(error.message || 'Failed to attach document');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to attach document';
+      alert(errorMessage);
     }
   };
 

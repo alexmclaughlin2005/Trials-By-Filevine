@@ -21,7 +21,7 @@ interface RoundtableConversationTriggerProps {
 
 interface ConversationResult {
   conversationId: string;
-  statements: any[];
+  statements: Array<{ personaId: string; personaName: string; content: string }>;
   consensusAreas: string[];
   fracturePoints: string[];
   keyDebatePoints: string[];
