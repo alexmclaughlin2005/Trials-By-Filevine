@@ -21,7 +21,7 @@ interface JurorCardProps {
   onClick?: () => void;
 }
 
-export function JurorCard({ juror, isDragging, onClick }: JurorCardProps) {
+export function JurorCard({ juror, onClick }: JurorCardProps) {
   const {
     attributes,
     listeners,
@@ -70,7 +70,7 @@ export function JurorCard({ juror, isDragging, onClick }: JurorCardProps) {
         ${getStatusColor(juror.status)}
         ${isDraggingState ? 'opacity-50' : ''}
       `}
-      onClick={(e) => {
+      onClick={() => {
         // Only trigger onClick if not dragging
         if (!isDraggingState && onClick) {
           onClick();

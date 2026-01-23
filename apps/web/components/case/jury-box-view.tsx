@@ -158,9 +158,10 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
     mutationFn: async () => {
       try {
         return await apiClient.put(`/jurors/panel/${panelId}/jury-box/auto-fill`, {});
-      } catch (error: any) {
+      } catch (error: unknown) {
+        const err = error as { response?: unknown; data?: unknown; message?: string };
         console.error('[Auto-fill] Request error:', error);
-        console.error('[Auto-fill] Error response:', error?.response || error?.data || error);
+        console.error('[Auto-fill] Error response:', err?.response || err?.data || error);
         console.error('[Auto-fill] Full error object:', JSON.stringify(error, null, 2));
         throw error;
       }
@@ -169,11 +170,12 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
       queryClient.invalidateQueries({ queryKey: ['panel', panelId, 'jury-box'] });
       queryClient.invalidateQueries({ queryKey: ['case', panelId, 'panels'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
+      const err = error as { message?: string; status?: number; data?: unknown; response?: { data?: unknown } };
       console.error('[Auto-fill] Frontend error:', error);
-      console.error('[Auto-fill] Error message:', error?.message);
-      console.error('[Auto-fill] Error status:', error?.status);
-      console.error('[Auto-fill] Error data:', error?.data || error?.response?.data);
+      console.error('[Auto-fill] Error message:', err?.message);
+      console.error('[Auto-fill] Error status:', err?.status);
+      console.error('[Auto-fill] Error data:', err?.data || err?.response?.data);
     },
   });
 
