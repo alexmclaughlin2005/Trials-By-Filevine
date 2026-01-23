@@ -286,3 +286,13 @@ export async function getImportedDocuments(
 ): Promise<{ documents: ImportedDocument[] }> {
   return apiClient.get(`/cases/${caseId}/filevine/documents`);
 }
+
+/**
+ * Delete an imported document
+ */
+export async function deleteImportedDocument(
+  caseId: string,
+  documentId: string
+): Promise<{ success: boolean }> {
+  return apiClient.delete(`/cases/${caseId}/filevine/documents/${documentId}`);
+}

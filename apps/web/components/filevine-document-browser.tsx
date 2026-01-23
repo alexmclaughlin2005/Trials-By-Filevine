@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { FileText, Download, Loader2, Calendar, User } from 'lucide-react';
+import { FileText, Download, Loader2, Calendar, User, Search, X } from 'lucide-react';
 import {
   getFilevineFolderDocuments,
   importFilevineDocument,
@@ -26,6 +26,7 @@ export function FilevineDocumentBrowser({
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState<Set<number>>(new Set());
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Fetch documents
   React.useEffect(() => {
@@ -103,6 +104,12 @@ export function FilevineDocumentBrowser({
     );
   }
 
+  // Filter documents based on search
+  const filteredDocuments = documents.filter((doc) =>
+    doc.filename.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (doc.uploaderFullname?.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   if (documents.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">No documents found in this folder</div>
@@ -118,8 +125,33 @@ export function FilevineDocumentBrowser({
         </p>
       </div>
 
-      <div className="space-y-2">
-        {documents.map((doc) => {
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Search documents..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full rounded-md border border-gray-300 py-2 pl-10 pr-10 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {filteredDocuments.length === 0 ? (
+        <div className="text-center py-8 text-gray-500">
+          No documents match your search.
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filteredDocuments.map((doc) => {
           const docId = doc.documentId.native;
           const isImporting = importing.has(docId);
 
@@ -165,7 +197,8 @@ export function FilevineDocumentBrowser({
             </div>
           );
         })}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

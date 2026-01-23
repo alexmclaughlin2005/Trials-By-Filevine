@@ -422,4 +422,65 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
       return { error: error.message || 'Failed to fetch documents' };
     }
   });
+
+  /**
+   * DELETE /api/cases/:caseId/filevine/documents/:documentId
+   * Delete an imported document
+   */
+  server.delete('/:caseId/filevine/documents/:documentId', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
+      const user = request.user;
+      if (!user) {
+        reply.code(401);
+        return { error: 'Unauthorized' };
+      }
+
+      // @ts-ignore
+      const { caseId, documentId } = request.params;
+
+      // Verify the case belongs to the user's organization
+      const caseRecord = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId: user.organizationId },
+      });
+
+      if (!caseRecord) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Get the document to check if it exists and belongs to this case
+      const document = await server.prisma.importedDocument.findFirst({
+        where: {
+          id: documentId,
+          caseFilevineProject: {
+            caseId,
+            organizationId: user.organizationId,
+          },
+        },
+      });
+
+      if (!document) {
+        reply.code(404);
+        return { error: 'Document not found' };
+      }
+
+      // Delete the document
+      // Note: We're not deleting from Vercel Blob here - that would require cleanup logic
+      // The blob URLs will remain accessible but orphaned
+      await server.prisma.importedDocument.delete({
+        where: { id: documentId },
+      });
+
+      console.log(`[DELETE] Successfully deleted document ${documentId}`);
+      return { success: true };
+    } catch (error: any) {
+      console.error('Error deleting document:', error);
+      reply.code(500);
+      return { error: error.message || 'Failed to delete document' };
+    }
+  });
 }
