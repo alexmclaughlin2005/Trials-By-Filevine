@@ -1,0 +1,15 @@
+[phases.setup]
+nixPkgs = ["nodejs", "npm"]
+
+[phases.install]
+cmds = ["npm install"]
+
+[phases.build]
+cmds = [
+  "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
+  "npm run build --workspace=@juries/database",
+  "npm run build --workspace=@juries/prompt-service"
+]
+
+[start]
+cmd = "npm run start --workspace=@juries/prompt-service"
