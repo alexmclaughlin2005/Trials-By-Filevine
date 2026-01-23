@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogClose,
 } from '@/components/ui/dialog';
+import { useAuth } from '@/contexts/auth-context';
 
 interface Persona {
   id: string;
@@ -48,6 +49,7 @@ const ARCHETYPE_LABELS: Record<string, string> = {
 };
 
 export default function PersonasPage() {
+  const { user } = useAuth();
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [filteredPersonas, setFilteredPersonas] = useState<Persona[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,14 +99,20 @@ export default function PersonasPage() {
   const handleClone = async (persona: Persona) => {
     if (isCloning) return;
 
+    if (!user?.organization?.id) {
+      alert('You must be logged in to clone personas.');
+      return;
+    }
+
     setIsCloning(true);
     try {
-      // Create a cloned persona with modified name
+      // Create a cloned persona with modified name and organization
       const clonedPersona = {
         ...persona,
         name: `${persona.name} (Copy)`,
         nickname: persona.nickname ? `${persona.nickname} (Copy)` : undefined,
         sourceType: 'user_created',
+        organizationId: user.organization.id,
       };
 
       // Remove ID so a new one is generated
