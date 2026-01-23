@@ -1,10 +1,17 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Filter, AlertTriangle, Shield } from 'lucide-react';
+import { Plus, Filter, AlertTriangle, Shield, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Select } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from '@/components/ui/dialog';
 
 interface Persona {
   id: string;
@@ -46,6 +53,7 @@ export default function PersonasPage() {
   const [loading, setLoading] = useState(true);
   const [selectedArchetype, setSelectedArchetype] = useState<string>('all');
   const [error, setError] = useState<string | null>(null);
+  const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
 
   useEffect(() => {
     async function fetchPersonas() {
@@ -152,7 +160,11 @@ export default function PersonasPage() {
       {!loading && !error && (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredPersonas.map((persona) => (
-            <PersonaCard key={persona.id} persona={persona} />
+            <PersonaCard
+              key={persona.id}
+              persona={persona}
+              onClick={() => setSelectedPersona(persona)}
+            />
           ))}
 
           {/* Add new persona card */}
@@ -175,11 +187,125 @@ export default function PersonasPage() {
           </p>
         </div>
       )}
+
+      {/* Persona Detail Modal */}
+      <Dialog open={!!selectedPersona} onOpenChange={() => setSelectedPersona(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogClose onClick={() => setSelectedPersona(null)} />
+          {selectedPersona && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">
+                  {selectedPersona.nickname || selectedPersona.name}
+                </DialogTitle>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-sm text-muted-foreground">
+                    {selectedPersona.archetype
+                      ? ARCHETYPE_LABELS[selectedPersona.archetype] || selectedPersona.archetype
+                      : 'Unclassified'}
+                  </span>
+                  {selectedPersona.archetypeStrength && (
+                    <span className="text-xs text-muted-foreground">
+                      ({Math.round(selectedPersona.archetypeStrength * 100)}% match)
+                    </span>
+                  )}
+                </div>
+              </DialogHeader>
+
+              <div className="space-y-6 mt-4">
+                {/* Tagline */}
+                {selectedPersona.tagline && (
+                  <div>
+                    <p className="text-lg italic text-muted-foreground">{selectedPersona.tagline}</p>
+                  </div>
+                )}
+
+                {/* Danger Levels */}
+                {(selectedPersona.plaintiffDangerLevel !== undefined ||
+                  selectedPersona.defenseDangerLevel !== undefined) && (
+                  <div className="flex items-center gap-6 p-4 bg-muted rounded-lg">
+                    {selectedPersona.plaintiffDangerLevel !== undefined && (
+                      <div className="flex items-center gap-2">
+                        <AlertTriangle className="h-5 w-5 text-orange-500" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Plaintiff Danger</p>
+                          <p className="text-lg font-semibold">{selectedPersona.plaintiffDangerLevel}/5</p>
+                        </div>
+                      </div>
+                    )}
+                    {selectedPersona.defenseDangerLevel !== undefined && (
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-blue-500" />
+                        <div>
+                          <p className="text-xs text-muted-foreground">Defense Danger</p>
+                          <p className="text-lg font-semibold">{selectedPersona.defenseDangerLevel}/5</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Demographics */}
+                {selectedPersona.demographics && Object.keys(selectedPersona.demographics).length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Demographics</h3>
+                    <div className="grid grid-cols-2 gap-2 text-sm">
+                      {Object.entries(selectedPersona.demographics).map(([key, value]) => (
+                        <div key={key} className="flex gap-2">
+                          <span className="text-muted-foreground capitalize">{key.replace(/_/g, ' ')}:</span>
+                          <span className="font-medium">{String(value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Signals/Attributes */}
+                {selectedPersona.signals && selectedPersona.signals.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Key Signals</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedPersona.signals.map((signal, idx) => (
+                        <span
+                          key={idx}
+                          className="rounded-full bg-primary/10 px-3 py-1 text-xs text-primary"
+                        >
+                          {signal}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Description */}
+                {selectedPersona.description && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Description</h3>
+                    <p className="text-sm text-muted-foreground">{selectedPersona.description}</p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSelectedPersona(null)}>
+                  Close
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
-function PersonaCard({ persona }: { persona: Persona }) {
+function PersonaCard({
+  persona,
+  onClick,
+}: {
+  persona: Persona;
+  onClick: () => void;
+}) {
   const displayName = persona.nickname || persona.name;
   const archetype = persona.archetype
     ? ARCHETYPE_LABELS[persona.archetype] || persona.archetype
@@ -261,7 +387,7 @@ function PersonaCard({ persona }: { persona: Persona }) {
         </div>
       )}
 
-      <Button variant="outline" size="sm" className="w-full">
+      <Button variant="outline" size="sm" className="w-full" onClick={onClick}>
         View Details
       </Button>
     </div>
