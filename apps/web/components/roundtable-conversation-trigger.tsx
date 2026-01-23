@@ -21,10 +21,8 @@ interface RoundtableConversationTriggerProps {
 
 interface ConversationResult {
   conversationId: string;
-  statements: Array<{ personaId: string; personaName: string; content: string }>;
-  consensusAreas: string[];
-  fracturePoints: string[];
-  keyDebatePoints: string[];
+  status: string;
+  message: string;
 }
 
 export function RoundtableConversationTrigger({
@@ -37,14 +35,15 @@ export function RoundtableConversationTrigger({
 
   const runConversationMutation = useMutation({
     mutationFn: async (argumentId: string) => {
-      return apiClient.post<ConversationResult>(
+      const result = await apiClient.post<ConversationResult>(
         `/focus-groups/sessions/${sessionId}/roundtable`,
         { argumentId }
       );
+      return result;
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['conversations', sessionId] });
-      // Navigate to the new conversation detail page
+      // Navigate to the conversation detail page
       router.push(`/focus-groups/conversations/${result.conversationId}`);
     }
   });

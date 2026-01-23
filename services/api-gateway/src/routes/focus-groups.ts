@@ -773,7 +773,52 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         };
       }
 
-      // Initialize services
+      // Create conversation record immediately
+      const conversation = await server.prisma.focusGroupConversation.create({
+        data: {
+          sessionId,
+          argumentId: argument.id
+        }
+      });
+
+      console.log(`📝 Created conversation record: ${conversation.id}`);
+
+      // Prepare input for background processing
+      const conversationInput = {
+        sessionId,
+        existingConversationId: conversation.id,
+        argument: {
+          id: argument.id,
+          title: argument.title,
+          content: argument.content
+        },
+        caseContext: {
+          caseName: session.case.name,
+          caseType: session.case.caseType || 'unknown',
+          ourSide: session.case.ourSide || 'unknown',
+          facts: session.case.facts.map(f => f.content)
+        },
+        personas: session.personas.map(fp => ({
+          id: fp.persona.id,
+          name: fp.persona.name,
+          description: fp.persona.description,
+          demographics: fp.persona.demographics,
+          worldview: fp.persona.description, // Use description as fallback
+          leadershipLevel: fp.persona.leadershipLevel || undefined,
+          communicationStyle: fp.persona.communicationStyle || undefined,
+          persuasionSusceptibility: fp.persona.persuasionSusceptibility || undefined,
+          lifeExperiences: fp.persona.lifeExperiences,
+          dimensions: fp.persona.dimensions
+        }))
+      };
+
+      console.log('🎭 Starting roundtable conversation (async)...');
+      console.log(`Session: ${session.name}`);
+      console.log(`Argument: ${argument.title}`);
+      console.log(`Personas: ${conversationInput.personas.length}`);
+
+      // Return immediately with conversationId
+      // Run the conversation in the background
       const promptServiceUrl = process.env.PROMPT_SERVICE_URL || 'http://localhost:3002';
       const promptClient = new PromptClient({
         serviceUrl: promptServiceUrl,
@@ -785,68 +830,28 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       const orchestrator = new ConversationOrchestrator(server.prisma, promptClient);
       const analyzer = new StatementAnalyzer(server.prisma, promptClient);
 
-      try {
-        // Prepare input
-        const conversationInput = {
-          sessionId,
-          argument: {
-            id: argument.id,
-            title: argument.title,
-            content: argument.content
-          },
-          caseContext: {
-            caseName: session.case.name,
-            caseType: session.case.caseType || 'unknown',
-            ourSide: session.case.ourSide || 'unknown',
-            facts: session.case.facts.map(f => f.content)
-          },
-          personas: session.personas.map(fp => ({
-            id: fp.persona.id,
-            name: fp.persona.name,
-            description: fp.persona.description,
-            demographics: fp.persona.demographics,
-            worldview: fp.persona.description, // Use description as fallback
-            leadershipLevel: fp.persona.leadershipLevel || undefined,
-            communicationStyle: fp.persona.communicationStyle || undefined,
-            persuasionSusceptibility: fp.persona.persuasionSusceptibility || undefined,
-            lifeExperiences: fp.persona.lifeExperiences,
-            dimensions: fp.persona.dimensions
-          }))
-        };
+      // Run conversation asynchronously (don't await)
+      (async () => {
+        try {
+          await orchestrator.runConversation(conversationInput);
+          await analyzer.analyzeConversation(conversation.id);
+          await analyzer.getConversationStatistics(conversation.id);
+          console.log(`✅ Roundtable conversation complete: ${conversation.id}`);
+        } catch (error) {
+          console.error(`❌ Error in background conversation ${conversation.id}:`, error);
+          // Mark conversation as failed
+          await server.prisma.focusGroupConversation.update({
+            where: { id: conversation.id },
+            data: { completedAt: new Date() } // Mark as completed even on error
+          });
+        }
+      })();
 
-        console.log('🎭 Starting roundtable conversation...');
-        console.log(`Session: ${session.name}`);
-        console.log(`Argument: ${argument.title}`);
-        console.log(`Personas: ${conversationInput.personas.length}`);
-
-        // Run the conversation
-        const result = await orchestrator.runConversation(conversationInput);
-
-        // Analyze all statements
-        await analyzer.analyzeConversation(result.conversationId);
-
-        // Get statistics
-        const statistics = await analyzer.getConversationStatistics(result.conversationId);
-
-        console.log('✅ Roundtable conversation complete!');
-
-        return {
-          conversationId: result.conversationId,
-          statements: result.statements,
-          consensusAreas: result.consensusAreas,
-          fracturePoints: result.fracturePoints,
-          keyDebatePoints: result.keyDebatePoints,
-          influentialPersonas: result.influentialPersonas,
-          statistics
-        };
-      } catch (error) {
-        console.error('Error running roundtable conversation:', error);
-        reply.code(500);
-        return {
-          error: 'Failed to run roundtable conversation',
-          details: error instanceof Error ? error.message : 'Unknown error'
-        };
-      }
+      return {
+        conversationId: conversation.id,
+        status: 'started',
+        message: 'Conversation started. Use GET /conversations/:conversationId to check progress.'
+      };
     }
   });
 

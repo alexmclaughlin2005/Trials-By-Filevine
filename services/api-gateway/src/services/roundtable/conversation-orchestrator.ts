@@ -43,6 +43,7 @@ export interface ConversationInput {
   argument: ArgumentInfo;
   caseContext: CaseContextInfo;
   personas: PersonaInfo[];
+  existingConversationId?: string; // Optional: use existing conversation record
 }
 
 export interface ConversationResult {
@@ -95,13 +96,21 @@ export class ConversationOrchestrator {
   async runConversation(input: ConversationInput): Promise<ConversationResult> {
     console.log(`🎭 Starting roundtable conversation for argument: ${input.argument.title}`);
 
-    // Create conversation record
-    const conversation = await this.prisma.focusGroupConversation.create({
-      data: {
-        sessionId: input.sessionId,
-        argumentId: input.argument.id
-      }
-    });
+    // Use existing conversation or create new one
+    const conversation = input.existingConversationId
+      ? await this.prisma.focusGroupConversation.findUnique({
+          where: { id: input.existingConversationId }
+        })
+      : await this.prisma.focusGroupConversation.create({
+          data: {
+            sessionId: input.sessionId,
+            argumentId: input.argument.id
+          }
+        });
+
+    if (!conversation) {
+      throw new Error('Conversation not found');
+    }
 
     // Initialize turn manager
     const personaTurnInfos: PersonaTurnInfo[] = input.personas.map(p => ({

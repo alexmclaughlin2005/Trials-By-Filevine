@@ -1,7 +1,4 @@
-import * as pdfParseModule from 'pdf-parse';
-
-// pdf-parse uses a default export
-const pdfParse = (pdfParseModule as any).default || pdfParseModule;
+import pdfParse from 'pdf-parse';
 
 /**
  * Text Extraction Service
@@ -27,8 +24,14 @@ export class TextExtractionService {
       const buffer = Buffer.from(arrayBuffer);
       console.log(`[TEXT_EXTRACTION] Downloaded ${buffer.length} bytes`);
 
-      // Parse the PDF
-      const data = await pdfParse(buffer);
+      // Parse the PDF (handle both default and named exports)
+      const parser = typeof pdfParse === 'function' ? pdfParse : (pdfParse as any).default;
+      if (typeof parser !== 'function') {
+        console.error('[TEXT_EXTRACTION] pdfParse is not a function:', typeof pdfParse, Object.keys(pdfParse || {}));
+        throw new Error('PDF parser not properly imported');
+      }
+
+      const data = await parser(buffer);
 
       console.log(`[TEXT_EXTRACTION] Extracted ${data.text.length} characters from ${data.numpages} pages`);
 

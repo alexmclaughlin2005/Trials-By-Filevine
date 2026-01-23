@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { apiClient } from '@/lib/api-client';
 import { ConversationDetail } from '@/types/focus-group';
 import { ConversationTabs } from '@/components/focus-groups/ConversationTabs';
 import { ArrowLeft, Loader2 } from 'lucide-react';
@@ -14,22 +15,45 @@ export default function ConversationDetailPage() {
   const [conversation, setConversation] = useState<ConversationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null;
+    let mounted = true;
+
     async function fetchConversation() {
       try {
-        setLoading(true);
-        const response = await fetch(`/api/focus-groups/conversations/${conversationId}`);
+        const data = await apiClient.get<ConversationDetail>(`/focus-groups/conversations/${conversationId}`);
 
-        if (!response.ok) {
-          throw new Error('Failed to load conversation');
-        }
+        if (!mounted) return;
 
-        const data = await response.json();
         setConversation(data);
+        setLoading(false);
+
+        // If conversation is not completed, start polling
+        if (!data.completedAt) {
+          setIsPolling(true);
+          pollInterval = setInterval(async () => {
+            try {
+              const updatedData = await apiClient.get<ConversationDetail>(`/focus-groups/conversations/${conversationId}`);
+
+              if (!mounted) return;
+
+              setConversation(updatedData);
+
+              // Stop polling when conversation is complete
+              if (updatedData.completedAt && pollInterval) {
+                clearInterval(pollInterval);
+                setIsPolling(false);
+              }
+            } catch (err) {
+              console.error('Error polling conversation:', err);
+            }
+          }, 5000); // Poll every 5 seconds
+        }
       } catch (err) {
+        if (!mounted) return;
         setError(err instanceof Error ? err.message : 'An error occurred');
-      } finally {
         setLoading(false);
       }
     }
@@ -37,6 +61,14 @@ export default function ConversationDetailPage() {
     if (conversationId) {
       fetchConversation();
     }
+
+    // Cleanup polling on unmount
+    return () => {
+      mounted = false;
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
   }, [conversationId]);
 
   if (loading) {
@@ -96,11 +128,19 @@ export default function ConversationDetailPage() {
             <span>
               Started: {new Date(conversation.startedAt).toLocaleString()}
             </span>
-            {conversation.completedAt && (
+            {conversation.completedAt ? (
               <>
                 <span>•</span>
                 <span>
                   Completed: {new Date(conversation.completedAt).toLocaleString()}
+                </span>
+              </>
+            ) : (
+              <>
+                <span>•</span>
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-3 w-3 animate-spin text-blue-600" />
+                  <span className="text-blue-600 font-medium">In Progress</span>
                 </span>
               </>
             )}
@@ -118,6 +158,14 @@ export default function ConversationDetailPage() {
             <p className="mt-2 text-sm text-gray-600 italic">
               {conversation.convergenceReason}
             </p>
+          )}
+          {!conversation.completedAt && (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+              <p className="text-sm text-blue-900">
+                The roundtable discussion is currently running. New statements will appear automatically as personas respond.
+                This usually takes 2-3 minutes to complete.
+              </p>
+            </div>
           )}
         </div>
       </div>
