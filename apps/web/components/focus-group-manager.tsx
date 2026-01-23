@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import { Button } from './ui/button';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { FocusGroupSetupWizard } from './focus-group-setup-wizard';
-import { FocusGroupSimulator } from './focus-group-simulator';
+import { RoundtableConversationTrigger } from './roundtable-conversation-trigger';
 import { FocusGroupSession } from '@/types/focus-group';
-import { Plus, History, PlayCircle } from 'lucide-react';
+import { Plus, History, PlayCircle, Trash2 } from 'lucide-react';
 
 type FocusGroupSessionWithCount = FocusGroupSession & {
   _count?: {
@@ -34,6 +34,8 @@ type View = 'list' | 'setup' | 'running' | 'results';
 export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGroupManagerProps) {
   const [currentView, setCurrentView] = useState<View>('list');
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Load focus group sessions for this case
   const { data: sessionsData, isLoading } = useQuery<{ sessions: FocusGroupSessionWithCount[] }>({
@@ -42,6 +44,17 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
   });
 
   const sessions = sessionsData?.sessions || [];
+
+  // Delete focus group mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (sessionId: string) => {
+      return apiClient.delete(`/focus-groups/sessions/${sessionId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['focus-group-sessions', caseId] });
+      setDeleteConfirmId(null);
+    },
+  });
 
   const handleStartNew = () => {
     setCurrentView('setup');
@@ -92,7 +105,7 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-filevine-gray-900">
-              Focus Group Running
+              Roundtable Conversations
             </h3>
             <p className="text-sm text-filevine-gray-600">
               Session ID: {activeSessionId}
@@ -103,16 +116,10 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
           </Button>
         </div>
 
-        {/* TODO: Replace with actual running simulation component */}
-        <div className="rounded-lg border border-filevine-gray-200 bg-white p-12 text-center">
-          <PlayCircle className="mx-auto h-16 w-16 text-filevine-blue animate-pulse" />
-          <p className="mt-4 text-lg font-medium text-filevine-gray-900">
-            Focus Group Simulation Running
-          </p>
-          <p className="mt-2 text-sm text-filevine-gray-600">
-            This will show live progress and results when integrated with the simulation engine
-          </p>
-        </div>
+        <RoundtableConversationTrigger
+          sessionId={activeSessionId}
+          arguments={caseArguments}
+        />
       </div>
     );
   }
@@ -221,16 +228,27 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
                     </Button>
                   )}
                   {session.status === 'draft' && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setActiveSessionId(session.id);
-                        setCurrentView('setup');
-                      }}
-                    >
-                      Continue Setup
-                    </Button>
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setActiveSessionId(session.id);
+                          setCurrentView('setup');
+                        }}
+                      >
+                        Continue Setup
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteConfirmId(session.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </>
                   )}
                 </div>
               </div>
@@ -239,15 +257,37 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
         </div>
       )}
 
-      {/* Keep original simulator for now - will integrate later */}
-      {sessions.length > 0 && (
-        <div className="mt-12 border-t border-filevine-gray-200 pt-6">
-          <h4 className="text-lg font-semibold text-filevine-gray-900 mb-4">
-            Quick Simulation (Legacy)
-          </h4>
-          <FocusGroupSimulator caseId={caseId} arguments={caseArguments} />
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-filevine-gray-900 mb-2">
+              Delete Focus Group Session?
+            </h3>
+            <p className="text-sm text-filevine-gray-600 mb-6">
+              This will permanently delete this focus group session. This action cannot be undone.
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setDeleteConfirmId(null)}
+                disabled={deleteMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                onClick={() => deleteMutation.mutate(deleteConfirmId)}
+                disabled={deleteMutation.isPending}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </div>
+          </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -278,6 +278,11 @@ model Persona {
   voirDireResponses     Json? @map("voir_dire_responses") // Predicted Q&A
   deliberationBehavior  Json? @map("deliberation_behavior") // Predicted role and tactics
 
+  // Roundtable conversation behavior
+  leadershipLevel      String? @map("leadership_level") // LEADER | INFLUENCER | FOLLOWER | PASSIVE
+  communicationStyle   String? @map("communication_style") @db.Text // Speaking style description
+  persuasionSusceptibility String? @map("persuasion_susceptibility") @db.Text // What arguments move them
+
   // Simulation Parameters
   simulationParams  Json? @map("simulation_params") // Evidence processing, deliberation weights, verdict priors
   caseTypeModifiers Json? @map("case_type_modifiers") // Case-specific behavior predictions
@@ -505,10 +510,11 @@ model FocusGroupSession {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  case            Case                       @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case            Case                         @relation(fields: [caseId], references: [id], onDelete: Cascade)
   personas        FocusGroupPersona[]
   results         FocusGroupResult[]
   recommendations FocusGroupRecommendation[]
+  conversations   FocusGroupConversation[]
 
   @@index([caseId])
   @@index([status])
@@ -566,6 +572,70 @@ model FocusGroupRecommendation {
 
   @@index([sessionId])
   @@map("focus_group_recommendations")
+}
+
+// Roundtable conversation for argument-centric discussions
+model FocusGroupConversation {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  argumentId  String   @map("argument_id") // Which argument is being discussed
+
+  // Conversation metadata
+  startedAt   DateTime @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  // Convergence tracking
+  converged         Boolean @default(false)
+  convergenceReason String? @map("convergence_reason") @db.Text // Why conversation ended
+
+  // Summary analysis (populated after conversation completes)
+  consensusAreas   Json?   @map("consensus_areas") // Array of agreed-upon points
+  fracturePoints   Json?   @map("fracture_points") // Array of persistent disagreements
+  keyDebatePoints  Json?   @map("key_debate_points") // Main discussion topics
+  influentialPersonas Json? @map("influential_personas") // Who dominated/influenced
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  session    FocusGroupSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  statements FocusGroupStatement[]
+
+  @@index([sessionId])
+  @@index([argumentId])
+  @@map("focus_group_conversations")
+}
+
+// Individual statements in a conversation
+model FocusGroupStatement {
+  id              String   @id @default(uuid())
+  conversationId  String   @map("conversation_id")
+  personaId       String   @map("persona_id")
+  personaName     String   @map("persona_name")
+
+  sequenceNumber  Int      @map("sequence_number") // Order in conversation (1, 2, 3...)
+  content         String   @db.Text
+
+  // AI-generated analysis
+  sentiment           String?  // plaintiff_leaning | defense_leaning | neutral | conflicted
+  emotionalIntensity  Decimal? @map("emotional_intensity") @db.Decimal(3, 2) // 0.00 to 1.00
+  keyPoints           Json?    @map("key_points") // Array of extracted arguments
+  addressedTo         String[] @map("addressed_to") // Array of persona names mentioned
+  agreementSignals    String[] @map("agreement_signals") // Who they agreed with
+  disagreementSignals String[] @map("disagreement_signals") // Who they pushed back on
+
+  // Turn tracking
+  speakCount Int      @map("speak_count") // How many times this persona has spoken
+
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  conversation FocusGroupConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([personaId])
+  @@index([sequenceNumber])
+  @@map("focus_group_statements")
 }
 
 // ============================================

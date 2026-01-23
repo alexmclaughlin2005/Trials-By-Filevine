@@ -1,3 +1,8 @@
+// Debug: Log environment variable availability (v2)
+console.log('[Config] REDIS_URL env var:', process.env.REDIS_URL ? 'SET' : 'NOT SET');
+console.log('[Config] REDIS_URL value:', process.env.REDIS_URL || 'using default');
+console.log('[Config] All env keys:', Object.keys(process.env).filter(k => k.includes('REDIS')).join(', '));
+
 export const config = {
   port: parseInt(process.env.PORT || '3002', 10),
   host: process.env.HOST || '0.0.0.0',

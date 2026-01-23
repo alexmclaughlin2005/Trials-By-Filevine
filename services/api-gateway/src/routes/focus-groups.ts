@@ -1,6 +1,8 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { FocusGroupEngineService } from '../services/focus-group-engine';
 import { FocusGroupQuestionGeneratorService } from '../services/focus-group-question-generator';
+import { ConversationOrchestrator, StatementAnalyzer } from '../services/roundtable';
+import { PromptClient } from '@juries/prompt-client';
 
 export async function focusGroupsRoutes(server: FastifyInstance) {
   // Run a focus group simulation
@@ -665,5 +667,291 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
 
       return { suggestedQuestions };
     },
+  });
+
+  // Run roundtable conversation for a specific argument
+  server.post('/sessions/:sessionId/roundtable', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<{
+      Params: { sessionId: string };
+      Body: { argumentId: string };
+    }>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params;
+      const { argumentId } = request.body;
+
+      if (!argumentId) {
+        reply.code(400);
+        return { error: 'argumentId is required' };
+      }
+
+      // Verify session and get data
+      const session = await server.prisma.focusGroupSession.findFirst({
+        where: {
+          id: sessionId,
+          case: { organizationId }
+        },
+        include: {
+          case: {
+            include: {
+              facts: {
+                orderBy: { sortOrder: 'asc' }
+              },
+              arguments: true
+            }
+          },
+          personas: {
+            include: {
+              persona: true
+            }
+          }
+        }
+      });
+
+      if (!session) {
+        reply.code(404);
+        return { error: 'Session not found' };
+      }
+
+      // Find the argument
+      const argument = session.case.arguments.find(a => a.id === argumentId);
+      if (!argument) {
+        reply.code(404);
+        return { error: 'Argument not found' };
+      }
+
+      // Check if conversation already exists for this argument
+      const existingConversation = await server.prisma.focusGroupConversation.findFirst({
+        where: {
+          sessionId,
+          argumentId
+        }
+      });
+
+      if (existingConversation) {
+        reply.code(409);
+        return { error: 'Conversation already exists for this argument' };
+      }
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+
+      if (!apiKey) {
+        // Mock response for development
+        return {
+          conversationId: 'mock-conversation-id',
+          message: 'Mock mode: Roundtable conversation would run here',
+          statements: [],
+          consensusAreas: ['Mock consensus area'],
+          fracturePoints: [],
+          keyDebatePoints: ['Mock debate point']
+        };
+      }
+
+      // Initialize services
+      const promptServiceUrl = process.env.PROMPT_SERVICE_URL || 'http://localhost:3002';
+      const promptClient = new PromptClient({
+        serviceUrl: promptServiceUrl,
+        anthropicApiKey: apiKey,
+        cacheEnabled: true,
+        cacheTTL: 300000
+      });
+
+      const orchestrator = new ConversationOrchestrator(server.prisma, promptClient);
+      const analyzer = new StatementAnalyzer(server.prisma, promptClient);
+
+      try {
+        // Prepare input
+        const conversationInput = {
+          sessionId,
+          argument: {
+            id: argument.id,
+            title: argument.title,
+            content: argument.content
+          },
+          caseContext: {
+            caseName: session.case.name,
+            caseType: session.case.caseType || 'unknown',
+            ourSide: session.case.ourSide || 'unknown',
+            facts: session.case.facts.map(f => f.content)
+          },
+          personas: session.personas.map(fp => ({
+            id: fp.persona.id,
+            name: fp.persona.name,
+            description: fp.persona.description,
+            demographics: fp.persona.demographics,
+            worldview: fp.persona.description, // Use description as fallback
+            leadershipLevel: fp.persona.leadershipLevel || undefined,
+            communicationStyle: fp.persona.communicationStyle || undefined,
+            persuasionSusceptibility: fp.persona.persuasionSusceptibility || undefined,
+            lifeExperiences: fp.persona.lifeExperiences,
+            dimensions: fp.persona.dimensions
+          }))
+        };
+
+        console.log('🎭 Starting roundtable conversation...');
+        console.log(`Session: ${session.name}`);
+        console.log(`Argument: ${argument.title}`);
+        console.log(`Personas: ${conversationInput.personas.length}`);
+
+        // Run the conversation
+        const result = await orchestrator.runConversation(conversationInput);
+
+        // Analyze all statements
+        await analyzer.analyzeConversation(result.conversationId);
+
+        // Get statistics
+        const statistics = await analyzer.getConversationStatistics(result.conversationId);
+
+        console.log('✅ Roundtable conversation complete!');
+
+        return {
+          conversationId: result.conversationId,
+          statements: result.statements,
+          consensusAreas: result.consensusAreas,
+          fracturePoints: result.fracturePoints,
+          keyDebatePoints: result.keyDebatePoints,
+          influentialPersonas: result.influentialPersonas,
+          statistics
+        };
+      } catch (error) {
+        console.error('Error running roundtable conversation:', error);
+        reply.code(500);
+        return {
+          error: 'Failed to run roundtable conversation',
+          details: error instanceof Error ? error.message : 'Unknown error'
+        };
+      }
+    }
+  });
+
+  // Get conversation details
+  server.get('/conversations/:conversationId', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<{
+      Params: { conversationId: string };
+    }>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { conversationId } = request.params;
+
+      const conversation = await server.prisma.focusGroupConversation.findFirst({
+        where: {
+          id: conversationId,
+          session: {
+            case: { organizationId }
+          }
+        },
+        include: {
+          statements: {
+            orderBy: { sequenceNumber: 'asc' }
+          },
+          session: {
+            include: {
+              case: {
+                include: {
+                  arguments: true
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!conversation) {
+        reply.code(404);
+        return { error: 'Conversation not found' };
+      }
+
+      // Find the argument
+      const argument = conversation.session.case.arguments.find(
+        a => a.id === conversation.argumentId
+      );
+
+      return {
+        id: conversation.id,
+        argumentId: conversation.argumentId,
+        argumentTitle: argument?.title || 'Unknown',
+        startedAt: conversation.startedAt,
+        completedAt: conversation.completedAt,
+        converged: conversation.converged,
+        convergenceReason: conversation.convergenceReason,
+        consensusAreas: conversation.consensusAreas,
+        fracturePoints: conversation.fracturePoints,
+        keyDebatePoints: conversation.keyDebatePoints,
+        influentialPersonas: conversation.influentialPersonas,
+        statements: conversation.statements.map(s => ({
+          id: s.id,
+          personaId: s.personaId,
+          personaName: s.personaName,
+          sequenceNumber: s.sequenceNumber,
+          content: s.content,
+          sentiment: s.sentiment,
+          emotionalIntensity: s.emotionalIntensity,
+          keyPoints: s.keyPoints,
+          addressedTo: s.addressedTo,
+          agreementSignals: s.agreementSignals,
+          disagreementSignals: s.disagreementSignals,
+          speakCount: s.speakCount,
+          createdAt: s.createdAt
+        }))
+      };
+    }
+  });
+
+  // List conversations for a session
+  server.get('/sessions/:sessionId/conversations', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<{
+      Params: { sessionId: string };
+    }>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params;
+
+      // Verify session belongs to org
+      const session = await server.prisma.focusGroupSession.findFirst({
+        where: {
+          id: sessionId,
+          case: { organizationId }
+        }
+      });
+
+      if (!session) {
+        reply.code(404);
+        return { error: 'Session not found' };
+      }
+
+      const conversations = await server.prisma.focusGroupConversation.findMany({
+        where: { sessionId },
+        include: {
+          statements: {
+            select: { id: true }
+          },
+          session: {
+            include: {
+              case: {
+                include: {
+                  arguments: true
+                }
+              }
+            }
+          }
+        },
+        orderBy: { startedAt: 'desc' }
+      });
+
+      return {
+        conversations: conversations.map(c => {
+          const argument = c.session.case.arguments.find(a => a.id === c.argumentId);
+          return {
+            id: c.id,
+            argumentId: c.argumentId,
+            argumentTitle: argument?.title || 'Unknown',
+            startedAt: c.startedAt,
+            completedAt: c.completedAt,
+            converged: c.converged,
+            statementCount: c.statements.length
+          };
+        })
+      };
+    }
   });
 }
