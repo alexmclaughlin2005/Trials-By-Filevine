@@ -3,10 +3,11 @@
 import dynamic from 'next/dynamic';
 import { useState, useEffect } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Editor = dynamic(
-  () => import('@monaco-editor/react').then((mod) => mod.default as unknown),
+  () => import('@monaco-editor/react').then((mod) => mod.default as any),
   { ssr: false }
-) as unknown;
+) as any;
 
 interface PromptEditorProps {
   value: string;
