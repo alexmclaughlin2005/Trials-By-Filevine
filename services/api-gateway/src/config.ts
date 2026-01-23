@@ -14,6 +14,7 @@ const configSchema = z.object({
   rateLimitMax: z.number().default(100),
   rateLimitWindow: z.string().default('15m'),
   logLevel: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  blobReadWriteToken: z.string().optional(),
 });
 
 export const config = configSchema.parse({
@@ -27,6 +28,7 @@ export const config = configSchema.parse({
   rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
   rateLimitWindow: process.env.RATE_LIMIT_WINDOW || '15m',
   logLevel: process.env.LOG_LEVEL || 'info',
+  blobReadWriteToken: process.env.BLOB_READ_WRITE_TOKEN,
 });
 
 export type Config = z.infer<typeof configSchema>;
