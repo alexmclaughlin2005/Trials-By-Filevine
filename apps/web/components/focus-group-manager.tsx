@@ -9,6 +9,14 @@ import { FocusGroupSimulator } from './focus-group-simulator';
 import { FocusGroupSession } from '@/types/focus-group';
 import { Plus, History, PlayCircle } from 'lucide-react';
 
+type FocusGroupSessionWithCount = FocusGroupSession & {
+  _count?: {
+    personas?: number;
+    results?: number;
+    recommendations?: number;
+  };
+};
+
 interface Argument {
   id: string;
   title: string;
@@ -28,9 +36,9 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // Load focus group sessions for this case
-  const { data: sessionsData, isLoading } = useQuery<{ sessions: FocusGroupSession[] }>({
+  const { data: sessionsData, isLoading } = useQuery<{ sessions: FocusGroupSessionWithCount[] }>({
     queryKey: ['focus-group-sessions', caseId],
-    queryFn: () => apiClient.get<{ sessions: FocusGroupSession[] }>(`/focus-groups/case/${caseId}`),
+    queryFn: () => apiClient.get<{ sessions: FocusGroupSessionWithCount[] }>(`/focus-groups/case/${caseId}`),
   });
 
   const sessions = sessionsData?.sessions || [];
