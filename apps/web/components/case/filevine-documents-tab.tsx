@@ -10,7 +10,7 @@ import {
   type CaseFilevineLink,
   type ImportedDocument
 } from '@/lib/filevine-client';
-import { FolderOpen, Download, FileText } from 'lucide-react';
+import { FolderOpen, Download, FileText, ExternalLink, Eye } from 'lucide-react';
 
 interface FilevineDocumentsTabProps {
   caseId: string;
@@ -150,7 +150,7 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
           ) : (
             importedDocs.map((doc) => (
               <div key={doc.id} className="rounded-lg border p-4">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <FileText className="h-5 w-5 text-blue-600" />
@@ -162,18 +162,46 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
                     <p className="text-xs text-gray-500">
                       Imported {new Date(doc.importedAt).toLocaleString()}
                     </p>
+                    {doc.status === 'failed' && doc.errorMessage && (
+                      <p className="mt-1 text-xs text-red-600">
+                        Error: {doc.errorMessage}
+                      </p>
+                    )}
                   </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                      doc.status === 'completed'
-                        ? 'bg-green-100 text-green-700'
-                        : doc.status === 'failed'
-                          ? 'bg-red-100 text-red-700'
-                          : 'bg-yellow-100 text-yellow-700'
-                    }`}
-                  >
-                    {doc.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        doc.status === 'completed'
+                          ? 'bg-green-100 text-green-700'
+                          : doc.status === 'failed'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                      }`}
+                    >
+                      {doc.status}
+                    </span>
+                    {doc.status === 'completed' && doc.localFileUrl && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => window.open(doc.localFileUrl, '_blank')}
+                          className="rounded-md bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center gap-1"
+                          title="Preview document"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                          Preview
+                        </button>
+                        <a
+                          href={doc.localFileUrl}
+                          download={doc.filename}
+                          className="rounded-md bg-gray-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-1"
+                          title="Download document"
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          Download
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))

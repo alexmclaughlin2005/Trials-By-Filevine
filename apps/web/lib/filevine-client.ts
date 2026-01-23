@@ -191,6 +191,8 @@ export interface ImportedDocument {
   documentCategory?: string;
   tags?: string[];
   size?: string;
+  errorMessage?: string;
+  downloadAttempts?: number;
 }
 
 /**
