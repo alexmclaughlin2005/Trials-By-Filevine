@@ -46,14 +46,17 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
 
       // @ts-ignore - JWT user added by jwtVerify
       const user = request.user;
-      if (!user) {
+      if (!user || !user.id) {
+        console.error('Invalid user from JWT:', user);
         reply.code(401);
-        return { error: 'Unauthorized' };
+        return { error: 'Unauthorized - missing user ID' };
       }
 
       // @ts-ignore
       const { caseId } = request.params;
       const body = linkProjectSchema.parse(request.body);
+
+      console.log('Linking case:', { caseId, userId: user.id, orgId: user.organizationId });
 
       // Verify case belongs to organization
       const caseData = await server.prisma.case.findFirst({
