@@ -914,6 +914,6 @@ export async function jurorsRoutes(server: FastifyInstance) {
           details: error instanceof Error ? error.message : 'Unknown error',
         };
       }
-    },,
+    },
   });
 }
