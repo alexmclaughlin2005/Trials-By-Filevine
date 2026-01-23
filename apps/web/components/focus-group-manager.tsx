@@ -117,6 +117,7 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
         </div>
 
         <RoundtableConversationTrigger
+          key={activeSessionId}
           sessionId={activeSessionId}
           arguments={caseArguments}
         />
