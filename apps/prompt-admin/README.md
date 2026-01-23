@@ -50,7 +50,7 @@ npm install
 npm run dev
 ```
 
-The admin UI will start on **http://localhost:3003**
+The admin UI will start on **http://localhost:3004**
 
 ### Environment Variables
 
@@ -64,7 +64,7 @@ NEXT_PUBLIC_PROMPT_SERVICE_URL=http://localhost:3002
 
 ### Viewing Prompts
 
-1. Open http://localhost:3003
+1. Open http://localhost:3004
 2. You'll see a list of all prompts
 3. Each card shows:
    - Prompt name and description

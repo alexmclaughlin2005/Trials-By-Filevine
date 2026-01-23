@@ -12,6 +12,7 @@ import {
   Gavel,
   FileSearch,
   UserSearch,
+  FileCode,
 } from 'lucide-react';
 
 const navigation = [
@@ -53,7 +54,16 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-t border-filevine-gray-200 p-3">
+      <div className="border-t border-filevine-gray-200 p-3 space-y-1">
+        <Link
+          href={process.env.NEXT_PUBLIC_PROMPT_ADMIN_URL || 'http://localhost:3004'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium text-filevine-gray-700 hover:bg-filevine-gray-100"
+        >
+          <FileCode className="h-4 w-4" />
+          <span>Prompts</span>
+        </Link>
         <Link
           href="/settings"
           className="flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium text-filevine-gray-700 hover:bg-filevine-gray-100"
