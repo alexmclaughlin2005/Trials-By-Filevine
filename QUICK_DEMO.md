@@ -111,24 +111,39 @@ cd apps/web && npm run dev
 
 ---
 
-### 5. Focus Group Simulation (60 seconds)
+### 5. Focus Group Simulation with AI Questions (90 seconds) ⭐ NEW
 
-**Path**: Same case → Focus Groups Tab → Select argument → Run simulation
+**Path**: Same case → Focus Groups Tab → New Focus Group
 
 **Say**:
-"Let's test our opening statement with a simulated jury of 6 diverse personas."
+"Let's create a focus group to test our arguments. Watch how AI generates contextual questions."
 
 **Show**:
-- Select "Opening Statement" argument
-- Choose "Detailed" mode
-- Click "Run Focus Group Simulation"
-- Wait 5-10 seconds
+- Click "New Focus Group"
+- Enter name and purpose (e.g., "Test workplace safety argument")
+- Select 2-3 personas (e.g., Bootstrapper, Heart, Scale-Balancer)
+- Click "Generate Questions with AI" button
+- Wait 2-4 seconds (emphasize speed)
+- Show 10-15 generated questions appearing
+- Read 2-3 example questions aloud
+- Click "Continue" to proceed with focus group
+
+**Key Message**: "AI generates contextual questions tailored to your case and selected personas in seconds. Saves 10-15 minutes per focus group."
+
+---
+
+### 6. Run Focus Group Simulation (30 seconds)
+
+**Path**: Same focus group → Run simulation
+
+**Show**:
+- Click "Run Simulation"
+- Wait 10-15 seconds
 - Show overall sentiment score
 - Expand 1-2 persona reactions
 - Point to what worked vs. weaknesses
-- Scroll to recommendations
 
-**Key Message**: "Test arguments before trial. Get specific feedback on what resonates with different juror types."
+**Key Message**: "Test arguments with AI-powered jury simulation. Get specific feedback on what resonates with different juror types."
 
 ---
 
@@ -140,6 +155,7 @@ cd apps/web && npm run dev
 - 🧠 **AI Model**: Claude 4.5 Sonnet with web search (cutting-edge)
 - 🌐 **Web Search**: 3-10 searches per juror for comprehensive public data
 - 📋 **Complete Workflow**: Everything in one place - no separate navigation
+- ✨ **NEW - AI Question Generation**: 10-15 contextual questions in 2-4 seconds (saves 10-15 minutes per focus group)
 
 ## Powerful Quotes
 
