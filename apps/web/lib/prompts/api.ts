@@ -2,8 +2,11 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_PROMPT_SERVICE_URL || 'http://localhost:3002';
 
+// Ensure the URL has a protocol
+const baseURL = API_URL.startsWith('http') ? API_URL : `https://${API_URL}`;
+
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL,
   headers: {
     'Content-Type': 'application/json',
   },
