@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Filter, AlertTriangle, Shield, X, Copy, Edit } from 'lucide-react';
+import { Plus, Filter, AlertTriangle, Shield, X, Copy, Edit, FileText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Select } from '@/components/ui/select';
@@ -57,15 +57,47 @@ export default function PersonasPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [isCloning, setIsCloning] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    nickname: '',
+    description: '',
+    tagline: '',
+    occupation: '',
+    age: '',
+    gender: '',
+    location: '',
+    income: '',
+    plaintiffDangerLevel: 0,
+    defenseDangerLevel: 0,
+  });
+  const [notesPersona, setNotesPersona] = useState<Persona | null>(null);
+  const [notesForm, setNotesForm] = useState('');
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
 
   useEffect(() => {
     async function fetchPersonas() {
       try {
         setLoading(true);
         const data = await apiClient.get<{ personas: Persona[] }>('/personas');
-        setPersonas(data.personas);
-        setFilteredPersonas(data.personas);
+
+        // Load notes from localStorage for system personas
+        const personasWithNotes = data.personas.map((persona) => {
+          if (persona.sourceType === 'system' && user?.organization?.id) {
+            const notesKey = `persona_notes_${user.organization.id}_${persona.id}`;
+            const savedNotes = localStorage.getItem(notesKey);
+            if (savedNotes) {
+              return {
+                ...persona,
+                attributes: { ...persona.attributes, user_notes: savedNotes },
+              };
+            }
+          }
+          return persona;
+        });
+
+        setPersonas(personasWithNotes);
+        setFilteredPersonas(personasWithNotes);
       } catch (err) {
         console.error('Error fetching personas:', err);
         setError('Failed to load personas');
@@ -75,7 +107,7 @@ export default function PersonasPage() {
     }
 
     fetchPersonas();
-  }, []);
+  }, [user?.organization?.id]);
 
   useEffect(() => {
     if (selectedArchetype === 'all') {
@@ -106,27 +138,37 @@ export default function PersonasPage() {
 
     setIsCloning(true);
     try {
-      // Create a cloned persona with modified name and organization
+      // Map to backend schema format (name, description, attributes, voirDireApproach, challengeStrategy)
       const clonedPersona = {
-        ...persona,
         name: `${persona.name} (Copy)`,
-        nickname: persona.nickname ? `${persona.nickname} (Copy)` : undefined,
-        sourceType: 'user_created',
-        organizationId: user.organization.id,
+        description: persona.description || persona.tagline || `${persona.archetype || 'Custom'} persona`,
+        attributes: {
+          // Store all persona-specific data in attributes
+          nickname: persona.nickname ? `${persona.nickname} (Copy)` : undefined,
+          archetype: persona.archetype,
+          archetypeStrength: persona.archetypeStrength,
+          secondaryArchetype: persona.secondaryArchetype,
+          demographics: persona.demographics,
+          signals: persona.signals,
+          plaintiffDangerLevel: persona.plaintiffDangerLevel,
+          defenseDangerLevel: persona.defenseDangerLevel,
+          tagline: persona.tagline,
+          ...(persona.attributes || {}),
+        },
+        voirDireApproach: undefined,
+        challengeStrategy: undefined,
       };
 
-      // Remove ID so a new one is generated
-      const { id, ...personaData } = clonedPersona;
-
-      const response = await apiClient.post<{ persona: Persona }>('/personas', personaData);
+      const response = await apiClient.post<{ persona: Persona }>('/personas', clonedPersona);
 
       // Add to list
-      setPersonas([...personas, response.persona]);
-      setFilteredPersonas([...filteredPersonas, response.persona]);
+      const newPersonas = [...personas, response.persona];
+      setPersonas(newPersonas);
+      setFilteredPersonas(newPersonas);
 
-      // Close modal and show success
+      // Close detail modal and open edit mode for the cloned persona
       setSelectedPersona(null);
-      alert('Persona cloned successfully!');
+      handleEdit(response.persona);
     } catch (error) {
       console.error('Error cloning persona:', error);
       alert('Failed to clone persona. Please try again.');
@@ -136,9 +178,162 @@ export default function PersonasPage() {
   };
 
   const handleEdit = (persona: Persona) => {
-    // For now, just alert - you can implement a full edit form later
-    alert('Edit functionality coming soon! This will open an editor to modify the persona details.');
-    // TODO: Implement edit form
+    setEditingPersona(persona);
+    setEditForm({
+      name: persona.name,
+      nickname: persona.nickname || '',
+      description: persona.description || '',
+      tagline: persona.tagline || '',
+      occupation: persona.demographics?.occupation || '',
+      age: persona.demographics?.age_range || '',
+      gender: persona.demographics?.gender || '',
+      location: persona.demographics?.location || '',
+      income: persona.demographics?.income || '',
+      plaintiffDangerLevel: persona.plaintiffDangerLevel || 0,
+      defenseDangerLevel: persona.defenseDangerLevel || 0,
+    });
+    setSelectedPersona(null); // Close detail modal if open
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingPersona) return;
+
+    try {
+      // Map to backend schema format
+      const updatedPersona = {
+        name: editForm.name,
+        description: editForm.description || editForm.tagline || `${editingPersona.archetype || 'Custom'} persona`,
+        attributes: {
+          ...editingPersona.attributes,
+          nickname: editForm.nickname || undefined,
+          tagline: editForm.tagline || undefined,
+          demographics: {
+            occupation: editForm.occupation || undefined,
+            age_range: editForm.age || undefined,
+            gender: editForm.gender || undefined,
+            location: editForm.location || undefined,
+            income: editForm.income || undefined,
+          },
+          plaintiffDangerLevel: editForm.plaintiffDangerLevel,
+          defenseDangerLevel: editForm.defenseDangerLevel,
+        },
+      };
+
+      const response = await apiClient.patch<{ persona: Persona }>(
+        `/personas/${editingPersona.id}`,
+        updatedPersona
+      );
+
+      // Update in lists
+      const updatedPersonas = personas.map((p) =>
+        p.id === editingPersona.id ? response.persona : p
+      );
+      setPersonas(updatedPersonas);
+      setFilteredPersonas(
+        updatedPersonas.filter((p) =>
+          selectedArchetype === 'all' ? true : p.archetype === selectedArchetype
+        )
+      );
+
+      // Close edit modal
+      setEditingPersona(null);
+      alert('Persona updated successfully!');
+    } catch (error) {
+      console.error('Error updating persona:', error);
+      alert('Failed to update persona. Please try again.');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPersona(null);
+    setEditForm({
+      name: '',
+      nickname: '',
+      description: '',
+      tagline: '',
+      occupation: '',
+      age: '',
+      gender: '',
+      location: '',
+      income: '',
+      plaintiffDangerLevel: 0,
+      defenseDangerLevel: 0,
+    });
+  };
+
+  const handleOpenNotes = (persona: Persona) => {
+    setNotesPersona(persona);
+    // Get existing notes from attributes if they exist
+    const existingNotes = (persona.attributes as any)?.user_notes || '';
+    setNotesForm(existingNotes);
+    setSelectedPersona(null); // Close detail modal if open
+  };
+
+  const handleSaveNotes = async () => {
+    if (!notesPersona || !user?.organization?.id) return;
+
+    setIsSavingNotes(true);
+    try {
+      // For system personas, we need to create a user-specific note
+      // For user-created personas, we can update the persona directly
+      const isSystemPersona = notesPersona.sourceType === 'system';
+
+      if (isSystemPersona) {
+        // Store notes in a separate structure (you could also clone the persona)
+        // For now, we'll use localStorage as a simple solution
+        const notesKey = `persona_notes_${user.organization.id}_${notesPersona.id}`;
+        localStorage.setItem(notesKey, notesForm);
+
+        // Update local state
+        const updatedPersonas = personas.map((p) =>
+          p.id === notesPersona.id
+            ? { ...p, attributes: { ...p.attributes, user_notes: notesForm } }
+            : p
+        );
+        setPersonas(updatedPersonas);
+        setFilteredPersonas(
+          updatedPersonas.filter((p) =>
+            selectedArchetype === 'all' ? true : p.archetype === selectedArchetype
+          )
+        );
+      } else {
+        // Update user-created persona in database
+        const updatedPersona = {
+          attributes: {
+            ...notesPersona.attributes,
+            user_notes: notesForm,
+          },
+        };
+
+        await apiClient.patch(`/personas/${notesPersona.id}`, updatedPersona);
+
+        // Update local state
+        const updatedPersonas = personas.map((p) =>
+          p.id === notesPersona.id
+            ? { ...p, attributes: { ...p.attributes, user_notes: notesForm } }
+            : p
+        );
+        setPersonas(updatedPersonas);
+        setFilteredPersonas(
+          updatedPersonas.filter((p) =>
+            selectedArchetype === 'all' ? true : p.archetype === selectedArchetype
+          )
+        );
+      }
+
+      setNotesPersona(null);
+      alert('Notes saved successfully!');
+    } catch (error) {
+      console.error('Error saving notes:', error);
+      alert('Failed to save notes. Please try again.');
+    } finally {
+      setIsSavingNotes(false);
+    }
+  };
+
+  const handleCancelNotes = () => {
+    setNotesPersona(null);
+    setNotesForm('');
   };
 
   return (
@@ -349,15 +544,264 @@ export default function PersonasPage() {
                     <Button
                       variant="outline"
                       onClick={() => handleEdit(selectedPersona)}
-                      disabled={isEditing}
                     >
                       <Edit className="mr-2 h-4 w-4" />
                       Edit
                     </Button>
                   )}
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenNotes(selectedPersona)}
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Notes
+                  </Button>
                 </div>
                 <Button variant="outline" onClick={() => setSelectedPersona(null)}>
                   Close
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Persona Modal */}
+      <Dialog open={!!editingPersona} onOpenChange={handleCancelEdit}>
+        <DialogContent className="max-w-2xl">
+          <DialogClose onClick={handleCancelEdit} />
+          {editingPersona && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Edit Persona</DialogTitle>
+              </DialogHeader>
+
+              <div className="space-y-4 mt-4 max-h-[60vh] overflow-y-auto">
+                {/* Basic Info */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-sm">Basic Information</h3>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="Enter persona name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      Nickname
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.nickname}
+                      onChange={(e) => setEditForm({ ...editForm, nickname: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="Enter nickname (optional)"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      Tagline
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.tagline}
+                      onChange={(e) => setEditForm({ ...editForm, tagline: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="Enter a short tagline"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      Description
+                    </label>
+                    <textarea
+                      value={editForm.description}
+                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                      rows={3}
+                      placeholder="Enter persona description"
+                    />
+                  </div>
+                </div>
+
+                {/* Demographics */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-sm">Demographics</h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        Age Range
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.age}
+                        onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                        placeholder="e.g., 45, 35-45"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        Gender
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.gender}
+                        onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                        placeholder="e.g., Female, Male"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">
+                      Occupation
+                    </label>
+                    <input
+                      type="text"
+                      value={editForm.occupation}
+                      onChange={(e) => setEditForm({ ...editForm, occupation: e.target.value })}
+                      className="w-full px-3 py-2 border rounded-md"
+                      placeholder="e.g., Part-time retail associate"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        Location
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.location}
+                        onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                        placeholder="e.g., Phoenix, Arizona"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        Income
+                      </label>
+                      <input
+                        type="text"
+                        value={editForm.income}
+                        onChange={(e) => setEditForm({ ...editForm, income: e.target.value })}
+                        className="w-full px-3 py-2 border rounded-md"
+                        placeholder="e.g., 24000, $20k-$30k"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Danger Levels */}
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="font-semibold text-sm">Danger Levels</h3>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        <AlertTriangle className="inline h-4 w-4 text-orange-500 mr-1" />
+                        Plaintiff Danger (0-5)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={editForm.plaintiffDangerLevel}
+                        onChange={(e) => setEditForm({ ...editForm, plaintiffDangerLevel: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 border rounded-md"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">
+                        <Shield className="inline h-4 w-4 text-blue-500 mr-1" />
+                        Defense Danger (0-5)
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="5"
+                        value={editForm.defenseDangerLevel}
+                        onChange={(e) => setEditForm({ ...editForm, defenseDangerLevel: parseInt(e.target.value) || 0 })}
+                        className="w-full px-3 py-2 border rounded-md"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelEdit}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveEdit}
+                  disabled={!editForm.name.trim()}
+                >
+                  Save Changes
+                </Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Notes Modal */}
+      <Dialog open={!!notesPersona} onOpenChange={handleCancelNotes}>
+        <DialogContent className="max-w-2xl">
+          <DialogClose onClick={handleCancelNotes} />
+          {notesPersona && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Personal Notes</DialogTitle>
+                <p className="text-sm text-muted-foreground mt-2">
+                  {notesPersona.nickname || notesPersona.name}
+                </p>
+              </DialogHeader>
+
+              <div className="mt-4">
+                <label className="text-sm font-medium mb-2 block">
+                  Add your personal notes about this persona
+                </label>
+                <textarea
+                  value={notesForm}
+                  onChange={(e) => setNotesForm(e.target.value)}
+                  className="w-full px-3 py-2 border rounded-md"
+                  rows={10}
+                  placeholder="Add notes about when to use this persona, key insights, case-specific observations, etc."
+                />
+                <p className="text-xs text-muted-foreground mt-2">
+                  {notesPersona.sourceType === 'system'
+                    ? 'Notes for system personas are stored locally for your organization.'
+                    : 'These notes are saved with this persona.'}
+                </p>
+              </div>
+
+              <div className="mt-6 flex justify-end gap-2">
+                <Button variant="outline" onClick={handleCancelNotes}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSaveNotes}
+                  disabled={isSavingNotes}
+                >
+                  {isSavingNotes ? 'Saving...' : 'Save Notes'}
                 </Button>
               </div>
             </>
