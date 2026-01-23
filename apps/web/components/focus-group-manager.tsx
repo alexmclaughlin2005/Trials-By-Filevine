@@ -158,7 +158,7 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
         </div>
       ) : (
         <div className="space-y-3">
-          {sessions.map((session: FocusGroupSession) => (
+          {sessions.map((session: FocusGroupSessionWithCount) => (
             <div
               key={session.id}
               className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow"
