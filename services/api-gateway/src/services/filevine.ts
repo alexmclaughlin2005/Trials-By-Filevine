@@ -540,29 +540,52 @@ export class FilevineService {
    * Get document download URL
    * Note: Filevine may return the file directly or a download URL
    */
-  async getDocumentDownloadUrl(documentId: string): Promise<string> {
-    // Try getting document metadata first to find download URL
-    try {
-      const docResponse = await this.request(`/Documents/${documentId}`, {
-        method: 'GET',
-      });
+  async getDocumentDownloadUrl(documentId: string, projectId?: string): Promise<string> {
+    // Try multiple endpoint patterns to find the correct download URL
+    const endpointsToTry = [
+      // Pattern 1: Project-scoped document endpoint
+      projectId ? `/Projects/${projectId}/Documents/${documentId}` : null,
+      // Pattern 2: Direct document endpoint
+      `/Documents/${documentId}`,
+      // Pattern 3: Native download endpoint
+      `/Documents/${documentId}/native`,
+      // Pattern 4: Download endpoint
+      `/Documents/${documentId}/download`,
+    ].filter(Boolean) as string[];
 
-      // Check if document metadata has a download URL
-      if (docResponse.downloadUrl) {
-        return docResponse.downloadUrl;
+    let lastError: Error | null = null;
+
+    for (const endpoint of endpointsToTry) {
+      try {
+        console.log(`[FILEVINE] Trying endpoint: ${endpoint}`);
+        const response = await this.request(endpoint, {
+          method: 'GET',
+        });
+
+        // Check various possible download URL fields
+        const downloadUrl = response.downloadUrl || response.url || response.nativeFileUrl || response.fileUrl;
+
+        if (downloadUrl) {
+          console.log(`[FILEVINE] Found download URL at ${endpoint}`);
+          return downloadUrl;
+        }
+
+        // If the response itself looks like a URL, return it
+        if (typeof response === 'string' && response.startsWith('http')) {
+          console.log(`[FILEVINE] Response is a URL: ${endpoint}`);
+          return response;
+        }
+
+        console.log(`[FILEVINE] No download URL in response from ${endpoint}`);
+      } catch (error) {
+        console.log(`[FILEVINE] Endpoint ${endpoint} failed:`, (error as Error).message);
+        lastError = error as Error;
       }
-
-      // If no download URL in metadata, try the native download endpoint
-      const downloadResponse = await this.request(`/Documents/${documentId}/native`, {
-        method: 'GET',
-      });
-
-      return downloadResponse.downloadUrl || downloadResponse.url || downloadResponse;
-    } catch (error) {
-      // If both fail, log the error and rethrow
-      console.error(`[FILEVINE] Failed to get download URL for document ${documentId}:`, error);
-      throw error;
     }
+
+    // All endpoints failed
+    console.error(`[FILEVINE] All endpoints failed for document ${documentId}`);
+    throw lastError || new Error('Could not find document download URL');
   }
 }
 

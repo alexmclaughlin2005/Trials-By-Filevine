@@ -21,6 +21,7 @@ const prisma = new PrismaClient();
 interface DownloadJob {
   documentId: string;
   filevineDocumentId: string;
+  filevineProjectId: string;
   filename: string;
   organizationId: string;
 }
@@ -29,7 +30,7 @@ interface DownloadJob {
  * Process a single document download
  */
 async function processDocument(job: DownloadJob): Promise<void> {
-  const { documentId, filevineDocumentId, filename, organizationId } = job;
+  const { documentId, filevineDocumentId, filevineProjectId, filename, organizationId } = job;
 
   console.log(`[DOWNLOAD] Processing document ${documentId}: ${filename}`);
 
@@ -47,8 +48,8 @@ async function processDocument(job: DownloadJob): Promise<void> {
     const filevineService = createFilevineService(organizationId);
 
     // Get download URL from Filevine
-    console.log(`[DOWNLOAD] Getting download URL for Filevine document ${filevineDocumentId}`);
-    const downloadUrl = await filevineService.getDocumentDownloadUrl(filevineDocumentId);
+    console.log(`[DOWNLOAD] Getting download URL for Filevine document ${filevineDocumentId} in project ${filevineProjectId}`);
+    const downloadUrl = await filevineService.getDocumentDownloadUrl(filevineDocumentId, filevineProjectId);
     console.log(`[DOWNLOAD] Got download URL: ${downloadUrl.substring(0, 50)}...`);
 
     // Download file from Filevine
@@ -128,6 +129,7 @@ export async function processPendingDocuments(): Promise<void> {
       await processDocument({
         documentId: doc.id,
         filevineDocumentId: doc.filevineDocumentId,
+        filevineProjectId: doc.caseFilevineProject.filevineProjectId,
         filename: doc.filename,
         organizationId: doc.caseFilevineProject.organizationId,
       });
