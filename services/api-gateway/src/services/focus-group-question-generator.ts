@@ -1,4 +1,5 @@
 import { PromptClient } from '@juries/prompt-client';
+import type { ContentBlock } from '@anthropic-ai/sdk/resources';
 
 interface ArgumentInput {
   id: string;
@@ -96,8 +97,14 @@ export class FocusGroupQuestionGeneratorService {
       console.log('[FocusGroupQuestionGenerator] Received response from prompt service');
       console.log('[FocusGroupQuestionGenerator] Token usage:', result.usage);
 
+      // Extract text content from response
+      const textContent = result.content
+        .filter((block): block is Extract<ContentBlock, { type: 'text' }> => block.type === 'text')
+        .map((block) => block.text)
+        .join('');
+
       // Parse response
-      const parsedResult = this.parseResponse(result.content[0].text);
+      const parsedResult = this.parseResponse(textContent);
 
       // Track result with analytics
       await this.promptClient.trackResult('focus-group-questions', {
