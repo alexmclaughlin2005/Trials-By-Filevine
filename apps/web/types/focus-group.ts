@@ -99,3 +99,75 @@ export interface FocusGroupConfigUpdate {
   customQuestions?: CustomQuestion[];
   configurationStep?: ConfigurationStep;
 }
+
+// Roundtable Conversation Types
+
+export interface ConversationStatement {
+  id: string;
+  personaId: string;
+  personaName: string;
+  sequenceNumber: number;
+  content: string;
+  sentiment?: string | null;
+  emotionalIntensity?: number | null;
+  keyPoints?: any;
+  addressedTo?: string[];
+  agreementSignals?: string[];
+  disagreementSignals?: string[];
+  speakCount: number;
+  createdAt: string;
+}
+
+export type PersonaPosition = 'favorable' | 'neutral' | 'unfavorable' | 'mixed';
+export type InfluenceLevel = 'high' | 'medium' | 'low';
+
+export interface PersonaSummary {
+  personaId: string;
+  personaName: string;
+  totalStatements: number;
+  firstStatement: string;
+  lastStatement: string;
+  initialPosition: PersonaPosition;
+  finalPosition: PersonaPosition;
+  positionShifted: boolean;
+  shiftDescription?: string;
+  mainPoints: string[];
+  concernsRaised: string[];
+  questionsAsked: string[];
+  influenceLevel: InfluenceLevel;
+  agreedWithMost: string[];
+  disagreedWithMost: string[];
+  influencedBy: string[];
+  averageSentiment: string;
+  averageEmotionalIntensity: number;
+  mostEmotionalStatement?: string;
+  summary: string;
+  statements: ConversationStatement[];
+}
+
+export interface InfluentialPersona {
+  personaId: string;
+  personaName: string;
+  influenceType: string;
+  influenceReason: string;
+}
+
+export interface OverallAnalysis {
+  consensusAreas: string[];
+  fracturePoints: string[];
+  keyDebatePoints: string[];
+  influentialPersonas: InfluentialPersona[];
+}
+
+export interface ConversationDetail {
+  id: string;
+  argumentId: string;
+  argumentTitle: string;
+  startedAt: string;
+  completedAt: string | null;
+  converged: boolean;
+  convergenceReason?: string | null;
+  personaSummaries: PersonaSummary[];
+  overallAnalysis: OverallAnalysis;
+  allStatements: ConversationStatement[];
+}

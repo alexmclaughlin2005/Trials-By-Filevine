@@ -272,10 +272,10 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
       console.log(`[DOCUMENT_ATTACH]   - textExtractionStatus: ${document.textExtractionStatus}`);
       console.log(`[DOCUMENT_ATTACH]   - has localFileUrl: ${!!document.localFileUrl}`);
 
-      // Trigger text extraction if not already done
+      // Trigger text extraction if needed (pending or failed)
       const shouldExtract =
         document.localFileUrl &&
-        document.textExtractionStatus === 'pending' &&
+        (document.textExtractionStatus === 'pending' || document.textExtractionStatus === 'failed') &&
         document.status === 'completed';
 
       console.log(`[DOCUMENT_ATTACH]   - will trigger extraction: ${shouldExtract}`);
@@ -362,6 +362,69 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
           },
         })),
       };
+    },
+  });
+
+  /**
+   * POST /cases/:caseId/arguments/:argumentId/documents/:attachmentId/extract
+   * Manually trigger text extraction for a document
+   */
+  server.post('/:caseId/arguments/:argumentId/documents/:attachmentId/extract', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId, attachmentId } = request.params as any;
+
+      // Verify case belongs to organization
+      const existingCase = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId },
+      });
+
+      if (!existingCase) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Get attachment with document details
+      const attachment = await server.prisma.argumentDocument.findFirst({
+        where: {
+          id: attachmentId,
+          argumentId,
+        },
+        include: {
+          document: true,
+        },
+      });
+
+      if (!attachment) {
+        reply.code(404);
+        return { error: 'Attachment not found' };
+      }
+
+      const document = attachment.document;
+
+      if (!document.localFileUrl) {
+        reply.code(400);
+        return { error: 'Document has no file URL' };
+      }
+
+      if (document.status !== 'completed') {
+        reply.code(400);
+        return { error: 'Document is not ready for extraction' };
+      }
+
+      // Trigger extraction
+      console.log(`[MANUAL_EXTRACT] Triggering extraction for ${document.filename}`);
+      extractTextInBackground(
+        server,
+        textExtractionService,
+        document.id,
+        document.localFileUrl,
+        document.filename
+      );
+
+      reply.code(202);
+      return { message: 'Text extraction started' };
     },
   });
 

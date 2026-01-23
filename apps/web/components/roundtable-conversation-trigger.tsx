@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { MessageSquare, Loader2 } from 'lucide-react';
-import { RoundtableConversationViewer } from './roundtable-conversation-viewer';
 
 interface Argument {
   id: string;
@@ -32,7 +32,7 @@ export function RoundtableConversationTrigger({
   arguments: caseArguments
 }: RoundtableConversationTriggerProps) {
   const [selectedArgumentId, setSelectedArgumentId] = useState<string | null>(null);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const runConversationMutation = useMutation({
@@ -43,8 +43,9 @@ export function RoundtableConversationTrigger({
       );
     },
     onSuccess: (result) => {
-      setActiveConversationId(result.conversationId);
       queryClient.invalidateQueries({ queryKey: ['conversations', sessionId] });
+      // Navigate to the new conversation detail page
+      router.push(`/focus-groups/conversations/${result.conversationId}`);
     }
   });
 
@@ -52,29 +53,6 @@ export function RoundtableConversationTrigger({
     setSelectedArgumentId(argumentId);
     runConversationMutation.mutate(argumentId);
   };
-
-  if (activeConversationId) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-filevine-gray-900">
-            Roundtable Conversation Results
-          </h3>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setActiveConversationId(null);
-              setSelectedArgumentId(null);
-            }}
-          >
-            Back to Arguments
-          </Button>
-        </div>
-
-        <RoundtableConversationViewer conversationId={activeConversationId} />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
