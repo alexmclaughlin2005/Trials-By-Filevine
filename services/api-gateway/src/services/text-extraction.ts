@@ -22,10 +22,26 @@ export class TextExtractionService {
       const buffer = Buffer.from(arrayBuffer);
       console.log(`[TEXT_EXTRACTION] Downloaded ${buffer.length} bytes`);
 
-      // Load pdf-parse dynamically at runtime (better for CommonJS)
-      const pdfParse = require('pdf-parse');
+      // Load pdf-parse dynamically at runtime
+      const pdfParseModule = require('pdf-parse');
 
-      // Parse the PDF - pdf-parse should be called directly as a function
+      // Log what we actually got to debug
+      console.log(`[TEXT_EXTRACTION] pdf-parse module type: ${typeof pdfParseModule}`);
+      console.log(`[TEXT_EXTRACTION] pdf-parse keys:`, Object.keys(pdfParseModule).slice(0, 10));
+
+      // Try to find the actual parse function
+      let pdfParse;
+      if (typeof pdfParseModule === 'function') {
+        pdfParse = pdfParseModule;
+      } else if (pdfParseModule.default && typeof pdfParseModule.default === 'function') {
+        pdfParse = pdfParseModule.default;
+      } else if (pdfParseModule.PDFParse && typeof pdfParseModule.PDFParse === 'function') {
+        pdfParse = pdfParseModule.PDFParse;
+      } else {
+        throw new Error(`Cannot find pdf-parse function. Module type: ${typeof pdfParseModule}, keys: ${Object.keys(pdfParseModule).join(', ')}`);
+      }
+
+      // Parse the PDF
       const data = await pdfParse(buffer);
 
       console.log(`[TEXT_EXTRACTION] Extracted ${data.text.length} characters from ${data.numpages} pages`);
