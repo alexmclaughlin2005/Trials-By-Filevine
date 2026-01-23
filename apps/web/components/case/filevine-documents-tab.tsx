@@ -11,7 +11,7 @@ import {
   type CaseFilevineLink,
   type ImportedDocument
 } from '@/lib/filevine-client';
-import { FolderOpen, Download, FileText, ExternalLink, Eye, Trash2, Search, X } from 'lucide-react';
+import { FolderOpen, Download, FileText, Eye, Trash2, Search, X } from 'lucide-react';
 
 interface FilevineDocumentsTabProps {
   caseId: string;

@@ -932,7 +932,7 @@ function QuestionsStep({
             No questions added yet. Generate AI suggestions or add custom questions above.
           </p>
           <p className="mt-2 text-xs text-filevine-gray-500">
-            You can also skip this step if you don't want to ask specific questions.
+            You can also skip this step if you don&apos;t want to ask specific questions.
           </p>
         </div>
       )}
@@ -943,7 +943,6 @@ function QuestionsStep({
 // Review Step Component
 function ReviewStep({
   session,
-  personas,
 }: {
   session: FocusGroupSession;
   arguments: Array<{ id: string; title: string; content: string; argumentType: string }>;
