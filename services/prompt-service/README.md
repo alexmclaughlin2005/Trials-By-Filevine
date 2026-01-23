@@ -1,4 +1,4 @@
-# Prompt Management Service
+# Prompt Service - README
 
 Centralized service for managing AI prompts across all AI services in Juries by Filevine.
 

@@ -1,4 +1,4 @@
-# Prompt Service Integration Quick Start
+# Prompt Service - Integration Quick Start
 
 ## TL;DR
 

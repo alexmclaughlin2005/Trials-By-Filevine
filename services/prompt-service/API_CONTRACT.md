@@ -1,4 +1,4 @@
-# Prompt Service API Contract
+# Prompt Service - API Contract
 
 ## Overview
 
