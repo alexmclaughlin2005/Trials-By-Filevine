@@ -13,12 +13,14 @@ interface FilevineDocumentBrowserProps {
   caseId: string;
   folderId: string;
   folderName: string;
+  onDocumentImported?: () => void;
 }
 
 export function FilevineDocumentBrowser({
   caseId,
   folderId,
   folderName,
+  onDocumentImported,
 }: FilevineDocumentBrowserProps) {
   const [documents, setDocuments] = useState<FilevineDocument[]>([]);
   const [loading, setLoading] = useState(false);
@@ -60,7 +62,10 @@ export function FilevineDocumentBrowser({
         size: document.size,
       });
 
-      // TODO: Show success message or update UI
+      // Notify parent component to refresh imported documents list
+      if (onDocumentImported) {
+        onDocumentImported();
+      }
     } catch (err) {
       const error = err as Error;
       console.error('Failed to import document:', error);

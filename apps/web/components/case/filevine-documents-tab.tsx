@@ -56,6 +56,16 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
     setLinkStatus(status);
   };
 
+  const handleDocumentImported = async () => {
+    // Refetch imported documents after import
+    try {
+      const data = await getImportedDocuments(caseId);
+      setImportedDocs(data.documents);
+    } catch (err) {
+      console.error('Failed to refresh imported documents:', err);
+    }
+  };
+
   if (!linkStatus?.linked) {
     return (
       <div className="space-y-6">
@@ -119,6 +129,7 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
                 caseId={caseId}
                 folderId={selectedFolderId}
                 folderName={selectedFolderName}
+                onDocumentImported={handleDocumentImported}
               />
             ) : (
               <div className="flex h-full items-center justify-center text-gray-500">
