@@ -15,11 +15,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Plus, Edit2, Trash2, History, FileText, Paperclip, X, FileSearch, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, History, FileText, Paperclip, X, FileSearch, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import {
   attachDocumentToArgument,
   getArgumentDocuments,
   detachDocumentFromArgument,
+  retryTextExtraction,
   type ArgumentDocument,
 } from '@/lib/arguments-client';
 import { getImportedDocuments, type ImportedDocument } from '@/lib/filevine-client';
@@ -52,6 +53,7 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
   const [availableDocuments, setAvailableDocuments] = useState<ImportedDocument[]>([]);
   const [attachedDocuments, setAttachedDocuments] = useState<Record<string, ArgumentDocument[]>>({});
   const [loadingDocs, setLoadingDocs] = useState<Record<string, boolean>>({});
+  const [retryingExtraction, setRetryingExtraction] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -252,6 +254,23 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
     }
   };
 
+  // Retry text extraction for a document
+  const handleRetryExtraction = async (argumentId: string, attachmentId: string) => {
+    setRetryingExtraction((prev) => ({ ...prev, [attachmentId]: true }));
+    try {
+      await retryTextExtraction(caseId, argumentId, attachmentId);
+      // Wait a moment then reload to see updated status
+      setTimeout(async () => {
+        await loadAttachedDocuments(argumentId);
+        setRetryingExtraction((prev) => ({ ...prev, [attachmentId]: false }));
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to retry extraction:', error);
+      alert('Failed to retry text extraction');
+      setRetryingExtraction((prev) => ({ ...prev, [attachmentId]: false }));
+    }
+  };
+
   const currentArguments = initialArguments.filter((arg) => arg.isCurrent);
   const groupedByType = currentArguments.reduce((acc, arg) => {
     if (!acc[arg.argumentType]) {
@@ -394,6 +413,18 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
                                               Text extracted for AI
                                             </p>
                                           )}
+                                          {attachment.document.textExtractionStatus === 'failed' && (
+                                            <p className="text-xs text-red-600 flex items-center gap-1 mt-0.5">
+                                              <AlertCircle className="h-3 w-3" />
+                                              Extraction failed - Click retry
+                                            </p>
+                                          )}
+                                          {attachment.document.textExtractionStatus === 'processing' && (
+                                            <p className="text-xs text-blue-600 flex items-center gap-1 mt-0.5">
+                                              <Loader2 className="h-3 w-3 animate-spin" />
+                                              Extracting text...
+                                            </p>
+                                          )}
                                         </div>
                                       </div>
                                       <div className="flex items-center gap-1">
@@ -404,6 +435,20 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
                                             onClick={() => window.open(attachment.document.localFileUrl, '_blank')}
                                           >
                                             <FileText className="h-3.5 w-3.5" />
+                                          </Button>
+                                        )}
+                                        {attachment.document.textExtractionStatus === 'failed' && (
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleRetryExtraction(argument.id, attachment.id)}
+                                            disabled={retryingExtraction[attachment.id]}
+                                          >
+                                            {retryingExtraction[attachment.id] ? (
+                                              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                                            ) : (
+                                              <RefreshCw className="h-3.5 w-3.5 text-blue-600" />
+                                            )}
                                           </Button>
                                         )}
                                         <Button

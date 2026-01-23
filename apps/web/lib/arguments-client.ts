@@ -53,3 +53,14 @@ export async function detachDocumentFromArgument(
 ): Promise<void> {
   return apiClient.delete(`/cases/${caseId}/arguments/${argumentId}/documents/${attachmentId}`);
 }
+
+/**
+ * Manually trigger text extraction for a document attachment
+ */
+export async function retryTextExtraction(
+  caseId: string,
+  argumentId: string,
+  attachmentId: string
+): Promise<{ message: string }> {
+  return apiClient.post(`/cases/${caseId}/arguments/${argumentId}/documents/${attachmentId}/extract`, {});
+}

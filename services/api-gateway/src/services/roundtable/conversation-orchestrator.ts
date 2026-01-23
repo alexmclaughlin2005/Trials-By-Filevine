@@ -285,6 +285,7 @@ export class ConversationOrchestrator {
             name: lastStatement.personaName,
             statement: lastStatement.content
           } : null,
+          addressedToYou: null, // TODO: Implement mention detection
           lengthGuidance,
           personaName: persona.name,
           // Persona context
