@@ -4,7 +4,6 @@ import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { QuestionGenerator } from '@/components/question-generator';
-import { FocusGroupSimulator } from '@/components/focus-group-simulator';
 import { FocusGroupManager } from '@/components/focus-group-manager';
 import { FactsTab } from '@/components/case/facts-tab';
 import { ArgumentsTab } from '@/components/case/arguments-tab';
