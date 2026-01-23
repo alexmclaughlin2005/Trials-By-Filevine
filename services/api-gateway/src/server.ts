@@ -123,7 +123,7 @@ declare module 'fastify' {
 declare module '@fastify/jwt' {
   interface FastifyJWT {
     user: {
-      id: string;
+      userId: string;
       organizationId: string;
       email: string;
       role: string;
