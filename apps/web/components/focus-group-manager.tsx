@@ -28,9 +28,9 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // Load focus group sessions for this case
-  const { data: sessionsData, isLoading } = useQuery({
+  const { data: sessionsData, isLoading } = useQuery<{ sessions: FocusGroupSession[] }>({
     queryKey: ['focus-group-sessions', caseId],
-    queryFn: () => apiClient.get(`/focus-groups/case/${caseId}`),
+    queryFn: () => apiClient.get<{ sessions: FocusGroupSession[] }>(`/focus-groups/case/${caseId}`),
   });
 
   const sessions = sessionsData?.sessions || [];
