@@ -62,10 +62,10 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
 
   // Create argument mutation
   const createMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async (data: typeof formData): Promise<{ argument: CaseArgument }> => {
       return await apiClient.post(`/cases/${caseId}/arguments`, data);
     },
-    onSuccess: async (response: { argument: CaseArgument }) => {
+    onSuccess: async (response) => {
       // Attach selected documents
       if (selectedDocumentIds.length > 0) {
         for (const docId of selectedDocumentIds) {
@@ -84,10 +84,10 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
 
   // Update argument mutation (creates new version)
   const updateMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: typeof formData }) => {
+    mutationFn: async ({ id, data }: { id: string; data: typeof formData }): Promise<{ argument: CaseArgument }> => {
       return await apiClient.put(`/cases/${caseId}/arguments/${id}`, data);
     },
-    onSuccess: async (response: { argument: CaseArgument }) => {
+    onSuccess: async (response) => {
       // Get current attachments
       const currentAttachments = await getArgumentDocuments(caseId, response.argument.id);
       const currentDocIds = currentAttachments.attachments.map((att) => att.document.id);
