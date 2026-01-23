@@ -26,7 +26,7 @@ export function PersonaDetailModal({ personaName, persona, onClose }: PersonaDet
             <div>
               <h2 className="text-xl font-bold text-gray-900">{personaName}</h2>
               {persona.tagline && (
-                <p className="text-sm text-gray-600 italic">"{persona.tagline}"</p>
+                <p className="text-sm text-gray-600 italic">&ldquo;{persona.tagline}&rdquo;</p>
               )}
             </div>
           </div>

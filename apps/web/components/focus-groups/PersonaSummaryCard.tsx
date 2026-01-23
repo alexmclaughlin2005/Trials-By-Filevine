@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PersonaSummary, PersonaDetails } from '@/types/focus-group';
+import { PersonaSummary } from '@/types/focus-group';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 
@@ -81,7 +81,7 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
               </h3>
               {summary.persona?.tagline && (
                 <span className="text-sm text-gray-500 italic">
-                  "{summary.persona.tagline}"
+                  &ldquo;{summary.persona.tagline}&rdquo;
                 </span>
               )}
               {summary.persona?.archetype && (
