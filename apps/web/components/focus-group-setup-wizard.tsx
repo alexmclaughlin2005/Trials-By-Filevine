@@ -96,7 +96,7 @@ export function FocusGroupSetupWizard({
     if (!sessionId && !createSessionMutation.isPending) {
       createSessionMutation.mutate();
     }
-  }, []);
+  }, [sessionId, createSessionMutation]);
 
   if (createSessionMutation.isPending || sessionLoading) {
     return (
@@ -113,7 +113,7 @@ export function FocusGroupSetupWizard({
     return null;
   }
 
-  const steps: { key: ConfigurationStep; label: string; icon: any }[] = [
+  const steps: { key: ConfigurationStep; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { key: 'panel', label: 'Select Panel', icon: Users },
     { key: 'arguments', label: 'Choose Arguments', icon: FileText },
     { key: 'questions', label: 'Add Questions', icon: MessageSquare },
@@ -473,17 +473,6 @@ function ArgumentsSelectionStep({
     onUpdate({ selectedArguments: updated });
   };
 
-  const handleReorder = (fromIndex: number, toIndex: number) => {
-    const updated = [...selectedArguments];
-    const [moved] = updated.splice(fromIndex, 1);
-    updated.splice(toIndex, 0, moved);
-
-    // Re-index
-    const reordered = updated.map((a, index) => ({ ...a, order: index + 1 }));
-
-    setSelectedArguments(reordered);
-    onUpdate({ selectedArguments: reordered });
-  };
 
   return (
     <div className="space-y-6">
@@ -671,9 +660,9 @@ function QuestionsStep({
 // Review Step Component
 function ReviewStep({
   session,
-  arguments: caseArguments,
-  onStart,
-  isStarting,
+  arguments: _caseArguments,
+  onStart: _onStart,
+  isStarting: _isStarting,
 }: {
   session: FocusGroupSession;
   arguments: Array<{ id: string; title: string; content: string; argumentType: string }>;
@@ -759,7 +748,7 @@ function ReviewStep({
           <div className="ml-3">
             <p className="text-sm font-medium text-blue-800">Ready to Launch</p>
             <p className="mt-1 text-sm text-blue-700">
-              Your focus group is configured and ready to start. Click "Start Focus Group" to begin
+              Your focus group is configured and ready to start. Click &quot;Start Focus Group&quot; to begin
               the simulation.
             </p>
           </div>
