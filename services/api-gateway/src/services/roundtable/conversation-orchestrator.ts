@@ -400,15 +400,16 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
     const history = this.turnManager!.getConversationHistory();
 
     try {
+      // Format personas as text instead of array to avoid template validation issues
+      const personasText = input.personas.map(p =>
+        `- ${p.name} (${this.normalizeLeadershipLevel(p.leadershipLevel)}): ${p.description}`
+      ).join('\n');
+
       const { result } = await this.promptClient.execute('roundtable-conversation-synthesis', {
         variables: {
           argumentContent: input.argument.content,
           conversationTranscript: this.formatConversationTranscript(history),
-          personas: input.personas.map(p => ({
-            name: p.name,
-            leadershipLevel: this.normalizeLeadershipLevel(p.leadershipLevel),
-            description: p.description
-          }))
+          personasText
         }
       });
 

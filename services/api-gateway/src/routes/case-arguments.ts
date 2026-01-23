@@ -1,5 +1,6 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { TextExtractionService } from '../services/text-extraction.js';
 
 const createArgumentSchema = z.object({
   title: z.string().min(1),
@@ -14,7 +15,13 @@ const updateArgumentSchema = z.object({
   changeNotes: z.string().optional(),
 });
 
+const attachDocumentSchema = z.object({
+  documentId: z.string().uuid(),
+  notes: z.string().optional(),
+});
+
 export async function caseArgumentsRoutes(server: FastifyInstance) {
+  const textExtractionService = new TextExtractionService();
   // Create an argument
   server.post('/:caseId/arguments', {
     onRequest: [server.authenticate],
@@ -182,4 +189,270 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
       return { versions };
     },
   });
+
+  // ============================================
+  // DOCUMENT ATTACHMENT ENDPOINTS
+  // ============================================
+
+  /**
+   * POST /cases/:caseId/arguments/:argumentId/documents
+   * Attach a document to an argument and extract its text
+   */
+  server.post('/:caseId/arguments/:argumentId/documents', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const { caseId, argumentId } = request.params as any;
+      const body = attachDocumentSchema.parse(request.body as any);
+
+      // Verify case belongs to organization
+      const existingCase = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId },
+      });
+
+      if (!existingCase) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Verify argument exists and belongs to this case
+      const argument = await server.prisma.caseArgument.findFirst({
+        where: { id: argumentId, caseId },
+      });
+
+      if (!argument) {
+        reply.code(404);
+        return { error: 'Argument not found' };
+      }
+
+      // Verify document exists and belongs to this case
+      const document = await server.prisma.importedDocument.findFirst({
+        where: {
+          id: body.documentId,
+          caseFilevineProject: {
+            caseId,
+            organizationId,
+          },
+        },
+      });
+
+      if (!document) {
+        reply.code(404);
+        return { error: 'Document not found' };
+      }
+
+      // Check if document is already attached
+      const existingAttachment = await server.prisma.argumentDocument.findUnique({
+        where: {
+          argumentId_documentId: {
+            argumentId,
+            documentId: body.documentId,
+          },
+        },
+      });
+
+      if (existingAttachment) {
+        reply.code(409);
+        return { error: 'Document is already attached to this argument' };
+      }
+
+      // Create the attachment
+      const attachment = await server.prisma.argumentDocument.create({
+        data: {
+          argumentId,
+          documentId: body.documentId,
+          attachedBy: userId,
+          notes: body.notes,
+        },
+      });
+
+      // Trigger text extraction if not already done
+      if (
+        document.localFileUrl &&
+        document.textExtractionStatus === 'pending' &&
+        document.status === 'completed'
+      ) {
+        // Run text extraction in the background
+        extractTextInBackground(
+          server,
+          textExtractionService,
+          document.id,
+          document.localFileUrl,
+          document.filename
+        );
+      }
+
+      reply.code(201);
+      return { attachment };
+    },
+  });
+
+  /**
+   * GET /cases/:caseId/arguments/:argumentId/documents
+   * Get all documents attached to an argument
+   */
+  server.get('/:caseId/arguments/:argumentId/documents', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId } = request.params as any;
+
+      // Verify case belongs to organization
+      const existingCase = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId },
+      });
+
+      if (!existingCase) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Verify argument exists
+      const argument = await server.prisma.caseArgument.findFirst({
+        where: { id: argumentId, caseId },
+      });
+
+      if (!argument) {
+        reply.code(404);
+        return { error: 'Argument not found' };
+      }
+
+      // Get all attachments with document details
+      const attachments = await server.prisma.argumentDocument.findMany({
+        where: { argumentId },
+        include: {
+          document: {
+            select: {
+              id: true,
+              filename: true,
+              folderName: true,
+              localFileUrl: true,
+              thumbnailUrl: true,
+              size: true,
+              extractedText: true,
+              textExtractionStatus: true,
+              importedAt: true,
+            },
+          },
+        },
+        orderBy: { attachedAt: 'desc' },
+      });
+
+      return {
+        attachments: attachments.map((att) => ({
+          id: att.id,
+          attachedAt: att.attachedAt,
+          attachedBy: att.attachedBy,
+          notes: att.notes,
+          document: {
+            ...att.document,
+            size: att.document.size ? att.document.size.toString() : null,
+          },
+        })),
+      };
+    },
+  });
+
+  /**
+   * DELETE /cases/:caseId/arguments/:argumentId/documents/:attachmentId
+   * Remove a document attachment from an argument
+   */
+  server.delete('/:caseId/arguments/:argumentId/documents/:attachmentId', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId, argumentId, attachmentId } = request.params as any;
+
+      // Verify case belongs to organization
+      const existingCase = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId },
+      });
+
+      if (!existingCase) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Verify attachment exists and belongs to this argument
+      const attachment = await server.prisma.argumentDocument.findFirst({
+        where: {
+          id: attachmentId,
+          argumentId,
+        },
+      });
+
+      if (!attachment) {
+        reply.code(404);
+        return { error: 'Attachment not found' };
+      }
+
+      // Delete the attachment
+      await server.prisma.argumentDocument.delete({
+        where: { id: attachmentId },
+      });
+
+      reply.code(204);
+      return;
+    },
+  });
+}
+
+/**
+ * Background worker to extract text from a document
+ */
+async function extractTextInBackground(
+  server: FastifyInstance,
+  textExtractionService: TextExtractionService,
+  documentId: string,
+  fileUrl: string,
+  filename: string
+): Promise<void> {
+  try {
+    console.log(`[TEXT_EXTRACTION] Starting extraction for document ${documentId}`);
+
+    // Update status to processing
+    await server.prisma.importedDocument.update({
+      where: { id: documentId },
+      data: { textExtractionStatus: 'processing' },
+    });
+
+    // Extract text
+    const extractedText = await textExtractionService.extractText(fileUrl, filename);
+
+    if (extractedText) {
+      // Save extracted text
+      await server.prisma.importedDocument.update({
+        where: { id: documentId },
+        data: {
+          extractedText,
+          textExtractionStatus: 'completed',
+          textExtractedAt: new Date(),
+        },
+      });
+
+      console.log(`[TEXT_EXTRACTION] Successfully extracted ${extractedText.length} characters from document ${documentId}`);
+    } else {
+      // Not a supported file type
+      await server.prisma.importedDocument.update({
+        where: { id: documentId },
+        data: {
+          textExtractionStatus: 'not_needed',
+          textExtractedAt: new Date(),
+        },
+      });
+
+      console.log(`[TEXT_EXTRACTION] No extraction needed for document ${documentId}`);
+    }
+  } catch (error: any) {
+    console.error(`[TEXT_EXTRACTION] Failed to extract text from document ${documentId}:`, error);
+
+    // Update status to failed
+    await server.prisma.importedDocument.update({
+      where: { id: documentId },
+      data: {
+        textExtractionStatus: 'failed',
+        textExtractionError: error.message,
+      },
+    });
+  }
 }

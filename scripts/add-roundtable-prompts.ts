@@ -56,7 +56,7 @@ IMPORTANT BEHAVIORAL NOTES:
 - Keep responses conversational, not essay-like`,
           userPromptTemplate: '', // This is a system-only prompt
           config: {
-            model: 'claude-sonnet-4-5-20251101',
+            model: 'claude-sonnet-4-20250514',
             maxTokens: 500,
             temperature: 0.7
           },
@@ -107,7 +107,7 @@ Now it's your turn. {{lengthGuidance}}
 
 Share your initial reaction to this argument. What do you think about it?`,
           config: {
-            model: 'claude-sonnet-4-5-20251101',
+            model: 'claude-sonnet-4-20250514',
             maxTokens: 300,
             temperature: 0.7
           },
@@ -169,7 +169,7 @@ Now it's your turn. {{lengthGuidance}}
 
 As {{personaName}}, respond to the discussion. What do you want to add?`,
           config: {
-            model: 'claude-sonnet-4-5-20251101',
+            model: 'claude-sonnet-4-20250514',
             maxTokens: 400,
             temperature: 0.7
           },
@@ -241,7 +241,7 @@ Rules:
 - agreementSignals: Names of personas this speaker agreed with or built upon
 - disagreementSignals: Names of personas this speaker challenged or disagreed with`,
           config: {
-            model: 'claude-sonnet-4-5-20251101',
+            model: 'claude-sonnet-4-20250514',
             maxTokens: 800,
             temperature: 0.3
           },
@@ -340,7 +340,7 @@ Rules:
 - overallReception: Overall group sentiment about the argument
 - convergenceReason: Why the conversation naturally concluded`,
           config: {
-            model: 'claude-sonnet-4-5-20251101',
+            model: 'claude-sonnet-4-20250514',
             maxTokens: 2000,
             temperature: 0.4
           },

@@ -460,19 +460,45 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'No arguments selected for focus group' };
       }
 
-      // Update session status
-      await server.prisma.focusGroupSession.update({
-        where: { id: sessionId },
-        data: {
-          status: 'running',
-          startedAt: new Date(),
-          configurationStep: 'ready',
-        },
-      });
+      // Validate personas are selected (stored in selectedArchetypes column)
+      if (!session.selectedArchetypes || (session.selectedArchetypes as any[]).length === 0) {
+        reply.code(400);
+        return { error: 'No personas selected for focus group panel' };
+      }
+
+      // Create focus_group_personas records from selectedArchetypes
+      const selectedPersonas = session.selectedArchetypes as any[];
+      const personaRecords = selectedPersonas.map((persona: any, index: number) => ({
+        sessionId: sessionId,
+        personaId: persona.id,
+        seatNumber: index + 1,
+      }));
+
+      // Create all persona records in a transaction
+      await server.prisma.$transaction([
+        // Delete any existing persona assignments (in case of re-start)
+        server.prisma.focusGroupPersona.deleteMany({
+          where: { sessionId }
+        }),
+        // Create new persona assignments
+        server.prisma.focusGroupPersona.createMany({
+          data: personaRecords
+        }),
+        // Update session status
+        server.prisma.focusGroupSession.update({
+          where: { id: sessionId },
+          data: {
+            status: 'running',
+            startedAt: new Date(),
+            configurationStep: 'ready',
+          },
+        })
+      ]);
 
       return {
         message: 'Focus group simulation started',
         sessionId: session.id,
+        personasAssigned: personaRecords.length,
       };
     },
   });

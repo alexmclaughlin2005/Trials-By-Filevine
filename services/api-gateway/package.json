@@ -26,6 +26,8 @@
     "csv-parse": "^6.1.0",
     "dotenv": "^16.4.1",
     "fastify": "^4.26.0",
+    "node-fetch": "^2.7.0",
+    "pdf-parse": "^2.4.5",
     "pino": "^8.17.2",
     "pino-pretty": "^10.3.1",
     "typescript": "^5.3.3",
@@ -34,6 +36,8 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.11.5",
+    "@types/node-fetch": "^2.6.13",
+    "@types/pdf-parse": "^1.1.5",
     "tsx": "^4.7.0"
   }
 }

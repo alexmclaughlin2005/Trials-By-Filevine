@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Plus, Edit2, Trash2, History, FileText } from 'lucide-react';
+import { Plus, Edit2, Trash2, History, FileText, Paperclip, X, FileSearch, Loader2 } from 'lucide-react';
+import {
+  attachDocumentToArgument,
+  getArgumentDocuments,
+  detachDocumentFromArgument,
+  type ArgumentDocument,
+} from '@/lib/arguments-client';
+import { getImportedDocuments, type ImportedDocument } from '@/lib/filevine-client';
 
 interface CaseArgument {
   id: string;
@@ -40,6 +47,11 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArgument, setEditingArgument] = useState<CaseArgument | null>(null);
   const [showVersionHistory, setShowVersionHistory] = useState<string | null>(null);
+  const [showDocuments, setShowDocuments] = useState<string | null>(null);
+  const [showAttachDialog, setShowAttachDialog] = useState<string | null>(null);
+  const [availableDocuments, setAvailableDocuments] = useState<ImportedDocument[]>([]);
+  const [attachedDocuments, setAttachedDocuments] = useState<Record<string, ArgumentDocument[]>>({});
+  const [loadingDocs, setLoadingDocs] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -119,6 +131,74 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
   const handleDelete = (argumentId: string) => {
     if (window.confirm('Are you sure you want to delete this argument?')) {
       deleteMutation.mutate(argumentId);
+    }
+  };
+
+  // Load attached documents for an argument
+  const loadAttachedDocuments = async (argumentId: string) => {
+    setLoadingDocs((prev) => ({ ...prev, [argumentId]: true }));
+    try {
+      const result = await getArgumentDocuments(caseId, argumentId);
+      setAttachedDocuments((prev) => ({ ...prev, [argumentId]: result.attachments }));
+    } catch (error) {
+      console.error('Failed to load attached documents:', error);
+    } finally {
+      setLoadingDocs((prev) => ({ ...prev, [argumentId]: false }));
+    }
+  };
+
+  // Toggle document section visibility
+  const toggleDocuments = async (argumentId: string) => {
+    if (showDocuments === argumentId) {
+      setShowDocuments(null);
+    } else {
+      setShowDocuments(argumentId);
+      if (!attachedDocuments[argumentId]) {
+        await loadAttachedDocuments(argumentId);
+      }
+    }
+  };
+
+  // Load available documents for attachment
+  const loadAvailableDocuments = async () => {
+    try {
+      const result = await getImportedDocuments(caseId);
+      setAvailableDocuments(result.documents.filter((doc) => doc.status === 'completed'));
+    } catch (error) {
+      console.error('Failed to load available documents:', error);
+    }
+  };
+
+  // Open attach dialog
+  const openAttachDialog = async (argumentId: string) => {
+    setShowAttachDialog(argumentId);
+    if (availableDocuments.length === 0) {
+      await loadAvailableDocuments();
+    }
+  };
+
+  // Attach a document
+  const handleAttachDocument = async (argumentId: string, documentId: string) => {
+    try {
+      await attachDocumentToArgument(caseId, argumentId, documentId);
+      await loadAttachedDocuments(argumentId);
+      setShowAttachDialog(null);
+    } catch (error: any) {
+      console.error('Failed to attach document:', error);
+      alert(error.message || 'Failed to attach document');
+    }
+  };
+
+  // Detach a document
+  const handleDetachDocument = async (argumentId: string, attachmentId: string) => {
+    if (!confirm('Remove this document from the argument?')) return;
+
+    try {
+      await detachDocumentFromArgument(caseId, argumentId, attachmentId);
+      await loadAttachedDocuments(argumentId);
+    } catch (error) {
+      console.error('Failed to detach document:', error);
+      alert('Failed to remove document');
     }
   };
 
@@ -211,7 +291,89 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
                             <span>
                               Updated {new Date(argument.updatedAt).toLocaleDateString()}
                             </span>
+                            <button
+                              onClick={() => toggleDocuments(argument.id)}
+                              className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              <Paperclip className="h-3.5 w-3.5" />
+                              Documents
+                              {attachedDocuments[argument.id] && ` (${attachedDocuments[argument.id].length})`}
+                            </button>
                           </div>
+
+                          {/* Attached Documents Section */}
+                          {showDocuments === argument.id && (
+                            <div className="mt-4 border-t border-filevine-gray-200 pt-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <h5 className="text-sm font-semibold text-filevine-gray-900">Supporting Documents</h5>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openAttachDialog(argument.id)}
+                                >
+                                  <Plus className="h-3.5 w-3.5 mr-1" />
+                                  Attach
+                                </Button>
+                              </div>
+
+                              {loadingDocs[argument.id] ? (
+                                <div className="flex items-center justify-center py-4">
+                                  <Loader2 className="h-5 w-5 animate-spin text-filevine-gray-400" />
+                                </div>
+                              ) : attachedDocuments[argument.id]?.length > 0 ? (
+                                <div className="space-y-2">
+                                  {attachedDocuments[argument.id].map((attachment) => (
+                                    <div
+                                      key={attachment.id}
+                                      className="flex items-center justify-between p-3 bg-filevine-gray-50 rounded-md"
+                                    >
+                                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <FileText className="h-4 w-4 text-filevine-gray-500 flex-shrink-0" />
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-sm font-medium text-filevine-gray-900 truncate">
+                                            {attachment.document.filename}
+                                          </p>
+                                          {attachment.document.folderName && (
+                                            <p className="text-xs text-filevine-gray-500 truncate">
+                                              {attachment.document.folderName}
+                                            </p>
+                                          )}
+                                          {attachment.document.textExtractionStatus === 'completed' && (
+                                            <p className="text-xs text-green-600 flex items-center gap-1 mt-0.5">
+                                              <FileSearch className="h-3 w-3" />
+                                              Text extracted for AI
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        {attachment.document.localFileUrl && (
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => window.open(attachment.document.localFileUrl, '_blank')}
+                                          >
+                                            <FileText className="h-3.5 w-3.5" />
+                                          </Button>
+                                        )}
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => handleDetachDocument(argument.id, attachment.id)}
+                                        >
+                                          <X className="h-3.5 w-3.5 text-red-600" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-filevine-gray-500 italic py-3">
+                                  No documents attached yet
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
                         <div className="flex flex-col gap-1 ml-4">
                           <Button
@@ -352,6 +514,80 @@ export function ArgumentsTab({ caseId, arguments: initialArguments }: ArgumentsT
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attach Document Dialog */}
+      <Dialog open={showAttachDialog !== null} onOpenChange={() => setShowAttachDialog(null)}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Attach Supporting Document</DialogTitle>
+            <DialogDescription>
+              Select a document from your imported Filevine documents to attach to this argument.
+              Text will be automatically extracted for AI analysis.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto mt-4">
+            {availableDocuments.length === 0 ? (
+              <div className="text-center py-8">
+                <FileText className="h-12 w-12 mx-auto text-filevine-gray-400 mb-3" />
+                <p className="text-filevine-gray-600">No documents available to attach</p>
+                <p className="text-sm text-filevine-gray-500 mt-2">
+                  Import documents from Filevine first in the Documents tab
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {availableDocuments.map((doc) => {
+                  const alreadyAttached = showAttachDialog
+                    ? attachedDocuments[showAttachDialog]?.some((att) => att.document.id === doc.id)
+                    : false;
+
+                  return (
+                    <button
+                      key={doc.id}
+                      onClick={() => showAttachDialog && handleAttachDocument(showAttachDialog, doc.id)}
+                      disabled={alreadyAttached}
+                      className={`w-full text-left p-4 rounded-lg border transition-colors ${
+                        alreadyAttached
+                          ? 'border-filevine-gray-200 bg-filevine-gray-50 cursor-not-allowed opacity-60'
+                          : 'border-filevine-gray-300 hover:border-blue-500 hover:bg-blue-50'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <FileText className="h-5 w-5 text-filevine-gray-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-filevine-gray-900 truncate">
+                            {doc.filename}
+                          </p>
+                          {doc.folderName && (
+                            <p className="text-sm text-filevine-gray-600 truncate mt-0.5">
+                              {doc.folderName}
+                            </p>
+                          )}
+                          <p className="text-xs text-filevine-gray-500 mt-1">
+                            Imported {new Date(doc.importedAt).toLocaleDateString()}
+                          </p>
+                          {alreadyAttached && (
+                            <p className="text-xs text-amber-600 font-medium mt-1">
+                              Already attached
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowAttachDialog(null)}>
+              Close
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

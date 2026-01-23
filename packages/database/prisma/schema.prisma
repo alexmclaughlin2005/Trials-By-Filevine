@@ -126,9 +126,10 @@ model CaseArgument {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  case     Case           @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  parent   CaseArgument?  @relation("ArgumentVersions", fields: [parentId], references: [id])
-  children CaseArgument[] @relation("ArgumentVersions")
+  case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  parent            CaseArgument?      @relation("ArgumentVersions", fields: [parentId], references: [id])
+  children          CaseArgument[]     @relation("ArgumentVersions")
+  documentAttachments ArgumentDocument[]
 
   @@index([caseId])
   @@index([parentId])
@@ -1075,16 +1076,43 @@ model ImportedDocument {
   tags                  Json?    @default("[]") // Array of tags
   notes                 String?  @db.Text
 
+  // Text Extraction (for AI use)
+  extractedText         String?   @map("extracted_text") @db.Text // Extracted text content for AI
+  textExtractionStatus  String    @default("pending") @map("text_extraction_status") // pending | processing | completed | failed | not_needed
+  textExtractedAt       DateTime? @map("text_extracted_at")
+  textExtractionError   String?   @map("text_extraction_error") @db.Text
+
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
   // Relations
   caseFilevineProject   CaseFilevineProject @relation(fields: [caseFilevineProjectId], references: [id], onDelete: Cascade)
+  argumentAttachments   ArgumentDocument[]
 
   @@index([caseFilevineProjectId])
   @@index([filevineDocumentId])
   @@index([status])
+  @@index([textExtractionStatus])
   @@map("imported_documents")
+}
+
+// Junction table for attaching documents to arguments
+model ArgumentDocument {
+  id          String   @id @default(uuid())
+  argumentId  String   @map("argument_id")
+  documentId  String   @map("document_id")
+  attachedBy  String   @map("attached_by") // User ID who attached it
+  attachedAt  DateTime @default(now()) @map("attached_at")
+  notes       String?  @db.Text // Optional notes about why this document supports the argument
+
+  // Relations
+  argument CaseArgument     @relation(fields: [argumentId], references: [id], onDelete: Cascade)
+  document ImportedDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([argumentId, documentId]) // Prevent duplicate attachments
+  @@index([argumentId])
+  @@index([documentId])
+  @@map("argument_documents")
 }
 
 // ============================================
