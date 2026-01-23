@@ -280,7 +280,7 @@ function PanelConfigurationStep({
     setSelectionMode(mode);
     onUpdate({
       archetypeSelectionMode: mode,
-      selectedArchetypes: mode === 'random' ? null : selectedArchetypes,
+      selectedArchetypes: mode === 'random' ? undefined : selectedArchetypes,
     });
   };
 
