@@ -90,7 +90,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get all jurors for a jury panel
   server.get('/panel/:panelId', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { panelId } = request.params as any;
 
@@ -127,7 +127,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get a single juror
   server.get('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { id } = request.params as any;
 
@@ -176,7 +176,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Create a new juror
   server.post('/', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const body = createJurorSchema.parse(request.body as any);
 
@@ -205,7 +205,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Update a juror
   server.patch('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { id } = request.params as any;
       const body = updateJurorSchema.parse(request.body as any);
@@ -248,7 +248,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Delete a juror
   server.delete('/:id', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { id } = request.params as any;
 
@@ -279,7 +279,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Add research artifact to juror
   server.post('/:id/research', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { id } = request.params as any;
       const { sourceType, sourceName, rawContent, sourceUrl, matchConfidence } = request.body as any;
@@ -319,7 +319,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Map juror to persona
   server.post('/:id/persona-mapping', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { id } = request.params as any;
       const { personaId, confidence, rationale, mappingType, source } = request.body as any;
@@ -374,7 +374,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Search for juror identity matches
   server.post('/:id/search', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { id } = request.params as any;
 
@@ -414,7 +414,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Confirm a candidate match
   server.post('/candidates/:candidateId/confirm', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { candidateId } = request.params as any;
       const { userId } = request.user as any;
@@ -451,7 +451,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Reject a candidate match
   server.post('/candidates/:candidateId/reject', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { candidateId } = request.params as any;
       const { userId } = request.user as any;
@@ -492,7 +492,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Import jurors from CSV (Phase 3)
   server.post('/panel/:panelId/batch', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId, userId } = request.user as any;
       const { panelId } = request.params as any;
       const { csvContent, fileName, autoSearch, venueId, columnMapping } = request.body as any as any;
@@ -541,7 +541,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get batch import status
   server.get('/batch/:batchId', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { batchId } = request.params as any;
 
@@ -575,7 +575,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get all batch imports for a panel
   server.get('/panel/:panelId/batches', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { panelId } = request.params as any;
 
@@ -608,7 +608,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Get jury box state for a panel
   server.get('/panel/:panelId/jury-box', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { panelId } = request.params as any;
 
@@ -666,7 +666,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Update jury box configuration
   server.put('/panel/:panelId/jury-box/config', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { panelId } = request.params as any;
       const body = updateJuryBoxConfigSchema.parse(request.body as any);
@@ -716,7 +716,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Update juror position in jury box
   server.put('/:jurorId/position', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { jurorId } = request.params as any;
       const body = updateJurorPositionSchema.parse(request.body as any);
@@ -785,15 +785,17 @@ export async function jurorsRoutes(server: FastifyInstance) {
   // Auto-fill empty positions in jury box
   server.put('/panel/:panelId/jury-box/auto-fill', {
     onRequest: [server.authenticate],
-    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params;
+      
       try {
         console.log('[Auto-fill] Request received:', { 
-          panelId: request.params?.panelId,
+          panelId,
           method: request.method,
           url: request.url,
         });
-        const { organizationId } = request.user as any;
-        const { panelId } = request.params as any;
+
         
         if (!panelId) {
           reply.code(400);
@@ -924,11 +926,14 @@ export async function jurorsRoutes(server: FastifyInstance) {
         console.error('[Auto-fill] Error stack:', errorStack);
         console.error('[Auto-fill] Panel ID:', panelId);
         reply.code(400);
-        return { 
+        const errorResponse: { error: string; details: string; stack?: string } = { 
           error: 'Failed to auto-fill positions',
           details: errorMessage,
-          ...(process.env.NODE_ENV === 'development' && { stack: errorStack }),
         };
+        if (process.env.NODE_ENV === 'development' && errorStack) {
+          errorResponse.stack = errorStack;
+        }
+        return errorResponse;
       }
     },
   });
