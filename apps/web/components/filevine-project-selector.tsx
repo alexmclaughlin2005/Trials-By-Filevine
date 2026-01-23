@@ -33,7 +33,7 @@ export function FilevineProjectSelector({
   const [loading, setLoading] = useState(false);
   const [linking, setLinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [linkStatus, setLinkStatus] = useState<{ linked: boolean; link?: any } | null>(null);
+  const [linkStatus, setLinkStatus] = useState<{ linked: boolean; link?: CaseFilevineLink } | null>(null);
 
   // Check if already linked
   React.useEffect(() => {
@@ -57,8 +57,9 @@ export function FilevineProjectSelector({
         setLoading(true);
         const data = await listFilevineProjects({ limit: 100 });
         setProjects(data.items);
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch projects');
+      } catch (err) {
+        const error = err as Error;
+        setError(error.message || 'Failed to fetch projects');
       } finally {
         setLoading(false);
       }
@@ -79,8 +80,9 @@ export function FilevineProjectSelector({
       });
 
       onLinked();
-    } catch (err: any) {
-      setError(err.message || 'Failed to link project');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to link project');
     } finally {
       setLinking(false);
     }
