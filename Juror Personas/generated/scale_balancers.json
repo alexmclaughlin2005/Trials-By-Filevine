@@ -1,0 +1,344 @@
+{
+  "archetype": "scale_balancer",
+  "archetype_display_name": "The Scale-Balancer",
+  "archetype_tagline": "Show me the evidence",
+  "plaintiff_danger_level": 3,
+  "defense_danger_level": 3,
+  "archetype_centroids": {
+    "attribution_orientation": 3,
+    "just_world_belief": 3,
+    "authoritarianism": 3,
+    "corporations": 3.5,
+    "institutional_trust_corporations": 3.5,
+    "medical": 3.5,
+    "institutional_trust_medical": 3.5,
+    "legal_system": 3.5,
+    "institutional_trust_legal_system": 3.5,
+    "insurance": 3,
+    "institutional_trust_insurance": 3,
+    "litigation_attitude": 3,
+    "leadership_tendency": 4,
+    "cognitive_style": 4,
+    "damages_orientation": 3
+  },
+  "personas": [
+    {
+      "persona_id": "SCALE_3.1_KarenChen",
+      "nickname": "Karen",
+      "full_name": "Karen Chen",
+      "tagline": "",
+      "archetype": "scale_balancer",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 47,
+        "gender": "female",
+        "race_ethnicity": "Asian (Chinese-American)",
+        "location": "San Jose, California",
+        "location_city": "San Jose",
+        "location_state": "mi",
+        "education": "Bachelor's in Computer Science, San Jose State; MBA, Santa Clara",
+        "education_level": "Bachelor's in Computer Science",
+        "occupation": "Senior Program Manager, tech company",
+        "income": 195000,
+        "marital_status": "Married",
+        "religion": "Buddhist",
+        "religion_activity": "not actively practicing",
+        "political_affiliation": "Independent",
+        "political_engagement": "votes split ticket"
+      },
+      "dimensions": {
+        "attribution_orientation": 3,
+        "just_world_belief": 3,
+        "authoritarianism": 3,
+        "corporations": 3.5,
+        "institutional_trust_corporations": 3.5,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3.5,
+        "institutional_trust_legal_system": 3.5,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 3,
+        "leadership_tendency": 4,
+        "cognitive_style": 4,
+        "damages_orientation": 3
+      },
+      "life_experiences": [
+        "Immigrant parents who worked hard and succeeded (could support either attribution)",
+        "Works for a tech company; sees both corporate responsibility and corporate shortcuts",
+        "Had a minor car accident settlement years ago; felt the process was fair",
+        "Values education and rational discourse",
+        "Deliberately tries to understand all sides of issues before forming opinions"
+      ],
+      "characteristic_phrases": [
+        "That's interesting, but I'd want to see...",
+        "What does the data show?",
+        "I can see both sides of this",
+        "Let me think about that",
+        "Can you break that down for me?",
+        "I'm reserving judgment until I hear everything",
+        "What's the expert's basis for that conclusion?",
+        "Asks clarifying questions",
+        "Acknowledges complexity",
+        "Doesn't make definitive statements early",
+        "Values logical consistency",
+        "Professional and measured tone"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Do you have any feelings about personal injury lawsuits generally?\"",
+          "response": "Not really. I think some are legitimate and some probably aren't. It really depends on the specific facts. I'd want to see the evidence before forming any opinion."
+        },
+        "question_2": {
+          "question": "\"Can you be fair to both sides?\"",
+          "response": "Yes, I believe so. In my work, I have to evaluate competing proposals and make decisions based on evidence. I'm used to setting aside my initial reactions and looking at the facts."
+        },
+        "question_3": {
+          "question": "\"If the evidence showed the corporation was at fault, could you award significant damages?\"",
+          "response": "If the evidence supported it, yes. The amount would depend on what was actually proven. I wouldn't just pick a number—I'd want to understand how it was calculated."
+        },
+        "question_4": {
+          "question": "\"If the evidence showed the plaintiff was mostly responsible, could you find for the defendant?\"",
+          "response": "Of course. That's what following the evidence means. I wouldn't vote for the plaintiff just because they're an individual against a company, if the facts didn't support it."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Thoughtful participant, possible consensus-builder",
+        "deliberation_style": "Evidence-driven; wants systematic review before voting",
+        "influence_tactics": [
+          "Asks probing questions",
+          "Points out logical inconsistencies",
+          "May help bridge factions",
+          "Won't advocate strongly for either side unless evidence is clear"
+        ],
+        "persuadability": "High (0.7) but only through evidence-based arguments."
+      },
+      "simulation_parameters": {
+        "juror_id": "FME_3.1_KarenChen",
+        "archetype": "FAIR_MINDED_EVALUATOR",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.5",
+        "contributory_fault_weight": "1.0",
+        "damage_multiplier": "1.0",
+        "evidence_processing": {
+          "base_weight": "1.0",
+          "expert_testimony_weight": "1.3",
+          "documentary_evidence_weight": "1.2",
+          "logical_consistency_weight": "1.4",
+          "emotional_evidence_weight": 0.8
+        },
+        "deliberation": {
+          "influence_weight": "1.5",
+          "persuadability": "0.7",
+          "position_stability": "0.5",
+          "speaking_share": "0.12",
+          "consensus_seeking": 0.7
+        },
+        "verdict_priors": {
+          "plaintiff_starting_credibility": "0.5",
+          "defendant_starting_credibility": 0.5
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "SCALE_3.2_JamesOkonkwo",
+      "nickname": "James",
+      "full_name": "James Okonkwo",
+      "tagline": "",
+      "archetype": "scale_balancer",
+      "archetype_strength": 0.85,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 38,
+        "gender": "male",
+        "race_ethnicity": "Black (Nigerian-American, first generation)",
+        "location": "Minneapolis, Minnesota",
+        "location_city": "Minneapolis",
+        "location_state": "no",
+        "education": "Bachelor's in Accounting, University of Minnesota; CPA",
+        "education_level": "Bachelor's in Accounting",
+        "occupation": "Audit Manager, regional accounting firm",
+        "income": 115000,
+        "marital_status": "Married",
+        "religion": "Christian (non-denominational)",
+        "religion_activity": "active",
+        "political_affiliation": "Independent"
+      },
+      "dimensions": {
+        "attribution_orientation": 3,
+        "just_world_belief": 3.5,
+        "authoritarianism": 3,
+        "corporations": 3,
+        "institutional_trust_corporations": 3,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 3,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 4.5,
+        "damages_orientation": 3
+      },
+      "life_experiences": [
+        "Parents overcame significant obstacles as immigrants; models both perseverance and systemic barriers",
+        "As an auditor, has seen corporate misconduct AND frivolous claims",
+        "Christian faith emphasizes both justice and personal accountability",
+        "Hasn't personally experienced legal system; neutral expectations",
+        "Values fairness and process; professional life is about applying rules consistently"
+      ],
+      "characteristic_phrases": [
+        "Let's look at the documentation",
+        "What do the numbers show?",
+        "In my experience auditing companies...",
+        "I need to see more before I can decide",
+        "There's usually truth on both sides",
+        "What's the standard here?",
+        "Process-oriented, systematic",
+        "References professional experience with objectivity",
+        "Religious values may inform sense of fairness",
+        "Not emotional or ideological"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Does your accounting background give you any views on this type of case?\"",
+          "response": "Not specifically. In my work, I examine documents and draw conclusions based on evidence. I'm trained to be objective and follow the facts wherever they lead. I'd apply the same approach here."
+        },
+        "question_2": {
+          "question": "\"Could you award money for pain and suffering, which can't be documented as precisely as financial losses?\"",
+          "response": "That's a fair question. I'm more comfortable with numbers, but I understand that real harm isn't always quantifiable. I'd listen to the evidence about how the person's life was affected and try to evaluate it fairly."
+        }
+      },
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "FME_3.2_JamesOkonkwo",
+        "archetype": "FAIR_MINDED_EVALUATOR",
+        "archetype_strength": "0.85",
+        "liability_threshold": "0.5",
+        "contributory_fault_weight": "1.0",
+        "damage_multiplier": "0.95",
+        "evidence_processing": {
+          "documentary_evidence_weight": "1.5",
+          "financial_evidence_weight": "1.4",
+          "expert_testimony_weight": 1.3
+        },
+        "deliberation": {
+          "influence_weight": "1.3",
+          "persuadability": "0.65",
+          "position_stability": 0.55
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "SCALE_3.3_MariaSantos",
+      "nickname": "Maria",
+      "full_name": "Maria Santos",
+      "tagline": "",
+      "archetype": "scale_balancer",
+      "archetype_strength": 0.8,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 51,
+        "gender": "female",
+        "race_ethnicity": "Latina (Puerto Rican)",
+        "location": "Orlando, Florida",
+        "location_city": "Orlando",
+        "education": "Master's in Education, University of Central Florida",
+        "education_level": "Master's in Education",
+        "occupation": "Middle School Principal",
+        "income": 92000,
+        "marital_status": "Divorced",
+        "religion": "Catholic",
+        "religion_activity": "moderate practice",
+        "political_affiliation": "Democrat",
+        "political_engagement": "moderate"
+      },
+      "dimensions": {
+        "attribution_orientation": 3,
+        "just_world_belief": 2.5,
+        "authoritarianism": 2.5,
+        "corporations": 2.5,
+        "institutional_trust_corporations": 2.5,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 2.5,
+        "institutional_trust_insurance": 2.5,
+        "litigation_attitude": 3.5,
+        "leadership_tendency": 4.5,
+        "cognitive_style": 2.5,
+        "damages_orientation": 3.5
+      },
+      "life_experiences": [
+        "Daily work requires understanding both context and accountability",
+        "Divorced after husband's infidelity; knows systems can fail individuals",
+        "Has advocated for students against bureaucratic systems; knows institutions can be unfair",
+        "Also has disciplined students who made bad choices; believes in accountability",
+        "Generally optimistic about people but realistic about institutions",
+        "Strongly empathic but not a pushover",
+        "Leadership experience makes her likely foreperson candidate",
+        "More narrative processor than other FMEs; responds to stories",
+        "Leans slightly plaintiff but can be moved by evidence"
+      ],
+      "characteristic_phrases": [
+        "Tell me more about what happened",
+        "I want to understand the full picture",
+        "There's usually more to the story",
+        "What were the circumstances?",
+        "People make mistakes, but so do institutions",
+        "Let's hear everyone out",
+        "Warm, approachable tone",
+        "Asks follow-up questions",
+        "Encourages others to participate",
+        "Good listener before forming judgments",
+        "Comfortable with ambiguity"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"In your work as a principal, do you tend to side with students or administration?\"",
+          "response": "It really depends on the situation. I've advocated for students when I thought they were being treated unfairly by the system. I've also disciplined students when they made bad choices. Every situation is different. Context matters, but so does accountability."
+        },
+        "question_2": {
+          "question": "\"Would your experience with young people affect how you view an injured plaintiff?\"",
+          "response": "I don't think so negatively. I'm trained to gather information before making judgments. I know that first impressions aren't always accurate. I'd want to understand what really happened here."
+        }
+      },
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "FME_3.3_MariaSantos",
+        "archetype": "FAIR_MINDED_EVALUATOR",
+        "archetype_strength": "0.8",
+        "liability_threshold": "0.45",
+        "contributory_fault_weight": "0.9",
+        "damage_multiplier": "1.1",
+        "evidence_processing": {
+          "narrative_weight": "1.3",
+          "testimony_weight": "1.2",
+          "emotional_evidence_weight": 1.1
+        },
+        "deliberation": {
+          "influence_weight": "1.8",
+          "persuadability": "0.6",
+          "speaking_share": "0.15",
+          "foreperson_probability": "0.55",
+          "consensus_seeking": 0.75
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

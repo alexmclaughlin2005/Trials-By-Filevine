@@ -8,6 +8,9 @@ export interface JuryPanel {
   version: number;
   totalJurors: number;
   status: 'draft' | 'active' | 'completed';
+  juryBoxSize: number;
+  juryBoxRows: number;
+  juryBoxLayout?: Record<string, unknown>;
 }
 
 export interface CreateJuryPanelInput {
@@ -33,6 +36,9 @@ export interface Juror {
   keepPriority?: number;
   strikePriority?: number;
   notes?: string;
+  boxRow?: number;
+  boxSeat?: number;
+  boxOrder?: number;
 }
 
 export type JurorStatus =
@@ -72,6 +78,9 @@ export interface UpdateJurorInput {
   keepPriority?: number;
   strikePriority?: number;
   notes?: string;
+  boxRow?: number;
+  boxSeat?: number;
+  boxOrder?: number;
 }
 
 export interface BulkImportJurorInput {
@@ -98,4 +107,22 @@ export interface ResearchArtifact {
 export interface InitiateResearchInput {
   jurorId: string;
   sources?: string[]; // Optional: specific sources to search
+}
+
+export interface JuryBoxConfig {
+  juryBoxSize: number;
+  juryBoxRows: number;
+  juryBoxLayout?: Record<string, unknown>;
+}
+
+export interface UpdateJuryBoxConfigInput {
+  juryBoxSize?: number;
+  juryBoxRows?: number;
+  juryBoxLayout?: Record<string, unknown>;
+}
+
+export interface UpdateJurorPositionInput {
+  boxRow?: number;
+  boxSeat?: number;
+  boxOrder?: number;
 }

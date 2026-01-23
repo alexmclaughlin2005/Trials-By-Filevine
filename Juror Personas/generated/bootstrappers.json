@@ -1,0 +1,1409 @@
+{
+  "archetype": "bootstrapper",
+  "archetype_display_name": "The Bootstrapper",
+  "archetype_tagline": "Pull yourself up by your bootstraps",
+  "plaintiff_danger_level": 5,
+  "defense_danger_level": 1,
+  "archetype_centroids": {
+    "attribution_orientation": 1.5,
+    "just_world_belief": 4.5,
+    "authoritarianism": 4,
+    "corporations": 4.5,
+    "institutional_trust_corporations": 4.5,
+    "medical": 4,
+    "institutional_trust_medical": 4,
+    "legal_system": 3.5,
+    "institutional_trust_legal_system": 3.5,
+    "insurance": 3.5,
+    "institutional_trust_insurance": 3.5,
+    "litigation_attitude": 1.5,
+    "leadership_tendency": 4,
+    "cognitive_style": 3.5,
+    "damages_orientation": 1.5
+  },
+  "personas": [
+    {
+      "persona_id": "BOOT_1.1_GaryHendricks",
+      "nickname": "Gary",
+      "full_name": "Gary Hendricks",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 58,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Suburban Texas (Plano)",
+        "location_city": "Suburban Texas",
+        "location_state": "Pl",
+        "education": "Bachelor's in Business Administration, University of Texas Arlington",
+        "education_level": "Bachelor's in Business Administration",
+        "occupation": "Regional Sales Manager, industrial equipment company (28 years)",
+        "income": 145000,
+        "marital_status": "Married 32 years",
+        "religion": "Baptist",
+        "religion_activity": "attends weekly",
+        "political_affiliation": "Republican",
+        "political_engagement": "consistent voter"
+      },
+      "dimensions": {
+        "attribution_orientation": 1.5,
+        "just_world_belief": 4.5,
+        "authoritarianism": 4,
+        "corporations": 4.5,
+        "institutional_trust_corporations": 4.5,
+        "medical": 4,
+        "institutional_trust_medical": 4,
+        "legal_system": 3.5,
+        "institutional_trust_legal_system": 3.5,
+        "insurance": 3.5,
+        "institutional_trust_insurance": 3.5,
+        "litigation_attitude": 1.5,
+        "leadership_tendency": 4,
+        "cognitive_style": 3.5,
+        "damages_orientation": 1.5
+      },
+      "life_experiences": [
+        "Watched his father refuse to sue after a workplace accident: \"Dad said a man handles his own problems",
+        "His sister filed for bankruptcy after credit card debt; Gary sees this as \"poor choices",
+        "Successfully fought off a frivolous warranty claim at work, reinforcing belief that people try to game the system",
+        "His son struggled with addiction; Gary believes it was \"choices, not disease",
+        "Pays high insurance premiums; resents \"lawsuit culture\" raising costs",
+        "Served on one prior jury (criminal DUI case, voted guilty)",
+        "No personal lawsuits filed or received",
+        "General belief that \"good people don't end up in court"
+      ],
+      "legal_experience": {
+        "notes": [
+          "Served on one prior jury (criminal DUI case, voted guilty)",
+          "No personal lawsuits filed or received",
+          "General belief that \"good people don't end up in court"
+        ]
+      },
+      "characteristic_phrases": [
+        "At the end of the day, you're responsible for yourself",
+        "Nobody put a gun to their head",
+        "Play stupid games, win stupid prizes",
+        "I've never sued anyone and never will",
+        "There's two sides to every story",
+        "What were they thinking?",
+        "Common sense isn't so common anymore",
+        "Back in my day...",
+        "That's just the cost of doing business",
+        "Direct, declarative statements",
+        "Uses folksy aphorisms",
+        "References personal examples of overcoming adversity",
+        "Dismissive of \"excuses",
+        "Confident tone, doesn't hedge"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"When someone is injured, what's usually the main cause?\"",
+          "response": "Nine times out of ten, it's something they did or didn't do. People don't pay attention anymore—they're on their phones, they're not watching where they're going. I'm not saying accidents don't happen, but usually there's something the person could have done differently."
+        },
+        "question_2": {
+          "question": "\"What's your reaction when you hear someone filed a personal injury lawsuit?\"",
+          "response": "Honestly? My first thought is 'here we go again.' I'm not saying every lawsuit is bogus, but it seems like everyone's looking for a payday these days. Whatever happened to just dealing with things?"
+        },
+        "question_3": {
+          "question": "\"Have you or anyone close to you ever been seriously injured?\"",
+          "response": "My dad hurt his back pretty bad at work—herniated disc. He never sued, never complained. Just did his physical therapy and went back to work. That's how I was raised."
+        },
+        "question_4": {
+          "question": "\"Could you award money for pain and suffering?\"",
+          "response": "I mean, if I had to... but I'd need to see some real proof. Pain is subjective. How do you put a number on that? Seems like that's where these crazy awards come from."
+        },
+        "question_5": {
+          "question": "\"On a scale of 1-10, how difficult would it be to find a corporation liable?\"",
+          "response": "I'd say maybe a 4 or 5. I can do it if the evidence is there. But corporations aren't automatically bad guys just because they're big. They create jobs, they follow regulations. I've worked for companies my whole life."
+        },
+        "question_6": {
+          "question": "\"Do you think lawsuit awards are generally too high, too low, or about right?\"",
+          "response": "Too high, definitely. You hear about these multi-million dollar verdicts and it makes no sense. That's why everything costs so much—someone's gotta pay for all these lawsuits, and it's people like me."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Will emerge as a vocal participant, possibly foreperson candidate",
+        "deliberation_style": "Verdict-driven; will want early vote, frame discussion around \"what plaintiff did wrong\"",
+        "influence_tactics": [
+          "Personal anecdotes about self-reliance",
+          "Appeals to \"common sense",
+          "Challenges emotional arguments as \"not evidence",
+          "May shame jurors who seem \"soft"
+        ],
+        "likely_statements": [
+          "Let's not get carried away with sympathy here",
+          "What about personal responsibility?",
+          "My taxes pay for these courts—let's not waste time",
+          "The plaintiff knew the risks"
+        ],
+        "persuadability": "Low (0.25). Will dig in if challenged. Responds only to overwhelming factual evidence of defendant wrongdoing.",
+        "faction_behavior": "Will actively recruit followers, especially compliant/deferential jurors. May clash with Systemic Thinkers."
+      },
+      "simulation_parameters": {
+        "juror_id": "PRE_1.1_GaryHendricks",
+        "archetype": "PERSONAL_RESPONSIBILITY_ENFORCER",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.75",
+        "contributory_fault_weight": "2.5",
+        "damage_multiplier": "0.35",
+        "non_economic_skepticism": "0.85",
+        "punitive_resistance": "0.9",
+        "evidence_processing": {
+          "plaintiff_testimony_discount": "0.4",
+          "defendant_testimony_boost": "1.3",
+          "expert_plaintiff_skepticism": "0.6",
+          "expert_defendant_trust": "1.2",
+          "documentary_weight": "1.1",
+          "emotional_evidence_discount": 0.5
+        },
+        "deliberation": {
+          "influence_weight": "1.8",
+          "persuadability": "0.25",
+          "position_stability": "0.85",
+          "speaking_share": "0.18",
+          "social_pressure_susceptibility": "0.2",
+          "confrontation_willingness": 0.8
+        },
+        "verdict_priors": {
+          "plaintiff_starting_credibility": "0.3",
+          "defendant_starting_credibility": "0.7",
+          "corporation_trust_bonus": 0.15
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.2_LindaKowalski",
+      "nickname": "Linda",
+      "full_name": "Linda Kowalski",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.75,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 52,
+        "gender": "female",
+        "race_ethnicity": "White (Polish-American)",
+        "location": "Suburban Ohio (Parma, outside Cleveland)",
+        "location_city": "Suburban Ohio",
+        "location_state": "Pa",
+        "education": "Associate's degree, Nursing (never completed RN)",
+        "education_level": "Associate's degree",
+        "occupation": "Office Manager, dental practice (18 years)",
+        "income": 62000,
+        "marital_status": "Divorced",
+        "religion": "Catholic",
+        "religion_activity": "attends Easter/Christmas",
+        "political_affiliation": "Independent",
+        "political_engagement": "leans Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 2,
+        "just_world_belief": 4,
+        "authoritarianism": 3.5,
+        "corporations": 3,
+        "institutional_trust_corporations": 3,
+        "medical": 4.5,
+        "institutional_trust_medical": 4.5,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 2.5,
+        "institutional_trust_insurance": 2.5,
+        "litigation_attitude": 2,
+        "leadership_tendency": 3,
+        "cognitive_style": 2.5,
+        "damages_orientation": 2
+      },
+      "life_experiences": [
+        "First husband was \"lazy,\" blamed everyone else for his problems; divorce solidified her belief in personal responsibility",
+        "Worked her way up from receptionist to office manager without a degree",
+        "Her dental practice was sued once (she saw it as unfair, patient didn't follow post-op instructions)",
+        "Brother-in-law is on disability; she suspects he could work if he wanted to",
+        "Her own mother worked through pain until retirement; \"that's just what you do"
+      ],
+      "characteristic_phrases": [
+        "I pulled myself up, why can't they?",
+        "Excuses are like... well, everyone's got one",
+        "I'm not unsympathetic, BUT...",
+        "What did they expect?",
+        "There's always more to the story",
+        "I've had hard times too, and I didn't sue anyone",
+        "More likely to acknowledge sympathy before dismissing",
+        "References her own struggles as benchmark",
+        "Less ideological than Gary, more experiential",
+        "Can be moved by genuine suffering but skeptical of motives"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"When someone is injured, what's usually the main cause?\"",
+          "response": "It really depends. Sometimes it's just bad luck, but a lot of times people aren't being careful. I work in a dental office—you wouldn't believe how many patients don't follow instructions and then complain when things go wrong."
+        },
+        "question_2": {
+          "question": "\"Could you be fair to a plaintiff seeking damages for pain and suffering?\"",
+          "response": "I'd try. I know pain is real. But I also know some people exaggerate. I'd want to see medical records, hear from doctors. Not just take someone's word for it."
+        },
+        "question_3": {
+          "question": "\"Have you ever thought about suing someone but decided not to?\"",
+          "response": "Ha! After my divorce, I could have gone after my ex for all sorts of things. But I figured it wasn't worth the hassle. Sometimes you just have to move on."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Active participant, not a leader but won't be silent",
+        "deliberation_style": "Will listen to evidence-focused arguments, can be persuaded if facts are strong",
+        "influence_tactics": [
+          "Personal experience comparisons",
+          "I'm being reasonable\" framing",
+          "May broker compromise on damages"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "PRE_1.2_LindaKowalski",
+        "archetype": "PERSONAL_RESPONSIBILITY_ENFORCER",
+        "archetype_strength": "0.75",
+        "liability_threshold": "0.65",
+        "contributory_fault_weight": "2.0",
+        "damage_multiplier": "0.45",
+        "non_economic_skepticism": "0.7",
+        "deliberation": {
+          "influence_weight": "1.2",
+          "persuadability": "0.4",
+          "position_stability": "0.65",
+          "speaking_share": 0.1
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.3_MarcusThompson",
+      "nickname": "Marcus",
+      "full_name": "Marcus Thompson",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.7,
+      "secondary_archetype": "authoritative_leader",
+      "variant": null,
+      "demographics": {
+        "age": 45,
+        "gender": "male",
+        "race_ethnicity": "Black",
+        "location": "Atlanta suburbs (Alpharetta)",
+        "location_city": "Atlanta suburbs",
+        "location_state": "Al",
+        "education": "MBA, Clark Atlanta University",
+        "education_level": "MBA",
+        "occupation": "Senior Financial Analyst, Fortune 500 company",
+        "income": 185000,
+        "marital_status": "Married",
+        "religion": "AME Church",
+        "religion_activity": "moderately active",
+        "political_affiliation": "Independent",
+        "political_engagement": "fiscally conservative"
+      },
+      "dimensions": {
+        "attribution_orientation": 2,
+        "just_world_belief": 3.5,
+        "authoritarianism": 3,
+        "corporations": 4,
+        "institutional_trust_corporations": 4,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 2.5,
+        "leadership_tendency": 4.5,
+        "cognitive_style": 4.5,
+        "damages_orientation": 2
+      },
+      "life_experiences": [
+        "Parents explicitly taught him he'd have to work twice as hard; this internalized effort-reward link",
+        "Watched peers who \"made excuses\" fall behind while he succeeded",
+        "Has experienced some discrimination but frames it as \"obstacles to overcome, not excuses",
+        "Serves on his company's diversity committee; believes in \"earning your seat",
+        "Dislikes both victim narratives AND systemic excuse-making",
+        "Holds Personal Responsibility views but with nuance about systemic barriers",
+        "Strong analytical processing will weigh evidence carefully",
+        "Leadership tendency means he'll likely be foreperson candidate",
+        "May be harder for either side to stereotype"
+      ],
+      "characteristic_phrases": [
+        "Let's look at the numbers",
+        "What does the evidence actually show?",
+        "I hear you, but that's not an excuse",
+        "Success leaves clues, so does failure",
+        "I've faced challenges too—everyone has a story",
+        "Show me the data",
+        "Business-speak, analytical framing",
+        "Respectful but direct",
+        "Doesn't share personal stories readily",
+        "Focuses on facts over feelings"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"On a scale of 1-10, how difficult would it be to award a large sum for pain and suffering?\"",
+          "response": "Maybe a 6 or 7. I'm an analyst by trade—I like things I can measure. Pain and suffering is inherently subjective. I'd need a clear methodology for how the number was calculated, not just an emotional appeal."
+        },
+        "question_2": {
+          "question": "\"What's your view on personal responsibility?\"",
+          "response": "I believe in it strongly. That said, I also believe in accountability on all sides. If a company is negligent, they should be held accountable too. But I'd need to see clear evidence of that negligence, not assumptions."
+        },
+        "question_3": {
+          "question": "\"Can you be fair to both sides?\"",
+          "response": "Absolutely. I make decisions based on evidence every day in my job. I can set aside any preconceptions and evaluate what's presented in this courtroom. That's what I'd expect of myself."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Likely foreperson or dominant voice",
+        "deliberation_style": "Evidence-driven; will push for systematic evidence review before voting",
+        "influence_tactics": [
+          "Logical analysis, \"let's walk through the facts",
+          "May challenge emotional arguments from either direction",
+          "Will command respect due to professional demeanor"
+        ],
+        "persuadability": "Moderate (0.45) but only through evidence-based arguments"
+      },
+      "simulation_parameters": {
+        "juror_id": "PRE_1.3_MarcusThompson",
+        "archetype": "PERSONAL_RESPONSIBILITY_ENFORCER",
+        "archetype_strength": "0.7",
+        "secondary_archetype": "AUTHORITATIVE_LEADER",
+        "liability_threshold": "0.55",
+        "contributory_fault_weight": "1.8",
+        "damage_multiplier": "0.5",
+        "non_economic_skepticism": "0.65",
+        "evidence_processing": {
+          "data_weight": "1.8",
+          "expert_testimony_weight": "1.5",
+          "emotional_evidence_discount": "0.6",
+          "logical_consistency_weight": 1.4
+        },
+        "deliberation": {
+          "influence_weight": "2.2",
+          "persuadability": "0.45",
+          "position_stability": "0.7",
+          "speaking_share": "0.22",
+          "foreperson_probability": 0.65
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.4_DonnaFratelli",
+      "nickname": "Donna",
+      "full_name": "Donna Fratelli",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 67,
+        "gender": "female",
+        "race_ethnicity": "White (Italian-American)",
+        "location": "Staten Island, New York",
+        "location_city": "Staten Island",
+        "location_state": "ci",
+        "education": "High school diploma, some secretarial training",
+        "education_level": "High school diploma",
+        "occupation": "Retired administrative assistant (city government, 35 years)",
+        "income": 48000,
+        "marital_status": "Widow",
+        "religion": "Catholic",
+        "religion_activity": "very devout, daily mass",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 1.5,
+        "just_world_belief": 5,
+        "authoritarianism": 4.5,
+        "corporations": 3.5,
+        "institutional_trust_corporations": 3.5,
+        "medical": 4.5,
+        "institutional_trust_medical": 4.5,
+        "legal_system": 4,
+        "institutional_trust_legal_system": 4,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 1.5,
+        "leadership_tendency": 2.5,
+        "cognitive_style": 2,
+        "damages_orientation": 1.5
+      },
+      "life_experiences": [
+        "Parents immigrated from Sicily, built life through hard work, never complained",
+        "Raised four children on modest income; all are \"productive citizens",
+        "Husband's death was \"God's plan\"; she coped through faith, not litigation",
+        "Believes suffering has meaning and builds character",
+        "Views lawsuit culture as symptom of moral decay"
+      ],
+      "characteristic_phrases": [
+        "Offer it up\" (Catholic expression for accepting suffering)",
+        "God doesn't give you more than you can handle",
+        "We never sued, and we turned out fine",
+        "That's just looking for a handout",
+        "Where's the personal responsibility?",
+        "My husband would roll over in his grave",
+        "Everything happens for a reason",
+        "References religious/moral frameworks",
+        "Invokes family values and tradition",
+        "Emotional delivery but firm convictions",
+        "May tear up discussing her own hardships but still oppose compensation"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Have you or anyone close to you experienced a serious injury or illness?\"",
+          "response": "My husband died of cancer at 54. He was a firefighter at Ground Zero. We never sued anyone. That's not how we were raised. You accept what God gives you and you go on."
+        },
+        "question_2": {
+          "question": "\"Would you be able to award compensation to someone for their injuries?\"",
+          "response": "If they really were injured by someone else's fault, yes. But I'd have to see proof. And I don't believe in these giant awards. What happened to being grateful for what you have?"
+        },
+        "question_3": {
+          "question": "\"Do you believe the legal system treats people fairly?\"",
+          "response": "Mostly, yes. I think the problem is people abuse it. Too many lawsuits over nothing. It clogs up the courts when there are real criminals out there."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Follower initially, but entrenched position makes her potential holdout",
+        "deliberation_style": "Verdict-driven, religiously tinged moral framing",
+        "persuadability": "Very Low (0.15). Religious/moral framework is unshakeable."
+      },
+      "simulation_parameters": {
+        "juror_id": "PRE_1.4_DonnaFratelli",
+        "archetype": "PERSONAL_RESPONSIBILITY_ENFORCER",
+        "archetype_strength": "0.95",
+        "jwb_subtype": "IMMANENT_JUSTICE",
+        "liability_threshold": "0.85",
+        "contributory_fault_weight": "3.0",
+        "damage_multiplier": "0.25",
+        "non_economic_skepticism": "0.95",
+        "deliberation": {
+          "influence_weight": "0.8",
+          "persuadability": "0.15",
+          "position_stability": "0.95",
+          "speaking_share": "0.08",
+          "holdout_potential": 0.9
+        },
+        "moral_framework": {
+          "religious_weight": "0.8",
+          "suffering_acceptance": "0.9",
+          "victim_skepticism": 0.85
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_4.1_RobertCallahan",
+      "nickname": "Robert",
+      "full_name": "Robert Callahan",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 1,
+      "secondary_archetype": "personal_responsibility_enforcer",
+      "variant": null,
+      "demographics": {
+        "age": 62,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Scottsdale, Arizona",
+        "location_city": "Scottsdale",
+        "location_state": "ne",
+        "education": "JD (never practiced), MBA, Northwestern",
+        "education_level": "JD (never practiced)",
+        "occupation": "Retired CEO, medical device company",
+        "income": 350000,
+        "marital_status": "Married 38 years",
+        "religion": "Episcopal",
+        "religion_activity": "nominal",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 1.5,
+        "just_world_belief": 4,
+        "authoritarianism": 4,
+        "corporations": 5,
+        "institutional_trust_corporations": 5,
+        "medical": 4.5,
+        "institutional_trust_medical": 4.5,
+        "legal_system": 3.5,
+        "institutional_trust_legal_system": 3.5,
+        "insurance": 3.5,
+        "institutional_trust_insurance": 3.5,
+        "litigation_attitude": 1,
+        "leadership_tendency": 5,
+        "cognitive_style": 4.5,
+        "damages_orientation": 1
+      },
+      "life_experiences": [
+        "Built company from startup to $500M valuation; believes in personal responsibility for success",
+        "Company was sued repeatedly; won most cases, settled others \"to make them go away",
+        "Believes trial attorneys and their clients are mostly opportunists",
+        "Has deep knowledge of how corporations actually operate (and how they cut corners)",
+        "Retirement means he has time and inclination to dominate deliberations"
+      ],
+      "characteristic_phrases": [
+        "In my experience running a company...",
+        "Let me explain how this actually works",
+        "The plaintiff hasn't proven their case",
+        "This is exactly the kind of frivolous lawsuit...",
+        "I've seen dozens of these claims",
+        "What were the plaintiff's damages again? Let's look at this carefully.",
+        "Authoritative, executive presence",
+        "Speaks first, speaks often",
+        "May cut others off",
+        "Uses business/legal vocabulary",
+        "Confident to the point of dismissive"
+      ],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {
+        "predicted_role": "Will be foreperson or de facto leader",
+        "deliberation_style": "Will frame issues in defense-favorable terms from the start",
+        "influence_tactics": [
+          "Executive authority and expertise",
+          "Claims to understand \"how things really work",
+          "Systematic dismantling of plaintiff's case",
+          "May intimidate less confident jurors"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "AL_4.1_RobertCallahan",
+        "archetype": "AUTHORITATIVE_LEADER",
+        "secondary_archetype": "PERSONAL_RESPONSIBILITY_ENFORCER",
+        "archetype_strength": "1.0",
+        "liability_threshold": "0.85",
+        "contributory_fault_weight": "3.0",
+        "damage_multiplier": "0.2",
+        "deliberation": {
+          "influence_weight": "3.0",
+          "persuadability": "0.15",
+          "position_stability": "0.95",
+          "speaking_share": "0.30",
+          "foreperson_probability": "0.85",
+          "confrontation_willingness": 0.9
+        },
+        "plaintiff_warning": "CRITICAL - MUST STRIKE"
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_4.2_ReverendDorothyHayes",
+      "nickname": "Reverend",
+      "full_name": "Reverend Dorothy Hayes",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 1,
+      "secondary_archetype": "empathic_connector",
+      "variant": null,
+      "demographics": {
+        "age": 59,
+        "gender": "female",
+        "race_ethnicity": "Black",
+        "location": "Memphis, Tennessee",
+        "location_city": "Memphis",
+        "education": "Master of Divinity, Vanderbilt",
+        "education_level": "Master of Divinity",
+        "occupation": "Senior Pastor, AME church (2,000 members)",
+        "income": 95000,
+        "marital_status": "Married",
+        "religion": "African Methodist Episcopal",
+        "religion_activity": "clergy",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 2,
+        "authoritarianism": 2,
+        "corporations": 2,
+        "institutional_trust_corporations": 2,
+        "medical": 3,
+        "institutional_trust_medical": 3,
+        "legal_system": 2.5,
+        "institutional_trust_legal_system": 2.5,
+        "insurance": 2,
+        "institutional_trust_insurance": 2,
+        "litigation_attitude": 4,
+        "leadership_tendency": 5,
+        "cognitive_style": 2,
+        "damages_orientation": 4.5
+      },
+      "life_experiences": [
+        "Decades of pastoral counseling; deep empathy for suffering",
+        "Church members injured by workplace accidents, medical malpractice, corporate negligence",
+        "Civil rights background; sees systemic injustice",
+        "Regularly advocates for her community against institutions",
+        "Commands enormous respect; people defer to her judgment"
+      ],
+      "characteristic_phrases": [
+        "I've sat with families going through this kind of pain",
+        "Justice requires us to...",
+        "Think about what this person has suffered",
+        "This is about right and wrong",
+        "We have an opportunity to do justice here",
+        "Let me tell you what I've seen...",
+        "Powerful, measured delivery",
+        "Moral framing",
+        "Personal stories of counseling victims",
+        "Commands attention and respect",
+        "Difficult to interrupt or contradict"
+      ],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {
+        "predicted_role": "Will be foreperson or moral leader",
+        "deliberation_style": "Frames deliberation as moral/justice issue",
+        "influence_tactics": [
+          "Moral authority",
+          "Personal stories",
+          "What would you want if this happened to your family?",
+          "Religious/ethical framing"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "AL_4.2_DorothyHayes",
+        "archetype": "AUTHORITATIVE_LEADER",
+        "secondary_archetype": "EMPATHIC_CONNECTOR",
+        "tertiary_archetype": "SYSTEMIC_THINKER",
+        "archetype_strength": "1.0",
+        "liability_threshold": "0.3",
+        "contributory_fault_weight": "0.3",
+        "damage_multiplier": "2.0",
+        "deliberation": {
+          "influence_weight": "3.0",
+          "persuadability": "0.2",
+          "position_stability": "0.9",
+          "speaking_share": "0.25",
+          "foreperson_probability": 0.8
+        },
+        "defense_warning": "CRITICAL - MUST STRIKE"
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_4.3_ColonelRetFrankMorrison",
+      "nickname": "Colonel",
+      "full_name": "Colonel (Ret.) Frank Morrison",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.95,
+      "secondary_archetype": "numbers_person",
+      "variant": null,
+      "demographics": {
+        "age": 64,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Colorado Springs, Colorado",
+        "location_city": "Colorado Springs",
+        "location_state": "on",
+        "education": "BS Engineering, West Point; MS Systems Engineering, MIT",
+        "education_level": "BS Engineering",
+        "occupation": "Retired Army Colonel, now defense contractor consultant",
+        "income": 225000,
+        "marital_status": "Married",
+        "religion": "Protestant",
+        "religion_activity": "regular attendance",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 2.5,
+        "just_world_belief": 3.5,
+        "authoritarianism": 4.5,
+        "corporations": 4,
+        "institutional_trust_corporations": 4,
+        "medical": 4,
+        "institutional_trust_medical": 4,
+        "legal_system": 4,
+        "institutional_trust_legal_system": 4,
+        "insurance": 3.5,
+        "institutional_trust_insurance": 3.5,
+        "litigation_attitude": 2.5,
+        "leadership_tendency": 5,
+        "cognitive_style": 5,
+        "damages_orientation": 2.5
+      },
+      "life_experiences": [
+        "Strong leader but genuinely focused on evidence and procedure",
+        "Will insist on systematic evidence review",
+        "Respects expertise and documentation",
+        "May be more persuadable than other leader types if evidence is compelling",
+        "Dislikes emotional appeals; responds to facts"
+      ],
+      "characteristic_phrases": [
+        "Let's establish the facts first",
+        "What's the evidence for that?",
+        "In my experience managing complex operations...",
+        "We need to be systematic about this",
+        "The burden of proof is on the plaintiff",
+        "Let's not get emotional; let's look at what we know",
+        "Command voice, authoritative tone",
+        "Process-oriented",
+        "Military vocabulary and precision",
+        "Expects others to be prepared and logical",
+        "Will shut down emotional digressions"
+      ],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {
+        "predicted_role": "Likely foreperson; will impose structure",
+        "deliberation_style": "Evidence-driven deliberation; systematic review",
+        "influence_tactics": [
+          "Procedural authority",
+          "Logical analysis",
+          "Military bearing commands respect",
+          "May be more fair than other leader types"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "AL_4.3_FrankMorrison",
+        "archetype": "AUTHORITATIVE_LEADER",
+        "secondary_archetype": "NUMBERS_PERSON",
+        "archetype_strength": "0.95",
+        "liability_threshold": "0.55",
+        "contributory_fault_weight": "1.3",
+        "damage_multiplier": "0.7",
+        "evidence_processing": {
+          "procedural_compliance_weight": "1.5",
+          "documentation_weight": "1.4",
+          "expert_testimony_weight": "1.3",
+          "emotional_evidence_discount": 0.6
+        },
+        "deliberation": {
+          "influence_weight": "2.8",
+          "persuadability": "0.35",
+          "position_stability": "0.75",
+          "foreperson_probability": "0.8",
+          "evidence_driven_style": 0.9
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_7.1_DrStevenPark",
+      "nickname": "Dr.",
+      "full_name": "Dr. Steven Park",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 44,
+        "gender": "male",
+        "race_ethnicity": "Asian (Korean-American)",
+        "location": "Seattle, Washington",
+        "location_city": "Seattle",
+        "education": "Ph.D. in Statistics, Stanford",
+        "education_level": "Ph.D. in Statistics",
+        "occupation": "Data Scientist, tech company",
+        "income": 280000,
+        "marital_status": "Married to physician",
+        "religion": "None",
+        "religion_activity": "libertarian leaning",
+        "political_affiliation": "Independent",
+        "political_engagement": "libertarian leaning"
+      },
+      "dimensions": {
+        "attribution_orientation": 3,
+        "just_world_belief": 3,
+        "authoritarianism": 2.5,
+        "corporations": 3.5,
+        "institutional_trust_corporations": 3.5,
+        "medical": 4,
+        "institutional_trust_medical": 4,
+        "legal_system": 3.5,
+        "institutional_trust_legal_system": 3.5,
+        "insurance": 3.5,
+        "institutional_trust_insurance": 3.5,
+        "litigation_attitude": 3,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 5,
+        "damages_orientation": 2
+      },
+      "life_experiences": [
+        "Academic training in statistics; skeptical of claims without data",
+        "Works in tech; believes problems can be optimized",
+        "Wife is physician; respects medical profession",
+        "Has seen bad data used to make bad decisions",
+        "Values precision and methodology"
+      ],
+      "characteristic_phrases": [
+        "What's the basis for that number?",
+        "Is there data to support that?",
+        "How did they calculate the damages?",
+        "That seems speculative",
+        "Where's the confidence interval?",
+        "I need to see the methodology",
+        "Correlation isn't causation",
+        "Precise, technical language",
+        "Asks probing methodological questions",
+        "May frustrate other jurors with demand for rigor",
+        "Not emotional; facts-focused",
+        "Will challenge sloppy reasoning from either side"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"How do you feel about putting a dollar amount on pain and suffering?\"",
+          "response": "Honestly, it's difficult from my perspective. In my work, I quantify uncertainty all the time, but there's usually some objective basis. Pain is subjective. I'd need to see a methodology for how the number was derived, not just 'this feels right.'"
+        },
+        "question_2": {
+          "question": "\"Could you award money for things that can't be precisely measured?\"",
+          "response": "I could, but I'd want some framework. Life expectancy tables, quality of life research, something to anchor the number. I'd be skeptical of arbitrary figures."
+        },
+        "question_3": {
+          "question": "\"How would you evaluate expert testimony?\"",
+          "response": "Very carefully. I'd look at their methodology, their assumptions, whether their analysis would hold up to peer review. Credentials aren't enough—I'd want to understand how they reached their conclusions."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Evidence analyst; will scrutinize expert testimony carefully",
+        "deliberation_style": "Demands rigor; may slow down deliberation with methodological questions",
+        "influence_tactics": [
+          "Logical analysis",
+          "Challenges to assumptions",
+          "Show me the data"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "NP_7.1_StevenPark",
+        "archetype": "NUMBERS_PERSON",
+        "archetype_strength": "0.95",
+        "liability_threshold": "0.5",
+        "contributory_fault_weight": "1.0",
+        "damage_multiplier": "0.7",
+        "non_economic_skepticism": "0.8",
+        "evidence_processing": {
+          "expert_methodology_weight": "2.0",
+          "statistical_evidence_weight": "1.8",
+          "documentary_evidence_weight": "1.5",
+          "emotional_evidence_weight": "0.4",
+          "testimony_consistency_weight": 1.4
+        },
+        "deliberation": {
+          "influence_weight": "1.5",
+          "persuadability": "0.5",
+          "speaking_share": "0.15",
+          "methodology_challenges": 0.9
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_7.2_ChristineWalsh",
+      "nickname": "Christine",
+      "full_name": "Christine Walsh",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.85,
+      "secondary_archetype": "personal_responsibility_enforcer",
+      "variant": null,
+      "demographics": {
+        "age": 52,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Philadelphia, Pennsylvania",
+        "location_city": "Philadelphia",
+        "education": "CPA; Bachelor's in Accounting, Villanova",
+        "education_level": "CPA; Bachelor's in Accounting",
+        "occupation": "Partner, regional accounting firm",
+        "income": 195000,
+        "marital_status": "Married",
+        "religion": "Catholic",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 2.5,
+        "just_world_belief": 3.5,
+        "authoritarianism": 3.5,
+        "corporations": 4,
+        "institutional_trust_corporations": 4,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3.5,
+        "institutional_trust_legal_system": 3.5,
+        "insurance": 4,
+        "institutional_trust_insurance": 4,
+        "litigation_attitude": 2.5,
+        "leadership_tendency": 4,
+        "cognitive_style": 4.5,
+        "damages_orientation": 2
+      },
+      "life_experiences": [
+        "Career auditing corporations; generally positive view of clients",
+        "Has seen fraudulent insurance claims and inflated damages",
+        "Represents business owners who complain about lawsuits",
+        "Approaches everything through financial lens",
+        "Believes in quantification and documentation"
+      ],
+      "characteristic_phrases": [
+        "Let's look at the actual financial impact",
+        "Do they have documentation for these losses?",
+        "In my experience with businesses...",
+        "The numbers don't add up",
+        "What are the receipts?",
+        "That calculation seems inflated"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Does your accounting background affect how you view damage claims?\"",
+          "response": "Probably. I'm trained to verify financial claims and look for supporting documentation. I'd want to see evidence for any damages claimed - medical bills, lost wages documentation, that kind of thing. I'm naturally skeptical of round numbers without backup."
+        }
+      },
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "NP_7.2_ChristineWalsh",
+        "archetype": "NUMBERS_PERSON",
+        "secondary_archetype": "PERSONAL_RESPONSIBILITY_ENFORCER",
+        "archetype_strength": "0.85",
+        "liability_threshold": "0.55",
+        "damage_multiplier": "0.6",
+        "non_economic_skepticism": "0.75",
+        "evidence_processing": {
+          "financial_documentation_weight": "2.0",
+          "corporate_credibility_bonus": 0.15
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_10.1_ReverendCarltonJames",
+      "nickname": "Reverend",
+      "full_name": "Reverend Carlton James",
+      "tagline": "",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.8,
+      "secondary_archetype": "authoritative_leader",
+      "variant": null,
+      "demographics": {
+        "age": 67,
+        "gender": "male",
+        "race_ethnicity": "Black",
+        "location": "Birmingham, Alabama",
+        "location_city": "Birmingham",
+        "location_state": "pe",
+        "education": "Master of Divinity",
+        "education_level": "Master of Divinity",
+        "occupation": "Retired Pastor",
+        "income": 42000,
+        "marital_status": "Married 44 years",
+        "religion": "Baptist",
+        "religion_activity": "clergy",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 2,
+        "authoritarianism": 1.5,
+        "institutional_trust_-_legal_system": 2,
+        "institutional_trust_legal_system": 2,
+        "litigation_attitude": 4,
+        "leadership_tendency": 4.5,
+        "nullification_tendency": 0.8
+      },
+      "life_experiences": [],
+      "characteristic_phrases": [
+        "The law isn't always just",
+        "There's a higher law than what's written in books",
+        "We have to follow our conscience",
+        "I've seen unjust laws before",
+        "Justice requires more than following instructions"
+      ],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "NUL_10.1_CarltonJames",
+        "archetype": "NULLIFIER",
+        "subtype": "MORAL_NULLIFIER",
+        "archetype_strength": "0.8",
+        "instruction_compliance": "0.4",
+        "conscience_override": "0.7",
+        "moral_framework_dominance": "0.85",
+        "deliberation": {
+          "influence_weight": "2.0",
+          "persuadability": "0.2",
+          "position_stability": "0.9",
+          "moral_authority_effect": 1.5
+        },
+        "cause_challenge_vulnerability": 0.85
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.1_ImmigrantDreamIvan",
+      "nickname": "Immigrant",
+      "full_name": "Immigrant Dream Ivan",
+      "tagline": "I came here with $50 and built a business. What's your excuse?",
+      "archetype": "bootstrapper",
+      "archetype_strength": 1,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 61,
+        "gender": "male",
+        "race_ethnicity": "White (Ukrainian immigrant, naturalized citizen)",
+        "location": "Chicago suburbs (Schaumburg, IL)",
+        "location_city": "Chicago suburbs",
+        "location_state": "Sc",
+        "education": "Engineering degree from Kyiv Polytechnic (not recognized in US)",
+        "education_level": "Engineering degree from Kyiv Polytechnic (not recognized in US)",
+        "occupation": "Owner, HVAC company (started as technician)",
+        "income": 180000,
+        "marital_status": "Married 35 years",
+        "religion": "Eastern Orthodox",
+        "religion_activity": "moderate practice",
+        "political_affiliation": "Republican (strong)"
+      },
+      "dimensions": {
+        "attribution_orientation": 1,
+        "just_world_belief": 5,
+        "authoritarianism": 4,
+        "corporations": 4,
+        "institutional_trust_corporations": 4,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3.5,
+        "institutional_trust_legal_system": 3.5,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 1.5,
+        "leadership_tendency": 4,
+        "cognitive_style": 3.5,
+        "damages_orientation": 1
+      },
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "BOOT_1.7_ImmigrantDreamIvan",
+        "nickname": "Immigrant Dream Ivan",
+        "archetype": "BOOTSTRAPPER",
+        "archetype_strength": "1.0",
+        "liability_threshold": "0.85",
+        "contributory_fault_weight": "3.0",
+        "damage_multiplier": "0.2",
+        "special_traits": {
+          "immigrant_success_story": true,
+          "comparison_to_homeland": "0.9",
+          "american_dream_belief": 1
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.2_FarmRaisedFrancine",
+      "nickname": "Farm-Raised",
+      "full_name": "Farm-Raised Francine",
+      "tagline": "We don't sue our neighbors. We help them fix the fence.",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 55,
+        "gender": "female",
+        "race_ethnicity": "White (Scandinavian-American)",
+        "location": "Rural Iowa (small town outside Cedar Rapids)",
+        "location_city": "Rural Iowa",
+        "location_state": "sm",
+        "education": "Associate's in Nursing",
+        "education_level": "Associate's in Nursing",
+        "occupation": "Part-time nurse (clinic), farm wife",
+        "income": 45000,
+        "marital_status": "Married 32 years",
+        "religion": "Lutheran",
+        "religion_activity": "active",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "BOOT_1.8_FarmRaisedFrancine",
+        "nickname": "Farm-Raised Francine",
+        "archetype": "BOOTSTRAPPER",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.75",
+        "damage_multiplier": "0.35",
+        "regional_traits": {
+          "rural_stoicism": "0.9",
+          "community_reputation_concern": "0.85",
+          "distrust_of_lawyers": 0.8
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.3_BlueCollarBill",
+      "nickname": "Blue-Collar",
+      "full_name": "Blue-Collar Bill",
+      "tagline": "I worked 30 years with a bad back. Still never missed a day.",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.75,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 62,
+        "gender": "male",
+        "race_ethnicity": "White (Polish-American)",
+        "location": "Detroit suburbs (Warren, MI)",
+        "location_city": "Detroit suburbs",
+        "location_state": "Wa",
+        "education": "High school diploma, trade training",
+        "education_level": "High school diploma",
+        "occupation": "Retired auto worker (Ford, 33 years)",
+        "income": 52000,
+        "marital_status": "Married 38 years",
+        "religion": "Catholic",
+        "religion_activity": "but socially conservative",
+        "political_affiliation": "Democrat (union)",
+        "political_engagement": "but socially conservative"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "BOOT_1.9_BlueCollarBill",
+        "nickname": "Blue-Collar Bill",
+        "archetype": "BOOTSTRAPPER",
+        "archetype_strength": "0.75",
+        "liability_threshold": "0.65",
+        "damage_multiplier": "0.45",
+        "special_traits": {
+          "union_member_democrat": true,
+          "working_through_pain_pride": "0.9",
+          "disability_skepticism": 0.7
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_1.4_DoctorsDaughterDiana",
+      "nickname": "Doctor's-Daughter",
+      "full_name": "Doctor's-Daughter Diana",
+      "tagline": "Doctors save lives. Sometimes patients don't listen.",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.8,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 44,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Boston suburbs (Wellesley, MA)",
+        "location_city": "Boston suburbs",
+        "location_state": "We",
+        "education": "MBA, Boston University",
+        "education_level": "MBA",
+        "occupation": "Pharmaceutical Sales Representative",
+        "income": 165000,
+        "marital_status": "Married to attorney",
+        "religion": "Episcopal",
+        "religion_activity": "nominal",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "BOOT_1.10_DoctorsDaughterDiana",
+        "nickname": "Doctor's-Daughter Diana",
+        "archetype": "BOOTSTRAPPER",
+        "archetype_strength": "0.8",
+        "variant": "MEDICAL_DEFENSE_SPECIALIST",
+        "liability_threshold": "0.7",
+        "damage_multiplier": "0.5",
+        "case_specific": {
+          "medical_malpractice_defendant_boost": "0.4",
+          "physician_identification": 0.85
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_4.1_AttorneyAngela",
+      "nickname": "Attorney",
+      "full_name": "Attorney Angela",
+      "tagline": "I've tried cases for 25 years. I know how this works.",
+      "archetype": "bootstrapper",
+      "archetype_strength": 1,
+      "secondary_archetype": "bootstrapper",
+      "variant": null,
+      "demographics": {
+        "age": 52,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Chicago, Illinois",
+        "location_city": "Chicago",
+        "education": "JD, Northwestern",
+        "education_level": "JD",
+        "occupation": "Partner, corporate defense firm",
+        "income": 450000,
+        "marital_status": "Divorced",
+        "religion": "None",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "CAPT_4.4_AttorneyAngela",
+        "nickname": "Attorney Angela",
+        "archetype": "CAPTAIN",
+        "secondary_archetype": "BOOTSTRAPPER",
+        "archetype_strength": "1.0",
+        "liability_threshold": "0.8",
+        "damage_multiplier": "0.3",
+        "deliberation": {
+          "influence_weight": "2.8",
+          "legal_framing_power": "0.9",
+          "foreperson_probability": "0.75",
+          "other_juror_intimidation": 0.7
+        },
+        "plaintiff_warning": "STRIKE IMMEDIATELY"
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_4.2_UnionBossUmberto",
+      "nickname": "Union",
+      "full_name": "Union Boss Umberto",
+      "tagline": "I've fought for workers my whole life. I'm not stopping now.",
+      "archetype": "bootstrapper",
+      "archetype_strength": 1,
+      "secondary_archetype": "crusader",
+      "variant": null,
+      "demographics": {
+        "age": 55,
+        "gender": "male",
+        "race_ethnicity": "Latino (Mexican-American)",
+        "location": "Los Angeles, California",
+        "location_city": "Los Angeles",
+        "education": "Some college, extensive labor education programs",
+        "education_level": "Some college",
+        "occupation": "Regional Director, SEIU",
+        "income": 125000,
+        "marital_status": "Married",
+        "religion": "Catholic",
+        "religion_activity": "progressive",
+        "political_affiliation": "Democrat",
+        "political_engagement": "progressive"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "CAPT_4.7_UnionBossUmberto",
+        "nickname": "Union Boss Umberto",
+        "archetype": "CAPTAIN",
+        "secondary_archetype": "CRUSADER",
+        "archetype_strength": "1.0",
+        "liability_threshold": "0.2",
+        "damage_multiplier": "2.0",
+        "punitive_inclination": "0.9",
+        "deliberation": {
+          "influence_weight": "2.5",
+          "foreperson_probability": "0.7",
+          "pro_plaintiff_advocacy": 0.95
+        },
+        "defense_warning": "STRIKE IMMEDIATELY"
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "BOOT_10.1_LibertarianLarry",
+      "nickname": "Libertarian",
+      "full_name": "Libertarian Larry",
+      "tagline": "The government has no business telling me how to live or how to judge.",
+      "archetype": "bootstrapper",
+      "archetype_strength": 0.8,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 52,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Rural Montana",
+        "location_city": "Rural Montana",
+        "location_state": "va",
+        "education": "Some college",
+        "education_level": "Some college",
+        "occupation": "Cattle rancher",
+        "income": 65000,
+        "marital_status": "Married",
+        "religion": "Non-denominational",
+        "religion_activity": "sporadic",
+        "political_affiliation": "Libertarian"
+      },
+      "dimensions": {},
+      "life_experiences": [
+        "May refuse to apply regulations he disagrees with",
+        "Skeptical of any government-mandated standards",
+        "Could nullify either direction depending on case framing"
+      ],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "MAVE_10.2_LibertarianLarry",
+        "nickname": "Libertarian Larry",
+        "archetype": "MAVERICK",
+        "subtype": "ANTI_GOVERNMENT_NULLIFIER",
+        "instruction_compliance": "0.3",
+        "regulatory_skepticism": "0.95",
+        "unpredictability": "0.8",
+        "verdict_drivers": {
+          "legal_instructions": "0.2",
+          "personal_philosophy": "0.8",
+          "government_regulation_involved": "likely_defense"
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

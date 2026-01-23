@@ -1,0 +1,561 @@
+{
+  "archetype": "crusader",
+  "archetype_display_name": "The Crusader",
+  "archetype_tagline": "Fight the power",
+  "plaintiff_danger_level": 1,
+  "defense_danger_level": 5,
+  "archetype_centroids": {
+    "attribution_orientation": 4.5,
+    "just_world_belief": 1.5,
+    "authoritarianism": 1.5,
+    "corporations": 1.5,
+    "institutional_trust_corporations": 1.5,
+    "medical": 3,
+    "institutional_trust_medical": 3,
+    "legal_system": 2.5,
+    "institutional_trust_legal_system": 2.5,
+    "insurance": 1.5,
+    "institutional_trust_insurance": 1.5,
+    "litigation_attitude": 4.5,
+    "leadership_tendency": 3.5,
+    "cognitive_style": 3,
+    "damages_orientation": 4.5
+  },
+  "personas": [
+    {
+      "persona_id": "CRUS_2.1_RachelGreenberg",
+      "nickname": "Rachel",
+      "full_name": "Rachel Greenberg",
+      "tagline": "",
+      "archetype": "crusader",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 34,
+        "gender": "female",
+        "race_ethnicity": "White (Jewish)",
+        "location": "Brooklyn, New York (Park Slope)",
+        "location_city": "Brooklyn",
+        "location_state": "Pa",
+        "education": "Master's in Social Work, Columbia University",
+        "education_level": "Master's in Social Work",
+        "occupation": "Clinical Social Worker, community mental health center",
+        "income": 72000,
+        "marital_status": "Single",
+        "religion": "Jewish",
+        "religion_activity": "culturally identified, not observant",
+        "political_affiliation": "Democrat",
+        "political_engagement": "progressive"
+      },
+      "dimensions": {
+        "attribution_orientation": 4.5,
+        "just_world_belief": 1.5,
+        "authoritarianism": 1.5,
+        "corporations": 1.5,
+        "institutional_trust_corporations": 1.5,
+        "medical": 3,
+        "institutional_trust_medical": 3,
+        "legal_system": 2.5,
+        "institutional_trust_legal_system": 2.5,
+        "insurance": 1.5,
+        "institutional_trust_insurance": 1.5,
+        "litigation_attitude": 4.5,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 3,
+        "damages_orientation": 4.5
+      },
+      "life_experiences": [
+        "Internship at public defender's office exposed her to systemic inequality",
+        "Works daily with clients harmed by poverty, racism, corporate exploitation",
+        "Had a client die from inability to afford medication (pharmaceutical company villains)",
+        "Volunteered for tenant advocacy organization; saw corporate landlord abuses",
+        "Friend was injured by defective IUD; medical device company denied responsibility"
+      ],
+      "characteristic_phrases": [
+        "We need to look at the larger context",
+        "There's a power imbalance here",
+        "Corporations don't care about people, they care about profits",
+        "This is exactly what happens when there's no accountability",
+        "The little guy deserves to be heard",
+        "Think about what they were up against",
+        "Money is the only language corporations understand",
+        "Frames issues in systemic terms",
+        "Uses social justice vocabulary",
+        "Empathic, may become emotional about injustice",
+        "References her professional experience",
+        "May lecture other jurors about \"how things really work"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"When someone is injured, what's usually the main cause?\"",
+          "response": "It depends, but often there are systemic factors at play. Companies cut corners, regulations aren't enforced, workers don't have power to speak up about safety concerns. I see it in my work all the time—the people who get hurt are usually the ones with the least power to protect themselves."
+        },
+        "question_2": {
+          "question": "\"What's your reaction when you hear someone filed a lawsuit against a corporation?\"",
+          "response": "Honestly, my first thought is 'good for them.' It takes courage to stand up to a big company with all their lawyers. For most people, that's the only recourse they have. Companies have no incentive to do the right thing unless there are consequences."
+        },
+        "question_3": {
+          "question": "\"Could you be fair to a corporate defendant?\"",
+          "response": "I would try. I believe in hearing all the evidence. But I'll be honest—I've seen a lot in my work that makes me skeptical of corporate motives. I hope that doesn't disqualify me, because I think bringing diverse perspectives to the jury is important."
+        },
+        "question_4": {
+          "question": "\"Is there any amount of money you wouldn't award if the evidence supported it?\"",
+          "response": "No, I don't think so. If someone is seriously injured and a corporation is responsible, they should pay for it fully. These companies make billions. What's it to them? But to the person who was hurt, it could be the difference between getting their life back and not."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Active advocate for plaintiff position",
+        "deliberation_style": "Evidence-driven in principle, but interprets evidence through systemic lens",
+        "influence_tactics": [
+          "Appeals to fairness and justice",
+          "Invokes power imbalance",
+          "May become emotional about \"protecting the community",
+          "Challenges pro-defense jurors as being \"naive about how corporations work"
+        ],
+        "likely_statements": [
+          "Don't you see what they were dealing with?",
+          "This is exactly how corporations get away with things",
+          "We have a chance to send a message here",
+          "Think about your own family members in this situation"
+        ],
+        "persuadability": "Moderate-Low (0.35). Will consider evidence but through systemic lens."
+      },
+      "simulation_parameters": {
+        "juror_id": "ST_2.1_RachelGreenberg",
+        "archetype": "SYSTEMIC_THINKER",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.25",
+        "contributory_fault_weight": "0.3",
+        "damage_multiplier": "1.8",
+        "non_economic_acceptance": "0.9",
+        "punitive_inclination": "0.85",
+        "evidence_processing": {
+          "plaintiff_testimony_boost": "1.5",
+          "defendant_testimony_discount": "0.6",
+          "corporate_documents_suspicion": "1.4",
+          "emotional_evidence_weight": 1.3
+        },
+        "deliberation": {
+          "influence_weight": "1.6",
+          "persuadability": "0.35",
+          "position_stability": "0.75",
+          "speaking_share": "0.15",
+          "advocacy_intensity": 0.8
+        },
+        "defendant_type_modifiers": {
+          "corporation_large": -0.3,
+          "corporation_small": -0.15,
+          "individual": 0,
+          "government": -0.1
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CRUS_2.2_DeShawnWilliams",
+      "nickname": "DeShawn",
+      "full_name": "DeShawn Williams",
+      "tagline": "",
+      "archetype": "crusader",
+      "archetype_strength": 0.85,
+      "secondary_archetype": "authoritative_leader",
+      "variant": null,
+      "demographics": {
+        "age": 42,
+        "gender": "male",
+        "race_ethnicity": "Black",
+        "location": "Detroit, Michigan",
+        "location_city": "Detroit",
+        "location_state": "in",
+        "education": "Bachelor's in Labor Studies, Wayne State University",
+        "education_level": "Bachelor's in Labor Studies",
+        "occupation": "UAW Shop Steward, automotive plant",
+        "income": 78000,
+        "marital_status": "Married",
+        "religion": "Baptist",
+        "religion_activity": "regular attendee",
+        "political_affiliation": "Democrat",
+        "political_engagement": "union activist"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 2,
+        "authoritarianism": 2.5,
+        "corporations": 1.5,
+        "institutional_trust_corporations": 1.5,
+        "medical": 3,
+        "institutional_trust_medical": 3,
+        "legal_system": 2.5,
+        "institutional_trust_legal_system": 2.5,
+        "insurance": 2,
+        "institutional_trust_insurance": 2,
+        "litigation_attitude": 4,
+        "leadership_tendency": 4.5,
+        "cognitive_style": 3,
+        "damages_orientation": 4
+      },
+      "life_experiences": [
+        "His father was injured at work; company fought the workers' comp claim for years",
+        "Has personally witnessed safety violations that management ignored until someone got hurt",
+        "Negotiated countless grievances where he saw how companies treat workers as disposable",
+        "Lost friends to layoffs, addiction, suicide as plants closed",
+        "Deeply suspicious of corporate motives based on decades of direct experience",
+        "More working-class background than Rachel (Persona 2.1)",
+        "Systemic thinking comes from lived experience, not academic theory",
+        "Strong leadership presence; commands respect",
+        "Religious faith provides moral framework for justice beliefs"
+      ],
+      "characteristic_phrases": [
+        "I've seen how this works firsthand",
+        "The company will say anything to protect their bottom line",
+        "My members get injured all the time—you think the company cares?",
+        "Follow the money",
+        "They knew. They always know.",
+        "This isn't just about one person—it's about all of us",
+        "I've been fighting these fights for 20 years",
+        "Speaks from experience, not theory",
+        "Direct, working-class idiom",
+        "Morally certain but not preachy",
+        "Can connect with other working-class jurors regardless of their politics",
+        "Powerful storyteller"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"What do you do for work?\"",
+          "response": "I work at the Ford plant, been there 22 years. I'm also a shop steward with the UAW—that means I represent workers when they have problems with management. Grievances, safety issues, that kind of thing."
+        },
+        "question_2": {
+          "question": "\"Would your work experience affect how you view this case?\"",
+          "response": "Probably, yeah. I've seen a lot. I've seen companies cut corners on safety to save money. I've seen them fight injured workers on claims they clearly should pay. I'd try to be fair, but I can't pretend I don't know what I know."
+        },
+        "question_3": {
+          "question": "\"Could you be fair to a corporate defendant?\"",
+          "response": "I can listen to the evidence. But I won't lie to you—when a company says 'we followed all the procedures,' I'm going to look hard at whether that's actually true. I've heard that line too many times."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Likely foreperson or dominant voice",
+        "deliberation_style": "Evidence-driven, but interprets through working-class/labor lens",
+        "influence_tactics": [
+          "Personal stories and experiences",
+          "Let me tell you what really happens\" framing",
+          "Moral authority",
+          "Can connect with reluctant jurors through shared working-class identity"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "ST_2.2_DeShawnWilliams",
+        "archetype": "SYSTEMIC_THINKER",
+        "archetype_strength": "0.85",
+        "secondary_archetype": "AUTHORITATIVE_LEADER",
+        "liability_threshold": "0.3",
+        "contributory_fault_weight": "0.4",
+        "damage_multiplier": "1.6",
+        "deliberation": {
+          "influence_weight": "2.3",
+          "persuadability": "0.35",
+          "position_stability": "0.8",
+          "speaking_share": "0.20",
+          "foreperson_probability": 0.6
+        },
+        "working_class_credibility_bonus": "0.3",
+        "experiential_argument_weight": 1.5
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CRUS_2.3_ProfessorElenaVasquez",
+      "nickname": "Professor",
+      "full_name": "Professor Elena Vasquez",
+      "tagline": "",
+      "archetype": "crusader",
+      "archetype_strength": 1,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 56,
+        "gender": "female",
+        "race_ethnicity": "Latina (Mexican-American)",
+        "location": "Austin, Texas",
+        "location_city": "Austin",
+        "education": "Ph.D. in Sociology, UC Berkeley",
+        "education_level": "Ph.D. in Sociology",
+        "occupation": "Professor of Sociology, University of Texas",
+        "income": 125000,
+        "marital_status": "Married to another professor",
+        "religion": "Culturally Catholic",
+        "religion_activity": "not practicing",
+        "political_affiliation": "Democrat",
+        "political_engagement": "progressive activist"
+      },
+      "dimensions": {
+        "attribution_orientation": 5,
+        "just_world_belief": 1,
+        "authoritarianism": 1,
+        "corporations": 1,
+        "institutional_trust_corporations": 1,
+        "medical": 2.5,
+        "institutional_trust_medical": 2.5,
+        "legal_system": 2,
+        "institutional_trust_legal_system": 2,
+        "insurance": 1.5,
+        "institutional_trust_insurance": 1.5,
+        "litigation_attitude": 5,
+        "leadership_tendency": 4,
+        "cognitive_style": 4,
+        "damages_orientation": 5
+      },
+      "life_experiences": [
+        "Grew up in a farmworker family; saw exploitation firsthand",
+        "Academic work documents systemic injustice",
+        "Has served as expert witness in discrimination cases",
+        "Sits on boards of several social justice organizations",
+        "Publishes op-eds criticizing \"tort reform\" as corporate propaganda"
+      ],
+      "characteristic_phrases": [
+        "The research is clear on this",
+        "Structurally speaking...",
+        "This reflects broader patterns of corporate impunity",
+        "We have to consider the power dynamics",
+        "What we're seeing here is a classic case of...",
+        "The sociological literature demonstrates...",
+        "Academic vocabulary and framing",
+        "References research and data",
+        "May come across as lecturing",
+        "Highly articulate and confident",
+        "May alienate less educated jurors with academic tone"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Your questionnaire mentions you've written about corporate accountability. Can you tell me about that?\"",
+          "response": "Yes, my research focuses on how power structures shape legal outcomes. I've studied how corporations use their resources to avoid accountability. I have strong opinions on these issues—they're backed by decades of research—but I believe I can still evaluate evidence fairly."
+        },
+        "question_2": {
+          "question": "\"Could you set aside your academic views and just evaluate the evidence?\"",
+          "response": "I can try. Though I'd say my 'views' are really just conclusions drawn from evidence. But I understand you're asking whether I'd prejudge this case, and the answer is no. I'd want to see what happened here specifically."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Intellectual leader, provides \"expert\" framing",
+        "deliberation_style": "Will try to elevate discussion to systemic analysis"
+      },
+      "simulation_parameters": {
+        "juror_id": "ST_2.3_ElenaVasquez",
+        "archetype": "SYSTEMIC_THINKER",
+        "archetype_strength": "1.0",
+        "liability_threshold": "0.2",
+        "contributory_fault_weight": "0.2",
+        "damage_multiplier": "2.0",
+        "punitive_inclination": "0.95",
+        "cause_challenge_vulnerability": "0.75",
+        "academic_credibility_modifier": {
+          "high_education_jurors": "1.3",
+          "low_education_jurors": 0.7
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CRUS_2.4_TommyOBrien",
+      "nickname": "Tommy",
+      "full_name": "Tommy O'Brien",
+      "tagline": "",
+      "archetype": "crusader",
+      "archetype_strength": 0.75,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 29,
+        "gender": "male",
+        "race_ethnicity": "White (Irish-American)",
+        "location": "Boston, Massachusetts (Dorchester)",
+        "location_city": "Boston",
+        "location_state": "Do",
+        "education": "Some college, dropped out",
+        "education_level": "Some college",
+        "occupation": "Bartender, also does gig work (Uber, DoorDash)",
+        "income": 38000,
+        "marital_status": "Single",
+        "religion": "Lapsed Catholic",
+        "religion_activity": "Bernie Sanders supporter in 2020",
+        "political_affiliation": "Independent",
+        "political_engagement": "Bernie Sanders supporter in 2020"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 1.5,
+        "authoritarianism": 2,
+        "corporations": 1.5,
+        "institutional_trust_corporations": 1.5,
+        "medical": 2.5,
+        "institutional_trust_medical": 2.5,
+        "legal_system": 2,
+        "institutional_trust_legal_system": 2,
+        "insurance": 1.5,
+        "institutional_trust_insurance": 1.5,
+        "litigation_attitude": 4,
+        "leadership_tendency": 2.5,
+        "cognitive_style": 2.5,
+        "damages_orientation": 4
+      },
+      "life_experiences": [
+        "Student loans without a degree; feels screwed by the system",
+        "No health insurance through gig work; fears any injury would bankrupt him",
+        "Watched his parents lose their house in 2008; blamed banks",
+        "Friends have been injured in gig work with no protection",
+        "Gets his news from podcasts and social media; distrusts \"mainstream\" sources",
+        "Less ideologically articulate than other Systemic Thinkers",
+        "Anger at \"the system\" is personal, not theoretical",
+        "May be unpredictable—populist anger could go either direction in some cases",
+        "Can connect with other working-class jurors across political lines on economic issues"
+      ],
+      "characteristic_phrases": [
+        "The system is rigged",
+        "Big companies don't give a shit about regular people",
+        "I'd be screwed if that happened to me",
+        "That's messed up",
+        "They got lawyers, what do regular people got?",
+        "It's all about money for these corporations",
+        "Casual, sometimes crude language",
+        "Emotion-driven rather than analytical",
+        "Expresses frustration with injustice",
+        "May be seen as less credible by educated jurors"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"What do you think about large corporations?\"",
+          "response": "Honestly? Not much. They don't care about workers, they don't care about customers, they just care about their bottom line. I've worked for enough of them to know."
+        },
+        "question_2": {
+          "question": "\"Could you be fair to a corporate defendant?\"",
+          "response": "I mean, yeah, I'd listen. But I've seen how they treat people. If they did something wrong, they should pay. That's fair."
+        }
+      },
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "ST_2.4_TommyOBrien",
+        "archetype": "SYSTEMIC_THINKER",
+        "archetype_strength": "0.75",
+        "liability_threshold": "0.35",
+        "damage_multiplier": "1.5",
+        "deliberation": {
+          "influence_weight": "1.0",
+          "persuadability": "0.45",
+          "speaking_share": 0.08
+        },
+        "emotional_volatility": "0.6",
+        "populist_susceptibility": 0.7
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CRUS_2.1_NurseAdvocateNadine",
+      "nickname": "Nurse",
+      "full_name": "Nurse Advocate Nadine",
+      "tagline": "I've seen hospitals cover up mistakes. They always protect themselves first.",
+      "archetype": "crusader",
+      "archetype_strength": 0.85,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 48,
+        "gender": "female",
+        "race_ethnicity": "Black",
+        "location": "Baltimore, Maryland",
+        "location_city": "Baltimore",
+        "location_state": "IC",
+        "education": "BSN, Johns Hopkins",
+        "education_level": "BSN",
+        "occupation": "Registered Nurse (ICU) + Union Representative",
+        "income": 78000,
+        "marital_status": "Divorced",
+        "religion": "Baptist",
+        "religion_activity": "active",
+        "political_affiliation": "Democrat",
+        "political_engagement": "progressive"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "CRUS_2.7_NurseAdvocateNadine",
+        "nickname": "Nurse Advocate Nadine",
+        "archetype": "CRUSADER",
+        "archetype_strength": "0.85",
+        "liability_threshold": "0.3",
+        "damage_multiplier": "1.6",
+        "expertise_areas": {
+          "medical_malpractice": "0.9",
+          "nursing_home": "0.85",
+          "workplace_safety": 0.7
+        },
+        "special_traits": {
+          "insider_knowledge_medical": true,
+          "chart_skepticism": "0.8",
+          "jury_education_ability": 0.85
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CRUS_2.2_TeacherActivistTanya",
+      "nickname": "Teacher-Activist",
+      "full_name": "Teacher-Activist Tanya",
+      "tagline": "I see how the system fails kids every day. Corporations are worse.",
+      "archetype": "crusader",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 35,
+        "gender": "female",
+        "race_ethnicity": "Black",
+        "location": "Atlanta, Georgia",
+        "location_city": "Atlanta",
+        "education": "Master's in Education",
+        "education_level": "Master's in Education",
+        "occupation": "Public High School Teacher (10 years)",
+        "income": 56000,
+        "marital_status": "Single",
+        "religion": "AME Church",
+        "religion_activity": "active",
+        "political_affiliation": "Democrat",
+        "political_engagement": "progressive activist"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "CRUS_2.9_TeacherActivistTanya",
+        "nickname": "Teacher-Activist Tanya",
+        "archetype": "CRUSADER",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.25",
+        "damage_multiplier": "1.8",
+        "punitive_inclination": "0.85",
+        "regional_traits": {
+          "southern_urban_progressive": true,
+          "community_rootedness": 0.9
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

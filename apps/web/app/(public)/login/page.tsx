@@ -104,7 +104,7 @@ export default function LoginPage() {
             <p className="text-xs text-filevine-gray-600">
               <strong>Demo Credentials:</strong><br />
               Email: attorney@example.com<br />
-              Password: password
+              Password: password123
             </p>
           </div>
         </form>

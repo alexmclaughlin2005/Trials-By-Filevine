@@ -4,11 +4,13 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
 import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { ResearchSummarizer } from '@/components/research-summarizer';
+import { JuryBoxView } from './jury-box-view';
+import { JuryBoxConfig } from './jury-box-config';
 
 interface ScoreFactors {
   nameScore: number;
@@ -35,6 +37,9 @@ interface Juror {
   city: string | null;
   zipCode: string | null;
   status: string;
+  boxRow?: number | null;
+  boxSeat?: number | null;
+  boxOrder?: number | null;
   researchArtifacts?: Array<{
     id: string;
     sourceType: string;
@@ -69,6 +74,8 @@ interface JuryPanel {
   source: string;
   version: number;
   totalJurors: number;
+  juryBoxSize?: number;
+  juryBoxRows?: number;
   jurors: Juror[];
   case: {
     id: string;
@@ -88,6 +95,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const queryClient = useQueryClient();
   const [showJurorDialog, setShowJurorDialog] = useState(false);
   const [expandedJurors, setExpandedJurors] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<'list' | 'jury-box'>('list');
 
   // Fetch jury panels with full juror data including research
   const { data, isLoading, error, refetch } = useQuery({
@@ -125,9 +133,24 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         zipCode: jurorForm.zipCode || undefined,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['case', caseId, 'panels'] });
-      queryClient.invalidateQueries({ queryKey: ['case', caseId] });
+    onSuccess: async () => {
+      // Invalidate and refetch all related queries to refresh the UI immediately
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['case', caseId, 'panels'] }),
+        queryClient.invalidateQueries({ queryKey: ['case', caseId] }),
+      ]);
+      
+      // Invalidate jury-box query if panel exists
+      if (panel?.id) {
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['panel', panel.id, 'jury-box'] }),
+          queryClient.invalidateQueries({ queryKey: ['panel', panel.id] }),
+        ]);
+      }
+      
+      // Explicitly refetch the panels query to ensure immediate update
+      await refetch();
+      
       setShowJurorDialog(false);
       setJurorForm({
         jurorNumber: '',
@@ -188,23 +211,84 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
             Manage jurors and conduct research for this case
           </p>
         </div>
-        <Button onClick={() => setShowJurorDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Juror
-        </Button>
-      </div>
-
-      {/* Jurors List */}
-      {jurors.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-          <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-          <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
+        <div className="flex items-center gap-3">
+          {/* View Mode Toggle */}
+          <div className="flex items-center gap-1 rounded-lg border bg-background p-1">
+            <button
+              type="button"
+              onClick={() => setViewMode('list')}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded transition-colors
+                ${
+                  viewMode === 'list'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+            >
+              <List className="h-4 w-4" />
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('jury-box')}
+              className={`
+                flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded transition-colors
+                ${
+                  viewMode === 'jury-box'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }
+              `}
+            >
+              <LayoutGrid className="h-4 w-4" />
+              Jury Box
+            </button>
+          </div>
           <Button onClick={() => setShowJurorDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Juror
           </Button>
         </div>
+      </div>
+
+      {/* View Mode Content */}
+      {viewMode === 'jury-box' ? (
+        <div className="space-y-6">
+          {/* Jury Box Configuration */}
+          <JuryBoxConfig
+            panelId={panel.id}
+            currentSize={panel.juryBoxSize ?? 12}
+            currentRows={panel.juryBoxRows ?? 1}
+          />
+
+          {/* Jury Box View (includes pool inside DndContext) */}
+          <JuryBoxView
+            panelId={panel.id}
+            onJurorClick={(jurorId) => {
+              const newExpanded = new Set(expandedJurors);
+              if (newExpanded.has(jurorId)) {
+                newExpanded.delete(jurorId);
+              } else {
+                newExpanded.add(jurorId);
+              }
+              setExpandedJurors(newExpanded);
+            }}
+          />
+        </div>
       ) : (
+        <>
+          {/* Jurors List */}
+          {jurors.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+              <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
+              <Button onClick={() => setShowJurorDialog(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Juror
+              </Button>
+            </div>
+          ) : (
         <div className="space-y-3">
           {jurors.map((juror) => (
             <div key={juror.id} className="border rounded-lg bg-background">
@@ -336,6 +420,8 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
             </div>
           ))}
         </div>
+          )}
+        </>
       )}
 
       {/* Create Juror Dialog */}

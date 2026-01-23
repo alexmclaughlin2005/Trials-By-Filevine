@@ -1,0 +1,323 @@
+{
+  "archetype": "heart",
+  "archetype_display_name": "The Heart",
+  "archetype_tagline": "I feel your pain",
+  "plaintiff_danger_level": 2,
+  "defense_danger_level": 4,
+  "archetype_centroids": {
+    "attribution_orientation": 4,
+    "just_world_belief": 2,
+    "authoritarianism": 2,
+    "corporations": 2.5,
+    "institutional_trust_corporations": 2.5,
+    "medical": 3,
+    "institutional_trust_medical": 3,
+    "legal_system": 3,
+    "institutional_trust_legal_system": 3,
+    "insurance": 2,
+    "institutional_trust_insurance": 2,
+    "litigation_attitude": 4,
+    "leadership_tendency": 3,
+    "cognitive_style": 1.5,
+    "damages_orientation": 4.5
+  },
+  "personas": [
+    {
+      "persona_id": "HEART_8.1_JenniferMartinez",
+      "nickname": "Jennifer",
+      "full_name": "Jennifer Martinez",
+      "tagline": "",
+      "archetype": "heart",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 36,
+        "gender": "female",
+        "race_ethnicity": "Latina (Mexican-American)",
+        "location": "San Antonio, Texas",
+        "location_city": "San Antonio",
+        "education": "Master's in Counseling Psychology",
+        "education_level": "Master's in Counseling Psychology",
+        "occupation": "School Counselor",
+        "income": 58000,
+        "marital_status": "Married",
+        "religion": "Catholic",
+        "religion_activity": "active",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 2,
+        "authoritarianism": 2,
+        "corporations": 2.5,
+        "institutional_trust_corporations": 2.5,
+        "medical": 3,
+        "institutional_trust_medical": 3,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 2,
+        "institutional_trust_insurance": 2,
+        "litigation_attitude": 4,
+        "leadership_tendency": 3,
+        "cognitive_style": 1.5,
+        "damages_orientation": 4.5
+      },
+      "life_experiences": [
+        "Daily work involves hearing stories of suffering",
+        "Trained to empathize and connect emotionally",
+        "Has seen how trauma affects people long-term",
+        "Values human stories over data",
+        "Naturally protective of vulnerable people"
+      ],
+      "characteristic_phrases": [
+        "I can only imagine what they went through",
+        "Think about how this affected their family",
+        "There's a human being behind these facts",
+        "Pain isn't just physical",
+        "This will affect them for the rest of their life",
+        "We have to think about what's fair for this person",
+        "Empathic, warm tone",
+        "Focuses on human impact",
+        "May become emotional",
+        "Uses feeling language",
+        "Connects evidence to real-world consequences"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"How would you evaluate someone's claim of pain and suffering?\"",
+          "response": "I work with people who are suffering every day. I know pain is real even when you can't see it. I know how trauma affects people long-term. I'd listen carefully to what the person experienced and how it changed their life."
+        },
+        "question_2": {
+          "question": "\"Could you set aside sympathy and focus only on the evidence?\"",
+          "response": "I'll try to be fair, but I think empathy is part of being human. Understanding what someone went through isn't the same as being unfair. I believe I can be both compassionate and fair."
+        },
+        "question_3": {
+          "question": "\"Would your counseling background affect your view?\"",
+          "response": "Probably. I understand psychological trauma in a way that maybe others don't. I know that emotional harm is just as real as physical harm. I'd bring that perspective to the jury."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Humanizer; will keep focus on plaintiff's experience",
+        "deliberation_style": "Narrative-driven; interprets everything through human impact lens",
+        "influence_tactics": [
+          "Personal connection to suffering",
+          "Imagine if this was your family",
+          "Emotional appeals"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "EC_8.1_JenniferMartinez",
+        "archetype": "EMPATHIC_CONNECTOR",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.35",
+        "contributory_fault_weight": "0.5",
+        "damage_multiplier": "1.7",
+        "non_economic_acceptance": "0.95",
+        "evidence_processing": {
+          "narrative_weight": "2.0",
+          "plaintiff_testimony_weight": "1.6",
+          "emotional_evidence_weight": "1.5",
+          "statistical_evidence_weight": 0.6
+        },
+        "deliberation": {
+          "influence_weight": "1.4",
+          "persuadability": "0.4",
+          "position_stability": "0.7",
+          "humanizing_frequency": 0.85
+        },
+        "special_modifiers": {
+          "child_plaintiff_boost": "0.3",
+          "sympathetic_plaintiff_boost": 0.25
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "HEART_8.2_NursePatricia",
+      "nickname": "Nurse",
+      "full_name": "Nurse Patricia",
+      "tagline": "",
+      "archetype": "heart",
+      "archetype_strength": 0.85,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 55,
+        "gender": "female",
+        "race_ethnicity": "White (Irish-American)",
+        "location": "Boston, Massachusetts",
+        "location_city": "Boston",
+        "location_state": "On",
+        "education": "BSN, Associate's in Nursing originally",
+        "education_level": "BSN",
+        "occupation": "Nurse (Oncology unit, 30 years)",
+        "income": 85000,
+        "marital_status": "Widowed (husband died of cancer)",
+        "religion": "Catholic",
+        "religion_activity": "very devout",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {
+        "attribution_orientation": 3.5,
+        "just_world_belief": 1.5,
+        "authoritarianism": 2.5,
+        "corporations": 2.5,
+        "institutional_trust_corporations": 2.5,
+        "medical": 3,
+        "institutional_trust_medical": 3,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 2,
+        "institutional_trust_insurance": 2,
+        "litigation_attitude": 3.5,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 2,
+        "damages_orientation": 4
+      },
+      "life_experiences": [
+        "Three decades caring for cancer patients",
+        "Husband's death from cancer after long illness",
+        "Has seen medical errors happen (doesn't always blame)",
+        "Knows that pain and suffering are very real",
+        "Understands the limitations of medicine",
+        "Catholic faith emphasizes suffering and compassion"
+      ],
+      "characteristic_phrases": [
+        "I've sat with patients through worse than this",
+        "Pain is real—I see it every day",
+        "You can't put a price on suffering, but you have to try",
+        "I've seen what happens when things go wrong",
+        "That person will never be the same",
+        "Let me tell you what I've seen...",
+        "Warm, maternal tone",
+        "Lots of personal stories from nursing",
+        "Faith-influenced compassion",
+        "Balances empathy with medical knowledge",
+        "Credible on medical issues"
+      ],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {
+        "predicted_role": "Empathic voice with medical credibility",
+        "deliberation_style": "Stories from the bedside"
+      },
+      "simulation_parameters": {
+        "juror_id": "EC_8.2_PattyOSullivan",
+        "archetype": "EMPATHIC_CONNECTOR",
+        "archetype_strength": "0.85",
+        "liability_threshold": "0.4",
+        "damage_multiplier": "1.5",
+        "evidence_processing": {
+          "medical_knowledge_bonus": "0.2",
+          "pain_testimony_weight": "1.6",
+          "medical_complexity_understanding": 1.4
+        },
+        "deliberation": {
+          "influence_weight": "1.5",
+          "medical_credibility": "0.8",
+          "personal_stories_frequency": 0.7
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "HEART_8.1_CaregiverCarol",
+      "nickname": "Caregiver",
+      "full_name": "Caregiver Carol",
+      "tagline": "I spent five years caring for my mother after her stroke. I know what families go through.",
+      "archetype": "heart",
+      "archetype_strength": 0.85,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 58,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Cleveland, Ohio",
+        "location_city": "Cleveland",
+        "location_state": "no",
+        "education": "Bachelor's in Early Childhood Education",
+        "education_level": "Bachelor's in Early Childhood Education",
+        "occupation": "Retired teacher, full-time caregiver for mother (now deceased)",
+        "income": 35000,
+        "marital_status": "Divorced",
+        "religion": "Lutheran",
+        "religion_activity": "moderate",
+        "political_affiliation": "Democrat",
+        "political_engagement": "moderate"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "HEART_8.5_CaregiverCarol",
+        "nickname": "Caregiver Carol",
+        "archetype": "HEART",
+        "archetype_strength": "0.85",
+        "liability_threshold": "0.35",
+        "damage_multiplier": "1.6",
+        "experience_lens": {
+          "caregiver_identification": "0.9",
+          "life_care_plan_appreciation": "0.85",
+          "family_impact_sensitivity": 0.9
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "HEART_8.2_SundaySchoolSandra",
+      "nickname": "Sunday-School",
+      "full_name": "Sunday-School Sandra",
+      "tagline": "The Bible says to care for the least of these. That's what justice means.",
+      "archetype": "heart",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 65,
+        "gender": "female",
+        "race_ethnicity": "Black",
+        "location": "Birmingham, Alabama",
+        "location_city": "Birmingham",
+        "location_state": "So",
+        "education": "High school diploma",
+        "education_level": "High school diploma",
+        "occupation": "Retired cafeteria worker, active church volunteer",
+        "income": 26000,
+        "marital_status": "Married 45 years",
+        "religion": "Baptist",
+        "religion_activity": "very devout (teaches Sunday School, sings in choir)",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "HEART_8.7_SundaySchoolSandra",
+        "nickname": "Sunday-School Sandra",
+        "archetype": "HEART",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.35",
+        "damage_multiplier": "1.5",
+        "moral_framework": {
+          "faith_driven": "0.95",
+          "compassion_imperative": "0.9",
+          "justice_as_religious_duty": 0.85
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

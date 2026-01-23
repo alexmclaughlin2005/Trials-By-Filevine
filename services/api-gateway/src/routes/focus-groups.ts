@@ -136,7 +136,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           panelType: 'simulated',
           argumentId,
           status: 'completed',
-          createdBy: (request.user as any).id,
+          createdBy: (request.user as any).userId,
           completedAt: new Date(),
         },
       });
@@ -256,6 +256,264 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       }
 
       return { session };
+    },
+  });
+
+  // ============================================
+  // NEW: Focus Group Configuration Routes
+  // ============================================
+
+  // Create a new focus group session (initial setup)
+  server.post('/sessions', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId, userId } = request.user as any;
+      const { caseId, name, description } = request.body as any;
+
+      if (!caseId) {
+        reply.code(400);
+        return { error: 'caseId is required' };
+      }
+
+      // Verify case belongs to organization
+      const caseData = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId },
+      });
+
+      if (!caseData) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Create new session in draft state
+      const session = await server.prisma.focusGroupSession.create({
+        data: {
+          caseId,
+          name: name || `Focus Group - ${new Date().toLocaleDateString()}`,
+          description: description || null,
+          panelType: 'custom',
+          status: 'draft',
+          configurationStep: 'setup',
+          archetypeSelectionMode: 'random',
+          archetypeCount: 6,
+          createdBy: userId,
+        },
+      });
+
+      return { session };
+    },
+  });
+
+  // Update focus group configuration
+  server.patch('/sessions/:sessionId/config', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params as any;
+      const {
+        name,
+        description,
+        archetypeSelectionMode,
+        selectedArchetypes,
+        archetypeCount,
+        selectedArguments,
+        customQuestions,
+        configurationStep,
+      } = request.body as any;
+
+      // Verify session exists and belongs to organization
+      const existingSession = await server.prisma.focusGroupSession.findFirst({
+        where: {
+          id: sessionId,
+          case: { organizationId },
+        },
+      });
+
+      if (!existingSession) {
+        reply.code(404);
+        return { error: 'Focus group session not found' };
+      }
+
+      // Can only update configuration if session is in draft
+      if (existingSession.status !== 'draft') {
+        reply.code(400);
+        return { error: 'Cannot update configuration of non-draft session' };
+      }
+
+      // Update session
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+      if (archetypeSelectionMode !== undefined)
+        updateData.archetypeSelectionMode = archetypeSelectionMode;
+      if (selectedArchetypes !== undefined) updateData.selectedArchetypes = selectedArchetypes;
+      if (archetypeCount !== undefined) updateData.archetypeCount = archetypeCount;
+      if (selectedArguments !== undefined) updateData.selectedArguments = selectedArguments;
+      if (customQuestions !== undefined) updateData.customQuestions = customQuestions;
+      if (configurationStep !== undefined) updateData.configurationStep = configurationStep;
+
+      const session = await server.prisma.focusGroupSession.update({
+        where: { id: sessionId },
+        data: updateData,
+      });
+
+      return { session };
+    },
+  });
+
+  // Start focus group simulation
+  server.post('/sessions/:sessionId/start', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params as any;
+
+      // Get session with full details
+      const session = await server.prisma.focusGroupSession.findFirst({
+        where: {
+          id: sessionId,
+          case: { organizationId },
+        },
+        include: {
+          case: {
+            include: {
+              facts: {
+                orderBy: { sortOrder: 'asc' },
+              },
+            },
+          },
+        },
+      });
+
+      if (!session) {
+        reply.code(404);
+        return { error: 'Focus group session not found' };
+      }
+
+      if (session.status !== 'draft') {
+        reply.code(400);
+        return { error: 'Session has already been started' };
+      }
+
+      // Validate configuration
+      if (!session.selectedArguments || (session.selectedArguments as any[]).length === 0) {
+        reply.code(400);
+        return { error: 'No arguments selected for focus group' };
+      }
+
+      // Update session status
+      await server.prisma.focusGroupSession.update({
+        where: { id: sessionId },
+        data: {
+          status: 'running',
+          startedAt: new Date(),
+          configurationStep: 'ready',
+        },
+      });
+
+      return {
+        message: 'Focus group simulation started',
+        sessionId: session.id,
+      };
+    },
+  });
+
+  // Get available archetypes for panel configuration
+  server.get('/archetypes', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { caseId } = request.query as any;
+
+      // If caseId provided, get archetypes from case jurors
+      if (caseId) {
+        const caseData = await server.prisma.case.findFirst({
+          where: { id: caseId, organizationId },
+        });
+
+        if (!caseData) {
+          reply.code(404);
+          return { error: 'Case not found' };
+        }
+
+        // Get classified jurors from case
+        const jurors = await server.prisma.juror.findMany({
+          where: {
+            panel: {
+              caseId,
+            },
+            classifiedArchetype: {
+              not: null,
+            },
+          },
+          select: {
+            classifiedArchetype: true,
+            archetypeConfidence: true,
+            firstName: true,
+            lastName: true,
+          },
+        });
+
+        // Extract unique archetypes with juror info
+        const archetypes = jurors.map((juror) => ({
+          name: juror.classifiedArchetype!,
+          confidence: juror.archetypeConfidence
+            ? parseFloat(juror.archetypeConfidence.toString())
+            : 0,
+          jurorName: `${juror.firstName} ${juror.lastName}`,
+        }));
+
+        return { archetypes, source: 'case_jurors' };
+      }
+
+      // Otherwise return system archetypes (from archetype config)
+      const archetypeConfigs = await server.prisma.archetypeConfig.findMany({
+        where: {
+          isActive: true,
+          configType: 'system',
+        },
+      });
+
+      const archetypes = archetypeConfigs.map((config) => ({
+        name: config.archetypeName,
+        description: config.description,
+        category: config.category,
+      }));
+
+      return { archetypes, source: 'system' };
+    },
+  });
+
+  // Delete focus group session
+  server.delete('/sessions/:sessionId', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { sessionId } = request.params as any;
+
+      const session = await server.prisma.focusGroupSession.findFirst({
+        where: {
+          id: sessionId,
+          case: { organizationId },
+        },
+      });
+
+      if (!session) {
+        reply.code(404);
+        return { error: 'Focus group session not found' };
+      }
+
+      // Can only delete draft sessions
+      if (session.status !== 'draft') {
+        reply.code(400);
+        return { error: 'Cannot delete non-draft session' };
+      }
+
+      await server.prisma.focusGroupSession.delete({
+        where: { id: sessionId },
+      });
+
+      return { message: 'Focus group session deleted' };
     },
   });
 }

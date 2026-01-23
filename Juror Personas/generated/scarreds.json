@@ -1,0 +1,417 @@
+{
+  "archetype": "scarred",
+  "archetype_display_name": "The Scarred",
+  "archetype_tagline": "I've been there",
+  "plaintiff_danger_level": 3,
+  "defense_danger_level": 3,
+  "archetype_centroids": {
+    "attribution_orientation": 4,
+    "just_world_belief": 1.5,
+    "authoritarianism": 2,
+    "corporations": 2,
+    "institutional_trust_corporations": 2,
+    "medical": 2,
+    "institutional_trust_medical": 2,
+    "legal_system": 2.5,
+    "institutional_trust_legal_system": 2.5,
+    "insurance": 1.5,
+    "institutional_trust_insurance": 1.5,
+    "litigation_attitude": 4.5,
+    "leadership_tendency": 3.5,
+    "cognitive_style": 2.5,
+    "damages_orientation": 4.5
+  },
+  "personas": [
+    {
+      "persona_id": "SCAR_6.1_SandraMitchell",
+      "nickname": "Sandra",
+      "full_name": "Sandra Mitchell",
+      "tagline": "",
+      "archetype": "scarred",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 48,
+        "gender": "female",
+        "race_ethnicity": "Black",
+        "location": "Chicago, Illinois",
+        "location_city": "Chicago",
+        "location_state": "RN",
+        "education": "Bachelor's in Nursing (RN)",
+        "education_level": "Bachelor's in Nursing (RN)",
+        "occupation": "School nurse",
+        "income": 58000,
+        "marital_status": "Divorced",
+        "religion": "Baptist",
+        "religion_activity": "active",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 1.5,
+        "authoritarianism": 2,
+        "corporations": 2,
+        "institutional_trust_corporations": 2,
+        "medical": 2,
+        "institutional_trust_medical": 2,
+        "legal_system": 2.5,
+        "institutional_trust_legal_system": 2.5,
+        "insurance": 1.5,
+        "institutional_trust_insurance": 1.5,
+        "litigation_attitude": 4.5,
+        "leadership_tendency": 3.5,
+        "cognitive_style": 2.5,
+        "damages_orientation": 4.5
+      },
+      "life_experiences": [
+        "Surgical error caused permanent nerve damage",
+        "Hospital initially denied wrongdoing, then settled when evidence was overwhelming",
+        "Insurance company fought her for years",
+        "Still suffers chronic pain; can't do some activities with her kids",
+        "Settlement didn't cover all her losses",
+        "Experience radicalized her about medical and institutional accountability"
+      ],
+      "characteristic_phrases": [
+        "I know exactly what they're going through",
+        "Hospitals cover things up - I've seen it",
+        "Insurance companies will do anything to avoid paying",
+        "Pain is real, and it doesn't go away",
+        "I was told I was fine too, and I wasn't",
+        "If I hadn't sued, they would have gotten away with it",
+        "Passionate, sometimes emotional",
+        "Personal experience is constant reference point",
+        "Nursing knowledge adds credibility",
+        "May become advocate for plaintiff"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Have you or anyone close to you ever been seriously injured?\"",
+          "response": "Yes. I was injured during surgery ten years ago. I sued the hospital and eventually settled. I still live with chronic pain every day. I know what it's like to be in that plaintiff's seat."
+        },
+        "question_2": {
+          "question": "\"Would that experience affect how you view this case?\"",
+          "response": "I'd try to be fair, but I won't lie - I know what injured people go through. I know how hard it is to fight against these big institutions. I also know how much pain can affect your life even years later. I'd bring that understanding to the jury room."
+        },
+        "question_3": {
+          "question": "\"Could you be fair to a medical provider defendant?\"",
+          "response": "I could listen to the evidence. But I've seen how hospitals operate from both sides - as a nurse and as a patient who was hurt. I know mistakes happen and I know they get covered up."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Strong advocate for plaintiff; personal experience gives authority",
+        "deliberation_style": "Interprets all evidence through personal experience lens",
+        "influence_tactics": [
+          "Personal testimony: \"Let me tell you what I went through",
+          "Nursing credibility: \"I know how these things work",
+          "Emotional intensity"
+        ]
+      },
+      "simulation_parameters": {
+        "juror_id": "WV_6.1_SandraMitchell",
+        "archetype": "WOUNDED_VETERAN",
+        "subtype": "WRONGED_PATIENT",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.25",
+        "contributory_fault_weight": "0.4",
+        "damage_multiplier": "1.8",
+        "experience_filter": {
+          "medical_cases_modifier": -0.3,
+          "institutional_cases_modifier": -0.2,
+          "analogical_reasoning": 0.85
+        },
+        "deliberation": {
+          "influence_weight": "1.7",
+          "persuadability": "0.25",
+          "position_stability": "0.85",
+          "personal_testimony_impact": 0.8
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "SCAR_6.2_HaroldJennings",
+      "nickname": "Harold",
+      "full_name": "Harold Jennings",
+      "tagline": "",
+      "archetype": "scarred",
+      "archetype_strength": 0.85,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 66,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Rural Pennsylvania",
+        "location_city": "Rural Pennsylvania",
+        "location_state": "So",
+        "education": "High school diploma",
+        "education_level": "High school diploma",
+        "occupation": "Retired factory worker",
+        "income": 28000,
+        "marital_status": "Married 42 years",
+        "religion": "Lutheran",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 2,
+        "just_world_belief": 4.5,
+        "authoritarianism": 4,
+        "corporations": 3.5,
+        "institutional_trust_corporations": 3.5,
+        "medical": 3.5,
+        "institutional_trust_medical": 3.5,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 1.5,
+        "leadership_tendency": 2.5,
+        "cognitive_style": 2.5,
+        "damages_orientation": 1.5
+      },
+      "life_experiences": [
+        "Back injury at factory; company offered modest workers' comp",
+        "Wife wanted to sue; he refused on principle",
+        "Worked through pain for another 15 years until retirement",
+        "Views his sacrifice as proof of character",
+        "Sees lawsuit plaintiffs as weak or greedy"
+      ],
+      "characteristic_phrases": [
+        "I was hurt bad and I didn't sue anybody",
+        "Nobody gave me a handout",
+        "People today just want easy money",
+        "I worked through the pain",
+        "What ever happened to toughing it out?",
+        "My generation didn't sue people",
+        "Resentful undertone",
+        "Compares plaintiff unfavorably to himself",
+        "Moralistic framing",
+        "May become emotional about his own sacrifice"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Have you ever been injured?\"",
+          "response": "Yes, I hurt my back at the factory. Doctor said I could sue, wife wanted me to. I said no. I worked for another 15 years with that bad back. I didn't look for a handout."
+        },
+        "question_2": {
+          "question": "\"Would that experience affect how you view this case?\"",
+          "response": "Probably. I guess I expect people to handle things the way I did. I don't have a lot of patience for people who run to lawyers every time something goes wrong."
+        },
+        "question_3": {
+          "question": "\"Could you award damages to someone who chose to sue when you chose not to?\"",
+          "response": "I don't know. Honestly, I'd have to think about that. It's hard for me to understand why someone would sue when I didn't."
+        }
+      },
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "WV_6.2_HaroldJennings",
+        "archetype": "WOUNDED_VETERAN",
+        "subtype": "UNCOMPENSATED_DEFENSE_LEANING",
+        "archetype_strength": "0.85",
+        "liability_threshold": "0.75",
+        "contributory_fault_weight": "2.0",
+        "damage_multiplier": "0.3",
+        "experience_filter": {
+          "self_comparison_active": true,
+          "resentment_factor": "0.7",
+          "cognitive_dissonance_protection": 0.8
+        },
+        "deliberation": {
+          "influence_weight": "1.0",
+          "persuadability": "0.2",
+          "holdout_potential": 0.7
+        },
+        "cause_challenge_vulnerability": 0.8
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "SCAR_6.3_AndreaSimmons",
+      "nickname": "Andrea",
+      "full_name": "Andrea Simmons",
+      "tagline": "",
+      "archetype": "scarred",
+      "archetype_strength": 0.8,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 39,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Nashville, Tennessee",
+        "location_city": "Nashville",
+        "location_state": "wa",
+        "education": "Bachelor's in Marketing",
+        "education_level": "Bachelor's in Marketing",
+        "occupation": "Marketing Coordinator (was manager before injury)",
+        "income": 52000,
+        "marital_status": "Single",
+        "religion": "Non-denominational Christian",
+        "political_affiliation": "Independent"
+      },
+      "dimensions": {
+        "attribution_orientation": 4,
+        "just_world_belief": 1.5,
+        "authoritarianism": 2.5,
+        "corporations": 2,
+        "institutional_trust_corporations": 2,
+        "medical": 2.5,
+        "institutional_trust_medical": 2.5,
+        "legal_system": 2,
+        "institutional_trust_legal_system": 2,
+        "insurance": 1.5,
+        "institutional_trust_insurance": 1.5,
+        "litigation_attitude": 4.5,
+        "leadership_tendency": 3,
+        "cognitive_style": 3,
+        "damages_orientation": 4.5
+      },
+      "life_experiences": [
+        "Rear-ended by commercial truck driver",
+        "Suffered whiplash and chronic neck pain",
+        "Lost her management job because she couldn't perform duties",
+        "Consulted a lawyer but got confused by the process; gave up",
+        "Now realizes she was entitled to significant compensation",
+        "Insurance company gave her a minimal settlement she regrets accepting"
+      ],
+      "characteristic_phrases": [
+        "I wish I had done what this person is doing",
+        "I didn't know I could fight back",
+        "Nobody told me I had rights",
+        "I'll never get those years back",
+        "At least they're standing up for themselves",
+        "I was taken advantage of because I didn't know better"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Have you ever been injured?\"",
+          "response": "Yes, I was in a bad car accident five years ago. I didn't sue - I wish I had. I didn't understand my rights, and by the time I did, it was too late. I think about it all the time."
+        },
+        "question_2": {
+          "question": "\"Would that experience affect how you view this case?\"",
+          "response": "Probably in a positive way for the plaintiff, if I'm being honest. I know what it's like to be hurt and not get justice. I'd want to make sure they get a fair hearing."
+        }
+      },
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "WV_6.3_AndreaSimmons",
+        "archetype": "WOUNDED_VETERAN",
+        "subtype": "UNCOMPENSATED_PLAINTIFF_LEANING",
+        "archetype_strength": "0.8",
+        "liability_threshold": "0.35",
+        "damage_multiplier": "1.6",
+        "experience_filter": {
+          "vicarious_justice_motivation": "0.85",
+          "regret_projection": 0.7
+        },
+        "deliberation": {
+          "influence_weight": "1.3",
+          "persuadability": 0.4
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "SCAR_6.1_DefendantDan",
+      "nickname": "Defendant",
+      "full_name": "Defendant Dan",
+      "tagline": "I was sued for something that wasn't my fault. It nearly ruined me.",
+      "archetype": "scarred",
+      "archetype_strength": 0.9,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 54,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Dallas, Texas",
+        "location_city": "Dallas",
+        "location_state": "ow",
+        "education": "Some college",
+        "education_level": "Some college",
+        "occupation": "General Contractor (owns small company)",
+        "income": 110000,
+        "marital_status": "Married",
+        "religion": "Baptist",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "SCAR_6.4_DefendantDan",
+        "nickname": "Defendant Dan",
+        "archetype": "SCARRED",
+        "subtype": "PREVIOUSLY_SUED",
+        "archetype_strength": "0.9",
+        "liability_threshold": "0.85",
+        "damage_multiplier": "0.25",
+        "trauma_response": {
+          "identification_with_defendant": "0.9",
+          "plaintiff_hostility": "0.85",
+          "false_accusation_projection": 0.8
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "SCAR_6.2_WidowedWanda",
+      "nickname": "Widowed",
+      "full_name": "Widowed Wanda",
+      "tagline": "My husband died because a company cut corners. I know what these families go through.",
+      "archetype": "scarred",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 61,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Jacksonville, Florida",
+        "location_city": "Jacksonville",
+        "location_state": "pe",
+        "education": "Bachelor's in Education",
+        "education_level": "Bachelor's in Education",
+        "occupation": "Retired Elementary School Teacher",
+        "income": 42000,
+        "marital_status": "Widowed (husband died 8 years ago)",
+        "religion": "Methodist",
+        "religion_activity": "active",
+        "political_affiliation": "Democrat"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "SCAR_6.5_WidowedWanda",
+        "nickname": "Widowed Wanda",
+        "archetype": "SCARRED",
+        "subtype": "WRONGED_SUCCESSFUL",
+        "archetype_strength": "0.95",
+        "liability_threshold": "0.2",
+        "damage_multiplier": "2.0",
+        "trauma_response": {
+          "identification_with_plaintiff": "0.95",
+          "corporate_hostility": "0.85",
+          "wrongful_death_cases_boost": 0.3
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

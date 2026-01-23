@@ -1,0 +1,172 @@
+{
+  "archetype": "trojan_horse",
+  "archetype_display_name": "The Trojan Horse",
+  "archetype_tagline": "Hidden agenda",
+  "plaintiff_danger_level": 5,
+  "defense_danger_level": 1,
+  "archetype_centroids": {},
+  "personas": [
+    {
+      "persona_id": "TROJAN_9.1_RichardBlackwell",
+      "nickname": "Richard",
+      "full_name": "Richard Blackwell",
+      "tagline": "",
+      "archetype": "trojan_horse",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 48,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Denver, Colorado",
+        "location_city": "Denver",
+        "location_state": "va",
+        "education": "Bachelor's in Communications",
+        "education_level": "Bachelor's in Communications",
+        "occupation": "Freelance writer, former journalist",
+        "income": 55000,
+        "marital_status": "Divorced twice",
+        "religion": "Agnostic",
+        "religion_activity": "activist",
+        "political_affiliation": "Democrat",
+        "political_engagement": "activist"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "SJ_9.1_RichardBlackwell",
+        "archetype": "STEALTH_JUROR",
+        "subtype": "PRO_PLAINTIFF_STEALTH",
+        "archetype_strength": "0.95",
+        "presented_profile": {
+          "liability_threshold": "0.5",
+          "damage_multiplier": 1
+        },
+        "actual_profile": {
+          "liability_threshold": "0.15",
+          "contributory_fault_weight": "0.1",
+          "damage_multiplier": "2.5",
+          "punitive_inclination": 1
+        },
+        "detection": {
+          "inconsistency_signals": "0.6",
+          "background_check_reveals": "0.9",
+          "social_media_reveals": "0.95",
+          "too_perfect_answers": 0.7
+        },
+        "deliberation": {
+          "influence_weight": "2.0",
+          "persuadability": "0.1",
+          "position_stability": "0.98",
+          "advocacy_intensity": "0.95",
+          "manipulation_tactics": 0.8
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "TROJAN_9.2_GregoryHunt",
+      "nickname": "Gregory",
+      "full_name": "Gregory Hunt",
+      "tagline": "",
+      "archetype": "trojan_horse",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 54,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Charlotte, North Carolina",
+        "location_city": "Charlotte",
+        "location_state": "in",
+        "education": "JD (inactive license)",
+        "education_level": "JD (inactive license)",
+        "occupation": "Business consultant",
+        "income": 175000,
+        "marital_status": "Married",
+        "religion": "Presbyterian",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "juror_id": "SJ_9.2_GregoryHunt",
+        "archetype": "STEALTH_JUROR",
+        "subtype": "PRO_DEFENSE_STEALTH",
+        "archetype_strength": "0.95",
+        "actual_profile": {
+          "liability_threshold": "0.95",
+          "damage_multiplier": "0.1",
+          "holdout_willingness": 0.95
+        },
+        "detection": {
+          "law_degree_flag": "0.7",
+          "professional_associations_reveals": "0.85",
+          "expert_voir_dire_management": 0.6
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "TROJAN_9.1_GrievanceHidingGina",
+      "nickname": "Grievance-Hiding",
+      "full_name": "Grievance-Hiding Gina",
+      "tagline": "",
+      "archetype": "trojan_horse",
+      "archetype_strength": 0.8,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 41,
+        "gender": "female",
+        "race_ethnicity": "Latina",
+        "location": "Miami, Florida",
+        "location_city": "Miami",
+        "education": "Bachelor's in Business",
+        "education_level": "Bachelor's in Business",
+        "occupation": "Sales Manager",
+        "income": 85000,
+        "marital_status": "Divorced",
+        "religion": "Catholic",
+        "religion_activity": "lapsed",
+        "political_affiliation": "Independent"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "TROJAN_9.3_GrievanceHidingGina",
+        "nickname": "Grievance-Hiding Gina",
+        "archetype": "TROJAN_HORSE",
+        "subtype": "HIDDEN_GRIEVANCE",
+        "presented_profile": {
+          "liability_threshold": "0.5",
+          "appearance": "SCALE_BALANCER"
+        },
+        "actual_profile": {
+          "liability_threshold": "0.1",
+          "damage_multiplier": "2.5",
+          "against_corporations": true
+        },
+        "detection_difficulty": 0.7
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

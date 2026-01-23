@@ -1,0 +1,250 @@
+{
+  "archetype": "chameleon",
+  "archetype_display_name": "The Chameleon",
+  "archetype_tagline": "Whatever you think",
+  "plaintiff_danger_level": 3,
+  "defense_danger_level": 3,
+  "archetype_centroids": {
+    "attribution_orientation": 2.5,
+    "just_world_belief": 3.5,
+    "authoritarianism": 4.5,
+    "corporations": 3.5,
+    "institutional_trust_corporations": 3.5,
+    "medical": 4,
+    "institutional_trust_medical": 4,
+    "legal_system": 4,
+    "institutional_trust_legal_system": 4,
+    "insurance": 4,
+    "institutional_trust_insurance": 4,
+    "litigation_attitude": 2.5,
+    "leadership_tendency": 1,
+    "cognitive_style": 2,
+    "damages_orientation": 2.5
+  },
+  "personas": [
+    {
+      "persona_id": "CHAM_5.1_BettySullivan",
+      "nickname": "Betty",
+      "full_name": "Betty Sullivan",
+      "tagline": "",
+      "archetype": "chameleon",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 71,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Tampa, Florida",
+        "location_city": "Tampa",
+        "location_state": "in",
+        "education": "High school diploma",
+        "education_level": "High school diploma",
+        "occupation": "Retired secretary (insurance company, 40 years)",
+        "income": 34000,
+        "marital_status": "Widow",
+        "religion": "Catholic",
+        "religion_activity": "weekly mass",
+        "political_affiliation": "Republican"
+      },
+      "dimensions": {
+        "attribution_orientation": 2.5,
+        "just_world_belief": 3.5,
+        "authoritarianism": 4.5,
+        "corporations": 3.5,
+        "institutional_trust_corporations": 3.5,
+        "medical": 4,
+        "institutional_trust_medical": 4,
+        "legal_system": 4,
+        "institutional_trust_legal_system": 4,
+        "insurance": 4,
+        "institutional_trust_insurance": 4,
+        "litigation_attitude": 2.5,
+        "leadership_tendency": 1,
+        "cognitive_style": 2,
+        "damages_orientation": 2.5
+      },
+      "life_experiences": [
+        "40 years as secretary; trained to support others' decisions",
+        "Husband made family decisions; she supported",
+        "Avoids conflict at all costs",
+        "Has conventional views but will defer to confident voices",
+        "Wants to \"do the right thing\" but looks to others to define it"
+      ],
+      "characteristic_phrases": [
+        "I think you're right",
+        "That makes sense",
+        "I'm not sure, what do you think?",
+        "I can see that",
+        "Whatever the group decides",
+        "I don't want to cause trouble",
+        "Quiet, agreeable",
+        "Often changes answer when challenged",
+        "Looks to others before responding",
+        "Avoids strong statements",
+        "Uncomfortable being center of attention"
+      ],
+      "voir_dire_responses": {
+        "question_1": {
+          "question": "\"Do you have any strong feelings about personal injury lawsuits?\"",
+          "response": "Not really, no. I mean, some are probably legitimate. I'd want to see the evidence. Whatever the law says, I'd follow that."
+        },
+        "question_2": {
+          "question": "\"If you disagreed with other jurors, what would you do?\"",
+          "response": "Well, I'd listen to what they have to say. Maybe they see something I don't. I'm not the type to make a big fuss."
+        }
+      },
+      "deliberation_behavior": {
+        "predicted_role": "Will follow the room; nearly zero independent influence",
+        "deliberation_style": "Agrees with strongest/most confident voices",
+        "persuadability": "Very High (0.9). Will shift with social pressure."
+      },
+      "simulation_parameters": {
+        "juror_id": "CF_5.1_BettySullivan",
+        "archetype": "COMPLIANT_FOLLOWER",
+        "archetype_strength": "0.95",
+        "liability_threshold": null,
+        "opinion_formation": "social_consensus",
+        "deliberation": {
+          "influence_weight": "0.3",
+          "persuadability": "0.9",
+          "position_stability": "0.15",
+          "speaking_share": "0.03",
+          "social_pressure_susceptibility": "0.95",
+          "follows_authority": 0.9
+        },
+        "strategic_note": "Value depends entirely on jury composition"
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CHAM_5.2_MichaelTran",
+      "nickname": "Michael",
+      "full_name": "Michael Tran",
+      "tagline": "",
+      "archetype": "chameleon",
+      "archetype_strength": 0.85,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 25,
+        "gender": "male",
+        "race_ethnicity": "Asian (Vietnamese-American)",
+        "location": "Houston, Texas",
+        "location_city": "Houston",
+        "location_state": "pa",
+        "education": "Currently pursuing Associate's degree (part-time)",
+        "education_level": "Currently pursuing Associate's degree (part-time)",
+        "occupation": "Warehouse associate, Amazon fulfillment center",
+        "income": 36000,
+        "marital_status": "Single",
+        "religion": "Buddhist (family tradition)",
+        "religion_activity": "not actively practicing",
+        "political_affiliation": "Not registered",
+        "political_engagement": "apolitical"
+      },
+      "dimensions": {
+        "attribution_orientation": 3,
+        "just_world_belief": 3,
+        "authoritarianism": 3.5,
+        "corporations": 3,
+        "institutional_trust_corporations": 3,
+        "medical": 3,
+        "institutional_trust_medical": 3,
+        "legal_system": 3,
+        "institutional_trust_legal_system": 3,
+        "insurance": 3,
+        "institutional_trust_insurance": 3,
+        "litigation_attitude": 3,
+        "leadership_tendency": 1.5,
+        "cognitive_style": 3,
+        "damages_orientation": 3
+      },
+      "life_experiences": [
+        "First-generation American; parents emphasize respecting authority",
+        "Works a demanding job; doesn't have much bandwidth for opinions",
+        "No exposure to legal system",
+        "Socially anxious; avoids conflict",
+        "Gaming and friends are his primary concerns"
+      ],
+      "characteristic_phrases": [
+        "Yeah, that makes sense",
+        "I don't know, you're probably right",
+        "I haven't really thought about it",
+        "[Silence, nodding]",
+        "Speaks rarely and briefly",
+        "Defers to older jurors",
+        "Uncomfortable with attention",
+        "Won't initiate discussion"
+      ],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {
+        "predicted_role": "Silent follower; will vote with majority",
+        "deliberation_style": "Avoids speaking; agrees with room"
+      },
+      "simulation_parameters": {
+        "juror_id": "CF_5.2_MichaelTran",
+        "archetype": "COMPLIANT_FOLLOWER",
+        "archetype_strength": "0.85",
+        "deliberation": {
+          "influence_weight": "0.2",
+          "persuadability": "0.85",
+          "position_stability": "0.2",
+          "speaking_share": "0.02",
+          "social_pressure_susceptibility": "0.9",
+          "defers_to_older": 0.85
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    },
+    {
+      "persona_id": "CHAM_5.1_NervousNellie",
+      "nickname": "Nervous",
+      "full_name": "Nervous Nellie",
+      "tagline": "I don't want to cause any problems. Whatever everyone else thinks is fine.",
+      "archetype": "chameleon",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 45,
+        "gender": "female",
+        "race_ethnicity": "White",
+        "location": "Phoenix, Arizona",
+        "location_city": "Phoenix",
+        "education": "High school diploma",
+        "education_level": "High school diploma",
+        "occupation": "Part-time retail associate",
+        "income": 24000,
+        "marital_status": "Divorced",
+        "religion": "Non-denominational Christian",
+        "political_affiliation": "Doesn't vote"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "CHAM_5.3_NervousNellie",
+        "nickname": "Nervous Nellie",
+        "archetype": "CHAMELEON",
+        "archetype_strength": "0.95",
+        "deliberation": {
+          "influence_weight": "0.1",
+          "persuadability": "0.95",
+          "social_pressure_susceptibility": "1.0",
+          "anxiety_factor": "0.9",
+          "speaking_share": 0.02
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

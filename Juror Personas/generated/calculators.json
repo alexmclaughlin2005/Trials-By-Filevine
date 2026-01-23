@@ -1,0 +1,57 @@
+{
+  "archetype": "calculator",
+  "archetype_display_name": "The Calculator",
+  "archetype_tagline": "Show me the data",
+  "plaintiff_danger_level": 4,
+  "defense_danger_level": 2,
+  "archetype_centroids": {},
+  "personas": [
+    {
+      "persona_id": "CALC_7.1_ActuaryAndrew",
+      "nickname": "Actuary",
+      "full_name": "Actuary Andrew",
+      "tagline": "I calculate risk for a living. These damage claims are inflated.",
+      "archetype": "calculator",
+      "archetype_strength": 0.95,
+      "secondary_archetype": null,
+      "variant": null,
+      "demographics": {
+        "age": 39,
+        "gender": "male",
+        "race_ethnicity": "White",
+        "location": "Hartford, Connecticut",
+        "location_city": "Hartford",
+        "education": "Master's in Actuarial Science",
+        "education_level": "Master's in Actuarial Science",
+        "occupation": "Senior Actuary, insurance company",
+        "income": 155000,
+        "marital_status": "Married",
+        "religion": "None",
+        "religion_activity": "libertarian-leaning",
+        "political_affiliation": "Independent",
+        "political_engagement": "libertarian-leaning"
+      },
+      "dimensions": {},
+      "life_experiences": [],
+      "characteristic_phrases": [],
+      "voir_dire_responses": {},
+      "deliberation_behavior": {},
+      "simulation_parameters": {
+        "persona_id": "CALC_7.4_ActuaryAndrew",
+        "nickname": "Actuary Andrew",
+        "archetype": "CALCULATOR",
+        "archetype_strength": "0.95",
+        "liability_threshold": "0.55",
+        "damage_multiplier": "0.5",
+        "non_economic_skepticism": "0.9",
+        "professional_bias": {
+          "insurance_industry_alignment": "0.7",
+          "actuarial_authority_claims": 0.85
+        }
+      },
+      "case_type_predictions": {},
+      "strategy_guidance": {},
+      "regional_notes": {}
+    }
+  ]
+}

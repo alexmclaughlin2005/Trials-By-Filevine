@@ -212,7 +212,9 @@ async function main() {
   console.log('🚀 Starting Persona Import Process\n');
   console.log('=' .repeat(60));
 
+  // Check both the main directory and generated directory
   const personasDir = path.join(__dirname, '..', 'Juror Personas');
+  const generatedDir = path.join(personasDir, 'generated');
 
   // Check if directory exists
   if (!fs.existsSync(personasDir)) {
@@ -220,15 +222,24 @@ async function main() {
     process.exit(1);
   }
 
-  const files = fs.readdirSync(personasDir);
-  console.log(`📁 Found ${files.length} files in Juror Personas directory`);
+  // Read files from both directories
+  const mainFiles = fs.existsSync(personasDir) ? fs.readdirSync(personasDir) : [];
+  const generatedFiles = fs.existsSync(generatedDir) ? fs.readdirSync(generatedDir) : [];
+  const allFiles = [
+    ...mainFiles.map(f => ({ file: f, dir: personasDir })),
+    ...generatedFiles.map(f => ({ file: f, dir: generatedDir }))
+  ];
+
+  console.log(`📁 Found ${allFiles.length} files to process`);
+  console.log(`   Main directory: ${mainFiles.length} files`);
+  console.log(`   Generated directory: ${generatedFiles.length} files`);
 
   let totalImported = 0;
   let totalSkipped = 0;
   let configImported = 0;
 
-  for (const file of files) {
-    const filePath = path.join(personasDir, file);
+  for (const { file, dir } of allFiles) {
+    const filePath = path.join(dir, file);
 
     // Skip non-JSON files
     if (!file.endsWith('.json')) {

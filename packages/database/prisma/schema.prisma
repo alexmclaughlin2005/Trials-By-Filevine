@@ -42,7 +42,7 @@ model User {
   organizationId String    @map("organization_id")
   email          String    @unique
   name           String
-  passwordHash   String    @default("password") @map("password_hash") // For demo purposes
+  passwordHash   String    @map("password_hash")
   role           String // admin | attorney | paralegal | consultant
   authProviderId String?   @map("auth_provider_id")
   lastLoginAt    DateTime? @map("last_login_at")
@@ -167,6 +167,12 @@ model JuryPanel {
   version     Int      @default(1)
   totalJurors Int      @default(0) @map("total_jurors")
   status      String   @default("draft") // draft | active | completed
+  
+  // Jury Box Configuration
+  juryBoxSize Int      @default(12) @map("jury_box_size")
+  juryBoxRows Int      @default(1) @map("jury_box_rows") // 1 or 2
+  juryBoxLayout Json?  @map("jury_box_layout")
+  
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -211,6 +217,12 @@ model Juror {
   keepPriority   Int?     @map("keep_priority") // 1-5 scale
   strikePriority Int?     @map("strike_priority") // 1-5 scale
   notes          String?  @db.Text
+  
+  // Jury Box Position
+  boxRow         Int?     @map("box_row") // Row number in jury box (1 = front, 2 = back, null = not in box)
+  boxSeat        Int?     @map("box_seat") // Seat number within the row (1-N, null = not in box)
+  boxOrder       Int?     @map("box_order") // Overall order in jury box (for single row or ordering)
+  
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
@@ -227,6 +239,7 @@ model Juror {
   @@index([venueId])
   @@index([status])
   @@index([classifiedArchetype])
+  @@index([boxRow, boxSeat])
   @@map("jurors")
 }
 
@@ -467,6 +480,14 @@ model FocusGroupSession {
   panelType      String  @map("panel_type") // generic | case_matched | custom
   argumentId     String? @map("argument_id")
   simulationMode String  @default("detailed") @map("simulation_mode") // quick | detailed | deliberation
+
+  // NEW: Configuration fields for focus group setup
+  archetypeSelectionMode String  @default("random") @map("archetype_selection_mode") // "random" | "configured" | "case_matched"
+  selectedArchetypes     Json?   @map("selected_archetypes") // Array of archetype names/IDs if configured
+  archetypeCount         Int     @default(6) @map("archetype_count") // Number of archetypes to include
+  selectedArguments      Json?   @map("selected_arguments") // Array of {argumentId, order, title, content}
+  customQuestions        Json?   @map("custom_questions") // Array of {id, question, order, targetArchetypes}
+  configurationStep      String  @default("setup") @map("configuration_step") // "setup" | "panel" | "arguments" | "questions" | "review" | "ready"
 
   // Archetype-based simulation data
   juryComposition      Json? @map("jury_composition") // Archetype distribution

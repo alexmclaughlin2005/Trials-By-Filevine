@@ -70,6 +70,18 @@ const createJurorSchema = z.object({
 
 const updateJurorSchema = createJurorSchema.partial().omit({ panelId: true });
 
+const updateJurorPositionSchema = z.object({
+  boxRow: z.number().int().positive().optional().nullable(),
+  boxSeat: z.number().int().positive().optional().nullable(),
+  boxOrder: z.number().int().positive().optional().nullable(),
+});
+
+const updateJuryBoxConfigSchema = z.object({
+  juryBoxSize: z.number().int().positive().min(1).max(20).optional(),
+  juryBoxRows: z.number().int().positive().min(1).max(2).optional(),
+  juryBoxLayout: z.record(z.any()).optional(),
+});
+
 export async function jurorsRoutes(server: FastifyInstance) {
   // Get all jurors for a jury panel
   server.get('/panel/:panelId', {
@@ -209,10 +221,21 @@ export async function jurorsRoutes(server: FastifyInstance) {
         return { error: 'Juror not found' };
       }
 
+      // If status is changed to struck, remove from box
+      if (body.status && (body.status === 'struck_for_cause' || body.status === 'peremptory_strike')) {
+        body.boxRow = null;
+        body.boxSeat = null;
+        body.boxOrder = null;
+      }
+
       const juror = await server.prisma.juror.update({
         where: { id },
         data: body,
       });
+
+      // If juror was struck and auto-fill is enabled, trigger auto-fill
+      // Note: Auto-fill logic would need to be configured per panel
+      // For now, we'll just return the updated juror
 
       return { juror };
     },
@@ -571,6 +594,288 @@ export async function jurorsRoutes(server: FastifyInstance) {
       });
 
       return { batches };
+    },
+  });
+
+  // ============================================
+  // JURY BOX ROUTES
+  // ============================================
+
+  // Get jury box state for a panel
+  server.get('/panel/:panelId/jury-box', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params as any;
+
+      // Verify panel belongs to organization
+      const panel = await server.prisma.juryPanel.findFirst({
+        where: {
+          id: panelId,
+          case: { organizationId },
+        },
+        include: {
+          jurors: {
+            orderBy: [
+              { boxRow: 'asc' },
+              { boxSeat: 'asc' },
+              { boxOrder: 'asc' },
+            ],
+          },
+        },
+      });
+
+      if (!panel) {
+        reply.code(404);
+        return { error: 'Jury panel not found' };
+      }
+
+      // Separate jurors into box positions and pool
+      const jurorsInBox = panel.jurors.filter(
+        (j) => j.boxRow !== null && j.boxSeat !== null
+      );
+      const jurorsInPool = panel.jurors.filter(
+        (j) => j.boxRow === null || j.boxSeat === null
+      );
+
+      // Sort pool by juror number or creation date
+      jurorsInPool.sort((a, b) => {
+        if (a.jurorNumber && b.jurorNumber) {
+          return a.jurorNumber.localeCompare(b.jurorNumber);
+        }
+        return a.createdAt.getTime() - b.createdAt.getTime();
+      });
+
+      return {
+        panel: {
+          id: panel.id,
+          juryBoxSize: panel.juryBoxSize,
+          juryBoxRows: panel.juryBoxRows,
+          juryBoxLayout: panel.juryBoxLayout,
+        },
+        jurorsInBox,
+        jurorsInPool,
+      };
+    },
+  });
+
+  // Update jury box configuration
+  server.put('/panel/:panelId/jury-box/config', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params as any;
+      const body = updateJuryBoxConfigSchema.parse(request.body as any);
+
+      // Verify panel belongs to organization
+      const panel = await server.prisma.juryPanel.findFirst({
+        where: {
+          id: panelId,
+          case: { organizationId },
+        },
+      });
+
+      if (!panel) {
+        reply.code(404);
+        return { error: 'Jury panel not found' };
+      }
+
+      // If box size is reduced, remove jurors from positions that exceed the new size
+      if (body.juryBoxSize && body.juryBoxSize < panel.juryBoxSize) {
+        const seatsPerRow = Math.ceil(body.juryBoxSize / (body.juryBoxRows || panel.juryBoxRows));
+        
+        await server.prisma.juror.updateMany({
+          where: {
+            panelId,
+            OR: [
+              { boxSeat: { gt: seatsPerRow } },
+              { boxRow: { gt: (body.juryBoxRows || panel.juryBoxRows) } },
+            ],
+          },
+          data: {
+            boxRow: null,
+            boxSeat: null,
+            boxOrder: null,
+          },
+        });
+      }
+
+      const updatedPanel = await server.prisma.juryPanel.update({
+        where: { id: panelId },
+        data: body,
+      });
+
+      return { panel: updatedPanel };
+    },
+  });
+
+  // Update juror position in jury box
+  server.put('/:jurorId/position', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { jurorId } = request.params as any;
+      const body = updateJurorPositionSchema.parse(request.body as any);
+
+      // Verify juror belongs to organization
+      const existingJuror = await server.prisma.juror.findFirst({
+        where: {
+          id: jurorId,
+          panel: {
+            case: { organizationId },
+          },
+        },
+        include: {
+          panel: true,
+        },
+      });
+
+      if (!existingJuror) {
+        reply.code(404);
+        return { error: 'Juror not found' };
+      }
+
+      // Validate position against box size
+      if (body.boxRow !== null && body.boxRow !== undefined) {
+        const seatsPerRow = Math.ceil(
+          existingJuror.panel.juryBoxSize / existingJuror.panel.juryBoxRows
+        );
+        
+        if (body.boxRow > existingJuror.panel.juryBoxRows) {
+          reply.code(400);
+          return { error: `Box row exceeds maximum rows (${existingJuror.panel.juryBoxRows})` };
+        }
+        
+        if (body.boxSeat !== null && body.boxSeat !== undefined && body.boxSeat > seatsPerRow) {
+          reply.code(400);
+          return { error: `Box seat exceeds maximum seats per row (${seatsPerRow})` };
+        }
+      }
+
+      // If moving to a position, check if position is already occupied
+      if (body.boxRow !== null && body.boxSeat !== null) {
+        const existingOccupant = await server.prisma.juror.findFirst({
+          where: {
+            panelId: existingJuror.panelId,
+            boxRow: body.boxRow,
+            boxSeat: body.boxSeat,
+            id: { not: jurorId },
+          },
+        });
+
+        if (existingOccupant) {
+          reply.code(409);
+          return { error: 'Position already occupied' };
+        }
+      }
+
+      const updatedJuror = await server.prisma.juror.update({
+        where: { id: jurorId },
+        data: body,
+      });
+
+      return { juror: updatedJuror };
+    },
+  });
+
+  // Auto-fill empty positions in jury box
+  server.put('/panel/:panelId/jury-box/auto-fill', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params as any;
+
+      // Verify panel belongs to organization
+      const panel = await server.prisma.juryPanel.findFirst({
+        where: {
+          id: panelId,
+          case: { organizationId },
+        },
+      });
+
+      if (!panel) {
+        reply.code(404);
+        return { error: 'Jury panel not found' };
+      }
+
+      // Get all jurors
+      const allJurors = await server.prisma.juror.findMany({
+        where: {
+          panelId,
+          status: {
+            notIn: ['struck_for_cause', 'peremptory_strike', 'dismissed'],
+          },
+        },
+        orderBy: [
+          { jurorNumber: 'asc' },
+          { createdAt: 'asc' },
+        ],
+      });
+
+      // Get occupied positions
+      const occupiedPositions = new Set<string>();
+      allJurors.forEach((juror) => {
+        if (juror.boxRow !== null && juror.boxSeat !== null) {
+          occupiedPositions.add(`${juror.boxRow}-${juror.boxSeat}`);
+        }
+      });
+
+      // Get available jurors (not in box)
+      const availableJurors = allJurors.filter(
+        (j) => j.boxRow === null || j.boxSeat === null
+      );
+
+      // Calculate seats per row
+      const seatsPerRow = Math.ceil(panel.juryBoxSize / panel.juryBoxRows);
+      let availableIndex = 0;
+      const updates: Array<{ id: string; boxRow: number; boxSeat: number; boxOrder: number }> = [];
+
+      // Fill empty positions
+      for (let row = 1; row <= panel.juryBoxRows; row++) {
+        for (let seat = 1; seat <= seatsPerRow; seat++) {
+          const positionKey = `${row}-${seat}`;
+          
+          if (!occupiedPositions.has(positionKey) && availableIndex < availableJurors.length) {
+            const juror = availableJurors[availableIndex];
+            const boxOrder = (row - 1) * seatsPerRow + seat;
+            
+            updates.push({
+              id: juror.id,
+              boxRow: row,
+              boxSeat: seat,
+              boxOrder,
+            });
+            
+            availableIndex++;
+          }
+        }
+      }
+
+      // Apply updates
+      await Promise.all(
+        updates.map((update) =>
+          server.prisma.juror.update({
+            where: { id: update.id },
+            data: {
+              boxRow: update.boxRow,
+              boxSeat: update.boxSeat,
+              boxOrder: update.boxOrder,
+              status: update.boxOrder <= panel.juryBoxSize ? 'seated' : 'available',
+            },
+          })
+        )
+      );
+
+      // Get updated jurors
+      const updatedJurors = await server.prisma.juror.findMany({
+        where: { panelId },
+        orderBy: [
+          { boxRow: 'asc' },
+          { boxSeat: 'asc' },
+        ],
+      });
+
+      return { jurors: updatedJurors };
     },
   });
 }
