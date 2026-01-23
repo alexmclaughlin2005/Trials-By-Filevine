@@ -56,17 +56,25 @@ export function Sidebar() {
       {/* Bottom Section */}
       <div className="border-t border-filevine-gray-200 p-3 space-y-1">
         <Link
-          href={process.env.NEXT_PUBLIC_PROMPT_ADMIN_URL || 'http://localhost:3004'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium text-filevine-gray-700 hover:bg-filevine-gray-100"
+          href="/prompts"
+          className={cn(
+            'flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium transition-colors',
+            pathname === '/prompts' || pathname?.startsWith('/prompts/')
+              ? 'bg-filevine-blue text-white'
+              : 'text-filevine-gray-700 hover:bg-filevine-gray-100'
+          )}
         >
           <FileCode className="h-4 w-4" />
           <span>Prompts</span>
         </Link>
         <Link
           href="/settings"
-          className="flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium text-filevine-gray-700 hover:bg-filevine-gray-100"
+          className={cn(
+            'flex items-center space-x-3 rounded px-3 py-2 text-sm font-medium transition-colors',
+            pathname === '/settings' || pathname?.startsWith('/settings/')
+              ? 'bg-filevine-blue text-white'
+              : 'text-filevine-gray-700 hover:bg-filevine-gray-100'
+          )}
         >
           <Settings className="h-4 w-4" />
           <span>Settings</span>
