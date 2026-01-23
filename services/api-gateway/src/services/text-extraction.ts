@@ -3,36 +3,6 @@
  * Extracts text from PDF documents for AI processing
  */
 export class TextExtractionService {
-  private pdfParser: any;
-
-  constructor() {
-    // Use require for better CommonJS compatibility
-    try {
-      const pdfParseModule = require('pdf-parse');
-
-      // pdf-parse exports a function directly, but might be wrapped
-      // Try different export patterns
-      if (typeof pdfParseModule === 'function') {
-        this.pdfParser = pdfParseModule;
-      } else if (typeof pdfParseModule.default === 'function') {
-        this.pdfParser = pdfParseModule.default;
-      } else {
-        // Log what we actually got
-        console.error('[TEXT_EXTRACTION] pdf-parse structure:', {
-          type: typeof pdfParseModule,
-          keys: Object.keys(pdfParseModule),
-          hasDefault: !!pdfParseModule.default,
-          defaultType: typeof pdfParseModule.default
-        });
-        throw new Error('Could not find pdf-parse function in module exports');
-      }
-
-      console.log('[TEXT_EXTRACTION] Successfully loaded pdf-parse');
-    } catch (error) {
-      console.error('[TEXT_EXTRACTION] Failed to load pdf-parse:', error);
-      throw new Error('PDF parser could not be loaded');
-    }
-  }
   /**
    * Extract text from a PDF document URL
    * @param fileUrl - URL to the PDF file (e.g., Vercel Blob URL)
@@ -52,8 +22,11 @@ export class TextExtractionService {
       const buffer = Buffer.from(arrayBuffer);
       console.log(`[TEXT_EXTRACTION] Downloaded ${buffer.length} bytes`);
 
-      // Parse the PDF using the loaded parser
-      const data = await this.pdfParser(buffer);
+      // Load pdf-parse dynamically at runtime (better for CommonJS)
+      const pdfParse = require('pdf-parse');
+
+      // Parse the PDF - pdf-parse should be called directly as a function
+      const data = await pdfParse(buffer);
 
       console.log(`[TEXT_EXTRACTION] Extracted ${data.text.length} characters from ${data.numpages} pages`);
 
