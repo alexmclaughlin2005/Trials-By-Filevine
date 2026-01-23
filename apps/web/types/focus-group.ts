@@ -2,7 +2,7 @@
 
 export type ArchetypeSelectionMode = 'random' | 'configured' | 'case_matched';
 
-export type ConfigurationStep = 'setup' | 'panel' | 'arguments' | 'questions' | 'review' | 'ready';
+export type ConfigurationStep = 'setup' | 'panel' | 'arguments' | 'questions' | 'review' | 'confirm' | 'ready';
 
 export interface SelectedArgument {
   argumentId: string;
