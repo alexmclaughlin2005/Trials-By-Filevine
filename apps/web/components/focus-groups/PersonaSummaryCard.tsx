@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { PersonaSummary } from '@/types/focus-group';
+import { PersonaSummary, PersonaDetails } from '@/types/focus-group';
+import { PersonaDetailModal } from './PersonaDetailModal';
 import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
 
 interface PersonaSummaryCardProps {
@@ -10,6 +11,7 @@ interface PersonaSummaryCardProps {
 
 export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const [showPersonaModal, setShowPersonaModal] = useState(false);
 
   // Position badge colors
   const getPositionColor = (position: string) => {
@@ -58,8 +60,18 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
   };
 
   return (
-    <div className="border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
-      {/* Header */}
+    <>
+      {/* Persona Detail Modal */}
+      {showPersonaModal && summary.persona && (
+        <PersonaDetailModal
+          personaName={summary.personaName}
+          persona={summary.persona}
+          onClose={() => setShowPersonaModal(false)}
+        />
+      )}
+
+      <div className="border rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow">
+        {/* Header */}
       <div className="p-6 border-b bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-start justify-between">
           <div className="flex-1">
@@ -73,9 +85,12 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
                 </span>
               )}
               {summary.persona?.archetype && (
-                <span className="px-2 py-1 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200">
+                <button
+                  onClick={() => setShowPersonaModal(true)}
+                  className="px-2 py-1 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
+                >
                   {summary.persona.archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                </span>
+                </button>
               )}
               <span className={`px-2 py-1 text-xs font-medium border rounded ${getInfluenceColor(summary.influenceLevel)}`}>
                 {summary.influenceLevel.charAt(0).toUpperCase() + summary.influenceLevel.slice(1)} Influence
@@ -244,5 +259,6 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
         </div>
       </div>
     </div>
+    </>
   );
 }

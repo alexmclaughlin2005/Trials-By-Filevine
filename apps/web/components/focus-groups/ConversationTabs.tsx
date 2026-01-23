@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona } from '@/types/focus-group';
+import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails } from '@/types/focus-group';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
+import { PersonaDetailModal } from './PersonaDetailModal';
 import { Users, Clock, BarChart3 } from 'lucide-react';
 
 interface ConversationTabsProps {
@@ -15,6 +16,7 @@ type TabType = 'personas' | 'timeline' | 'analysis';
 
 export function ConversationTabs({ personaSummaries, allStatements, overallAnalysis }: ConversationTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('timeline');
+  const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
 
   const tabs = [
     { id: 'personas' as TabType, label: 'By Persona', icon: Users, count: personaSummaries.length },
@@ -23,8 +25,18 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
   ];
 
   return (
-    <div className="space-y-6">
-      {/* Tab Navigation */}
+    <>
+      {/* Persona Detail Modal */}
+      {selectedPersona && (
+        <PersonaDetailModal
+          personaName={selectedPersona.name}
+          persona={selectedPersona.details}
+          onClose={() => setSelectedPersona(null)}
+        />
+      )}
+
+      <div className="space-y-6">
+        {/* Tab Navigation */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
@@ -123,10 +135,13 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
                               <h4 className="font-semibold text-gray-900">{statement.personaName}</h4>
                               <p className="text-xs text-gray-500">Round {statement.speakCount}</p>
                             </div>
-                            {archetype && (
-                              <span className="px-2 py-1 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200">
+                            {archetype && personaSummary?.persona && (
+                              <button
+                                onClick={() => setSelectedPersona({ name: statement.personaName, details: personaSummary.persona! })}
+                                className="px-2 py-1 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
+                              >
                                 {archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
-                              </span>
+                              </button>
                             )}
                           </div>
                         </div>
@@ -292,5 +307,6 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
         )}
       </div>
     </div>
+    </>
   );
 }
