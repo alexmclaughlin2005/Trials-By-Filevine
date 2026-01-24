@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
   Zap,
-  CheckSquare,
   Folder,
   Search,
   Bell,
@@ -13,6 +12,7 @@ import {
   HelpCircle,
   LogOut,
   Menu,
+  UserSearch,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -23,7 +23,7 @@ export function Header() {
   const navItems = [
     { icon: Zap, label: 'Dashboard', href: '/dashboard' },
     { icon: Folder, label: 'Cases', href: '/cases' },
-    { icon: CheckSquare, label: 'Jurors', href: '/jurors' },
+    { icon: UserSearch, label: 'Personas', href: '/personas' },
     { icon: MessageSquare, label: 'Focus Groups', href: '/focus-groups' },
   ];
 
