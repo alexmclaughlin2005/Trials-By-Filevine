@@ -501,8 +501,12 @@ CASE_SERVICE_URL=...
 4. **Next.js Web App** (`apps/web`) - Full application with:
    - Authentication system (JWT, login, protected routes)
    - Dashboard with real data from API
-   - Case management with tabbed interface (Overview, Facts, Arguments, Witnesses, Jurors, Questions, Focus Groups)
-   - **Embedded juror research workflow** (no separate navigation)
+   - **NEW: Redesigned navigation** (Jan 24, 2026)
+     - Clean global header with 4 items (Dashboard, Cases, Personas, Focus Groups)
+     - Case-specific sidebar (only visible inside cases)
+     - URL-based routing for all case sections (bookmarkable pages)
+   - Case management with sidebar navigation (Overview, Facts, Arguments, Witnesses, Jurors, Questions, Focus Groups, Documents)
+   - **Embedded juror research workflow** (integrated in case context)
    - Expandable juror cards with inline research tools
    - PersonaSuggester component with AI integration
    - Filevine design system (Tailwind config, custom colors, components)

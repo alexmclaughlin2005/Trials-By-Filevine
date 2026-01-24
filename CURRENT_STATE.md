@@ -1,7 +1,7 @@
 # Trials by Filevine - Current State & Roadmap
 
-**Last Updated:** January 23, 2026
-**Status:** Production-Ready, Pending Deployment
+**Last Updated:** January 24, 2026
+**Status:** Production-Ready, Deployed to Vercel
 
 ---
 
@@ -10,6 +10,7 @@
 Trials by Filevine AI is a comprehensive jury intelligence platform that has completed **5 major development phases** and is ready for production deployment. The system provides attorneys with AI-powered tools for jury research, behavioral analysis, argument testing, and strategic planning.
 
 ### What's Working Now
+- ✅ **NEW: Redesigned navigation** - Case-specific sidebar, simplified global nav, URL-based routing
 - ✅ Complete case management with embedded juror research
 - ✅ Identity matching with confidence scoring
 - ✅ Deep web research synthesis (Claude 4.5 with web search)
@@ -64,23 +65,44 @@ Database (Railway)
 
 ## Feature Breakdown
 
-### 1. Case Management
-**Status:** ✅ Complete
+### 1. Case Management & Navigation ⭐ **MAJOR UPDATE (Jan 24, 2026)**
+**Status:** ✅ Complete - Completely redesigned navigation
 **What it does:**
 - Create and manage trial cases
-- Tabbed interface: Overview, Facts, Arguments, Witnesses, Jurors, Questions, Focus Groups
+- **Case-specific sidebar navigation** (only visible inside cases)
+- **URL-based routing** for all case sections (bookmarkable pages)
 - Auto-creates jury panel when case is created (simplified workflow)
 - Track case metadata: type, jurisdiction, client position
+- Compact case header with inline information
+
+**Navigation Structure:**
+- **Global Navigation (Top):** Dashboard | Cases | Personas | Focus Groups
+- **Case Navigation (Left Sidebar - only in cases):**
+  - Overview
+  - Facts (with count)
+  - Arguments (with count)
+  - Witnesses (with count)
+  - Jurors (with count)
+  - Voir Dire Questions
+  - Focus Groups
+  - Documents
 
 **Key Files:**
-- `apps/web/app/(auth)/cases/[id]/page.tsx` - Main case detail page
-- `apps/web/components/case/jurors-tab.tsx` - Jurors tab with embedded research
+- `apps/web/app/(auth)/cases/[id]/layout.tsx` - Case layout with sidebar and header
+- `apps/web/app/(auth)/cases/[id]/page.tsx` - Overview page with quick actions
+- `apps/web/components/case/case-sidebar.tsx` - Case-specific navigation sidebar
+- `apps/web/app/(auth)/cases/[id]/[section]/page.tsx` - Individual section pages
+- `apps/web/components/header.tsx` - Simplified global navigation
 - `services/api-gateway/src/routes/cases.ts` - Backend API
 
-**Recent Improvements:**
-- Simplified jury panel creation (auto-created, not manual)
-- Embedded juror research within case context
-- No separate navigation required
+**Recent Improvements (Jan 24, 2026):**
+- ✅ Removed global sidebar (more screen space)
+- ✅ Simplified top navigation to 4 items only
+- ✅ Created case-specific sidebar with 8 sections
+- ✅ Converted from state-based tabs to URL-based routing
+- ✅ Compact case header with inline metadata
+- ✅ Enhanced Quick Actions section (6 cards)
+- ✅ Better mobile support with cleaner navigation
 
 ---
 
@@ -90,12 +112,12 @@ Database (Railway)
 - All research happens within the case page
 - Click juror card to expand inline research tools
 - Includes: Identity Research, Deep Research, Archetype Classification
-- No separate navigation to juror detail pages
+- Accessible via case sidebar → Jurors section
 
 **Workflow:**
-1. View juror list in case → Jurors tab
-2. Click juror card to expand
-3. All research tools visible inline:
+1. Navigate to case → Click "Jurors" in left sidebar
+2. View juror list in dedicated Jurors page (`/cases/[id]/jurors`)
+3. Click juror card to expand inline research tools:
    - Basic info (age, occupation, location)
    - Research artifacts summary
    - Identity matching panel
@@ -103,14 +125,15 @@ Database (Railway)
    - Archetype classification
 
 **Key Files:**
+- `apps/web/app/(auth)/cases/[id]/jurors/page.tsx` - Jurors route page
 - `apps/web/components/case/jurors-tab.tsx` - Main juror list with inline research
 - `apps/web/components/juror-research-panel.tsx` - Identity matching component
 - `apps/web/components/deep-research.tsx` - Deep research component
 - `apps/web/components/archetype-classifier.tsx` - Archetype classification
 
 **Benefits:**
-- 2 steps shorter workflow
-- Context never lost
+- Dedicated URL for jurors section (bookmarkable)
+- Context never lost (stays within case)
 - Faster research iteration
 - Matches attorney mental model (jurors exist within cases)
 
@@ -322,6 +345,73 @@ Database (Railway)
 
 **Documentation:**
 - [PHASE_4_COMPLETE.md](./PHASE_4_COMPLETE.md) - Implementation details
+
+---
+
+### 9. Navigation & User Experience ⭐ **NEW (Jan 24, 2026)**
+**Status:** ✅ Complete - Major UX overhaul
+**What it does:**
+- Context-aware navigation that adapts to user location
+- Clean, minimal global navigation
+- Case-specific tools only visible when working on a case
+- URL-based routing for all case sections
+
+**Navigation Architecture:**
+
+**Global Navigation (Header - Always Visible):**
+- Dashboard - Overview and recent activity
+- Cases - All cases list
+- Personas - Persona library management
+- Focus Groups - Focus group management
+
+**Case Navigation (Left Sidebar - Only in Cases):**
+- Overview - Case information and quick actions
+- Facts - Case facts management
+- Arguments - Arguments builder
+- Witnesses - Witness strategies
+- Jurors - Jury panel research (with counts)
+- Voir Dire - Question generation
+- Focus Groups - Simulation engine
+- Documents - Filevine document browser
+
+**Key Improvements:**
+- ✅ **Context-Aware:** Sidebar only appears inside cases
+- ✅ **URL-Based Routing:** Each section has its own URL (e.g., `/cases/123/jurors`)
+- ✅ **Bookmarkable:** Share direct links to specific case sections
+- ✅ **Browser History:** Back/forward buttons work correctly
+- ✅ **More Space:** Removed global sidebar gives 30% more screen width
+- ✅ **Item Counts:** Sidebar shows counts (Facts: 5, Arguments: 2, etc.)
+- ✅ **Active State:** Clear visual indication of current section
+
+**Quick Actions (Overview Page):**
+- 6 action cards for common workflows:
+  - Manage Facts
+  - Build Arguments
+  - Add Witnesses
+  - Research Jurors
+  - Generate Questions (AI)
+  - Run Focus Groups (AI)
+
+**Key Files:**
+- `apps/web/app/(auth)/layout.tsx` - Global layout (no sidebar)
+- `apps/web/components/header.tsx` - Top navigation (4 items)
+- `apps/web/app/(auth)/cases/[id]/layout.tsx` - Case layout with sidebar
+- `apps/web/components/case/case-sidebar.tsx` - Case-specific navigation
+- `apps/web/app/(auth)/cases/[id]/[section]/page.tsx` - Section routes
+
+**User Experience Benefits:**
+- **Faster Navigation:** Direct links to all case sections
+- **Less Confusion:** Only relevant tools shown
+- **Better Mobile:** Simplified navigation adapts better
+- **Professional:** Clean, focused interface
+
+**Before vs After:**
+| Before | After |
+|--------|-------|
+| Global sidebar with 8+ items | Clean header with 4 items |
+| Horizontal tabs in cases | Vertical sidebar in cases |
+| State-based navigation | URL-based navigation |
+| Fixed sidebar always visible | Sidebar only when needed |
 
 ---
 
