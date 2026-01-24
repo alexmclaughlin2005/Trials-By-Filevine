@@ -24,7 +24,10 @@ export function useCases() {
     queryKey: ['cases'],
     queryFn: async () => {
       const data = await apiClient.get<CasesResponse>('/cases');
-      return data.cases;
+      // Ensure we always return an array
+      return Array.isArray(data.cases) ? data.cases : [];
     },
+    // Set initial data to empty array to prevent undefined errors
+    placeholderData: [],
   });
 }

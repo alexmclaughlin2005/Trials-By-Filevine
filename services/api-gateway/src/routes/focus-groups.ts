@@ -802,6 +802,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           id: fp.persona.id,
           name: fp.persona.name,
           description: fp.persona.description,
+          archetype: fp.persona.archetype || undefined,
           demographics: fp.persona.demographics,
           worldview: fp.persona.description, // Use description as fallback
           leadershipLevel: fp.persona.leadershipLevel || undefined,
@@ -809,7 +810,8 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           persuasionSusceptibility: fp.persona.persuasionSusceptibility || undefined,
           lifeExperiences: fp.persona.lifeExperiences,
           dimensions: fp.persona.dimensions
-        }))
+        })),
+        customQuestions: session.customQuestions as any[] | undefined
       };
 
       console.log('🎭 Starting roundtable conversation (async)...');
@@ -858,6 +860,9 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
   // Get conversation details
   server.get('/conversations/:conversationId', {
     onRequest: [server.authenticate],
+    config: {
+      rateLimit: false // Exempt from rate limiting (used for polling)
+    },
     handler: async (request: FastifyRequest<{
       Params: { conversationId: string };
     }>, reply: FastifyReply) => {

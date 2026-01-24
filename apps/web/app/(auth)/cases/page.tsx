@@ -27,8 +27,9 @@ export default function CasesPage() {
     queryKey: ['cases'],
     queryFn: async () => {
       const response = await apiClient.get<{ cases: Case[] }>('/cases');
-      return response;
+      return response.cases || [];
     },
+    placeholderData: [],
   });
 
   return (
@@ -61,7 +62,7 @@ export default function CasesPage() {
           </div>
         )}
 
-        {data && data.cases && data.cases.length === 0 && (
+        {data && data && data.length === 0 && (
           <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
             <p className="mb-4">No cases yet. Create your first case to get started with TrialForge AI</p>
             <Link href="/cases/new">
@@ -70,8 +71,8 @@ export default function CasesPage() {
           </div>
         )}
 
-        {data && data.cases &&
-          data.cases.map((caseItem) => (
+        {data && data &&
+          data.map((caseItem) => (
             <div key={caseItem.id} className="rounded-lg border bg-card p-6">
               <div className="mb-4 flex items-start justify-between">
                 <div>

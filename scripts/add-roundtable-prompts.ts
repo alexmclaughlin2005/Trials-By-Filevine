@@ -48,12 +48,23 @@ YOUR TASK:
 Based on the case facts presented and what other jurors have said, share your perspective.
 Stay in character. Your response should reflect your values, experiences, and natural speaking style.
 
-IMPORTANT BEHAVIORAL NOTES:
-- Speak naturally, as a real person would in a jury room
+CRITICAL FORMAT REQUIREMENTS:
+- Give ONE brief conversational statement (2-5 sentences maximum)
+- NO markdown formatting (no ##, **, bullets, or structure)
+- NO analytical headers like "What Works" or "Concerns"
+- NO essay-style organization or numbered points
+- Speak as if you're talking out loud in a jury room
+- Use plain text only - just your natural speaking voice
 - Reference other jurors' comments when relevant
-- Don't be overly analytical or use legal jargon unless it fits your character
 - Show appropriate emotional reactions based on your personality
-- Keep responses conversational, not essay-like`,
+
+BAD EXAMPLE (DO NOT DO THIS):
+"## What I Think
+**Positive aspects:** The argument is strong...
+**Concerns:** However, I worry about..."
+
+GOOD EXAMPLE (DO THIS):
+"I think the attorney makes a compelling point about the hospital's negligence. The timeline they laid out really shows how things went wrong. But I'm wondering if the damages are too high - that's a lot of money."`,
           userPromptTemplate: '', // This is a system-only prompt
           config: {
             model: 'claude-sonnet-4-20250514',
@@ -103,9 +114,16 @@ WHAT OTHERS HAVE ALREADY SAID:
 {{previousSpeakers}}
 {{/if}}
 
+{{#if customQuestions}}
+SPECIFIC QUESTIONS TO CONSIDER:
+{{customQuestions}}
+{{/if}}
+
 Now it's your turn. {{lengthGuidance}}
 
-Share your initial reaction to this argument. What do you think about it?`,
+Share your initial reaction to this argument. What do you think about it?{{#if customQuestions}} Feel free to address any of the questions above that resonate with you.{{/if}}
+
+IMPORTANT: Respond with ONLY your plain-text conversational statement (2-5 sentences). NO markdown, NO headers, NO formatting. Just talk naturally as if speaking out loud in a jury room.`,
           config: {
             model: 'claude-sonnet-4-20250514',
             maxTokens: 300,
@@ -115,7 +133,8 @@ Share your initial reaction to this argument. What do you think about it?`,
             caseContext: 'string',
             argumentContent: 'string',
             previousSpeakers: 'string?',
-            lengthGuidance: 'string'
+            lengthGuidance: 'string',
+            customQuestions: 'string?'
           },
           outputSchema: {
             type: 'object',
@@ -165,9 +184,16 @@ DISCUSSION SO FAR:
 NOTE: {{addressedToYou.speaker}} mentioned you or directed a comment at you: "{{addressedToYou.content}}"
 {{/if}}
 
+{{#if customQuestions}}
+QUESTIONS TO CONSIDER:
+{{customQuestions}}
+{{/if}}
+
 Now it's your turn. {{lengthGuidance}}
 
-As {{personaName}}, respond to the discussion. What do you want to add?`,
+As {{personaName}}, respond to the discussion. What do you want to add?{{#if customQuestions}} You may also address any relevant questions that haven't been fully explored yet.{{/if}}
+
+IMPORTANT: Respond with ONLY your plain-text conversational statement (2-5 sentences). NO markdown, NO headers, NO formatting. Just talk naturally as if speaking out loud in a jury room.`,
           config: {
             model: 'claude-sonnet-4-20250514',
             maxTokens: 400,
@@ -180,7 +206,8 @@ As {{personaName}}, respond to the discussion. What do you want to add?`,
             lastSpeaker: 'object?',
             addressedToYou: 'object?',
             lengthGuidance: 'string',
-            personaName: 'string'
+            personaName: 'string',
+            customQuestions: 'string?'
           },
           outputSchema: {
             type: 'object',

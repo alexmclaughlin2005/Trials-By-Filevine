@@ -11,11 +11,13 @@ import { PrismaClient } from '@juries/database';
 import { PromptClient } from '@juries/prompt-client';
 import { TurnManager, LeadershipLevel, PersonaTurnInfo, Statement } from './turn-manager';
 import { PersonaSummarizer, PersonaSummary } from './persona-summarizer';
+import { RelevanceScorer } from './relevance-scorer';
 
 export interface PersonaInfo {
   id: string;
   name: string;
   description: string;
+  archetype?: string;
   demographics?: any;
   worldview?: string;
   leadershipLevel?: string;
@@ -44,6 +46,12 @@ export interface ConversationInput {
   caseContext: CaseContextInfo;
   personas: PersonaInfo[];
   existingConversationId?: string; // Optional: use existing conversation record
+  customQuestions?: Array<{
+    id: string;
+    question: string;
+    order: number;
+    targetArchetypes?: string[];
+  }>; // Optional: custom questions to weave into discussion
 }
 
 export interface ConversationResult {
@@ -60,12 +68,13 @@ export interface ConversationResult {
 
 /**
  * Length guidance based on leadership level
+ * Note: No explicit length constraints - let persona's natural style drive response length
  */
 const LENGTH_GUIDANCE: Record<LeadershipLevel, string> = {
-  [LeadershipLevel.LEADER]: "Share your view fully in 3-5 sentences. You often ask others what they think.",
-  [LeadershipLevel.INFLUENCER]: "State your position clearly in 2-4 sentences. You're not shy about disagreeing.",
-  [LeadershipLevel.FOLLOWER]: "Keep it brief, 1-2 sentences. You might reference what someone else said.",
-  [LeadershipLevel.PASSIVE]: "A short response of 1 sentence. You don't say much unless it really matters."
+  [LeadershipLevel.LEADER]: "Share your view fully. You often ask others what they think.",
+  [LeadershipLevel.INFLUENCER]: "State your position clearly. You're not shy about disagreeing.",
+  [LeadershipLevel.FOLLOWER]: "You might reference what someone else said.",
+  [LeadershipLevel.PASSIVE]: "You speak when something truly matters to you."
 };
 
 /**
@@ -83,11 +92,13 @@ export class ConversationOrchestrator {
   private promptClient: PromptClient;
   private turnManager?: TurnManager;
   private personaSummarizer: PersonaSummarizer;
+  private relevanceScorer: RelevanceScorer;
 
   constructor(prisma: PrismaClient, promptClient: PromptClient) {
     this.prisma = prisma;
     this.promptClient = promptClient;
     this.personaSummarizer = new PersonaSummarizer(prisma, promptClient);
+    this.relevanceScorer = new RelevanceScorer();
   }
 
   /**
@@ -112,12 +123,17 @@ export class ConversationOrchestrator {
       throw new Error('Conversation not found');
     }
 
-    // Initialize turn manager
+    // Phase 0: Compute relevance scores
+    console.log('🔍 Phase 0: Computing persona relevance scores...');
+    const relevanceScores = this.computeRelevanceScores(input);
+
+    // Initialize turn manager WITH relevance scores
     const personaTurnInfos: PersonaTurnInfo[] = input.personas.map(p => ({
       personaId: p.id,
       personaName: p.name,
       leadershipLevel: this.normalizeLeadershipLevel(p.leadershipLevel),
-      speakCount: 0
+      speakCount: 0,
+      relevanceScore: relevanceScores.get(p.id)
     }));
 
     this.turnManager = new TurnManager(personaTurnInfos);
@@ -247,12 +263,15 @@ export class ConversationOrchestrator {
     try {
       // Use prompt service
       // Note: System prompt should be set in the prompt template itself
+      const customQuestionsText = this.formatCustomQuestions(input.customQuestions, persona.archetype);
+
       const { result } = await this.promptClient.execute('roundtable-initial-reaction', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
           argumentContent: input.argument.content,
           previousSpeakers,
           lengthGuidance,
+          customQuestions: customQuestionsText,
           // Persona context for system prompt
           name: persona.name,
           demographics: this.formatDemographics(persona),
@@ -285,6 +304,8 @@ export class ConversationOrchestrator {
     const lastStatement = history[history.length - 1];
 
     try {
+      const customQuestionsText = this.formatCustomQuestions(input.customQuestions, persona.archetype);
+
       const { result } = await this.promptClient.execute('roundtable-conversation-turn', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
@@ -296,6 +317,7 @@ export class ConversationOrchestrator {
           } : null,
           addressedToYou: null, // TODO: Implement mention detection
           lengthGuidance,
+          customQuestions: customQuestionsText,
           personaName: persona.name,
           // Persona context
           name: persona.name,
@@ -463,6 +485,39 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
   }
 
   /**
+   * Compute relevance scores for all personas against the argument
+   */
+  private computeRelevanceScores(input: ConversationInput): Map<string, number> {
+    const scores = new Map<string, number>();
+
+    for (const persona of input.personas) {
+      const score = this.relevanceScorer.scoreRelevance(
+        {
+          id: persona.id,
+          name: persona.name,
+          description: persona.description,
+          demographics: persona.demographics,
+          worldview: persona.worldview,
+          lifeExperiences: persona.lifeExperiences,
+          dimensions: persona.dimensions
+        },
+        {
+          id: input.argument.id,
+          title: input.argument.title,
+          content: input.argument.content
+        }
+      );
+
+      scores.set(persona.id, score.compositeRelevance);
+
+      // Log relevance score for debugging
+      console.log(`  ${persona.name}: relevance=${score.compositeRelevance.toFixed(2)} (topic=${score.topicMatch.toFixed(2)}, trigger=${score.emotionalTrigger.toFixed(2)}, exp=${score.experienceMatch.toFixed(2)}, values=${score.valuesAlignment.toFixed(2)})`);
+    }
+
+    return scores;
+  }
+
+  /**
    * Normalize leadership level string to enum
    */
   private normalizeLeadershipLevel(level?: string): LeadershipLevel {
@@ -473,5 +528,36 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
     if (normalized === 'PASSIVE') return LeadershipLevel.PASSIVE;
     // Default to FOLLOWER if not specified
     return LeadershipLevel.FOLLOWER;
+  }
+
+  /**
+   * Format custom questions for inclusion in prompts
+   */
+  private formatCustomQuestions(customQuestions?: Array<{
+    id: string;
+    question: string;
+    order: number;
+    targetArchetypes?: string[];
+  }>, personaArchetype?: string): string | null {
+    if (!customQuestions || customQuestions.length === 0) {
+      return null;
+    }
+
+    // Filter questions for this persona's archetype if specified
+    const relevantQuestions = personaArchetype
+      ? customQuestions.filter(q =>
+          !q.targetArchetypes ||
+          q.targetArchetypes.length === 0 ||
+          q.targetArchetypes.includes(personaArchetype)
+        )
+      : customQuestions;
+
+    if (relevantQuestions.length === 0) {
+      return null;
+    }
+
+    // Sort by order and format
+    const sortedQuestions = [...relevantQuestions].sort((a, b) => a.order - b.order);
+    return sortedQuestions.map(q => `- ${q.question}`).join('\n');
   }
 }
