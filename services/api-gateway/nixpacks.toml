@@ -1,4 +1,5 @@
 [phases.setup]
+# Node.js 20 required for @vercel/blob and pdf-parse
 nixPkgs = ["nodejs_20", "npm"]
 
 [phases.install]
