@@ -1,4 +1,5 @@
 [phases.setup]
+# Node.js 20 required for workspace dependencies
 nixPkgs = ["nodejs_20", "npm"]
 
 [phases.install]
