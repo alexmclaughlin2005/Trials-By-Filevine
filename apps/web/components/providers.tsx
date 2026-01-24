@@ -26,7 +26,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         defaultOptions: {
           queries: {
             staleTime: 30 * 1000, // 30 seconds
-            cacheTime: 5 * 60 * 1000, // 5 minutes
+            gcTime: 5 * 60 * 1000, // 5 minutes (garbage collection time, formerly cacheTime)
             refetchOnWindowFocus: true,
             refetchOnMount: true,
             refetchOnReconnect: true,
