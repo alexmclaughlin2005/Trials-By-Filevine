@@ -17,7 +17,7 @@
     "@juries/database": "*",
     "@juries/types": "*",
     "@juries/utils": "*",
-    "@prisma/client": "^7.3.0",
+    "@prisma/client": "^5.8.1",
     "dotenv": "^16.3.1",
     "fastify": "^4.26.0",
     "handlebars": "^4.7.8",
