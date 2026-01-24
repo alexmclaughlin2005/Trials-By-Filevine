@@ -1,5 +1,5 @@
 [phases.setup]
-# Node.js 20 required for workspace dependencies
+# Node.js 20 required for workspace dependencies (pdf-parse, @vercel/blob)
 nixPkgs = ["nodejs_20", "npm"]
 
 [phases.install]
