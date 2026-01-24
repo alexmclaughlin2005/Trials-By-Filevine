@@ -223,7 +223,52 @@ This ensures deployments trigger when:
 
 ## Common Issues and Solutions
 
-### Issue 1: Cannot find module '/app/services/{service}/dist/index.js'
+### Issue 1: Node.js version mismatch (Got "18.20.8", expected ">=20.0.0")
+
+**Cause**: Nixpacks reads Node.js version from `package.json` `engines.node` field, which takes precedence over `nixpacks.toml` configuration.
+
+**Symptoms**:
+- Build fails with error: `The engine "node" is incompatible with this module`
+- Logs show Node 18.20.8 even though `nixpacks.toml` specifies `nodejs_20`
+- Packages like `@vercel/blob` or `pdf-parse` require Node 20+
+
+**Root Cause**: The root `package.json` had `"engines": { "node": ">=18.0.0" }`, causing Nixpacks to use Node 18 by default.
+
+**Solution**:
+1. Update root `package.json` engines field:
+   ```json
+   {
+     "engines": {
+       "node": ">=20.0.0",
+       "npm": ">=9.0.0"
+     }
+   }
+   ```
+
+2. Ensure all service `railway.json` files use yarn (matches Railway's behavior):
+   ```json
+   {
+     "build": {
+       "buildCommand": "node --version && yarn install --frozen-lockfile && ..."
+     }
+   }
+   ```
+
+3. Verify `nixpacks.toml` includes `nodejs_20`:
+   ```toml
+   [phases.setup]
+   nixPkgs = ["nodejs_20", "npm"]
+   ```
+
+**Important**:
+- Nixpacks respects `engines.node` from package.json FIRST
+- Only major versions can be specified (18, 20, 22)
+- Railway uses yarn via corepack, not npm, despite nixpacks specifying npm
+- `nodejs_20` package provides Node 22.11.0 (not 20.x as the name suggests)
+
+**Prevention**: Always set `engines.node` in root package.json to match your minimum required version.
+
+### Issue 2: Cannot find module '/app/services/{service}/dist/index.js'
 
 **Cause**: Build not creating dist folder in correct location.
 
@@ -232,7 +277,7 @@ This ensures deployments trigger when:
 cd services/{service} && npm run build && cd ../..
 ```
 
-### Issue 2: error TS2307: Cannot find module '@juries/...'
+### Issue 3: error TS2307: Cannot find module '@juries/...'
 
 **Cause**: Missing TypeScript path mappings.
 
@@ -248,7 +293,7 @@ cd services/{service} && npm run build && cd ../..
 }
 ```
 
-### Issue 3: TypeScript not found during build
+### Issue 4: TypeScript not found during build
 
 **Cause**: TypeScript in devDependencies.
 
@@ -261,7 +306,7 @@ cd services/{service} && npm run build && cd ../..
 }
 ```
 
-### Issue 4: Prisma seed files causing build errors
+### Issue 5: Prisma seed files causing build errors
 
 **Cause**: TypeScript trying to compile files outside rootDir.
 
@@ -272,7 +317,7 @@ cd services/{service} && npm run build && cd ../..
 }
 ```
 
-### Issue 5: Redis connection refused (ECONNREFUSED ::1:6379)
+### Issue 6: Redis connection refused (ECONNREFUSED ::1:6379)
 
 **Cause**: Service trying to connect to localhost instead of Railway Redis.
 
@@ -281,13 +326,13 @@ cd services/{service} && npm run build && cd ../..
 2. Add `REDIS_URL` environment variable
 3. Update service code to parse `REDIS_URL`
 
-### Issue 6: Deployments not triggering on code changes
+### Issue 7: Deployments not triggering on code changes
 
 **Cause**: Watch paths not configured.
 
 **Solution**: Set watch paths in Railway dashboard for each service.
 
-### Issue 7: npm workspace commands not working
+### Issue 8: npm workspace commands not working
 
 **Cause**: npm workspace commands execute in wrong context.
 
@@ -401,6 +446,13 @@ If a deployment fails:
 - **Railway Dashboard**: https://railway.app/dashboard
 
 ## Version History
+
+- **2026-01-24**: Added Node.js version troubleshooting
+  - Documented Node.js version precedence (package.json engines.node > nixpacks.toml)
+  - Fixed all services to require Node 20+ in root package.json
+  - Updated all railway.json files to use yarn instead of npm
+  - Clarified that Railway uses yarn via corepack, not npm
+  - Documented that nodejs_20 provides Node 22.11.0, not 20.x
 
 - **2026-01-22**: Initial documentation after successful Railway deployment
   - Established build strategy with explicit cd commands
