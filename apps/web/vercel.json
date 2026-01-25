@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd ../.. && npx prisma generate --schema=./packages/database/prisma/schema.prisma && npx turbo run build --filter=@juries/web",
   "outputDirectory": ".next",
-  "devCommand": "npm run dev",
-  "installCommand": "cd ../.. && npm install",
+  "devCommand": "yarn dev",
+  "installCommand": "cd ../.. && yarn install --frozen-lockfile",
   "framework": "nextjs"
 }

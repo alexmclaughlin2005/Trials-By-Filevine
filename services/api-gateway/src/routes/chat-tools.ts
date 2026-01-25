@@ -227,7 +227,7 @@ export async function executeTool(
             lastName,
             age: age ? parseInt(String(age)) : null,
             occupation,
-            questionnaireData: education ? { education } : null,
+            ...(education && { questionnaireData: { education } }),
           },
         });
 

@@ -13,10 +13,15 @@ import {
   LogOut,
   Menu,
   UserSearch,
+  Bot,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
-export function Header() {
+interface HeaderProps {
+  onOpenChat?: () => void;
+}
+
+export function Header({ onOpenChat }: HeaderProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
 
@@ -95,6 +100,13 @@ export function Header() {
           </div>
 
           {/* Icon buttons */}
+          <button
+            onClick={() => onOpenChat?.()}
+            className="flex items-center justify-center rounded p-2 text-filevine-gray-400 hover:bg-filevine-gray-900 hover:text-white"
+            title="API Assistant"
+          >
+            <Bot className="h-5 w-5" />
+          </button>
           <button
             className="relative flex items-center justify-center rounded p-2 text-filevine-gray-400 hover:bg-filevine-gray-900 hover:text-white"
             title="Notifications"
