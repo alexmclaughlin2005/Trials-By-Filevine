@@ -31,7 +31,6 @@ export default function ConversationDetailPage() {
 
         // If conversation is not completed, start polling
         if (!data.completedAt) {
-          setIsPolling(true);
           pollInterval = setInterval(async () => {
             try {
               const updatedData = await apiClient.get<ConversationDetail>(`/focus-groups/conversations/${conversationId}`);
@@ -43,7 +42,6 @@ export default function ConversationDetailPage() {
               // Stop polling when conversation is complete
               if (updatedData.completedAt && pollInterval) {
                 clearInterval(pollInterval);
-                setIsPolling(false);
               }
             } catch (err) {
               console.error('Error polling conversation:', err);
