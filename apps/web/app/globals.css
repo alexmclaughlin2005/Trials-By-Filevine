@@ -78,31 +78,37 @@
   }
 
   .markdown-content .markdown-p {
-    @apply mb-3 last:mb-0 text-gray-800 leading-normal;
+    @apply mb-2 last:mb-0 text-gray-800 leading-snug;
   }
 
   .markdown-content .markdown-ul {
-    @apply my-1 ml-5;
+    @apply my-0 ml-5;
     list-style-type: disc;
     list-style-position: outside;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.5rem !important;
   }
 
   .markdown-content .markdown-ol {
-    @apply my-1 ml-5;
+    @apply my-0 ml-5;
     list-style-type: decimal;
     list-style-position: outside;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.5rem !important;
   }
 
   .markdown-content .markdown-li {
-    @apply leading-snug text-gray-800;
+    @apply leading-tight text-gray-800;
     padding-left: 0;
-    margin-bottom: 0.125rem;
+    margin-bottom: 0 !important;
+    line-height: 1.4 !important;
   }
 
   .markdown-content .markdown-li-ordered {
-    @apply leading-snug text-gray-800;
+    @apply leading-tight text-gray-800;
     padding-left: 0;
-    margin-bottom: 0.125rem;
+    margin-bottom: 0 !important;
+    line-height: 1.4 !important;
   }
 
   .markdown-content .markdown-inline-code {
