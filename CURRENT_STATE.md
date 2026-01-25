@@ -1,6 +1,6 @@
 # Trials by Filevine - Current State & Roadmap
 
-**Last Updated:** January 24, 2026
+**Last Updated:** January 25, 2026
 **Status:** Production-Ready, Deployed to Vercel
 
 ---
@@ -10,6 +10,7 @@
 Trials by Filevine AI is a comprehensive jury intelligence platform that has completed **5 major development phases** and is ready for production deployment. The system provides attorneys with AI-powered tools for jury research, behavioral analysis, argument testing, and strategic planning.
 
 ### What's Working Now
+- ✅ **NEW: Enhanced API Chat** - Markdown rendering, collapsible history sidebar, clickable links
 - ✅ **NEW: Redesigned navigation** - Case-specific sidebar, simplified global nav, URL-based routing
 - ✅ Complete case management with embedded juror research
 - ✅ Identity matching with confidence scoring
@@ -412,6 +413,72 @@ Database (Railway)
 | Horizontal tabs in cases | Vertical sidebar in cases |
 | State-based navigation | URL-based navigation |
 | Fixed sidebar always visible | Sidebar only when needed |
+
+---
+
+### 10. API Chat Assistant ⭐ **NEW (Jan 25, 2026)**
+**Status:** ✅ Complete - ChatGPT-style interface with markdown rendering
+**What it does:**
+- Natural language interface to interact with Trials by Filevine API
+- Create cases, add jurors, run simulations via conversational AI
+- Powered by Claude Sonnet 4.5 with tool calling
+- Persistent chat history with conversation management
+
+**Features:**
+- **Markdown Rendering:** Full markdown support (bold, italic, headers, code blocks, lists, links)
+- **Collapsible History Sidebar:** ChatGPT/Claude-style left sidebar (256px) with conversation list
+- **Clickable Links:** AI generates markdown links to cases, jurors, and resources
+- **Tool Integration:** AI can actually perform actions (not just answer questions)
+- **Conversation Persistence:** All chats saved to database with full history
+- **Responsive Design:** 800px panel with smooth animations
+
+**Sidebar Features:**
+- Preview of each conversation (title + first message)
+- Date of last message
+- Delete conversations on hover
+- Active conversation highlighting
+- New chat button
+
+**Available Tools:**
+- `create_case` - Create new trial cases
+- `list_cases` - List all cases
+- `get_case` - Get case details
+- `add_juror` - Add jurors to cases
+- `classify_juror_archetype` - Run archetype classification
+
+**Key Files:**
+- `apps/web/components/api-chat-panel.tsx` - Main chat UI with sidebar
+- `apps/web/app/globals.css` - Markdown styling for chat messages
+- `services/api-gateway/src/routes/chat.ts` - Chat API endpoint with tool calling
+- `services/api-gateway/src/routes/chat-tools.ts` - Tool definitions and execution
+
+**Technical Details:**
+- **Markdown Library:** react-markdown v8.0.7 (CommonJS compatible)
+- **Prompt Version:** 1.2.0 (with link formatting instructions)
+- **Database:** chat_conversations and chat_messages tables
+- **AI Model:** Claude Sonnet 4.5 (claude-sonnet-4-5-20250929)
+- **Agentic Loop:** Up to 5 iterations for multi-step tool use
+
+**Example Interactions:**
+```
+User: "Create a case for Smith v. Jones"
+AI: "I've created the case [Smith v. Jones](/cases/abc-123). Click to view details."
+
+User: "Add a juror named John Doe to this case"
+AI: "I've added [John Doe](/cases/abc-123/jurors/def-456) to the case."
+```
+
+**Recent Improvements (Jan 25, 2026):**
+- ✅ Added markdown rendering with comprehensive styling
+- ✅ Implemented ChatGPT-style collapsible history sidebar
+- ✅ Fixed conversationId validation (now accepts null)
+- ✅ Enhanced error logging with stack traces
+- ✅ Updated prompt to include clickable links in responses
+- ✅ Downgraded react-markdown for Next.js compatibility
+
+**Known Issues:**
+- ⚠️ Turbopack temporarily disabled due to ESM module resolution
+- 🔄 Need to verify Claude consistently includes links in responses
 
 ---
 
