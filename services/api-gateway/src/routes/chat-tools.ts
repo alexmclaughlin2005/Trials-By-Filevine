@@ -121,15 +121,20 @@ export async function executeTool(
   try {
     switch (toolName) {
       case 'create_case': {
-        const caseData = {
-          ...toolInput,
-          organizationId: user.organizationId,
-          createdBy: user.userId,
-          status: 'active',
-        };
+        const { name, caseNumber, caseType, plaintiffName, defendantName, ourSide } = toolInput;
 
         const newCase = await server.prisma.case.create({
-          data: caseData,
+          data: {
+            name,
+            caseNumber,
+            caseType,
+            plaintiffName,
+            defendantName,
+            ourSide,
+            organizationId: user.organizationId,
+            createdBy: user.userId,
+            status: 'active',
+          },
         });
 
         return {
@@ -190,53 +195,48 @@ export async function executeTool(
       }
 
       case 'add_juror': {
-        const jurorData = {
-          ...toolInput,
-          organizationId: user.organizationId,
-          createdBy: user.userId,
-        };
+        const { caseId, name, age, gender, occupation, education } = toolInput;
 
-        // Remove caseId from jurorData as it will be handled separately
-        const { caseId, ...jurorFields } = jurorData;
+        // Parse name into firstName and lastName
+        const nameParts = (name || '').trim().split(' ');
+        const firstName = nameParts[0] || 'Unknown';
+        const lastName = nameParts.slice(1).join(' ') || '';
 
-        const newJuror = await server.prisma.juror.create({
-          data: jurorFields,
+        // Find or create a jury panel for this case
+        let panel = await server.prisma.juryPanel.findFirst({
+          where: {
+            caseId,
+          },
+          orderBy: { createdAt: 'desc' },
         });
 
-        // If caseId provided, create jury panel member
-        if (caseId) {
-          // Find or create a jury panel for this case
-          let panel = await server.prisma.juryPanel.findFirst({
-            where: {
-              caseId,
-              organizationId: user.organizationId,
-            },
-          });
-
-          if (!panel) {
-            panel = await server.prisma.juryPanel.create({
-              data: {
-                caseId,
-                organizationId: user.organizationId,
-                name: 'Main Panel',
-                createdBy: user.userId,
-              },
-            });
-          }
-
-          await server.prisma.juryPanelMember.create({
+        if (!panel) {
+          panel = await server.prisma.juryPanel.create({
             data: {
-              juryPanelId: panel.id,
-              jurorId: newJuror.id,
+              caseId,
+              panelDate: new Date(),
+              status: 'active',
             },
           });
         }
 
+        const newJuror = await server.prisma.juror.create({
+          data: {
+            panelId: panel.id,
+            firstName,
+            lastName,
+            age: age ? parseInt(String(age)) : null,
+            occupation,
+            questionnaireData: education ? { education } : null,
+          },
+        });
+
+        const fullName = `${firstName} ${lastName}`.trim();
         return {
           result: {
             success: true,
             juror: newJuror,
-            message: `Juror "${newJuror.name}" added successfully${caseId ? ' and assigned to case' : ''}`,
+            message: `Juror "${fullName}" added successfully and assigned to case`,
           },
         };
       }
@@ -246,7 +246,6 @@ export async function executeTool(
         const juror = await server.prisma.juror.findFirst({
           where: {
             id: toolInput.jurorId,
-            organizationId: user.organizationId,
           },
         });
 
@@ -259,13 +258,14 @@ export async function executeTool(
 
         // TODO: Call AI archetype classification service
         // For now, return a placeholder response
+        const fullName = `${juror.firstName} ${juror.lastName}`.trim();
         return {
           result: {
             success: true,
             message:
               'Archetype classification requires additional juror information. This feature will analyze demographics, background, and questionnaire responses to classify the juror into one of 10 psychological archetypes.',
             jurorId: juror.id,
-            jurorName: juror.name,
+            jurorName: fullName,
           },
         };
       }
@@ -277,7 +277,7 @@ export async function executeTool(
         };
     }
   } catch (error) {
-    server.log.error('Tool execution error:', error);
+    server.log.error({ error }, 'Tool execution error');
     return {
       result: null,
       error: error instanceof Error ? error.message : 'Unknown error',

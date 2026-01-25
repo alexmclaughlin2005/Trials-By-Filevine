@@ -67,7 +67,7 @@ export async function chatRoutes(server: FastifyInstance) {
             }),
           };
         } catch (error) {
-          server.log.error('Error fetching conversations:', error);
+          server.log.error({ error }, 'Error fetching conversations');
           reply.code(500);
           return {
             error: 'Failed to fetch conversations',
@@ -123,7 +123,7 @@ export async function chatRoutes(server: FastifyInstance) {
             lastMessageAt: conversation.lastMessageAt,
           };
         } catch (error) {
-          server.log.error('Error fetching conversation:', error);
+          server.log.error({ error }, 'Error fetching conversation');
           reply.code(500);
           return {
             error: 'Failed to fetch conversation',
@@ -165,7 +165,7 @@ export async function chatRoutes(server: FastifyInstance) {
 
           return { success: true };
         } catch (error) {
-          server.log.error('Error deleting conversation:', error);
+          server.log.error({ error }, 'Error deleting conversation');
           reply.code(500);
           return {
             error: 'Failed to delete conversation',
@@ -304,8 +304,8 @@ IMPORTANT: Actually use these tools to help users - don't just tell them how to 
             if (toolUseBlock && toolUseBlock.type === 'tool_use') {
               // Claude wants to use a tool
               server.log.info(
-                `Tool call: ${toolUseBlock.name}`,
-                toolUseBlock.input
+                { tool: toolUseBlock.name, input: toolUseBlock.input },
+                'Tool call'
               );
 
               // Track tool call
@@ -378,7 +378,7 @@ IMPORTANT: Actually use these tools to help users - don't just tell them how to 
               role: 'assistant',
               content: finalResponse,
               toolsUsed: toolCallsMade.length > 0,
-              toolCalls: toolCallsMade.length > 0 ? toolCallsMade : null,
+              toolCalls: toolCallsMade.length > 0 ? (toolCallsMade as any) : null,
               tokensUsed: totalTokensUsed,
             },
           });
@@ -396,7 +396,7 @@ IMPORTANT: Actually use these tools to help users - don't just tell them how to 
             toolsUsed: toolCallsMade.length > 0,
           };
         } catch (error) {
-          server.log.error('Chat error:', error);
+          server.log.error({ error }, 'Chat error');
 
           // Log more details for debugging
           if (error instanceof Error) {
