@@ -5,8 +5,7 @@ import { X, Send, MessageSquare, Loader2, Plus, Trash2, History } from 'lucide-r
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/auth-context';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { SimpleMarkdown } from './simple-markdown';
 
 interface Message {
   id: string;
@@ -392,9 +391,7 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
                       : 'markdown-content-assistant'
                   )}
                 >
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
+                  <SimpleMarkdown content={message.content} />
                 </div>
                 <p
                   className={cn(
