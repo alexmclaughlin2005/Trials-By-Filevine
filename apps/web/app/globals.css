@@ -58,3 +58,96 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Markdown content styling for chat messages */
+  .markdown-content h1 {
+    @apply text-base font-bold mt-3 mb-2 first:mt-0;
+  }
+
+  .markdown-content h2 {
+    @apply text-sm font-bold mt-3 mb-2 first:mt-0;
+  }
+
+  .markdown-content h3 {
+    @apply text-sm font-semibold mt-2 mb-1 first:mt-0;
+  }
+
+  .markdown-content p {
+    @apply mb-2 last:mb-0;
+  }
+
+  .markdown-content ul {
+    @apply mb-2 ml-4 list-disc space-y-1;
+  }
+
+  .markdown-content ol {
+    @apply mb-2 ml-4 list-decimal space-y-1;
+  }
+
+  .markdown-content li {
+    @apply mb-1 last:mb-0;
+  }
+
+  .markdown-content code {
+    @apply px-1 py-0.5 rounded text-xs font-mono;
+  }
+
+  .markdown-content pre {
+    @apply px-2 py-2 rounded text-xs font-mono my-2 overflow-x-auto;
+  }
+
+  .markdown-content pre code {
+    @apply p-0 bg-transparent;
+  }
+
+  .markdown-content a {
+    @apply underline hover:opacity-80 transition-opacity;
+  }
+
+  .markdown-content strong {
+    @apply font-semibold;
+  }
+
+  .markdown-content em {
+    @apply italic;
+  }
+
+  .markdown-content blockquote {
+    @apply border-l-4 pl-3 my-2 italic opacity-90;
+    border-color: currentColor;
+    opacity: 0.7;
+  }
+
+  .markdown-content hr {
+    @apply my-3;
+    border-color: currentColor;
+    opacity: 0.2;
+  }
+
+  /* User message styles (white text on blue background) */
+  .markdown-content-user code {
+    @apply bg-white/20;
+  }
+
+  .markdown-content-user pre {
+    @apply bg-white/10;
+  }
+
+  .markdown-content-user a {
+    @apply text-white;
+  }
+
+  /* Assistant message styles (dark text on gray background) */
+  .markdown-content-assistant code {
+    @apply bg-filevine-gray-200;
+  }
+
+  .markdown-content-assistant pre {
+    @apply bg-filevine-gray-200;
+  }
+
+  .markdown-content-assistant a {
+    @apply text-filevine-blue;
+  }
+}
