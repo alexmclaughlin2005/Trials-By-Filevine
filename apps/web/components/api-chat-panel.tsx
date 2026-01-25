@@ -49,11 +49,12 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
   // Load conversations when panel opens
   useEffect(() => {
     if (isOpen) {
-      loadConversations();
+      void loadConversations();
       if (inputRef.current) {
         inputRef.current.focus();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const scrollToBottom = () => {
@@ -79,7 +80,7 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
       if (response.ok) {
         const data = await response.json();
         setConversations(
-          data.conversations.map((c: any) => ({
+          data.conversations.map((c: { id: string; title: string | null; lastMessageAt: string; preview?: string }) => ({
             ...c,
             lastMessageAt: new Date(c.lastMessageAt),
           }))
@@ -107,7 +108,7 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
       if (response.ok) {
         const data = await response.json();
         setMessages(
-          data.messages.map((msg: any) => ({
+          data.messages.map((msg: { id: string; role: 'user' | 'assistant'; content: string; createdAt: string }) => ({
             id: msg.id,
             role: msg.role,
             content: msg.content,

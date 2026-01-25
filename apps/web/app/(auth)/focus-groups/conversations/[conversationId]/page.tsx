@@ -15,7 +15,6 @@ export default function ConversationDetailPage() {
   const [conversation, setConversation] = useState<ConversationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
 
   useEffect(() => {
     let pollInterval: NodeJS.Timeout | null = null;
