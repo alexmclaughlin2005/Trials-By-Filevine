@@ -35,7 +35,7 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
     {
       id: '1',
       role: 'assistant',
-      content: 'Hello! I\'m your API assistant powered by Claude Sonnet 4.5. I can help you interact with the Trials by Filevine API. Try asking me to:\n\n• Create a new case\n• Add jurors\n• Classify juror archetypes\n• Run focus group simulations\n• Search for cases or jurors\n\nWhat would you like to do?',
+      content: 'Hello! I\'m your API assistant powered by Claude Sonnet 4.5. I can help you interact with the Trials by Filevine API. Try asking me to:\n\n- Create a new case\n- Add jurors\n- Classify juror archetypes\n- Run focus group simulations\n- Search for cases or jurors\n\nWhat would you like to do?',
       timestamp: new Date(),
     },
   ]);
