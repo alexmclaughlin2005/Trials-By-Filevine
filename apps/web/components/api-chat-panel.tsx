@@ -178,7 +178,13 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
 
     try {
       // Call the API chat endpoint
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/chat`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+      if (!apiUrl) {
+        throw new Error('API URL not configured. Please set NEXT_PUBLIC_API_URL environment variable.');
+      }
+
+      const response = await fetch(`${apiUrl}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +197,13 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response');
+        const errorText = await response.text();
+        console.error('Chat API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorText,
+        });
+        throw new Error(`Failed to get response: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -212,6 +224,8 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
       }
     } catch (error) {
       console.error('Chat error:', error);
+      console.error('API URL:', process.env.NEXT_PUBLIC_API_URL);
+      console.error('Has token:', !!token);
 
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
