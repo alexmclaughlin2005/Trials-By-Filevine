@@ -366,53 +366,39 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
           </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                'flex',
+                'flex gap-3',
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
+              {message.role === 'assistant' && (
+                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                  AI
+                </div>
+              )}
               <div
                 className={cn(
-                  'max-w-[85%] rounded-lg px-4 py-2',
+                  'max-w-[75%] rounded-2xl px-4 py-3 shadow-sm',
                   message.role === 'user'
-                    ? 'bg-filevine-blue text-white'
-                    : 'bg-filevine-gray-100 text-filevine-black'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'bg-white border border-gray-200 text-gray-900'
                 )}
               >
-                <div
-                  className={cn(
-                    'text-sm markdown-content',
-                    message.role === 'user'
-                      ? 'markdown-content-user'
-                      : 'markdown-content-assistant'
-                  )}
-                >
-                  <SimpleMarkdown content={message.content} />
-                </div>
-                <p
-                  className={cn(
-                    'text-xs mt-1',
-                    message.role === 'user'
-                      ? 'text-filevine-blue/70'
-                      : 'text-filevine-gray-500'
-                  )}
-                >
-                  {new Date(message.timestamp).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
+                <SimpleMarkdown content={message.content} />
               </div>
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-filevine-gray-100 rounded-lg px-4 py-3">
-                <Loader2 className="w-5 h-5 animate-spin text-filevine-gray-600" />
+            <div className="flex gap-3 justify-start">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                AI
+              </div>
+              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
+                <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
               </div>
             </div>
           )}
@@ -420,19 +406,19 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-filevine-gray-200">
-          <div className="flex gap-2">
+        <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex gap-3 items-end">
             <textarea
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask me to perform an action..."
+              placeholder="Ask anything..."
               className={cn(
-                'flex-1 resize-none rounded-lg border border-filevine-gray-300',
-                'px-4 py-2 text-sm focus:outline-none focus:ring-2',
-                'focus:ring-filevine-blue focus:border-transparent',
-                'max-h-32 min-h-[44px]'
+                'flex-1 resize-none rounded-xl border border-gray-300 bg-white',
+                'px-4 py-3 text-sm focus:outline-none focus:ring-2',
+                'focus:ring-blue-500 focus:border-transparent',
+                'max-h-32 min-h-[48px] shadow-sm'
               )}
               rows={1}
               disabled={isLoading}
@@ -440,7 +426,11 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
             <Button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
-              className="h-[44px] w-[44px] p-0 bg-filevine-blue hover:bg-filevine-blue/90"
+              className={cn(
+                'h-[48px] w-[48px] p-0 rounded-xl shadow-sm',
+                'bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300',
+                'transition-colors duration-200'
+              )}
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -449,9 +439,6 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
               )}
             </Button>
           </div>
-          <p className="text-xs text-filevine-gray-500 mt-2">
-            Press Enter to send, Shift+Enter for new line
-          </p>
         </div>
         </div>
       </div>
