@@ -25,6 +25,7 @@ import { synthesisRoutes } from './routes/synthesis';
 import { filevineRoutes } from './routes/filevine';
 import { caseFilevineRoutes } from './routes/case-filevine';
 import { apiDocsRoutes } from './routes/api-docs';
+import { chatRoutes } from './routes/chat';
 // import { jurorResearchRoutes } from './routes/juror-research'; // Disabled - conflicts with jurorsRoutes
 
 export async function buildServer() {
@@ -121,6 +122,7 @@ export async function buildServer() {
   await server.register(healthRoutes, { prefix: '/health' });
   await server.register(apiDocsRoutes); // API documentation routes
   await server.register(authRoutes, { prefix: '/api/auth' });
+  await server.register(chatRoutes, { prefix: '/api/chat' });
   await server.register(casesRoutes, { prefix: '/api/cases' });
   await server.register(caseFactsRoutes, { prefix: '/api/cases' });
   await server.register(caseArgumentsRoutes, { prefix: '/api/cases' });

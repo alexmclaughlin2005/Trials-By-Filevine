@@ -1165,6 +1165,51 @@ model ArgumentDocument {
 }
 
 // ============================================
+// API CHAT
+// ============================================
+
+model ChatConversation {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  organizationId String   @map("organization_id")
+  title          String?  // Auto-generated from first message
+  lastMessageAt  DateTime @default(now()) @map("last_message_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([lastMessageAt])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String   @id @default(uuid())
+  conversationId String   @map("conversation_id")
+  role           String   // user | assistant
+  content        String   @db.Text
+
+  // Tool usage tracking
+  toolsUsed      Boolean  @default(false) @map("tools_used")
+  toolCalls      Json?    @map("tool_calls") // Array of tool calls made
+
+  // Token usage
+  tokensUsed     Int?     @map("tokens_used")
+
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("chat_messages")
+}
+
+// ============================================
 // AUDIT LOG
 // ============================================
 
