@@ -78,31 +78,31 @@
   }
 
   .markdown-content .markdown-p {
-    @apply mb-2 last:mb-0 text-gray-800 leading-normal;
+    @apply mb-3 last:mb-0 text-gray-800 leading-normal;
   }
 
   .markdown-content .markdown-ul {
-    @apply my-2 ml-5 space-y-0.5;
+    @apply my-1 ml-5;
     list-style-type: disc;
     list-style-position: outside;
   }
 
   .markdown-content .markdown-ol {
-    @apply my-2 ml-5 space-y-0.5;
+    @apply my-1 ml-5;
     list-style-type: decimal;
     list-style-position: outside;
   }
 
   .markdown-content .markdown-li {
-    @apply leading-normal text-gray-800;
+    @apply leading-snug text-gray-800;
     padding-left: 0;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
   }
 
   .markdown-content .markdown-li-ordered {
-    @apply leading-normal text-gray-800;
+    @apply leading-snug text-gray-800;
     padding-left: 0;
-    margin-bottom: 0.25rem;
+    margin-bottom: 0.125rem;
   }
 
   .markdown-content .markdown-inline-code {
