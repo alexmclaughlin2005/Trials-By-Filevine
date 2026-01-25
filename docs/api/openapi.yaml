@@ -1,0 +1,2570 @@
+openapi: 3.0.3
+info:
+  title: Trials by Filevine API
+  version: 1.0.0
+  description: |
+    # Trials by Filevine AI - API Documentation
+
+    AI-Powered Trial Preparation & Jury Intelligence Platform
+
+    ## Overview
+
+    Trials by Filevine AI is a comprehensive trial preparation platform that helps legal teams:
+    - Optimize jury selection through AI-powered research and persona mapping
+    - Test arguments with simulated focus groups
+    - Manage case facts, arguments, and witness preparation
+    - Analyze juror behavior using behavioral archetypes
+    - Integrate with Filevine case management
+
+    ## Architecture
+
+    - **Frontend**: Next.js 14 hosted on Vercel
+    - **Backend**: Node.js + Fastify microservices on Railway
+    - **AI Provider**: Claude 4.5 (Anthropic API)
+    - **Database**: PostgreSQL 16 with pgvector
+
+    ## Authentication
+
+    All protected endpoints require JWT authentication via Bearer token:
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+
+    JWT tokens contain:
+    - `userId`: Unique user identifier
+    - `organizationId`: Multi-tenant organization ID
+    - `email`: User email address
+    - `role`: User role (admin, attorney, paralegal, consultant)
+
+    ## Multi-Tenancy
+
+    All data is strictly isolated by organization. The `organizationId` from your JWT token
+    automatically filters all queries to your organization's data only.
+
+    ## Rate Limiting
+
+    - **Default**: 100 requests per 15-minute window
+    - Rate limit headers included in responses:
+      - `X-RateLimit-Limit`: Maximum requests allowed
+      - `X-RateLimit-Remaining`: Requests remaining
+      - `X-RateLimit-Reset`: Timestamp when limit resets
+
+    ## Error Handling
+
+    All errors follow a consistent format:
+    ```json
+    {
+      "error": "Human-readable error message",
+      "statusCode": 400,
+      "details": {
+        "field": "Specific validation error"
+      }
+    }
+    ```
+
+    ## Conversational AI Usage
+
+    This API is designed to be controlled via conversational AI agents. Key patterns:
+
+    1. **Case Management**: Create cases, add facts/arguments/witnesses
+    2. **Juror Research**: Import panels, search for identities, map personas
+    3. **Focus Groups**: Run simulations, get AI feedback on arguments
+    4. **Archetype Classification**: Understand juror psychology
+    5. **Document Capture**: OCR jury lists and questionnaires
+
+    Common workflows are documented in the operation descriptions below.
+
+  contact:
+    name: Filevine Support
+    email: support@filevine.com
+  license:
+    name: Proprietary
+    url: https://filevine.com/terms
+
+servers:
+  - url: https://api-gateway-production.railway.app
+    description: Production server
+  - url: https://api-gateway-staging.railway.app
+    description: Staging server
+  - url: http://localhost:3001
+    description: Local development
+
+tags:
+  - name: Authentication
+    description: User authentication and registration
+  - name: Cases
+    description: Case management and metadata
+  - name: Case Facts
+    description: Manage case facts and evidence
+  - name: Case Arguments
+    description: Manage trial arguments with versioning
+  - name: Case Witnesses
+    description: Witness management and preparation
+  - name: Jurors
+    description: Jury panel and juror management
+  - name: Personas
+    description: Behavioral persona library
+  - name: Archetypes
+    description: AI-powered archetype classification
+  - name: Research
+    description: Juror research and summarization
+  - name: Synthesis
+    description: Deep research synthesis with web search
+  - name: Focus Groups
+    description: AI-powered focus group simulations
+  - name: Captures
+    description: Document capture and OCR processing
+  - name: Filevine Integration
+    description: Filevine case management integration
+
+security:
+  - BearerAuth: []
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check API and database connectivity status
+      security: []
+      responses:
+        '200':
+          description: System healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, error]
+                  timestamp:
+                    type: string
+                    format: date-time
+                  database:
+                    type: string
+                    enum: [connected, disconnected]
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: |
+        Authenticate user and receive JWT token.
+
+        **Conversational AI Usage:**
+        - Use this to authenticate before making other API calls
+        - Store the returned token for subsequent requests
+        - Token expires in 7 days by default
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: attorney@lawfirm.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: SecurePassword123!
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/signup:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: |
+        Create new user account and organization.
+
+        **Conversational AI Usage:**
+        - First-time setup for new users
+        - Automatically creates an organization if organizationName provided
+        - Returns JWT token immediately (no email verification required in MVP)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: newuser@lawfirm.com
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: SecurePassword123!
+                name:
+                  type: string
+                  example: Jane Attorney
+                organizationName:
+                  type: string
+                  example: Smith & Associates Law Firm
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: |
+        Retrieve the authenticated user's profile.
+
+        **Conversational AI Usage:**
+        - Verify authentication status
+        - Get user's organization ID and role
+        - Check token validity
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cases:
+    get:
+      tags:
+        - Cases
+      summary: List all cases
+      description: |
+        Retrieve all cases for the authenticated user's organization.
+
+        **Conversational AI Usage:**
+        - "Show me all my cases"
+        - "What cases are we working on?"
+        - Returns cases sorted by creation date (newest first)
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, archived, settled, dismissed]
+          description: Filter by case status
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search case names and case numbers
+      responses:
+        '200':
+          description: List of cases
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cases:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Case'
+    post:
+      tags:
+        - Cases
+      summary: Create a case
+      description: |
+        Create a new case with basic metadata.
+
+        **Conversational AI Usage:**
+        - "Create a new case called 'Smith v. Jones'"
+        - "Start a personal injury case for plaintiff Johnson"
+
+        **Important:** Creating a case automatically creates a jury panel with the same name.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - caseNumber
+              properties:
+                name:
+                  type: string
+                  example: Smith v. Jones
+                  description: Case name or title
+                caseNumber:
+                  type: string
+                  example: 2024-CV-12345
+                  description: Court-assigned case number
+                caseType:
+                  type: string
+                  example: Personal Injury
+                  description: Type of case (e.g., Personal Injury, Medical Malpractice, Product Liability)
+                plaintiffName:
+                  type: string
+                  example: John Smith
+                defendantName:
+                  type: string
+                  example: ABC Corporation
+                ourSide:
+                  type: string
+                  enum: [plaintiff, defendant]
+                  example: plaintiff
+                  description: Which side your firm represents
+                jurisdiction:
+                  type: string
+                  example: California Superior Court
+                trialDate:
+                  type: string
+                  format: date
+                  example: "2024-09-15"
+                venue:
+                  type: string
+                  example: Los Angeles County
+      responses:
+        '201':
+          description: Case created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    $ref: '#/components/schemas/Case'
+                  message:
+                    type: string
+                    example: "Case created with auto-generated jury panel"
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/cases/{id}:
+    get:
+      tags:
+        - Cases
+      summary: Get case by ID
+      description: |
+        Retrieve detailed information about a specific case.
+
+        **Conversational AI Usage:**
+        - "Show me details for case ABC"
+        - "What facts do we have for the Smith case?"
+
+        Returns case with all related data: facts, arguments, witnesses, jury panels.
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: Case details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    $ref: '#/components/schemas/CaseDetailed'
+        '404':
+          description: Case not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Cases
+      summary: Update case
+      description: |
+        Update case metadata.
+
+        **Conversational AI Usage:**
+        - "Update the trial date to October 15th"
+        - "Change the case type to Medical Malpractice"
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                caseNumber:
+                  type: string
+                caseType:
+                  type: string
+                plaintiffName:
+                  type: string
+                defendantName:
+                  type: string
+                ourSide:
+                  type: string
+                  enum: [plaintiff, defendant]
+                jurisdiction:
+                  type: string
+                trialDate:
+                  type: string
+                  format: date
+                venue:
+                  type: string
+                status:
+                  type: string
+                  enum: [active, archived, settled, dismissed]
+      responses:
+        '200':
+          description: Case updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  case:
+                    $ref: '#/components/schemas/Case'
+    delete:
+      tags:
+        - Cases
+      summary: Delete case
+      description: |
+        Permanently delete a case and all related data.
+
+        **WARNING:** This action cannot be undone. All facts, arguments, witnesses,
+        jurors, and focus groups will be permanently deleted.
+
+        **Conversational AI Usage:**
+        - Confirm with user before executing
+        - "Are you sure you want to delete the Smith case? This cannot be undone."
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '204':
+          description: Case deleted successfully
+        '404':
+          description: Case not found
+
+  /api/cases/{caseId}/facts:
+    post:
+      tags:
+        - Case Facts
+      summary: Create case fact
+      description: |
+        Add a new fact to the case.
+
+        **Conversational AI Usage:**
+        - "Add a fact: The accident occurred on January 15, 2024"
+        - "Create an undisputed fact about the plaintiff's age"
+
+        Facts are automatically numbered and can be reordered later.
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  example: The accident occurred at the intersection of Main St and Elm St at approximately 3:15 PM
+                  description: The fact text (supports markdown)
+                factType:
+                  type: string
+                  enum: [background, disputed, undisputed]
+                  default: background
+                  example: undisputed
+                source:
+                  type: string
+                  example: Police Report #2024-001
+                  description: Optional source citation
+      responses:
+        '201':
+          description: Fact created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fact:
+                    $ref: '#/components/schemas/CaseFact'
+
+  /api/cases/{caseId}/facts/{factId}:
+    put:
+      tags:
+        - Case Facts
+      summary: Update case fact
+      description: Update the content or type of an existing fact
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/FactId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                factType:
+                  type: string
+                  enum: [background, disputed, undisputed]
+                source:
+                  type: string
+      responses:
+        '200':
+          description: Fact updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fact:
+                    $ref: '#/components/schemas/CaseFact'
+    delete:
+      tags:
+        - Case Facts
+      summary: Delete case fact
+      description: Remove a fact from the case
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/FactId'
+      responses:
+        '204':
+          description: Fact deleted successfully
+
+  /api/cases/{caseId}/facts/reorder:
+    patch:
+      tags:
+        - Case Facts
+      summary: Reorder facts
+      description: |
+        Change the display order of facts.
+
+        **Conversational AI Usage:**
+        - "Move fact 3 to position 1"
+        - "Reorder the facts: [factId1, factId2, factId3]"
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - factIds
+              properties:
+                factIds:
+                  type: array
+                  items:
+                    type: string
+                  example: ["uuid1", "uuid2", "uuid3"]
+                  description: Array of fact IDs in desired order
+      responses:
+        '200':
+          description: Facts reordered successfully
+
+  /api/cases/{caseId}/arguments:
+    post:
+      tags:
+        - Case Arguments
+      summary: Create argument
+      description: |
+        Create a new trial argument.
+
+        **Conversational AI Usage:**
+        - "Create an opening statement"
+        - "Add a closing argument about liability"
+
+        Arguments support versioning - updates create new versions with changelogs.
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                  example: Opening Statement - Plaintiff
+                content:
+                  type: string
+                  example: |
+                    Ladies and gentlemen of the jury, this case is about accountability...
+                  description: The argument text (supports markdown)
+                argumentType:
+                  type: string
+                  enum: [opening, closing, theme, rebuttal]
+                  default: theme
+                  example: opening
+      responses:
+        '201':
+          description: Argument created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  argument:
+                    $ref: '#/components/schemas/CaseArgument'
+
+  /api/cases/{caseId}/arguments/{argumentId}:
+    put:
+      tags:
+        - Case Arguments
+      summary: Update argument (creates new version)
+      description: |
+        Update an argument by creating a new version.
+
+        **Important:** This creates a new version with version history.
+        Previous versions are preserved and can be viewed via the versions endpoint.
+
+        **Conversational AI Usage:**
+        - "Update the opening statement to emphasize damages"
+        - "Revise the closing argument with these changes..."
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/ArgumentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                argumentType:
+                  type: string
+                  enum: [opening, closing, theme, rebuttal]
+                changeNotes:
+                  type: string
+                  example: "Strengthened liability argument based on focus group feedback"
+                  description: Optional notes about what changed in this version
+      responses:
+        '200':
+          description: New version created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  argument:
+                    $ref: '#/components/schemas/CaseArgument'
+                  version:
+                    type: integer
+                    example: 2
+    delete:
+      tags:
+        - Case Arguments
+      summary: Delete argument
+      description: Permanently delete an argument and all its versions
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/ArgumentId'
+      responses:
+        '204':
+          description: Argument deleted successfully
+
+  /api/cases/{caseId}/arguments/{argumentId}/versions:
+    get:
+      tags:
+        - Case Arguments
+      summary: Get argument version history
+      description: |
+        Retrieve all versions of an argument with changelogs.
+
+        **Conversational AI Usage:**
+        - "Show me the version history of the opening statement"
+        - "What changes were made to this argument?"
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/ArgumentId'
+      responses:
+        '200':
+          description: Version history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  versions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ArgumentVersion'
+
+  /api/cases/{caseId}/witnesses:
+    post:
+      tags:
+        - Case Witnesses
+      summary: Create witness
+      description: |
+        Add a witness to the case.
+
+        **Conversational AI Usage:**
+        - "Add Dr. Smith as an expert witness for the plaintiff"
+        - "Create a witness entry for the responding officer"
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - role
+                - affiliation
+              properties:
+                name:
+                  type: string
+                  example: Dr. Emily Rodriguez, MD
+                role:
+                  type: string
+                  enum: [fact, expert, character]
+                  example: expert
+                affiliation:
+                  type: string
+                  enum: [plaintiff, defendant, neutral]
+                  example: plaintiff
+                summary:
+                  type: string
+                  example: Board-certified orthopedic surgeon, 20 years experience
+                directOutline:
+                  type: string
+                  example: |
+                    1. Credentials and qualifications
+                    2. Review of medical records
+                    3. Opinion on causation
+                crossOutline:
+                  type: string
+                  example: |
+                    1. Bias - plaintiff's retained expert
+                    2. Challenge methodology
+      responses:
+        '201':
+          description: Witness created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  witness:
+                    $ref: '#/components/schemas/CaseWitness'
+
+  /api/cases/{caseId}/witnesses/{witnessId}:
+    put:
+      tags:
+        - Case Witnesses
+      summary: Update witness
+      description: Update witness details and outlines
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/WitnessId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                role:
+                  type: string
+                  enum: [fact, expert, character]
+                affiliation:
+                  type: string
+                  enum: [plaintiff, defendant, neutral]
+                summary:
+                  type: string
+                directOutline:
+                  type: string
+                crossOutline:
+                  type: string
+      responses:
+        '200':
+          description: Witness updated successfully
+    delete:
+      tags:
+        - Case Witnesses
+      summary: Delete witness
+      description: Remove a witness from the case
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+        - $ref: '#/components/parameters/WitnessId'
+      responses:
+        '204':
+          description: Witness deleted successfully
+
+  /api/jurors/panel/{panelId}:
+    get:
+      tags:
+        - Jurors
+      summary: Get jurors for panel
+      description: |
+        Retrieve all jurors in a jury panel.
+
+        **Conversational AI Usage:**
+        - "Show me the jurors in this case"
+        - "List all potential jurors"
+
+        Returns jurors with persona mappings, research status, and jury box positions.
+      parameters:
+        - $ref: '#/components/parameters/PanelId'
+      responses:
+        '200':
+          description: List of jurors
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jurors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Juror'
+
+  /api/jurors:
+    post:
+      tags:
+        - Jurors
+      summary: Create juror
+      description: |
+        Add a juror to a jury panel.
+
+        **Conversational AI Usage:**
+        - "Add juror #5: John Smith, age 45, engineer from San Jose"
+        - "Create a juror with this information..."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JurorInput'
+      responses:
+        '201':
+          description: Juror created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  juror:
+                    $ref: '#/components/schemas/Juror'
+
+  /api/jurors/{id}:
+    get:
+      tags:
+        - Jurors
+      summary: Get juror by ID
+      description: |
+        Retrieve detailed information about a specific juror.
+
+        Returns juror with all research artifacts, persona mappings, and status.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Juror ID
+      responses:
+        '200':
+          description: Juror details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  juror:
+                    $ref: '#/components/schemas/Juror'
+    patch:
+      tags:
+        - Jurors
+      summary: Update juror
+      description: |
+        Update juror information.
+
+        **Conversational AI Usage:**
+        - "Update juror #5's occupation to 'retired'"
+        - "Move juror to seat 3 in row 1"
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JurorInput'
+      responses:
+        '200':
+          description: Juror updated successfully
+    delete:
+      tags:
+        - Jurors
+      summary: Delete juror
+      description: Permanently delete a juror
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Juror deleted successfully
+
+  /api/jurors/{id}/search:
+    post:
+      tags:
+        - Jurors
+      summary: Search for juror identity matches
+      description: |
+        Search public records for potential identity matches.
+
+        **Conversational AI Usage:**
+        - "Search for identity matches for juror #5"
+        - "Find research candidates for John Smith"
+
+        This initiates an identity resolution workflow using AI to match the juror
+        to public records based on name, age, location, and other attributes.
+
+        Returns candidate matches that require user confirmation.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                caseContext:
+                  type: object
+                  properties:
+                    caseType:
+                      type: string
+                    keyIssues:
+                      type: array
+                      items:
+                        type: string
+      responses:
+        '200':
+          description: Search initiated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  candidates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/IdentityCandidate'
+
+  /api/jurors/candidates/{candidateId}/confirm:
+    post:
+      tags:
+        - Jurors
+      summary: Confirm candidate match
+      description: |
+        Confirm that a candidate match is the correct identity for a juror.
+
+        **Conversational AI Usage:**
+        - "Confirm this match"
+        - "Yes, this is the right person"
+
+        Links the candidate's research data to the juror profile.
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Match confirmed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  juror:
+                    $ref: '#/components/schemas/Juror'
+
+  /api/jurors/candidates/{candidateId}/reject:
+    post:
+      tags:
+        - Jurors
+      summary: Reject candidate match
+      description: |
+        Reject a candidate match as incorrect.
+
+        **Conversational AI Usage:**
+        - "This isn't the right person"
+        - "Reject this match"
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Match rejected successfully
+
+  /api/candidates/{candidateId}/synthesize:
+    post:
+      tags:
+        - Synthesis
+      summary: Start deep research synthesis
+      description: |
+        Initiate deep research synthesis using Claude with web search.
+
+        **Conversational AI Usage:**
+        - "Run deep research on this candidate"
+        - "Synthesize all available information"
+
+        This is an async operation that uses Claude 4 Sonnet with web_search tool
+        to compile a comprehensive juror profile. Processing takes 10-60 seconds.
+
+        **Workflow:**
+        1. POST to start synthesis (returns 202 Accepted)
+        2. Poll GET /candidates/{candidateId}/synthesis for status
+        3. When complete, fetch full profile via GET /synthesis/{profileId}
+
+        **Features:**
+        - Up to 10 web searches
+        - Comprehensive demographic and attitude analysis
+        - Litigation relevance assessment
+        - Strategic voir dire recommendations
+        - Data quality scoring
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - case_context
+              properties:
+                case_context:
+                  type: object
+                  properties:
+                    case_type:
+                      type: string
+                      example: Personal Injury
+                    key_issues:
+                      type: array
+                      items:
+                        type: string
+                      example: ["medical negligence", "damages", "causation"]
+                    client_position:
+                      type: string
+                      example: plaintiff
+      responses:
+        '202':
+          description: Synthesis started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Synthesis started"
+                  candidateId:
+                    type: string
+                  estimatedTime:
+                    type: string
+                    example: "10-60 seconds"
+
+  /api/candidates/{candidateId}/synthesis:
+    get:
+      tags:
+        - Synthesis
+      summary: Get synthesis status
+      description: |
+        Poll for synthesis completion status.
+
+        **Conversational AI Usage:**
+        - Poll this endpoint every 2-3 seconds until status is 'complete' or 'error'
+        - Display progress to user while processing
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Synthesis status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [processing, complete, error]
+                  profileId:
+                    type: string
+                    nullable: true
+                  progress:
+                    type: string
+                    example: "Analyzing social media profiles..."
+
+  /api/synthesis/{profileId}:
+    get:
+      tags:
+        - Synthesis
+      summary: Get synthesized profile
+      description: |
+        Retrieve complete synthesized juror profile.
+
+        **Profile includes:**
+        - Demographics and background
+        - Attitudes and values
+        - Affiliations and associations
+        - Litigation relevance analysis
+        - Strategic voir dire recommendations with severity ratings
+        - Data quality assessment
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Synthesized profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SynthesizedProfile'
+
+  /api/personas:
+    get:
+      tags:
+        - Personas
+      summary: List all personas
+      description: |
+        Get all personas available to the organization.
+
+        **Conversational AI Usage:**
+        - "Show me all available personas"
+        - "What persona types can I use?"
+
+        Returns system-defined personas and organization-specific custom personas.
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [system, custom, ai-generated]
+          description: Filter by persona source type
+      responses:
+        '200':
+          description: List of personas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  personas:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Persona'
+
+  /api/personas/suggest:
+    post:
+      tags:
+        - Personas
+      summary: Get AI persona suggestions
+      description: |
+        Get AI-powered persona suggestions for a juror.
+
+        **Conversational AI Usage:**
+        - "What personas match juror #5?"
+        - "Suggest personas for this juror"
+
+        Returns top 3 persona matches with confidence scores, reasoning,
+        key matches, and concerns. Uses Claude 4.5 for analysis.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jurorId
+              properties:
+                jurorId:
+                  type: string
+                caseId:
+                  type: string
+                  description: Optional case context for better suggestions
+      responses:
+        '200':
+          description: Persona suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggestions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PersonaSuggestion'
+
+  /api/archetypes/classify/juror:
+    post:
+      tags:
+        - Archetypes
+      summary: Classify juror into behavioral archetype
+      description: |
+        Classify a juror into one of 10 behavioral archetypes using AI.
+
+        **Conversational AI Usage:**
+        - "Classify juror #5 into an archetype"
+        - "What archetype is this juror?"
+
+        **10 Archetypes:**
+        1. Bootstrapper - Self-made, values hard work
+        2. Crusader - Mission-driven, seeks justice
+        3. Scale-Balancer - Fairness-focused, analytical
+        4. Captain - Leader, takes charge
+        5. Chameleon - Adaptable, people-pleaser
+        6. Scarred - Past trauma influences views
+        7. Calculator - Data-driven, logical
+        8. Heart - Empathetic, emotional
+        9. Trojan Horse - Hidden agenda
+        10. Maverick - Contrarian, independent
+
+        **Returns:**
+        - Primary and secondary archetype
+        - Confidence scores (0-100)
+        - 8 psychological dimension scores
+        - Plaintiff/defense danger levels
+        - Strategic voir dire questions
+        - Challenge for cause indicators
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jurorId
+              properties:
+                jurorId:
+                  type: string
+                includeResearch:
+                  type: boolean
+                  default: true
+                  description: Include research artifacts in analysis
+                caseType:
+                  type: string
+                  example: Personal Injury
+                jurisdiction:
+                  type: string
+                  example: California
+                ourSide:
+                  type: string
+                  enum: [plaintiff, defense]
+      responses:
+        '200':
+          description: Archetype classification
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArchetypeClassification'
+
+  /api/archetypes/panel-analysis/{panelId}:
+    get:
+      tags:
+        - Archetypes
+      summary: Analyze jury panel composition
+      description: |
+        Analyze the archetype composition of a jury panel.
+
+        **Conversational AI Usage:**
+        - "Analyze the panel composition"
+        - "What archetypes do we have on this jury?"
+
+        Returns distribution of archetypes, danger levels, and strategic recommendations.
+      parameters:
+        - $ref: '#/components/parameters/PanelId'
+      responses:
+        '200':
+          description: Panel analysis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PanelAnalysis'
+
+  /api/focus-groups/simulate:
+    post:
+      tags:
+        - Focus Groups
+      summary: Run focus group simulation
+      description: |
+        Simulate a jury focus group to test arguments.
+
+        **Conversational AI Usage:**
+        - "Run a focus group simulation for my opening statement"
+        - "Test this argument against a mock jury"
+
+        **Simulation Modes:**
+        - **quick**: Fast reactions from each persona (2-3 min)
+        - **detailed**: In-depth analysis with deliberation (5-10 min)
+
+        Uses Claude 4.5 to simulate realistic juror reactions based on personas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - caseId
+                - argumentId
+              properties:
+                caseId:
+                  type: string
+                argumentId:
+                  type: string
+                personaIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Optional - defaults to top 6 active personas
+                simulationMode:
+                  type: string
+                  enum: [quick, detailed]
+                  default: quick
+      responses:
+        '200':
+          description: Simulation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FocusGroupResult'
+
+  /api/focus-groups/sessions/{sessionId}/roundtable:
+    post:
+      tags:
+        - Focus Groups
+      summary: Start roundtable conversation
+      description: |
+        Start a simulated roundtable deliberation conversation.
+
+        **Conversational AI Usage:**
+        - "Start a roundtable discussion"
+        - "Simulate a jury deliberation"
+
+        This is an **async operation**:
+        1. POST returns immediately with conversationId (202 Accepted)
+        2. Poll GET /focus-groups/conversations/{conversationId} for status
+        3. When complete, conversation includes full dialogue
+
+        Simulates realistic back-and-forth deliberation between personas.
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - argumentId
+              properties:
+                argumentId:
+                  type: string
+      responses:
+        '202':
+          description: Conversation started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  conversationId:
+                    type: string
+                  message:
+                    type: string
+                    example: "Roundtable conversation started"
+
+  /api/focus-groups/conversations/{conversationId}:
+    get:
+      tags:
+        - Focus Groups
+      summary: Get roundtable conversation status
+      description: |
+        Poll for roundtable conversation completion.
+
+        **Conversational AI Usage:**
+        - Poll every 3-5 seconds until status is 'complete'
+        - Display progress/dialogue as it becomes available
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation status and partial/complete dialogue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoundtableConversation'
+
+  /api/cases/{caseId}/captures:
+    get:
+      tags:
+        - Captures
+      summary: List document captures
+      description: |
+        Get all document captures for a case.
+
+        **Conversational AI Usage:**
+        - "Show me all captured documents"
+        - "What jury lists have been uploaded?"
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      responses:
+        '200':
+          description: List of captures
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  captures:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Capture'
+    post:
+      tags:
+        - Captures
+      summary: Create document capture
+      description: |
+        Upload an image for OCR processing.
+
+        **Conversational AI Usage:**
+        - "Upload this jury list image"
+        - "Capture this questionnaire"
+
+        **Document Types:**
+        - panel_list: Jury panel roster
+        - questionnaire: Juror questionnaire
+        - jury_card: Individual jury card
+        - other: Other document types
+
+        **Workflow:**
+        1. POST image (base64) to create capture
+        2. POST to /captures/{captureId}/process to trigger OCR
+        3. Poll GET /captures/{captureId} for status
+        4. Review extracted data
+        5. POST to /captures/{captureId}/confirm to create jurors
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - documentType
+                - imageData
+              properties:
+                documentType:
+                  type: string
+                  enum: [questionnaire, panel_list, jury_card, other]
+                imageData:
+                  type: string
+                  format: byte
+                  description: Base64-encoded image data
+      responses:
+        '201':
+          description: Capture created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  capture:
+                    $ref: '#/components/schemas/Capture'
+
+  /api/captures/{captureId}/process:
+    post:
+      tags:
+        - Captures
+      summary: Process capture with OCR
+      description: |
+        Trigger OCR processing using Claude Vision API.
+
+        Uses Claude 3.5 Sonnet to extract juror information from images.
+        Processing is async and typically completes in 5-15 seconds.
+      parameters:
+        - name: captureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Processing started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  captureId:
+                    type: string
+
+  /api/captures/{captureId}:
+    get:
+      tags:
+        - Captures
+      summary: Get capture status and results
+      description: |
+        Get capture processing status and extracted data.
+
+        **Conversational AI Usage:**
+        - Poll this endpoint until status is 'completed' or 'failed'
+        - Present extracted jurors for user review
+      parameters:
+        - name: captureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Capture details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Capture'
+
+  /api/captures/{captureId}/confirm:
+    post:
+      tags:
+        - Captures
+      summary: Confirm and create jurors
+      description: |
+        Confirm extracted juror data and create juror records.
+
+        **Conversational AI Usage:**
+        - "Confirm these extractions and create jurors"
+        - "Add these jurors to the panel"
+
+        User can edit extracted data before confirmation.
+      parameters:
+        - name: captureId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - panelId
+                - jurors
+              properties:
+                panelId:
+                  type: string
+                jurors:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/JurorInput'
+      responses:
+        '200':
+          description: Jurors created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  created:
+                    type: integer
+                  jurors:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Juror'
+
+  /api/cases/{id}/generate-questions:
+    post:
+      tags:
+        - Cases
+      summary: Generate voir dire questions
+      description: |
+        Generate strategic voir dire questions using AI.
+
+        **Conversational AI Usage:**
+        - "Generate voir dire questions for this case"
+        - "Create questions to identify Crusaders and Bootstrappers"
+
+        **Returns 4 categories:**
+        1. Opening questions (ice breakers)
+        2. Persona identification questions
+        3. Case-specific bias questions
+        4. Challenge for cause questions
+
+        Each question includes:
+        - Follow-up question trees
+        - What to listen for in responses
+        - Red flags indicating bias
+        - Ideal answers from favorable jurors
+      parameters:
+        - $ref: '#/components/parameters/CaseId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetPersonas:
+                  type: array
+                  items:
+                    type: string
+                  description: Persona IDs to target
+                jurisdictionConstraints:
+                  type: string
+                  example: "Limited to 30 minutes total, no questions about insurance"
+      responses:
+        '200':
+          description: Generated questions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoirDireQuestions'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token obtained from /api/auth/login or /api/auth/signup
+
+        Token payload includes:
+        - userId: User's unique identifier
+        - organizationId: Organization ID for multi-tenancy
+        - email: User's email
+        - role: User's role (admin, attorney, paralegal, consultant)
+
+  parameters:
+    CaseId:
+      name: caseId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Case UUID
+    FactId:
+      name: factId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Fact UUID
+    ArgumentId:
+      name: argumentId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Argument UUID
+    WitnessId:
+      name: witnessId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Witness UUID
+    PanelId:
+      name: panelId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Jury Panel UUID
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed"
+        statusCode:
+          type: integer
+          example: 400
+        details:
+          type: object
+          additionalProperties: true
+          example:
+            email: "Invalid email format"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, attorney, paralegal, consultant]
+        organization:
+          $ref: '#/components/schemas/Organization'
+        createdAt:
+          type: string
+          format: date-time
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token (valid for 7 days)
+        user:
+          $ref: '#/components/schemas/User'
+
+    Case:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        caseNumber:
+          type: string
+        caseType:
+          type: string
+        plaintiffName:
+          type: string
+        defendantName:
+          type: string
+        ourSide:
+          type: string
+          enum: [plaintiff, defendant]
+        jurisdiction:
+          type: string
+        trialDate:
+          type: string
+          format: date
+        venue:
+          type: string
+        status:
+          type: string
+          enum: [active, archived, settled, dismissed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CaseDetailed:
+      allOf:
+        - $ref: '#/components/schemas/Case'
+        - type: object
+          properties:
+            facts:
+              type: array
+              items:
+                $ref: '#/components/schemas/CaseFact'
+            arguments:
+              type: array
+              items:
+                $ref: '#/components/schemas/CaseArgument'
+            witnesses:
+              type: array
+              items:
+                $ref: '#/components/schemas/CaseWitness'
+            juryPanels:
+              type: array
+              items:
+                $ref: '#/components/schemas/JuryPanel'
+
+    CaseFact:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        factType:
+          type: string
+          enum: [background, disputed, undisputed]
+        source:
+          type: string
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    CaseArgument:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        argumentType:
+          type: string
+          enum: [opening, closing, theme, rebuttal]
+        version:
+          type: integer
+        changeNotes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ArgumentVersion:
+      type: object
+      properties:
+        version:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        changeNotes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+
+    CaseWitness:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [fact, expert, character]
+        affiliation:
+          type: string
+          enum: [plaintiff, defendant, neutral]
+        summary:
+          type: string
+        directOutline:
+          type: string
+        crossOutline:
+          type: string
+        sortOrder:
+          type: integer
+
+    JuryPanel:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        caseId:
+          type: string
+        boxRows:
+          type: integer
+          description: Number of rows in jury box
+        boxSeats:
+          type: integer
+          description: Seats per row
+        createdAt:
+          type: string
+          format: date-time
+
+    Juror:
+      type: object
+      properties:
+        id:
+          type: string
+        panelId:
+          type: string
+        jurorNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        occupation:
+          type: string
+        employer:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        status:
+          type: string
+          example: "available"
+        boxRow:
+          type: integer
+          nullable: true
+        boxSeat:
+          type: integer
+          nullable: true
+        boxOrder:
+          type: integer
+          nullable: true
+        questionnaireData:
+          type: object
+          additionalProperties: true
+        notes:
+          type: string
+        personaMappings:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonaMapping'
+        researchArtifacts:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResearchArtifact'
+        confirmedCandidate:
+          $ref: '#/components/schemas/IdentityCandidate'
+        synthesizedProfile:
+          $ref: '#/components/schemas/SynthesizedProfile'
+        createdAt:
+          type: string
+          format: date-time
+
+    JurorInput:
+      type: object
+      required:
+        - panelId
+        - firstName
+        - lastName
+      properties:
+        panelId:
+          type: string
+        jurorNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        age:
+          type: integer
+        occupation:
+          type: string
+        employer:
+          type: string
+        city:
+          type: string
+        zipCode:
+          type: string
+        questionnaireData:
+          type: object
+          additionalProperties: true
+        notes:
+          type: string
+        status:
+          type: string
+        boxRow:
+          type: integer
+          nullable: true
+        boxSeat:
+          type: integer
+          nullable: true
+        boxOrder:
+          type: integer
+          nullable: true
+
+    Persona:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        attributes:
+          type: object
+          additionalProperties: true
+        voirDireApproach:
+          type: string
+        challengeStrategy:
+          type: string
+        sourceType:
+          type: string
+          enum: [system, custom, ai-generated]
+        createdAt:
+          type: string
+          format: date-time
+
+    PersonaMapping:
+      type: object
+      properties:
+        id:
+          type: string
+        personaId:
+          type: string
+        persona:
+          $ref: '#/components/schemas/Persona'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+        isPrimary:
+          type: boolean
+        rationale:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    PersonaSuggestion:
+      type: object
+      properties:
+        personaId:
+          type: string
+        personaName:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+        reasoning:
+          type: string
+        keyMatches:
+          type: array
+          items:
+            type: string
+        concerns:
+          type: array
+          items:
+            type: string
+
+    ArchetypeClassification:
+      type: object
+      properties:
+        primary:
+          type: object
+          properties:
+            archetype:
+              type: string
+              enum: [bootstrapper, crusader, scale_balancer, captain, chameleon, scarred, calculator, heart, trojan_horse, maverick]
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 100
+            description:
+              type: string
+        secondary:
+          type: object
+          properties:
+            archetype:
+              type: string
+            confidence:
+              type: number
+            description:
+              type: string
+        dimensions:
+          type: object
+          properties:
+            authority_respect:
+              type: number
+            risk_tolerance:
+              type: number
+            empathy_vs_logic:
+              type: number
+            group_vs_individual:
+              type: number
+            tradition_vs_change:
+              type: number
+            skepticism:
+              type: number
+            detail_orientation:
+              type: number
+            emotional_stability:
+              type: number
+        dangerLevel:
+          type: object
+          properties:
+            forPlaintiff:
+              type: string
+              enum: [low, moderate, high, extreme]
+            forDefense:
+              type: string
+              enum: [low, moderate, high, extreme]
+        recommendations:
+          type: object
+          properties:
+            strategicApproach:
+              type: string
+            voirDireQuestions:
+              type: array
+              items:
+                type: string
+            causeChallenge:
+              type: object
+              properties:
+                recommended:
+                  type: boolean
+                basis:
+                  type: string
+
+    PanelAnalysis:
+      type: object
+      properties:
+        panelId:
+          type: string
+        totalJurors:
+          type: integer
+        classified:
+          type: integer
+        archetypeDistribution:
+          type: object
+          additionalProperties:
+            type: integer
+        averageDangerLevel:
+          type: object
+          properties:
+            forPlaintiff:
+              type: number
+            forDefense:
+              type: number
+        recommendations:
+          type: array
+          items:
+            type: string
+
+    ResearchArtifact:
+      type: object
+      properties:
+        id:
+          type: string
+        sourceType:
+          type: string
+          enum: [social, professional, political, court, news, other]
+        url:
+          type: string
+        content:
+          type: string
+        matchConfidence:
+          type: number
+        userStatus:
+          type: string
+          enum: [confirmed, rejected, pending]
+        createdAt:
+          type: string
+          format: date-time
+
+    IdentityCandidate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        age:
+          type: integer
+        location:
+          type: string
+        occupation:
+          type: string
+        matchScore:
+          type: number
+          minimum: 0
+          maximum: 100
+        matchingFeatures:
+          type: array
+          items:
+            type: string
+        sources:
+          type: array
+          items:
+            type: string
+
+    SynthesizedProfile:
+      type: object
+      properties:
+        id:
+          type: string
+        candidateId:
+          type: string
+        demographics:
+          type: object
+          properties:
+            age:
+              type: integer
+            location:
+              type: string
+            occupation:
+              type: string
+            education:
+              type: string
+            marital_status:
+              type: string
+            children:
+              type: boolean
+        attitudes:
+          type: object
+          properties:
+            political_leaning:
+              type: string
+            authority_views:
+              type: string
+            corporate_views:
+              type: string
+            tort_reform_views:
+              type: string
+        affiliations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+              name:
+                type: string
+              relevance:
+                type: string
+        litigationRelevance:
+          type: object
+          properties:
+            priorLitigation:
+              type: boolean
+            personalInjuryExperience:
+              type: boolean
+            medicalBackground:
+              type: boolean
+            legalConnections:
+              type: boolean
+        voirDireRecommendations:
+          type: array
+          items:
+            type: object
+            properties:
+              topic:
+                type: string
+              question:
+                type: string
+              concern:
+                type: string
+              severity:
+                type: string
+                enum: [low, moderate, high, critical]
+        dataQuality:
+          type: string
+          enum: [sparse, moderate, comprehensive]
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 100
+        sources:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    FocusGroupResult:
+      type: object
+      properties:
+        sessionId:
+          type: string
+        mode:
+          type: string
+          enum: [quick, detailed]
+        personaReactions:
+          type: array
+          items:
+            type: object
+            properties:
+              personaId:
+                type: string
+              personaName:
+                type: string
+              reaction:
+                type: string
+              concerns:
+                type: array
+                items:
+                  type: string
+              persuasiveness:
+                type: number
+                minimum: 0
+                maximum: 10
+        overallAssessment:
+          type: object
+          properties:
+            strengths:
+              type: array
+              items:
+                type: string
+            weaknesses:
+              type: array
+              items:
+                type: string
+            recommendations:
+              type: array
+              items:
+                type: string
+        predictedVerdict:
+          type: object
+          properties:
+            forPlaintiff:
+              type: integer
+            forDefense:
+              type: integer
+            undecided:
+              type: integer
+
+    RoundtableConversation:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [processing, complete, error]
+        dialogue:
+          type: array
+          items:
+            type: object
+            properties:
+              speaker:
+                type: string
+              message:
+                type: string
+              timestamp:
+                type: string
+                format: date-time
+        summary:
+          type: string
+        consensus:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Capture:
+      type: object
+      properties:
+        id:
+          type: string
+        caseId:
+          type: string
+        documentType:
+          type: string
+          enum: [questionnaire, panel_list, jury_card, other]
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+        imageUrl:
+          type: string
+        extractedData:
+          type: object
+          properties:
+            jurors:
+              type: array
+              items:
+                type: object
+                properties:
+                  jurorNumber:
+                    type: string
+                  firstName:
+                    type: string
+                  lastName:
+                    type: string
+                  age:
+                    type: integer
+                  city:
+                    type: string
+                  zipCode:
+                    type: string
+                  occupation:
+                    type: string
+                  employer:
+                    type: string
+                  confidence:
+                    type: number
+                    minimum: 0
+                    maximum: 100
+        createdAt:
+          type: string
+          format: date-time
+
+    VoirDireQuestions:
+      type: object
+      properties:
+        caseId:
+          type: string
+        categories:
+          type: object
+          properties:
+            opening:
+              type: array
+              items:
+                $ref: '#/components/schemas/VoirDireQuestion'
+            personaIdentification:
+              type: array
+              items:
+                $ref: '#/components/schemas/VoirDireQuestion'
+            caseSpecific:
+              type: array
+              items:
+                $ref: '#/components/schemas/VoirDireQuestion'
+            causeChallenge:
+              type: array
+              items:
+                $ref: '#/components/schemas/VoirDireQuestion'
+
+    VoirDireQuestion:
+      type: object
+      properties:
+        question:
+          type: string
+        purpose:
+          type: string
+        listenFor:
+          type: array
+          items:
+            type: string
+        redFlags:
+          type: array
+          items:
+            type: string
+        idealAnswers:
+          type: array
+          items:
+            type: string
+        followUps:
+          type: array
+          items:
+            type: object
+            properties:
+              condition:
+                type: string
+              question:
+                type: string

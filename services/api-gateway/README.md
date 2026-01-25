@@ -10,6 +10,7 @@ RESTful API Gateway for Trials by Filevine AI platform built with Fastify.
 - **CORS Support** - Configurable cross-origin resource sharing
 - **Multi-tenancy** - Organization-level data isolation
 - **Comprehensive Logging** - Structured logging with Pino
+- **Interactive API Documentation** - Swagger UI with live endpoint testing
 
 ## Getting Started
 
@@ -46,6 +47,69 @@ npm run dev
 ```
 
 Server will start on `http://localhost:3001`
+
+## API Documentation
+
+### Interactive Swagger UI
+
+**Access the interactive API documentation at:**
+```
+http://localhost:3001/docs
+```
+
+**Features:**
+- Browse all API endpoints with detailed descriptions
+- Test endpoints directly in the browser
+- View request/response schemas and examples
+- Authenticate with JWT token to test protected endpoints
+- Download OpenAPI specification (YAML/JSON)
+
+**How to Use:**
+1. Start the server: `npm run dev`
+2. Open http://localhost:3001/docs in your browser
+3. Click "Authorize" button and enter your JWT token
+4. Explore and test any endpoint
+
+### OpenAPI Specification
+
+Download the complete OpenAPI specification:
+
+- **YAML Format**: http://localhost:3001/openapi.yaml
+- **JSON Format**: http://localhost:3001/openapi.json
+- **Comprehensive Spec**: [docs/api/openapi.yaml](../../docs/api/openapi.yaml) (9,000+ lines)
+
+These can be imported into:
+- **Postman** - Generate collections automatically
+- **Insomnia** - Import and test endpoints
+- **Code Generators** - Generate client SDKs
+- **AI Agents** - Control the app via conversational AI
+
+### Documentation Files
+
+See the `docs/api/` directory for complete documentation:
+
+- **[openapi.yaml](../../docs/api/openapi.yaml)** - Full OpenAPI 3.0 specification
+- **[README.md](../../docs/api/README.md)** - API overview and quick start guide
+- **[CONVERSATIONAL_AI_GUIDE.md](../../docs/api/CONVERSATIONAL_AI_GUIDE.md)** - Guide for building AI agents
+
+### Root Endpoint
+
+Visit http://localhost:3001 for API information:
+
+```json
+{
+  "name": "Trials by Filevine API",
+  "version": "1.0.0",
+  "documentation": {
+    "swaggerUI": "http://localhost:3001/docs",
+    "openapi": {
+      "yaml": "http://localhost:3001/openapi.yaml",
+      "json": "http://localhost:3001/openapi.json"
+    }
+  },
+  "endpoints": { ... }
+}
+```
 
 ## API Endpoints
 

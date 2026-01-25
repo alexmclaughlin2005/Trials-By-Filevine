@@ -17,6 +17,8 @@
     "@fastify/helmet": "^11.1.1",
     "@fastify/jwt": "^8.0.0",
     "@fastify/rate-limit": "^9.1.0",
+    "@fastify/swagger": "^8.15.0",
+    "@fastify/swagger-ui": "^4.2.0",
     "@juries/ai-client": "^1.0.0",
     "@juries/database": "*",
     "@juries/prompt-client": "*",

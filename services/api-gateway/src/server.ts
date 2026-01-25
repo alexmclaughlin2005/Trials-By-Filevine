@@ -3,6 +3,8 @@ import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { config } from './config';
 import { prisma } from '@juries/database';
 
@@ -22,6 +24,7 @@ import { capturesRoutes } from './routes/captures';
 import { synthesisRoutes } from './routes/synthesis';
 import { filevineRoutes } from './routes/filevine';
 import { caseFilevineRoutes } from './routes/case-filevine';
+import { apiDocsRoutes } from './routes/api-docs';
 // import { jurorResearchRoutes } from './routes/juror-research'; // Disabled - conflicts with jurorsRoutes
 
 export async function buildServer() {
@@ -41,9 +44,45 @@ export async function buildServer() {
     },
   });
 
+  // Register Swagger (must be registered before routes)
+  await server.register(swagger, {
+    openapi: {
+      openapi: '3.0.3',
+      info: {
+        title: 'Trials by Filevine API',
+        description: 'AI-Powered Trial Preparation & Jury Intelligence Platform',
+        version: '1.0.0',
+      },
+      servers: [
+        {
+          url: 'http://localhost:3001',
+          description: 'Local development',
+        },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+    },
+  });
+
+  await server.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: {
+      docExpansion: 'list',
+      deepLinking: true,
+    },
+    staticCSP: true,
+  });
+
   // Register plugins
   await server.register(helmet, {
-    contentSecurityPolicy: config.nodeEnv === 'production',
+    contentSecurityPolicy: config.nodeEnv === 'production' ? undefined : false,
   });
 
   // Log CORS configuration
@@ -80,6 +119,7 @@ export async function buildServer() {
 
   // Register routes
   await server.register(healthRoutes, { prefix: '/health' });
+  await server.register(apiDocsRoutes); // API documentation routes
   await server.register(authRoutes, { prefix: '/api/auth' });
   await server.register(casesRoutes, { prefix: '/api/cases' });
   await server.register(caseFactsRoutes, { prefix: '/api/cases' });

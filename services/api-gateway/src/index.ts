@@ -13,7 +13,29 @@ async function start() {
       host: config.host,
     });
 
-    console.log(`🚀 API Gateway running on http://${config.host}:${config.port}`);
+    const baseUrl = `http://${config.host === '0.0.0.0' ? 'localhost' : config.host}:${config.port}`;
+
+    console.log(`
+╔════════════════════════════════════════════════════════════════╗
+║                                                                ║
+║  🚀 Trials by Filevine API Gateway                            ║
+║                                                                ║
+║  Status: Running                                               ║
+║  Environment: ${config.nodeEnv.padEnd(48)} ║
+║  Port: ${config.port.toString().padEnd(53)} ║
+║                                                                ║
+║  📚 API Documentation:                                         ║
+║     Swagger UI: ${(baseUrl + '/docs').padEnd(43)} ║
+║     OpenAPI YAML: ${(baseUrl + '/openapi.yaml').padEnd(39)} ║
+║     OpenAPI JSON: ${(baseUrl + '/openapi.json').padEnd(39)} ║
+║                                                                ║
+║  🔗 Endpoints:                                                 ║
+║     Root: ${baseUrl.padEnd(49)} ║
+║     Health: ${(baseUrl + '/health').padEnd(45)} ║
+║     Auth: ${(baseUrl + '/api/auth').padEnd(47)} ║
+║                                                                ║
+╚════════════════════════════════════════════════════════════════╝
+    `);
 
     // Start document download worker
     downloaderInterval = startDocumentDownloader();
