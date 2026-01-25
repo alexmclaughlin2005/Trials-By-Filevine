@@ -366,26 +366,26 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
           </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white">
+        <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-50">
           {messages.map((message) => (
             <div
               key={message.id}
               className={cn(
-                'flex gap-3',
+                'flex gap-2.5',
                 message.role === 'user' ? 'justify-end' : 'justify-start'
               )}
             >
               {message.role === 'assistant' && (
-                <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
                   AI
                 </div>
               )}
               <div
                 className={cn(
-                  'max-w-[75%] rounded-2xl px-4 py-3 shadow-sm',
+                  'max-w-[80%] rounded-2xl px-4 py-2.5',
                   message.role === 'user'
-                    ? 'bg-gray-100 text-gray-900'
-                    : 'bg-white border border-gray-200 text-gray-900'
+                    ? 'bg-gray-200 text-gray-900'
+                    : 'bg-white text-gray-900 shadow-sm border border-gray-200'
                 )}
               >
                 <SimpleMarkdown content={message.content} />
@@ -393,12 +393,12 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
             </div>
           ))}
           {isLoading && (
-            <div className="flex gap-3 justify-start">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+            <div className="flex gap-2.5 justify-start">
+              <div className="flex-shrink-0 w-7 h-7 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-white font-semibold text-xs">
                 AI
               </div>
-              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 shadow-sm">
-                <Loader2 className="w-5 h-5 animate-spin text-gray-600" />
+              <div className="bg-white border border-gray-200 rounded-2xl px-4 py-2.5 shadow-sm">
+                <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
               </div>
             </div>
           )}
@@ -406,8 +406,8 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
         </div>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-200 bg-gray-50">
-          <div className="flex gap-3 items-end">
+        <div className="px-4 py-3 border-t border-gray-200 bg-white">
+          <div className="flex gap-2 items-end">
             <textarea
               ref={inputRef}
               value={input}
@@ -415,10 +415,10 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
               onKeyDown={handleKeyDown}
               placeholder="Ask anything..."
               className={cn(
-                'flex-1 resize-none rounded-xl border border-gray-300 bg-white',
-                'px-4 py-3 text-sm focus:outline-none focus:ring-2',
-                'focus:ring-blue-500 focus:border-transparent',
-                'max-h-32 min-h-[48px] shadow-sm'
+                'flex-1 resize-none rounded-lg border border-gray-300 bg-white',
+                'px-3 py-2 text-sm focus:outline-none focus:ring-1',
+                'focus:ring-blue-500 focus:border-blue-500',
+                'max-h-32 min-h-[40px]'
               )}
               rows={1}
               disabled={isLoading}
@@ -427,15 +427,15 @@ export function ApiChatPanel({ isOpen, onClose }: ApiChatPanelProps) {
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
               className={cn(
-                'h-[48px] w-[48px] p-0 rounded-xl shadow-sm',
+                'h-[40px] w-[40px] p-0 rounded-lg',
                 'bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300',
-                'transition-colors duration-200'
+                'transition-colors duration-150'
               )}
             >
               {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <Send className="w-5 h-5" />
+                <Send className="w-4 h-4" />
               )}
             </Button>
           </div>

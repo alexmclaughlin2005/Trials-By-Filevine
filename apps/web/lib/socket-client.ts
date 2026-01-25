@@ -6,6 +6,19 @@ export function getSocket(token: string): Socket {
   if (!socket || !socket.connected) {
     const url = process.env.NEXT_PUBLIC_COLLABORATION_SERVICE_URL || 'http://localhost:3003';
 
+    // Don't attempt connection if URL is not configured in production
+    if (typeof window !== 'undefined' && !process.env.NEXT_PUBLIC_COLLABORATION_SERVICE_URL) {
+      console.warn('Collaboration service URL not configured, skipping Socket.IO connection');
+      // Return a mock socket that won't try to connect
+      return {
+        connected: false,
+        on: () => {},
+        emit: () => {},
+        off: () => {},
+        disconnect: () => {},
+      } as any;
+    }
+
     socket = io(url, {
       auth: {
         token,
@@ -14,8 +27,17 @@ export function getSocket(token: string): Socket {
       reconnection: true,
       reconnectionDelay: 2000,
       reconnectionDelayMax: 10000,
-      reconnectionAttempts: 3, // Reduced from 5 to 3
-      timeout: 5000, // Add connection timeout
+      reconnectionAttempts: 3,
+      timeout: 5000,
+    });
+
+    // Error handling
+    socket.on('connect_error', (error) => {
+      console.error('Socket connection error:', error.message);
+    });
+
+    socket.on('connect_timeout', () => {
+      console.error('Socket connection timeout');
     });
 
     // Heartbeat to keep connection alive
@@ -23,7 +45,7 @@ export function getSocket(token: string): Socket {
       if (socket?.connected) {
         socket.emit('heartbeat', { timestamp: new Date().toISOString() });
       }
-    }, 30000); // Every 30 seconds
+    }, 30000);
   }
 
   return socket;
