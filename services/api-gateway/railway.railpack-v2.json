@@ -1,0 +1,12 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "npx prisma generate --schema=./packages/database/prisma/schema.prisma && cd packages/database && npm run build && cd ../.. && (cd packages/ai-client && npm run build) & (cd packages/prompt-client && npm run build) & (cd packages/utils && npm run build) & wait && cd services/api-gateway && npm run build"
+  },
+  "deploy": {
+    "startCommand": "cd services/api-gateway && node dist/services/api-gateway/src/migrate-and-start.js",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
