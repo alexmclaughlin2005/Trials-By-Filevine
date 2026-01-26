@@ -16,7 +16,7 @@ import {
   ConfigurationStep,
 } from '@/types/focus-group';
 import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles, X } from 'lucide-react';
-import { ArgumentCheckboxList, WizardProgressFooter } from './focus-group-setup-wizard';
+import { ArgumentCheckboxList, WizardProgressFooter } from './focus-group-setup-wizard/index';
 
 interface FocusGroupSetupWizardProps {
   caseId: string;
