@@ -78,6 +78,116 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
 
       {/* Tab Content */}
       <div className="min-h-[400px]">
+        {activeTab === 'questions' && customQuestions && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Responses by Question
+              </h2>
+              <p className="text-sm text-gray-500">
+                {customQuestions.length} question{customQuestions.length !== 1 ? 's' : ''}
+              </p>
+            </div>
+
+            {customQuestions.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <HelpCircle className="mx-auto h-12 w-12 text-gray-400 mb-3" />
+                <p className="text-gray-600">No custom questions configured.</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {customQuestions
+                  .sort((a, b) => a.order - b.order)
+                  .map((question, idx) => {
+                    // For now, show all statements under general discussion
+                    // In future, we can filter by questionId when AI determines which question each statement addresses
+                    const questionStatements = allStatements;
+
+                    return (
+                      <div key={question.id} className="bg-white border rounded-lg overflow-hidden">
+                        {/* Question Header */}
+                        <div className="bg-blue-50 border-b px-4 py-3">
+                          <div className="flex items-start gap-3">
+                            <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-sm font-semibold flex-shrink-0 mt-0.5">
+                              {idx + 1}
+                            </span>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-900">{question.question}</p>
+                              {question.targetPersonas && question.targetPersonas.length > 0 && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Targeted to: {question.targetPersonas.join(', ')}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Responses */}
+                        <div className="divide-y">
+                          {questionStatements.length === 0 ? (
+                            <div className="px-4 py-8 text-center text-gray-500 text-sm">
+                              No responses yet
+                            </div>
+                          ) : (
+                            questionStatements.map((statement) => {
+                              const personaSummary = personaSummaries.find(ps => ps.personaId === statement.personaId);
+                              const archetype = personaSummary?.persona?.archetype;
+
+                              return (
+                                <div key={statement.id} className="px-4 py-3">
+                                  <div className="flex items-start gap-3">
+                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
+                                      {statement.sequenceNumber}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                        <span className="font-medium text-gray-900 text-sm">{statement.personaName}</span>
+                                        {archetype && personaSummary?.persona && (
+                                          <button
+                                            onClick={() => setSelectedPersona({ name: statement.personaName, details: personaSummary.persona! })}
+                                            className="px-1.5 py-0.5 text-xs font-medium border rounded bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 transition-colors cursor-pointer"
+                                          >
+                                            {archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}
+                                          </button>
+                                        )}
+                                        {statement.sentiment && (
+                                          <span className={`px-1.5 py-0.5 text-xs font-medium border rounded ${
+                                            statement.sentiment === 'plaintiff_leaning' ? 'bg-green-50 text-green-700 border-green-200' :
+                                            statement.sentiment === 'defense_leaning' ? 'bg-red-50 text-red-700 border-red-200' :
+                                            statement.sentiment === 'conflicted' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                            'bg-gray-50 text-gray-700 border-gray-200'
+                                          }`}>
+                                            {statement.sentiment.replace('_', ' ')}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <p className="text-gray-700 text-sm leading-relaxed">{statement.content}</p>
+
+                                      {/* Key Points */}
+                                      {statement.keyPoints && Array.isArray(statement.keyPoints) && statement.keyPoints.length > 0 && (
+                                        <div className="mt-2 pt-2 border-t border-gray-100">
+                                          <ul className="list-disc list-inside space-y-0.5">
+                                            {statement.keyPoints.map((point: string, pidx: number) => (
+                                              <li key={pidx} className="text-xs text-gray-600">{point}</li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'personas' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">

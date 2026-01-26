@@ -173,6 +173,7 @@ export default function ConversationDetailPage() {
           personaSummaries={conversation.personaSummaries}
           allStatements={conversation.allStatements}
           overallAnalysis={conversation.overallAnalysis}
+          customQuestions={conversation.customQuestions}
         />
       </div>
     </div>

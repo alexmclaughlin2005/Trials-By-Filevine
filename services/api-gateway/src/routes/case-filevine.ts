@@ -457,8 +457,7 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
 
       // Upload to Vercel Blob
       console.log('[MANUAL_UPLOAD] Uploading to Vercel Blob...');
-      const blob = new Blob([fileBuffer]);
-      const blobResult = await put(filename, blob, {
+      const blobResult = await put(filename, fileBuffer, {
         access: 'public',
         addRandomSuffix: true,
       });
