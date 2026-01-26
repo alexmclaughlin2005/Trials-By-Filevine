@@ -376,14 +376,36 @@ export class TurnManager {
       return statement.position;
     }
 
-    // Simple heuristic: positive sentiment = plaintiff, negative = defense
-    // In a real implementation, this would use more sophisticated analysis
+    // Use sentiment if available (set during post-conversation analysis)
     const sentiment = statement.sentiment?.toLowerCase();
 
-    if (sentiment === 'positive' || sentiment === 'supportive') {
+    if (sentiment === 'plaintiff_leaning') {
       return ConversationPosition.PLAINTIFF;
-    } else if (sentiment === 'negative' || sentiment === 'critical') {
+    } else if (sentiment === 'defense_leaning') {
       return ConversationPosition.DEFENSE;
+    } else if (sentiment === 'conflicted' || sentiment === 'neutral') {
+      return ConversationPosition.NEUTRAL;
+    }
+
+    // Fallback: Use key points analysis for real-time detection during generation
+    // When sentiment hasn't been analyzed yet
+    if (statement.keyPoints && statement.keyPoints.length > 0) {
+      const keyPointsText = statement.keyPoints.join(' ').toLowerCase();
+
+      // Look for plaintiff-favorable language
+      const plaintiffSignals = ['plaintiff', 'victim', 'injured', 'harm', 'damages', 'suffering',
+                                'negligent', 'responsible', 'fault', 'liability'];
+      const defenseSignals = ['defendant', 'not liable', 'no evidence', 'innocent', 'accident',
+                              'not responsible', 'contributory', 'assumption of risk'];
+
+      const plaintiffCount = plaintiffSignals.filter(signal => keyPointsText.includes(signal)).length;
+      const defenseCount = defenseSignals.filter(signal => keyPointsText.includes(signal)).length;
+
+      if (plaintiffCount > defenseCount && plaintiffCount >= 2) {
+        return ConversationPosition.PLAINTIFF;
+      } else if (defenseCount > plaintiffCount && defenseCount >= 2) {
+        return ConversationPosition.DEFENSE;
+      }
     }
 
     return ConversationPosition.NEUTRAL;

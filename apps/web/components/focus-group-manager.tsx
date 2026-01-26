@@ -5,7 +5,6 @@ import { Button } from './ui/button';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { FocusGroupSetupWizard } from './focus-group-setup-wizard';
-import { RoundtableConversationTrigger } from './roundtable-conversation-trigger';
 import { FocusGroupSession } from '@/types/focus-group';
 import { Plus, History, PlayCircle, Trash2 } from 'lucide-react';
 
@@ -29,7 +28,7 @@ interface FocusGroupManagerProps {
   arguments: Argument[];
 }
 
-type View = 'list' | 'setup' | 'running' | 'results';
+type View = 'list' | 'setup' | 'results';
 
 export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGroupManagerProps) {
   const [currentView, setCurrentView] = useState<View>('list');
@@ -60,9 +59,11 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
     setCurrentView('setup');
   };
 
-  const handleSetupComplete = (sessionId: string) => {
-    setActiveSessionId(sessionId);
-    setCurrentView('running');
+  const handleSetupComplete = () => {
+    // Setup complete - wizard now navigates directly to conversation
+    // Just return to list view in case user comes back
+    setCurrentView('list');
+    setActiveSessionId(null);
   };
 
   const handleCancel = () => {
@@ -94,32 +95,6 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
           arguments={caseArguments}
           onComplete={handleSetupComplete}
           onCancel={handleCancel}
-        />
-      </div>
-    );
-  }
-
-  if (currentView === 'running' && activeSessionId) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-filevine-gray-900">
-              Roundtable Conversations
-            </h3>
-            <p className="text-sm text-filevine-gray-600">
-              Session ID: {activeSessionId}
-            </p>
-          </div>
-          <Button variant="outline" onClick={handleCancel}>
-            Back to Sessions
-          </Button>
-        </div>
-
-        <RoundtableConversationTrigger
-          key={activeSessionId}
-          sessionId={activeSessionId}
-          arguments={caseArguments}
         />
       </div>
     );
@@ -220,13 +195,44 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
 
                 <div className="ml-4 flex flex-col gap-2">
                   {session.status === 'completed' && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleViewSession(session.id)}
-                    >
-                      View Results
-                    </Button>
+                    <>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={() => handleViewSession(session.id)}
+                      >
+                        View Results
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteConfirmId(session.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </>
+                  )}
+                  {session.status === 'running' && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled
+                      >
+                        In Progress...
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteConfirmId(session.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </>
                   )}
                   {session.status === 'draft' && (
                     <>
