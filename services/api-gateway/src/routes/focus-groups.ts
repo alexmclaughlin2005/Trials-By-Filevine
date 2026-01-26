@@ -566,10 +566,11 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'Focus group session not found' };
       }
 
-      // Can only delete draft sessions
-      if (session.status !== 'draft') {
+      // Can delete draft or running sessions (running sessions may be stuck/failed)
+      // Only protect completed sessions from accidental deletion
+      if (session.status === 'completed') {
         reply.code(400);
-        return { error: 'Cannot delete non-draft session' };
+        return { error: 'Cannot delete completed session. Completed sessions contain valuable results.' };
       }
 
       await server.prisma.focusGroupSession.delete({
@@ -841,11 +842,16 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           console.log(`✅ Roundtable conversation complete: ${conversation.id}`);
         } catch (error) {
           console.error(`❌ Error in background conversation ${conversation.id}:`, error);
-          // Mark conversation as failed
-          await server.prisma.focusGroupConversation.update({
-            where: { id: conversation.id },
-            data: { completedAt: new Date() } // Mark as completed even on error
-          });
+          // Mark conversation as failed (only if it still exists)
+          try {
+            await server.prisma.focusGroupConversation.update({
+              where: { id: conversation.id },
+              data: { completedAt: new Date() } // Mark as completed even on error
+            });
+          } catch (updateError) {
+            // Conversation might have been deleted - ignore error
+            console.log(`Conversation ${conversation.id} no longer exists (may have been deleted)`);
+          }
         }
       })();
 

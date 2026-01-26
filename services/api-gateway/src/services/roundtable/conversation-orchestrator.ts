@@ -196,6 +196,9 @@ export class ConversationOrchestrator {
 
   /**
    * Phase 1: Initial reactions from all personas
+   *
+   * If custom questions exist, ask each question to all personas sequentially.
+   * Otherwise, get initial reactions to the argument.
    */
   private async runInitialReactions(conversationId: string, input: ConversationInput): Promise<void> {
     // Sort personas by leadership (leaders first)
@@ -211,20 +214,64 @@ export class ConversationOrchestrator {
       return weights[levelB] - weights[levelA];
     });
 
-    for (const persona of sorted) {
-      const statement = await this.generateInitialReaction(persona, input);
-      await this.saveStatement(conversationId, persona, statement);
+    // If we have custom questions, ask them sequentially
+    if (input.customQuestions && input.customQuestions.length > 0) {
+      console.log(`📝 Asking ${input.customQuestions.length} custom questions to ${sorted.length} personas`);
 
-      // Extract key points for novelty tracking
-      const keyPoints = await this.extractKeyPoints(statement);
+      // Sort questions by order
+      const sortedQuestions = [...input.customQuestions].sort((a, b) => a.order - b.order);
 
-      this.turnManager!.recordStatement({
-        personaId: persona.id,
-        personaName: persona.name,
-        content: statement,
-        sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
-        keyPoints
-      });
+      for (const question of sortedQuestions) {
+        console.log(`\n❓ Question ${question.order}: ${question.question}`);
+
+        // Ask this question to each persona in order
+        for (const persona of sorted) {
+          // Check if this question targets this persona's archetype
+          const isTargeted = !question.targetArchetypes ||
+                            question.targetArchetypes.length === 0 ||
+                            question.targetArchetypes.includes(persona.archetype || '');
+
+          if (!isTargeted) {
+            console.log(`  ⏭️  Skipping ${persona.name} (not targeted)`);
+            continue;
+          }
+
+          const statement = await this.generateQuestionResponse(persona, question, input);
+          await this.saveStatement(conversationId, persona, statement, question.id);
+
+          // Extract key points for novelty tracking
+          const keyPoints = await this.extractKeyPoints(statement);
+
+          this.turnManager!.recordStatement({
+            personaId: persona.id,
+            personaName: persona.name,
+            content: statement,
+            sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
+            keyPoints
+          });
+
+          console.log(`  ✓ ${persona.name} responded (${statement.split(' ').length} words)`);
+        }
+      }
+    } else {
+      // No custom questions - use original flow for initial reactions
+      console.log('📢 Getting initial reactions to argument');
+
+      for (const persona of sorted) {
+        const statement = await this.generateInitialReaction(persona, input);
+        await this.saveStatement(conversationId, persona, statement);
+
+        // Extract key points for novelty tracking
+        const keyPoints = await this.extractKeyPoints(statement);
+
+        this.turnManager!.recordStatement({
+          personaId: persona.id,
+          personaName: persona.name,
+          content: statement,
+          sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
+          keyPoints
+        });
+      }
     }
   }
 
@@ -272,6 +319,57 @@ export class ConversationOrchestrator {
   }
 
   /**
+   * Generate response to a specific custom question
+   */
+  private async generateQuestionResponse(
+    persona: PersonaInfo,
+    question: { id: string; question: string; order: number; targetArchetypes?: string[] },
+    input: ConversationInput
+  ): Promise<string> {
+    const leadershipLevel = this.normalizeLeadershipLevel(persona.leadershipLevel);
+    const lengthGuidance = LENGTH_GUIDANCE[leadershipLevel];
+
+    // Build context from prior responses to THIS question
+    const history = this.turnManager!.getConversationHistory();
+    const priorResponses = history.length > 0
+      ? this.formatConversationTranscript(history)
+      : null;
+
+    try {
+      const { result } = await this.promptClient.execute('roundtable-initial-reaction', {
+        variables: {
+          caseContext: this.formatCaseContext(input.caseContext),
+          argumentContent: input.argument.content,
+          previousSpeakers: priorResponses,
+          lengthGuidance,
+          customQuestions: question.question, // Single question
+          // Persona context
+          name: persona.name,
+          demographics: this.formatDemographics(persona),
+          worldview: persona.worldview || 'Not specified',
+          values: this.formatValues(persona),
+          biases: this.formatBiases(persona),
+          communicationStyle: persona.communicationStyle || 'Conversational',
+          lifeExperiences: this.formatLifeExperiences(persona),
+          leadershipLevel,
+          leadershipGuidance: LEADERSHIP_GUIDANCE[leadershipLevel],
+          // Voice characteristics
+          vocabularyLevel: this.formatVocabularyLevel(persona.vocabularyLevel),
+          sentenceStyle: this.formatSentenceStyle(persona.sentenceStyle),
+          speechPatterns: this.formatSpeechPatterns(persona.speechPatterns),
+          responseTendency: this.formatResponseTendency(persona.responseTendency)
+        }
+      });
+
+      const statement = this.extractStatement(result);
+      return this.enforceWordCount(statement, leadershipLevel);
+    } catch (error) {
+      console.error(`Error generating question response for ${persona.name}:`, error);
+      return `I need to think more about that question.`;
+    }
+  }
+
+  /**
    * Generate initial reaction using prompt service
    */
   private async generateInitialReaction(persona: PersonaInfo, input: ConversationInput): Promise<string> {
@@ -287,7 +385,7 @@ export class ConversationOrchestrator {
     try {
       // Use prompt service
       // Note: System prompt should be set in the prompt template itself
-      const customQuestionsText = this.formatCustomQuestions(input.customQuestions, persona.archetype);
+      // Custom questions are now handled separately in runInitialReactions
 
       const { result } = await this.promptClient.execute('roundtable-initial-reaction', {
         variables: {
@@ -295,7 +393,7 @@ export class ConversationOrchestrator {
           argumentContent: input.argument.content,
           previousSpeakers,
           lengthGuidance,
-          customQuestions: customQuestionsText,
+          customQuestions: null, // No longer passing all questions here
           // Persona context for system prompt
           name: persona.name,
           demographics: this.formatDemographics(persona),
@@ -334,8 +432,6 @@ export class ConversationOrchestrator {
     const lastStatement = history[history.length - 1];
 
     try {
-      const customQuestionsText = this.formatCustomQuestions(input.customQuestions, persona.archetype);
-
       // Extract established points to prevent repetition
       const establishedPoints = await this.getEstablishedPoints(history);
       const establishedPointsText = this.formatEstablishedPoints(establishedPoints);
@@ -360,7 +456,7 @@ export class ConversationOrchestrator {
           addressedToYou: null, // TODO: Implement mention detection
           dissentInfo, // Add dissent context
           lengthGuidance,
-          customQuestions: customQuestionsText,
+          customQuestions: null, // Custom questions are asked during initial reactions only
           establishedPoints: establishedPointsText,
           personaName: persona.name,
           // Persona context
@@ -516,7 +612,12 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
   /**
    * Save statement to database
    */
-  private async saveStatement(conversationId: string, persona: PersonaInfo, content: string): Promise<void> {
+  private async saveStatement(
+    conversationId: string,
+    persona: PersonaInfo,
+    content: string,
+    questionId?: string
+  ): Promise<void> {
     const speakCount = this.turnManager!.getSpeakCount(persona.id) + 1;
     const sequenceNumber = this.turnManager!.getStatistics().totalStatements + 1;
 
@@ -527,7 +628,8 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
         personaName: persona.name,
         sequenceNumber,
         content,
-        speakCount
+        speakCount,
+        questionId // Optional: tracks which question this statement answers
       }
     });
   }

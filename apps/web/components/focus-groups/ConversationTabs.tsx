@@ -99,9 +99,10 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
                 {customQuestions
                   .sort((a, b) => a.order - b.order)
                   .map((question, idx) => {
-                    // For now, show all statements under general discussion
-                    // In future, we can filter by questionId when AI determines which question each statement addresses
-                    const questionStatements = allStatements;
+                    // Filter statements by questionId to show only responses to this specific question
+                    const questionStatements = allStatements.filter(
+                      statement => statement.questionId === question.id
+                    );
 
                     return (
                       <div key={question.id} className="bg-white border rounded-lg overflow-hidden">
