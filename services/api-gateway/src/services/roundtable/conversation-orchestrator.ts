@@ -25,6 +25,12 @@ export interface PersonaInfo {
   persuasionSusceptibility?: string;
   lifeExperiences?: any;
   dimensions?: any;
+  // Voice differentiation attributes
+  vocabularyLevel?: string;
+  sentenceStyle?: string;
+  speechPatterns?: string[] | any;
+  responseTendency?: string;
+  engagementStyle?: string;
 }
 
 export interface ArgumentInfo {
@@ -67,14 +73,23 @@ export interface ConversationResult {
 }
 
 /**
- * Length guidance based on leadership level
- * Note: No explicit length constraints - let persona's natural style drive response length
+ * Length guidance based on leadership level with word count limits
  */
 const LENGTH_GUIDANCE: Record<LeadershipLevel, string> = {
-  [LeadershipLevel.LEADER]: "Share your view fully. You often ask others what they think.",
-  [LeadershipLevel.INFLUENCER]: "State your position clearly. You're not shy about disagreeing.",
-  [LeadershipLevel.FOLLOWER]: "You might reference what someone else said.",
-  [LeadershipLevel.PASSIVE]: "You speak when something truly matters to you."
+  [LeadershipLevel.LEADER]: "3-5 sentences, maximum 150 words. Share your view fully. You often ask others what they think.",
+  [LeadershipLevel.INFLUENCER]: "3-5 sentences, maximum 150 words. State your position clearly. You're not shy about disagreeing.",
+  [LeadershipLevel.FOLLOWER]: "1-3 sentences, maximum 75 words. Keep it brief. You might reference what someone else said.",
+  [LeadershipLevel.PASSIVE]: "1-2 sentences, maximum 75 words. Be very brief. You speak when something truly matters to you."
+};
+
+/**
+ * Maximum word counts by leadership level (hard caps)
+ */
+const MAX_WORD_COUNTS: Record<LeadershipLevel, number> = {
+  [LeadershipLevel.LEADER]: 150,
+  [LeadershipLevel.INFLUENCER]: 150,
+  [LeadershipLevel.FOLLOWER]: 75,
+  [LeadershipLevel.PASSIVE]: 75
 };
 
 /**
@@ -281,11 +296,17 @@ export class ConversationOrchestrator {
           communicationStyle: persona.communicationStyle || 'Conversational',
           lifeExperiences: this.formatLifeExperiences(persona),
           leadershipLevel,
-          leadershipGuidance: LEADERSHIP_GUIDANCE[leadershipLevel]
+          leadershipGuidance: LEADERSHIP_GUIDANCE[leadershipLevel],
+          // Voice characteristics
+          vocabularyLevel: this.formatVocabularyLevel(persona.vocabularyLevel),
+          sentenceStyle: this.formatSentenceStyle(persona.sentenceStyle),
+          speechPatterns: this.formatSpeechPatterns(persona.speechPatterns),
+          responseTendency: this.formatResponseTendency(persona.responseTendency)
         }
       });
 
-      return this.extractStatement(result);
+      const statement = this.extractStatement(result);
+      return this.enforceWordCount(statement, leadershipLevel);
     } catch (error) {
       console.error(`Error generating initial reaction for ${persona.name}:`, error);
       // Fallback mock response
@@ -306,6 +327,10 @@ export class ConversationOrchestrator {
     try {
       const customQuestionsText = this.formatCustomQuestions(input.customQuestions, persona.archetype);
 
+      // Extract established points to prevent repetition
+      const establishedPoints = await this.getEstablishedPoints(history);
+      const establishedPointsText = this.formatEstablishedPoints(establishedPoints);
+
       const { result } = await this.promptClient.execute('roundtable-conversation-turn', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
@@ -318,6 +343,7 @@ export class ConversationOrchestrator {
           addressedToYou: null, // TODO: Implement mention detection
           lengthGuidance,
           customQuestions: customQuestionsText,
+          establishedPoints: establishedPointsText,
           personaName: persona.name,
           // Persona context
           name: persona.name,
@@ -328,11 +354,17 @@ export class ConversationOrchestrator {
           communicationStyle: persona.communicationStyle || 'Conversational',
           lifeExperiences: this.formatLifeExperiences(persona),
           leadershipLevel,
-          leadershipGuidance: LEADERSHIP_GUIDANCE[leadershipLevel]
+          leadershipGuidance: LEADERSHIP_GUIDANCE[leadershipLevel],
+          // Voice characteristics
+          vocabularyLevel: this.formatVocabularyLevel(persona.vocabularyLevel),
+          sentenceStyle: this.formatSentenceStyle(persona.sentenceStyle),
+          speechPatterns: this.formatSpeechPatterns(persona.speechPatterns),
+          engagementStyle: this.formatEngagementStyle(persona.engagementStyle)
         }
       });
 
-      return this.extractStatement(result);
+      const statement = this.extractStatement(result);
+      return this.enforceWordCount(statement, leadershipLevel);
     } catch (error) {
       console.error(`Error generating conversation turn for ${persona.name}:`, error);
       // Fallback mock response
@@ -396,6 +428,39 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
     return statements
       .map(s => `${s.personaName}: "${s.content}"`)
       .join('\n\n');
+  }
+
+  /**
+   * Enforce word count limit on statement
+   */
+  private enforceWordCount(statement: string, leadershipLevel: LeadershipLevel): string {
+    const maxWords = MAX_WORD_COUNTS[leadershipLevel];
+    const words = statement.trim().split(/\s+/);
+
+    if (words.length <= maxWords) {
+      return statement;
+    }
+
+    // Truncate to max words and try to end at sentence boundary
+    let truncated = words.slice(0, maxWords).join(' ');
+
+    // Find last sentence-ending punctuation
+    const lastPeriod = truncated.lastIndexOf('.');
+    const lastQuestion = truncated.lastIndexOf('?');
+    const lastExclamation = truncated.lastIndexOf('!');
+
+    const lastPunctuation = Math.max(lastPeriod, lastQuestion, lastExclamation);
+
+    if (lastPunctuation > truncated.length * 0.7) {
+      // If we can end at a sentence within 70% of the limit, do so
+      truncated = truncated.substring(0, lastPunctuation + 1);
+    } else {
+      // Otherwise just add ellipsis
+      truncated += '...';
+    }
+
+    console.log(`[LENGTH CAP] Truncated ${words.length} words to ${maxWords} words for ${leadershipLevel}`);
+    return truncated;
   }
 
   /**
@@ -528,6 +593,163 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
     if (normalized === 'PASSIVE') return LeadershipLevel.PASSIVE;
     // Default to FOLLOWER if not specified
     return LeadershipLevel.FOLLOWER;
+  }
+
+  /**
+   * Extract key points from a statement to track what's been said
+   */
+  private async extractKeyPoints(statement: string): Promise<string[]> {
+    try {
+      const { result } = await this.promptClient.execute('extract-key-points', {
+        variables: {
+          statement
+        }
+      });
+
+      // Parse the result - expecting array of strings or formatted text
+      if (Array.isArray(result)) {
+        return result;
+      }
+
+      if (typeof result === 'object' && result.keyPoints && Array.isArray(result.keyPoints)) {
+        return result.keyPoints;
+      }
+
+      // Fallback: split by newlines and clean up
+      if (typeof result === 'string') {
+        return result
+          .split('\n')
+          .map(line => line.trim().replace(/^[-•*]\s*/, ''))
+          .filter(line => line.length > 0 && line.length < 200);
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error extracting key points:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get all established key points from conversation history
+   */
+  private async getEstablishedPoints(history: Statement[]): Promise<string[]> {
+    const allPoints: string[] = [];
+
+    // Extract points from recent statements (last 10 to keep it manageable)
+    const recentStatements = history.slice(-10);
+
+    for (const statement of recentStatements) {
+      const points = await this.extractKeyPoints(statement.content);
+      allPoints.push(...points);
+    }
+
+    // Simple deduplication (case-insensitive contains check)
+    const uniquePoints: string[] = [];
+    for (const point of allPoints) {
+      const pointLower = point.toLowerCase();
+      const isDuplicate = uniquePoints.some(existing =>
+        existing.toLowerCase().includes(pointLower) ||
+        pointLower.includes(existing.toLowerCase())
+      );
+
+      if (!isDuplicate) {
+        uniquePoints.push(point);
+      }
+    }
+
+    return uniquePoints;
+  }
+
+  /**
+   * Format established points for prompt
+   */
+  private formatEstablishedPoints(points: string[]): string | null {
+    if (points.length === 0) {
+      return null;
+    }
+
+    return points.map(point => `- ${point}`).join('\n');
+  }
+
+  /**
+   * Format speech patterns for prompt
+   */
+  private formatSpeechPatterns(speechPatterns?: string[] | any): string | null {
+    if (!speechPatterns) {
+      return null;
+    }
+
+    if (Array.isArray(speechPatterns)) {
+      return speechPatterns.join(', ');
+    }
+
+    // Handle JSON object
+    if (typeof speechPatterns === 'object') {
+      const patterns = Object.values(speechPatterns);
+      if (patterns.length > 0) {
+        return patterns.join(', ');
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Format vocabulary level for human-readable display
+   */
+  private formatVocabularyLevel(level?: string): string | null {
+    if (!level) return null;
+
+    const levelMap: Record<string, string> = {
+      PLAIN: 'plain, everyday',
+      EDUCATED: 'educated, well-spoken',
+      TECHNICAL: 'technical, precise',
+      FOLKSY: 'folksy, down-to-earth'
+    };
+
+    return levelMap[level] || level.toLowerCase();
+  }
+
+  /**
+   * Format sentence style for human-readable display
+   */
+  private formatSentenceStyle(style?: string): string | null {
+    if (!style) return null;
+
+    const styleMap: Record<string, string> = {
+      SHORT_PUNCHY: 'short and punchy',
+      MEASURED: 'measured and complete',
+      VERBOSE: 'verbose and detailed',
+      FRAGMENTED: 'fragmented or interrupted'
+    };
+
+    return styleMap[style] || style.toLowerCase().replace(/_/g, ' ');
+  }
+
+  /**
+   * Format engagement style for human-readable display
+   */
+  private formatEngagementStyle(style?: string): string | null {
+    if (!style) return null;
+
+    const styleMap: Record<string, string> = {
+      DIRECT_CHALLENGE: 'directly challenge others\' views',
+      BUILDS_ON_OTHERS: 'build on what others say',
+      ASKS_QUESTIONS: 'ask clarifying questions',
+      DEFLECTS: 'deflect or redirect'
+    };
+
+    return styleMap[style] || style.toLowerCase().replace(/_/g, ' ');
+  }
+
+  /**
+   * Format response tendency for human-readable display
+   */
+  private formatResponseTendency(tendency?: string): string | null {
+    if (!tendency) return null;
+
+    return tendency.toLowerCase();
   }
 
   /**

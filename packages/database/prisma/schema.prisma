@@ -284,6 +284,13 @@ model Persona {
   communicationStyle   String? @map("communication_style") @db.Text // Speaking style description
   persuasionSusceptibility String? @map("persuasion_susceptibility") @db.Text // What arguments move them
 
+  // Voice differentiation attributes (for simulation realism)
+  vocabularyLevel   String? @map("vocabulary_level") // PLAIN | EDUCATED | TECHNICAL | FOLKSY
+  sentenceStyle     String? @map("sentence_style") // SHORT_PUNCHY | MEASURED | VERBOSE | FRAGMENTED
+  speechPatterns    Json?   @map("speech_patterns") // Array of characteristic phrases/verbal tics
+  responseTendency  String? @map("response_tendency") // BRIEF | MODERATE | ELABORATE
+  engagementStyle   String? @map("engagement_style") // DIRECT_CHALLENGE | BUILDS_ON_OTHERS | ASKS_QUESTIONS | DEFLECTS
+
   // Simulation Parameters
   simulationParams  Json? @map("simulation_params") // Evidence processing, deliberation weights, verdict priors
   caseTypeModifiers Json? @map("case_type_modifiers") // Case-specific behavior predictions
