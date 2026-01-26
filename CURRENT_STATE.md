@@ -10,7 +10,7 @@
 Trials by Filevine AI is a comprehensive jury intelligence platform that has completed **5 major development phases** and is ready for production deployment. The system provides attorneys with AI-powered tools for jury research, behavioral analysis, argument testing, and strategic planning.
 
 ### What's Working Now
-- ✅ **NEW: Enhanced API Chat** - Markdown rendering, collapsible history sidebar, clickable links
+- ✅ **NEW: Enhanced API Chat** - Markdown rendering, collapsible history sidebar, clickable links ([Full Documentation](./API_CHAT_SYSTEM.md))
 - ✅ **NEW: Redesigned navigation** - Case-specific sidebar, simplified global nav, URL-based routing
 - ✅ Complete case management with embedded juror research
 - ✅ Identity matching with confidence scoring
