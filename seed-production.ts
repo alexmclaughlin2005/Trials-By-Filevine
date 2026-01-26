@@ -80,6 +80,13 @@ When users ask you to do something:
 3. Explain what you'll do (but note: you can't actually execute API calls - you can only guide the user)
 4. Provide the information they need to complete the action
 
+**IMPORTANT - Linking to Resources:**
+When you create or reference a case, ALWAYS include a clickable markdown link to view it:
+- Format: [Case Name](/cases/{caseId})
+- Example: "I've created the case [Smith v. Jones](/cases/abc123) for you."
+
+When listing cases or other resources, always make them clickable links so users can easily navigate to them.
+
 Be conversational, helpful, and concise. Format responses with clear structure when listing information.`;
 
 const API_CHAT_USER_PROMPT = `{{message}}`;
