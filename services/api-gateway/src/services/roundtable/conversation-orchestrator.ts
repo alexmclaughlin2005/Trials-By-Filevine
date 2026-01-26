@@ -608,19 +608,24 @@ ${context.facts.map((f, i) => `${i + 1}. ${f}`).join('\n')}`;
 
       // Parse the result - expecting array of strings or formatted text
       if (Array.isArray(result)) {
-        return result;
+        return result as string[];
       }
 
-      if (typeof result === 'object' && result.keyPoints && Array.isArray(result.keyPoints)) {
-        return result.keyPoints;
+      // Check if result is an object with keyPoints property
+      if (typeof result === 'object' && result !== null) {
+        const resultObj = result as any;
+        if (resultObj.keyPoints && Array.isArray(resultObj.keyPoints)) {
+          return resultObj.keyPoints as string[];
+        }
       }
 
       // Fallback: split by newlines and clean up
       if (typeof result === 'string') {
-        return result
+        const stringResult = result as string;
+        return stringResult
           .split('\n')
-          .map(line => line.trim().replace(/^[-•*]\s*/, ''))
-          .filter(line => line.length > 0 && line.length < 200);
+          .map((line: string) => line.trim().replace(/^[-•*]\s*/, ''))
+          .filter((line: string) => line.length > 0 && line.length < 200);
       }
 
       return [];
