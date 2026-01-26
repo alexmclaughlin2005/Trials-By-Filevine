@@ -93,9 +93,9 @@ export function ManualDocumentUpload({ caseId, onUploadComplete }: ManualDocumen
           onUploadComplete();
         }, 1000);
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Upload error:', error);
-      setUploadError(error.message || 'Failed to upload document');
+      setUploadError(error instanceof Error ? error.message : 'Failed to upload document');
     } finally {
       setUploading(false);
     }
