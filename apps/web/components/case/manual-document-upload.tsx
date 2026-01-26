@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select } from '@/components/ui/select';
 import { Upload, X, FileText, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { uploadDocument } from '@/lib/filevine-client';
 
@@ -151,17 +145,18 @@ export function ManualDocumentUpload({ caseId, onUploadComplete }: ManualDocumen
       {/* Category */}
       <div className="space-y-2">
         <Label htmlFor="category">Category (Optional)</Label>
-        <Select value={category} onValueChange={setCategory} disabled={uploading}>
-          <SelectTrigger id="category">
-            <SelectValue placeholder="Select a category" />
-          </SelectTrigger>
-          <SelectContent>
-            {DOCUMENT_CATEGORIES.map((cat) => (
-              <SelectItem key={cat.value} value={cat.value}>
-                {cat.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
+        <Select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          disabled={uploading}
+        >
+          <option value="">Select a category</option>
+          {DOCUMENT_CATEGORIES.map((cat) => (
+            <option key={cat.value} value={cat.value}>
+              {cat.label}
+            </option>
+          ))}
         </Select>
       </div>
 
