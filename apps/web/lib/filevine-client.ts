@@ -328,7 +328,7 @@ export async function uploadDocument(
   }
 
   // Use fetch directly for multipart/form-data
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('auth_token');
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
   const response = await fetch(`${apiUrl}/cases/${caseId}/documents/upload`, {
     method: 'POST',
