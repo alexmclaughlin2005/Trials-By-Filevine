@@ -30,6 +30,22 @@ export interface Statement {
   sequenceNumber: number;
   sentiment?: string;
   keyPoints?: string[];
+  position?: ConversationPosition; // PLAINTIFF | DEFENSE | NEUTRAL
+}
+
+export enum ConversationPosition {
+  PLAINTIFF = 'PLAINTIFF',
+  DEFENSE = 'DEFENSE',
+  NEUTRAL = 'NEUTRAL'
+}
+
+export interface DissentInfo {
+  isPresent: boolean;
+  dissenterPersonaId?: string;
+  dissenterPersonaName?: string;
+  dissentStatement?: string;
+  dissentKeyPoints?: string[];
+  speakersRequiredToEngage: number; // How many speakers left must engage
 }
 
 /**
@@ -50,11 +66,13 @@ export class TurnManager {
   private personas: PersonaTurnInfo[];
   private speakCounts: Map<string, number>;
   private conversationHistory: Statement[];
+  private currentDissent: DissentInfo | null; // Track active dissent
 
   constructor(personas: PersonaTurnInfo[]) {
     this.personas = personas;
     this.speakCounts = new Map(personas.map(p => [p.personaId, 0]));
     this.conversationHistory = [];
+    this.currentDissent = null;
   }
 
   /**
@@ -218,11 +236,23 @@ export class TurnManager {
 
   /**
    * Record that a persona has spoken
+   * Also detects dissent and tracks engagement requirements
    */
   recordStatement(statement: Statement): void {
     const currentCount = this.speakCounts.get(statement.personaId) || 0;
     this.speakCounts.set(statement.personaId, currentCount + 1);
     this.conversationHistory.push(statement);
+
+    // If there's active dissent, mark that this speaker engaged with it
+    if (this.currentDissent && this.currentDissent.isPresent) {
+      this.markDissentEngagement();
+    }
+
+    // Detect new dissent in this statement
+    const dissentInfo = this.detectDissent(statement);
+    if (dissentInfo.isPresent) {
+      this.currentDissent = dissentInfo;
+    }
   }
 
   /**
@@ -300,6 +330,128 @@ export class TurnManager {
     }
 
     return true;
+  }
+
+  /**
+   * Assess the consensus position of the conversation so far
+   * Returns PLAINTIFF, DEFENSE, or NEUTRAL based on statement positions
+   */
+  private assessConsensusPosition(): ConversationPosition {
+    if (this.conversationHistory.length < 3) {
+      return ConversationPosition.NEUTRAL; // Too early to determine
+    }
+
+    // Count positions in recent statements (last 5 or all if fewer)
+    const recentStatements = this.conversationHistory.slice(-5);
+    const positions = recentStatements
+      .map(s => s.position)
+      .filter(p => p && p !== ConversationPosition.NEUTRAL);
+
+    if (positions.length === 0) {
+      return ConversationPosition.NEUTRAL;
+    }
+
+    const plaintiffCount = positions.filter(p => p === ConversationPosition.PLAINTIFF).length;
+    const defenseCount = positions.filter(p => p === ConversationPosition.DEFENSE).length;
+
+    // Need 2/3 majority for consensus
+    const threshold = positions.length * 0.66;
+
+    if (plaintiffCount >= threshold) {
+      return ConversationPosition.PLAINTIFF;
+    } else if (defenseCount >= threshold) {
+      return ConversationPosition.DEFENSE;
+    }
+
+    return ConversationPosition.NEUTRAL; // Mixed views
+  }
+
+  /**
+   * Assess the position of a single statement
+   * Uses sentiment and key points to determine if it favors plaintiff or defense
+   */
+  private assessStatementPosition(statement: Statement): ConversationPosition {
+    // If already set, use it
+    if (statement.position) {
+      return statement.position;
+    }
+
+    // Simple heuristic: positive sentiment = plaintiff, negative = defense
+    // In a real implementation, this would use more sophisticated analysis
+    const sentiment = statement.sentiment?.toLowerCase();
+
+    if (sentiment === 'positive' || sentiment === 'supportive') {
+      return ConversationPosition.PLAINTIFF;
+    } else if (sentiment === 'negative' || sentiment === 'critical') {
+      return ConversationPosition.DEFENSE;
+    }
+
+    return ConversationPosition.NEUTRAL;
+  }
+
+  /**
+   * Detect if the latest statement represents dissent from consensus
+   * Per design doc 3.1: Track when someone takes a contrarian position
+   */
+  private detectDissent(statement: Statement): DissentInfo {
+    const consensus = this.assessConsensusPosition();
+
+    // Can't have dissent if no consensus yet
+    if (consensus === ConversationPosition.NEUTRAL) {
+      return { isPresent: false, speakersRequiredToEngage: 0 };
+    }
+
+    const statementPosition = this.assessStatementPosition(statement);
+
+    // Dissent detected if statement opposes consensus
+    const isDissent = statementPosition !== ConversationPosition.NEUTRAL &&
+                      statementPosition !== consensus;
+
+    if (isDissent) {
+      console.log(`[DISSENT] ${statement.personaName} took contrarian position: ${statementPosition} vs consensus ${consensus}`);
+
+      return {
+        isPresent: true,
+        dissenterPersonaId: statement.personaId,
+        dissenterPersonaName: statement.personaName,
+        dissentStatement: statement.content,
+        dissentKeyPoints: statement.keyPoints || [],
+        speakersRequiredToEngage: 2 // Next 2 speakers must engage
+      };
+    }
+
+    return { isPresent: false, speakersRequiredToEngage: 0 };
+  }
+
+  /**
+   * Get current dissent context for the next speaker
+   * Returns null if no active dissent or engagement requirement expired
+   */
+  getDissentContext(): DissentInfo | null {
+    if (!this.currentDissent || !this.currentDissent.isPresent) {
+      return null;
+    }
+
+    // Check if engagement requirement still active
+    if (this.currentDissent.speakersRequiredToEngage <= 0) {
+      return null;
+    }
+
+    return this.currentDissent;
+  }
+
+  /**
+   * Mark that a speaker has engaged with dissent (reduces engagement requirement)
+   */
+  markDissentEngagement(): void {
+    if (this.currentDissent && this.currentDissent.isPresent) {
+      this.currentDissent.speakersRequiredToEngage--;
+
+      if (this.currentDissent.speakersRequiredToEngage <= 0) {
+        console.log('[DISSENT] All required speakers have engaged with dissent');
+        this.currentDissent = null; // Clear dissent after engagement
+      }
+    }
   }
 
   /**

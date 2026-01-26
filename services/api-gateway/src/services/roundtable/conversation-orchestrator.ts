@@ -340,6 +340,14 @@ export class ConversationOrchestrator {
       const establishedPoints = await this.getEstablishedPoints(history);
       const establishedPointsText = this.formatEstablishedPoints(establishedPoints);
 
+      // Get dissent context if present
+      const dissentContext = this.turnManager!.getDissentContext();
+      const dissentInfo = dissentContext && dissentContext.isPresent ? {
+        dissenterName: dissentContext.dissenterPersonaName,
+        dissentStatement: dissentContext.dissentStatement,
+        dissentKeyPoints: (dissentContext.dissentKeyPoints || []).join('\n- ')
+      } : null;
+
       const { result } = await this.promptClient.execute('roundtable-conversation-turn', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
@@ -350,6 +358,7 @@ export class ConversationOrchestrator {
             statement: lastStatement.content
           } : null,
           addressedToYou: null, // TODO: Implement mention detection
+          dissentInfo, // Add dissent context
           lengthGuidance,
           customQuestions: customQuestionsText,
           establishedPoints: establishedPointsText,
