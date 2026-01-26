@@ -496,13 +496,13 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
 
       console.log('[MANUAL_UPLOAD] Created import record:', importedDoc.id);
 
-      // Trigger text extraction for PDFs immediately
+      // Trigger text extraction for supported document types immediately
       const textExtractionService = new TextExtractionService();
-      if (textExtractionService.isPdfFile(filename)) {
-        console.log('[MANUAL_UPLOAD] Triggering text extraction for PDF');
+      if (textExtractionService.isPdfFile(filename) || textExtractionService.isWordFile(filename)) {
+        console.log('[MANUAL_UPLOAD] Triggering text extraction for document');
         extractTextInBackground(server, textExtractionService, importedDoc.id, blobResult.url, filename);
       } else {
-        // Mark as not needed if not a PDF
+        // Mark as not needed if not a supported document type
         await server.prisma.importedDocument.update({
           where: { id: importedDoc.id },
           data: { textExtractionStatus: 'not_needed' },

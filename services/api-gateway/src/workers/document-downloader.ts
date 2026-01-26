@@ -86,9 +86,9 @@ async function processDocument(job: DownloadJob): Promise<void> {
 
     console.log(`[DOWNLOAD] ✅ Successfully processed document ${documentId}`);
 
-    // Trigger text extraction for PDFs immediately
+    // Trigger text extraction for supported document types immediately
     const textExtractionService = new TextExtractionService();
-    if (textExtractionService.isPdfFile(filename)) {
+    if (textExtractionService.isPdfFile(filename) || textExtractionService.isWordFile(filename)) {
       console.log(`[DOWNLOAD] Triggering text extraction for ${filename}`);
       extractTextInBackground(textExtractionService, documentId, blobResult.url, filename);
     }
