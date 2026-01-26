@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { FilevineProjectSelector } from '@/components/filevine-project-selector';
 import { FilevineFolderBrowser } from '@/components/filevine-folder-browser';
 import { FilevineDocumentBrowser } from '@/components/filevine-document-browser';
+import { ManualDocumentUpload } from '@/components/case/manual-document-upload';
 import {
   getCaseFilevineLink,
   getImportedDocuments,
@@ -11,7 +12,7 @@ import {
   type CaseFilevineLink,
   type ImportedDocument
 } from '@/lib/filevine-client';
-import { FolderOpen, Download, FileText, Eye, Trash2, Search, X } from 'lucide-react';
+import { FolderOpen, Download, FileText, Eye, Trash2, Search, X, Upload } from 'lucide-react';
 
 interface FilevineDocumentsTabProps {
   caseId: string;
@@ -20,7 +21,7 @@ interface FilevineDocumentsTabProps {
 export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
   const [selectedFolderId, setSelectedFolderId] = useState<string>('');
   const [selectedFolderName, setSelectedFolderName] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<'browse' | 'imported'>('browse');
+  const [activeTab, setActiveTab] = useState<'browse' | 'imported' | 'upload'>('browse');
   const [linkStatus, setLinkStatus] = useState<{ linked: boolean; link?: CaseFilevineLink } | null>(null);
   const [importedDocs, setImportedDocs] = useState<ImportedDocument[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -103,12 +104,49 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
     return (
       <div className="space-y-6">
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-          <h3 className="mb-2 text-lg font-semibold text-blue-900">Connect to Filevine</h3>
+          <h3 className="mb-2 text-lg font-semibold text-blue-900">Document Management</h3>
           <p className="mb-4 text-sm text-blue-700">
-            Link this case to a Filevine project to import documents and sync case data.
+            Link this case to a Filevine project to import documents, or upload documents manually.
           </p>
         </div>
-        <FilevineProjectSelector caseId={caseId} onLinked={handleProjectLinked} />
+
+        {/* Tabs for non-linked cases */}
+        <div className="border-b border-gray-200">
+          <div className="flex gap-4">
+            <button
+              onClick={() => setActiveTab('browse')}
+              className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'browse'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <FolderOpen className="h-4 w-4" />
+              Connect Filevine
+            </button>
+            <button
+              onClick={() => setActiveTab('upload')}
+              className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+                activeTab === 'upload'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              <Upload className="h-4 w-4" />
+              Upload Manually
+            </button>
+          </div>
+        </div>
+
+        {activeTab === 'browse' && (
+          <FilevineProjectSelector caseId={caseId} onLinked={handleProjectLinked} />
+        )}
+
+        {activeTab === 'upload' && (
+          <div className="max-w-2xl">
+            <ManualDocumentUpload caseId={caseId} onUploadComplete={handleDocumentImported} />
+          </div>
+        )}
       </div>
     );
   }
@@ -130,6 +168,17 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
             Browse Filevine
           </button>
           <button
+            onClick={() => setActiveTab('upload')}
+            className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+              activeTab === 'upload'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            <Upload className="h-4 w-4" />
+            Upload Manually
+          </button>
+          <button
             onClick={() => setActiveTab('imported')}
             className={`flex items-center gap-2 border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === 'imported'
@@ -138,7 +187,7 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
             }`}
           >
             <Download className="h-4 w-4" />
-            Imported Documents ({importedDocs.length})
+            All Documents ({importedDocs.length})
           </button>
         </div>
       </div>
@@ -170,6 +219,13 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Manual Upload Tab */}
+      {activeTab === 'upload' && (
+        <div className="max-w-2xl">
+          <ManualDocumentUpload caseId={caseId} onUploadComplete={handleDocumentImported} />
         </div>
       )}
 

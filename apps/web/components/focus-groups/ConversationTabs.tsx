@@ -1,24 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails } from '@/types/focus-group';
+import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
 import { PersonaDetailModal } from './PersonaDetailModal';
-import { Users, Clock, BarChart3 } from 'lucide-react';
+import { Users, Clock, BarChart3, HelpCircle } from 'lucide-react';
 
 interface ConversationTabsProps {
   personaSummaries: PersonaSummary[];
   allStatements: ConversationStatement[];
   overallAnalysis: OverallAnalysis;
+  customQuestions?: CustomQuestion[];
 }
 
-type TabType = 'personas' | 'timeline' | 'analysis';
+type TabType = 'personas' | 'timeline' | 'questions' | 'analysis';
 
-export function ConversationTabs({ personaSummaries, allStatements, overallAnalysis }: ConversationTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('timeline');
+export function ConversationTabs({ personaSummaries, allStatements, overallAnalysis, customQuestions }: ConversationTabsProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
 
   const tabs = [
+    ...(customQuestions && customQuestions.length > 0
+      ? [{ id: 'questions' as TabType, label: 'By Question', icon: HelpCircle, count: customQuestions.length }]
+      : []
+    ),
     { id: 'personas' as TabType, label: 'By Persona', icon: Users, count: personaSummaries.length },
     { id: 'timeline' as TabType, label: 'Timeline', icon: Clock, count: allStatements.length },
     { id: 'analysis' as TabType, label: 'Overall Analysis', icon: BarChart3 }

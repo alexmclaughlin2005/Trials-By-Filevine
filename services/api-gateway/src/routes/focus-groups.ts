@@ -928,6 +928,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           personaName: statement.personaName,
           sequenceNumber: statement.sequenceNumber,
           content: statement.content,
+          questionId: statement.questionId,
           sentiment: statement.sentiment,
           emotionalIntensity: statement.emotionalIntensity,
           keyPoints: statement.keyPoints,
@@ -1004,6 +1005,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           personaName: s.personaName,
           sequenceNumber: s.sequenceNumber,
           content: s.content,
+          questionId: s.questionId,
           sentiment: s.sentiment,
           emotionalIntensity: s.emotionalIntensity,
           keyPoints: s.keyPoints,
@@ -1012,7 +1014,10 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           disagreementSignals: s.disagreementSignals,
           speakCount: s.speakCount,
           createdAt: s.createdAt
-        }))
+        })),
+
+        // Custom questions for this session
+        customQuestions: conversation.session.customQuestions as any[] || []
       };
     }
   });

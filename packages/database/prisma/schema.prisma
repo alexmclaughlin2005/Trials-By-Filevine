@@ -618,6 +618,9 @@ model FocusGroupStatement {
   sequenceNumber  Int      @map("sequence_number") // Order in conversation (1, 2, 3...)
   content         String   @db.Text
 
+  // Question tracking
+  questionId      String?  @map("question_id") // ID of custom question this statement addresses
+
   // AI-generated analysis
   sentiment           String?  // plaintiff_leaning | defense_leaning | neutral | conflicted
   emotionalIntensity  Decimal? @map("emotional_intensity") @db.Decimal(3, 2) // 0.00 to 1.00

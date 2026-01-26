@@ -5,6 +5,7 @@ import jwt from '@fastify/jwt';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import multipart from '@fastify/multipart';
 import { config } from './config';
 import { prisma } from '@juries/database';
 
@@ -104,6 +105,13 @@ export async function buildServer() {
 
   await server.register(jwt, {
     secret: config.jwtSecret,
+  });
+
+  // Register multipart for file uploads (10MB limit)
+  await server.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB max file size
+    },
   });
 
   // Add JWT authentication decorator

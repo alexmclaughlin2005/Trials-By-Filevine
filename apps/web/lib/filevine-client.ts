@@ -296,3 +296,51 @@ export async function deleteImportedDocument(
 ): Promise<{ success: boolean }> {
   return apiClient.delete(`/cases/${caseId}/filevine/documents/${documentId}`);
 }
+
+/**
+ * Upload a document manually (for users without Filevine)
+ */
+export async function uploadDocument(
+  caseId: string,
+  file: File,
+  metadata?: {
+    documentCategory?: string;
+    tags?: string[];
+    notes?: string;
+    folderName?: string;
+  }
+): Promise<{ document: ImportedDocument }> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  // Add optional metadata
+  if (metadata?.documentCategory) {
+    formData.append('documentCategory', metadata.documentCategory);
+  }
+  if (metadata?.tags && metadata.tags.length > 0) {
+    formData.append('tags', JSON.stringify(metadata.tags));
+  }
+  if (metadata?.notes) {
+    formData.append('notes', metadata.notes);
+  }
+  if (metadata?.folderName) {
+    formData.append('folderName', metadata.folderName);
+  }
+
+  // Use fetch directly for multipart/form-data
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/cases/${caseId}/documents/upload`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+    throw new Error(errorData.error || 'Upload failed');
+  }
+
+  return response.json();
+}

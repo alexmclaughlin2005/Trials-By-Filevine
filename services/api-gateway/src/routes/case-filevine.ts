@@ -6,7 +6,9 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { put } from '@vercel/blob';
 import { createFilevineService } from '../services/filevine.js';
+import { TextExtractionService } from '../services/text-extraction.js';
 
 // Request body schemas
 const linkProjectSchema = z.object({
@@ -378,6 +380,157 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
   });
 
   /**
+   * POST /api/cases/:caseId/documents/upload
+   * Manually upload a document (for users without Filevine)
+   */
+  server.post('/:caseId/documents/upload', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      console.log('[MANUAL_UPLOAD] Starting document upload');
+
+      // Verify JWT token
+      await request.jwtVerify();
+
+      // @ts-ignore - JWT user added by jwtVerify
+      const user = request.user;
+      if (!user || !user.userId) {
+        console.error('[MANUAL_UPLOAD] Invalid user from JWT:', user);
+        reply.code(401);
+        return { error: 'Unauthorized - missing user ID' };
+      }
+
+      // @ts-ignore
+      const { caseId } = request.params;
+      console.log('[MANUAL_UPLOAD] Case ID:', caseId, 'User:', user.userId);
+
+      // Verify case belongs to organization
+      const caseData = await server.prisma.case.findFirst({
+        where: { id: caseId, organizationId: user.organizationId },
+      });
+
+      if (!caseData) {
+        console.error('[MANUAL_UPLOAD] Case not found:', caseId);
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Get or create CaseFilevineProject (for manual uploads, we use a placeholder)
+      let link = await server.prisma.caseFilevineProject.findFirst({
+        where: { caseId, organizationId: user.organizationId },
+      });
+
+      if (!link) {
+        // Create a placeholder link for manual uploads
+        console.log('[MANUAL_UPLOAD] Creating placeholder Filevine link for manual uploads');
+        link = await server.prisma.caseFilevineProject.create({
+          data: {
+            caseId,
+            organizationId: user.organizationId,
+            filevineProjectId: 'manual_uploads',
+            projectName: 'Manual Uploads',
+            linkedBy: user.userId,
+            autoSyncDocuments: false,
+          },
+        });
+      }
+
+      // Get the uploaded file
+      const data = await request.file();
+
+      if (!data) {
+        console.error('[MANUAL_UPLOAD] No file provided');
+        reply.code(400);
+        return { error: 'No file provided' };
+      }
+
+      const filename = data.filename;
+      const fileBuffer = await data.toBuffer();
+      const fileSize = fileBuffer.length;
+
+      console.log('[MANUAL_UPLOAD] File received:', { filename, size: fileSize });
+
+      // Validate file size (10MB max)
+      if (fileSize > 10 * 1024 * 1024) {
+        console.error('[MANUAL_UPLOAD] File too large:', fileSize);
+        reply.code(400);
+        return { error: 'File too large. Maximum size is 10MB.' };
+      }
+
+      // Upload to Vercel Blob
+      console.log('[MANUAL_UPLOAD] Uploading to Vercel Blob...');
+      const blob = new Blob([fileBuffer]);
+      const blobResult = await put(filename, blob, {
+        access: 'public',
+        addRandomSuffix: true,
+      });
+      console.log('[MANUAL_UPLOAD] Uploaded to Vercel Blob:', blobResult.url);
+
+      // Get optional metadata from multipart fields
+      const fields: Record<string, any> = {};
+
+      // Try to get additional form fields if they exist
+      try {
+        const parts = await request.parts();
+        for await (const part of parts) {
+          if (part.type === 'field') {
+            fields[part.fieldname] = part.value;
+          }
+        }
+      } catch (e) {
+        // Ignore errors - fields are optional
+      }
+
+      console.log('[MANUAL_UPLOAD] Additional fields:', fields);
+
+      // Create import record with completed status
+      const importedDoc = await server.prisma.importedDocument.create({
+        data: {
+          caseFilevineProjectId: link.id,
+          filevineDocumentId: `manual_${Date.now()}`, // Unique ID for manual uploads
+          fivevineFolderId: 'manual',
+          filename,
+          folderName: fields.folderName || 'Manual Uploads',
+          size: BigInt(fileSize),
+          documentCategory: fields.documentCategory || null,
+          tags: fields.tags ? JSON.parse(fields.tags) : [],
+          notes: fields.notes || null,
+          importedBy: user.userId,
+          status: 'completed', // Skip download worker
+          localFileUrl: blobResult.url,
+          textExtractionStatus: 'pending',
+        },
+      });
+
+      console.log('[MANUAL_UPLOAD] Created import record:', importedDoc.id);
+
+      // Trigger text extraction for PDFs immediately
+      const textExtractionService = new TextExtractionService();
+      if (textExtractionService.isPdfFile(filename)) {
+        console.log('[MANUAL_UPLOAD] Triggering text extraction for PDF');
+        extractTextInBackground(server, textExtractionService, importedDoc.id, blobResult.url, filename);
+      } else {
+        // Mark as not needed if not a PDF
+        await server.prisma.importedDocument.update({
+          where: { id: importedDoc.id },
+          data: { textExtractionStatus: 'not_needed' },
+        });
+      }
+
+      // Convert BigInt to string for JSON serialization
+      const documentResponse = {
+        ...importedDoc,
+        size: importedDoc.size ? importedDoc.size.toString() : null,
+      };
+
+      return { document: documentResponse };
+    } catch (error: any) {
+      console.error('[MANUAL_UPLOAD] Error uploading document:', error);
+      console.error('[MANUAL_UPLOAD] Error stack:', error.stack);
+      reply.code(500);
+      return { error: error.message || 'Failed to upload document' };
+    }
+  });
+
+  /**
    * GET /api/cases/:caseId/filevine/documents
    * List imported documents for a case
    */
@@ -483,4 +636,56 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
       return { error: error.message || 'Failed to delete document' };
     }
   });
+}
+
+/**
+ * Background worker to extract text from a document
+ * Runs asynchronously without blocking the upload
+ */
+async function extractTextInBackground(
+  server: FastifyInstance,
+  textExtractionService: TextExtractionService,
+  documentId: string,
+  fileUrl: string,
+  filename: string
+): Promise<void> {
+  try {
+    console.log(`[TEXT_EXTRACTION] Starting extraction for document ${documentId}`);
+
+    await server.prisma.importedDocument.update({
+      where: { id: documentId },
+      data: { textExtractionStatus: 'processing' },
+    });
+
+    const extractedText = await textExtractionService.extractText(fileUrl, filename);
+
+    if (extractedText) {
+      await server.prisma.importedDocument.update({
+        where: { id: documentId },
+        data: {
+          extractedText,
+          textExtractionStatus: 'completed',
+          textExtractedAt: new Date(),
+        },
+      });
+      console.log(`[TEXT_EXTRACTION] Successfully extracted ${extractedText.length} characters from document ${documentId}`);
+    } else {
+      await server.prisma.importedDocument.update({
+        where: { id: documentId },
+        data: {
+          textExtractionStatus: 'not_needed',
+          textExtractedAt: new Date(),
+        },
+      });
+    }
+  } catch (error: any) {
+    console.error(`[TEXT_EXTRACTION] Failed to extract text from document ${documentId}:`, error);
+    await server.prisma.importedDocument.update({
+      where: { id: documentId },
+      data: {
+        textExtractionStatus: 'failed',
+        textExtractionError: error.message,
+      },
+    });
+  }
 }

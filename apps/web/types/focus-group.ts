@@ -108,6 +108,7 @@ export interface ConversationStatement {
   personaName: string;
   sequenceNumber: number;
   content: string;
+  questionId?: string | null;
   sentiment?: string | null;
   emotionalIntensity?: number | null;
   keyPoints?: any;
@@ -184,4 +185,5 @@ export interface ConversationDetail {
   personaSummaries: PersonaSummary[];
   overallAnalysis: OverallAnalysis;
   allStatements: ConversationStatement[];
+  customQuestions?: CustomQuestion[];
 }
