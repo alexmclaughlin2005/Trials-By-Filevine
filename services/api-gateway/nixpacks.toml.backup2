@@ -1,6 +1,6 @@
-# OPTIMIZED BUILD CONFIGURATION v2
-# Backups: nixpacks.toml.backup (original), nixpacks.toml.backup2 (after first optimization)
-# To revert: cp nixpacks.toml.backup2 nixpacks.toml
+# OPTIMIZED BUILD CONFIGURATION
+# Backup saved as nixpacks.toml.backup
+# To revert: cp nixpacks.toml.backup nixpacks.toml
 
 [phases.setup]
 # Node.js 20 required for @vercel/blob and pdf-parse
@@ -19,10 +19,12 @@ cmds = [
   "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
   # Build database package first (Prisma client dependency)
   "cd packages/database && npm run build && cd ../..",
-  # Build independent packages in PARALLEL using background jobs
-  "(cd packages/ai-client && npm run build) & (cd packages/prompt-client && npm run build) & (cd packages/utils && npm run build) & wait",
-  # Build the API gateway service with production TypeScript config
-  "cd services/api-gateway && npx tsc --project ../../tsconfig.production.json && cd ../.."
+  # Build other packages (these could be parallelized in future)
+  "cd packages/ai-client && npm run build && cd ../..",
+  "cd packages/prompt-client && npm run build && cd ../..",
+  "cd packages/utils && npm run build && cd ../..",
+  # Build the API gateway service
+  "cd services/api-gateway && npm run build && cd ../.."
 ]
 
 [start]
