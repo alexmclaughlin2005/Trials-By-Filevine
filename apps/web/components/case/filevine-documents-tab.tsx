@@ -12,7 +12,7 @@ import {
   type CaseFilevineLink,
   type ImportedDocument
 } from '@/lib/filevine-client';
-import { FolderOpen, Download, FileText, Eye, Trash2, Search, X, Upload } from 'lucide-react';
+import { FolderOpen, Download, FileText, Eye, Trash2, Search, X, Upload, CheckCircle2, XCircle, Clock, FileSearch } from 'lucide-react';
 
 interface FilevineDocumentsTabProps {
   caseId: string;
@@ -274,12 +274,48 @@ export function FilevineDocumentsTab({ caseId }: FilevineDocumentsTabProps) {
                     <p className="mt-1 text-sm text-gray-600">
                       From: {doc.folderName || 'Unknown folder'}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Imported {new Date(doc.importedAt).toLocaleString()}
-                    </p>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <p className="text-xs text-gray-500">
+                        Imported {new Date(doc.importedAt).toLocaleString()}
+                      </p>
+                      {/* Text Extraction Status Badge */}
+                      {doc.textExtractionStatus && doc.textExtractionStatus !== 'not_needed' && (
+                        <>
+                          {doc.textExtractionStatus === 'completed' && (
+                            <span className="flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Text extracted for AI
+                            </span>
+                          )}
+                          {doc.textExtractionStatus === 'processing' && (
+                            <span className="flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+                              <Clock className="h-3 w-3 animate-spin" />
+                              Extracting text...
+                            </span>
+                          )}
+                          {doc.textExtractionStatus === 'pending' && (
+                            <span className="flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
+                              <FileSearch className="h-3 w-3" />
+                              Text extraction pending
+                            </span>
+                          )}
+                          {doc.textExtractionStatus === 'failed' && (
+                            <span className="flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                              <XCircle className="h-3 w-3" />
+                              Text extraction failed
+                            </span>
+                          )}
+                        </>
+                      )}
+                    </div>
                     {doc.status === 'failed' && doc.errorMessage && (
                       <p className="mt-1 text-xs text-red-600">
                         Error: {doc.errorMessage}
+                      </p>
+                    )}
+                    {doc.textExtractionStatus === 'failed' && doc.textExtractionError && (
+                      <p className="mt-1 text-xs text-red-600">
+                        Extraction error: {doc.textExtractionError}
                       </p>
                     )}
                   </div>

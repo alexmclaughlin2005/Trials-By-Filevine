@@ -193,6 +193,9 @@ export interface ImportedDocument {
   size?: string;
   errorMessage?: string;
   downloadAttempts?: number;
+  textExtractionStatus?: 'pending' | 'processing' | 'completed' | 'failed' | 'not_needed';
+  textExtractedAt?: string;
+  textExtractionError?: string;
 }
 
 /**
