@@ -341,7 +341,8 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
               localFileUrl: true,
               thumbnailUrl: true,
               size: true,
-              extractedText: true,
+              extractedTextUrl: true,
+              extractedTextChars: true,
               textExtractionStatus: true,
               importedAt: true,
             },
@@ -356,6 +357,7 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
           attachedAt: att.attachedAt,
           attachedBy: att.attachedBy,
           notes: att.notes,
+          documentId: att.documentId,
           document: {
             ...att.document,
             size: att.document.size ? att.document.size.toString() : null,
@@ -473,7 +475,7 @@ export async function caseArgumentsRoutes(server: FastifyInstance) {
 }
 
 /**
- * Background worker to extract text from a document
+ * Background worker to extract text from a document and upload to Vercel Blob
  */
 async function extractTextInBackground(
   server: FastifyInstance,
@@ -491,21 +493,23 @@ async function extractTextInBackground(
       data: { textExtractionStatus: 'processing' },
     });
 
-    // Extract text
-    const extractedText = await textExtractionService.extractText(fileUrl, filename);
+    // Extract text and upload to Vercel Blob
+    const result = await textExtractionService.extractAndUploadText(fileUrl, filename, documentId);
 
-    if (extractedText) {
-      // Save extracted text
+    if (result) {
+      // Save extracted text URL and character count
       await server.prisma.importedDocument.update({
         where: { id: documentId },
         data: {
-          extractedText,
+          extractedTextUrl: result.textUrl,
+          extractedTextChars: result.charCount,
           textExtractionStatus: 'completed',
           textExtractedAt: new Date(),
         },
       });
 
-      console.log(`[TEXT_EXTRACTION] Successfully extracted ${extractedText.length} characters from document ${documentId}`);
+      console.log(`[TEXT_EXTRACTION] Successfully extracted ${result.charCount} characters from document ${documentId}`);
+      console.log(`[TEXT_EXTRACTION] Text stored at: ${result.textUrl}`);
     } else {
       // Not a supported file type
       await server.prisma.importedDocument.update({
