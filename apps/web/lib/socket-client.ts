@@ -16,7 +16,7 @@ export function getSocket(token: string): Socket {
         emit: () => {},
         off: () => {},
         disconnect: () => {},
-      } as Socket;
+      } as unknown as Socket;
     }
 
     socket = io(url, {
