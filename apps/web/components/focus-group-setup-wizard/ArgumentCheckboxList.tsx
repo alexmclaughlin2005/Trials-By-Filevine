@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { ArgumentListItem } from './ArgumentListItem';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { ValidationBanner } from './ValidationBanner';
+import { CreateArgumentDialog } from './CreateArgumentDialog';
 
 interface SelectedArgument {
   argumentId: string;
@@ -14,6 +15,7 @@ interface SelectedArgument {
 }
 
 interface ArgumentCheckboxListProps {
+  caseId: string;
   arguments: Array<{
     id: string;
     title: string;
@@ -25,6 +27,7 @@ interface ArgumentCheckboxListProps {
 }
 
 export function ArgumentCheckboxList({
+  caseId,
   arguments: caseArguments,
   selectedArguments,
   onUpdate,
@@ -100,11 +103,14 @@ export function ArgumentCheckboxList({
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900">Select Arguments to Test</h3>
-        <p className="mt-1 text-sm text-gray-600">
-          Choose which arguments to present to the focus group
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">Select Arguments to Test</h3>
+          <p className="mt-1 text-sm text-gray-600">
+            Choose which arguments to present to the focus group
+          </p>
+        </div>
+        <CreateArgumentDialog caseId={caseId} />
       </div>
 
       {/* Bulk Actions */}

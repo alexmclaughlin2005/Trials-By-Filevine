@@ -239,6 +239,7 @@ export function FocusGroupSetupWizard({
 
         {currentStep === 'arguments' && (
           <ArgumentsSelectionStep
+            caseId={caseId}
             session={session.session}
             arguments={caseArguments}
             onUpdate={(updates) => updateConfigMutation.mutate(updates)}
@@ -571,10 +572,12 @@ function PanelConfigurationStep({
 
 // Arguments Selection Step Component
 function ArgumentsSelectionStep({
+  caseId,
   session,
   arguments: caseArguments,
   onUpdate,
 }: {
+  caseId: string;
   session: FocusGroupSession;
   arguments: Array<{
     id: string;
@@ -590,6 +593,7 @@ function ArgumentsSelectionStep({
 
   return (
     <ArgumentCheckboxList
+      caseId={caseId}
       arguments={caseArguments}
       selectedArguments={session.selectedArguments || []}
       onUpdate={handleUpdateArguments}

@@ -33,7 +33,7 @@ export function ArgumentListItem({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="py-3 border-b border-gray-200 last:border-b-0">
+    <div className="py-3 px-4 border-b border-gray-200 last:border-b-0">
       <div className="flex items-start gap-3">
         {/* Checkbox */}
         <input
