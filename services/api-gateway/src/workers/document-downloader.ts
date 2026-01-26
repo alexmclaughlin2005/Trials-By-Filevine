@@ -5,11 +5,13 @@
  * 1. Downloading files from Filevine
  * 2. Uploading to Vercel Blob storage
  * 3. Updating database with blob URL and status
+ * 4. Triggering text extraction for PDFs
  */
 
 import { PrismaClient } from '@juries/database';
 import { put } from '@vercel/blob';
 import { createFilevineService } from '../services/filevine.js';
+import { TextExtractionService } from '../services/text-extraction.js';
 
 // Check for Vercel Blob token
 if (!process.env.BLOB_READ_WRITE_TOKEN) {
@@ -83,6 +85,13 @@ async function processDocument(job: DownloadJob): Promise<void> {
     });
 
     console.log(`[DOWNLOAD] ✅ Successfully processed document ${documentId}`);
+
+    // Trigger text extraction for PDFs immediately
+    const textExtractionService = new TextExtractionService();
+    if (textExtractionService.isPdfFile(filename)) {
+      console.log(`[DOWNLOAD] Triggering text extraction for ${filename}`);
+      extractTextInBackground(textExtractionService, documentId, blobResult.url, filename);
+    }
   } catch (error: any) {
     console.error(`[DOWNLOAD] ❌ Error processing document ${documentId}:`, error);
 
@@ -166,4 +175,64 @@ export function startDocumentDownloader(): NodeJS.Timeout {
 export function stopDocumentDownloader(interval: NodeJS.Timeout): void {
   console.log('[DOWNLOAD] Stopping document download worker...');
   clearInterval(interval);
+}
+
+/**
+ * Background worker to extract text from a document
+ * Runs asynchronously without blocking the download worker
+ */
+async function extractTextInBackground(
+  textExtractionService: TextExtractionService,
+  documentId: string,
+  fileUrl: string,
+  filename: string
+): Promise<void> {
+  try {
+    console.log(`[TEXT_EXTRACTION] Starting extraction for document ${documentId}`);
+
+    // Update status to processing
+    await prisma.importedDocument.update({
+      where: { id: documentId },
+      data: { textExtractionStatus: 'processing' },
+    });
+
+    // Extract text
+    const extractedText = await textExtractionService.extractText(fileUrl, filename);
+
+    if (extractedText) {
+      // Save extracted text
+      await prisma.importedDocument.update({
+        where: { id: documentId },
+        data: {
+          extractedText,
+          textExtractionStatus: 'completed',
+          textExtractedAt: new Date(),
+        },
+      });
+
+      console.log(`[TEXT_EXTRACTION] Successfully extracted ${extractedText.length} characters from document ${documentId}`);
+    } else {
+      // Not a supported file type
+      await prisma.importedDocument.update({
+        where: { id: documentId },
+        data: {
+          textExtractionStatus: 'not_needed',
+          textExtractedAt: new Date(),
+        },
+      });
+
+      console.log(`[TEXT_EXTRACTION] No extraction needed for document ${documentId}`);
+    }
+  } catch (error: any) {
+    console.error(`[TEXT_EXTRACTION] Failed to extract text from document ${documentId}:`, error);
+
+    // Update status to failed
+    await prisma.importedDocument.update({
+      where: { id: documentId },
+      data: {
+        textExtractionStatus: 'failed',
+        textExtractionError: error.message,
+      },
+    });
+  }
 }
