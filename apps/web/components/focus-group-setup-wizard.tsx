@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useRouter } from 'next/navigation';
 import {
   FocusGroupSession,
   FocusGroupConfigUpdate,
@@ -15,6 +16,7 @@ import {
   ConfigurationStep,
 } from '@/types/focus-group';
 import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles, X } from 'lucide-react';
+import { ArgumentCheckboxList } from './focus-group-setup-wizard/ArgumentCheckboxList';
 
 interface FocusGroupSetupWizardProps {
   caseId: string;
@@ -35,6 +37,7 @@ export function FocusGroupSetupWizard({
   onCancel,
 }: FocusGroupSetupWizardProps) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<ConfigurationStep>('panel');
   const [sessionId, setSessionId] = useState<string | null>(null);
 
@@ -102,13 +105,29 @@ export function FocusGroupSetupWizard({
     },
   });
 
-  // Start simulation mutation
+  // Start simulation and run first roundtable
   const startSimulationMutation = useMutation({
     mutationFn: async () => {
-      return apiClient.post(`/focus-groups/sessions/${sessionId}/start`, {});
+      // First, mark the session as started
+      await apiClient.post(`/focus-groups/sessions/${sessionId}/start`, {});
+
+      // Then, automatically start a roundtable for the first selected argument
+      if (session?.session?.selectedArguments && session.session.selectedArguments.length > 0) {
+        const firstArgument = session.session.selectedArguments[0];
+        const result = await apiClient.post<{ conversationId: string }>(
+          `/focus-groups/sessions/${sessionId}/roundtable`,
+          { argumentId: firstArgument.argumentId }
+        );
+        return result;
+      }
+      return null;
     },
-    onSuccess: () => {
-      if (onComplete && sessionId) {
+    onSuccess: (result) => {
+      if (result && result.conversationId) {
+        // Navigate directly to the conversation
+        router.push(`/focus-groups/conversations/${result.conversationId}`);
+      } else if (onComplete && sessionId) {
+        // Fallback if no arguments selected (shouldn't happen)
         onComplete(sessionId);
       }
     },
@@ -565,104 +584,16 @@ function ArgumentsSelectionStep({
   }>;
   onUpdate: (updates: FocusGroupConfigUpdate) => void;
 }) {
-  const [selectedArguments, setSelectedArguments] = useState<SelectedArgument[]>(
-    session.selectedArguments || []
-  );
-
-  const handleToggleArgument = (arg: (typeof caseArguments)[0]) => {
-    const existing = selectedArguments.find((a) => a.argumentId === arg.id);
-
-    let updated: SelectedArgument[];
-    if (existing) {
-      updated = selectedArguments.filter((a) => a.argumentId !== arg.id);
-    } else {
-      updated = [
-        ...selectedArguments,
-        {
-          argumentId: arg.id,
-          order: selectedArguments.length + 1,
-          title: arg.title,
-          content: arg.content,
-          argumentType: arg.argumentType,
-        },
-      ];
-    }
-
-    // Re-index orders
-    updated = updated.map((a, index) => ({ ...a, order: index + 1 }));
-
-    setSelectedArguments(updated);
+  const handleUpdateArguments = (updated: SelectedArgument[]) => {
     onUpdate({ selectedArguments: updated });
   };
 
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-filevine-gray-900">Select Arguments to Test</h3>
-        <p className="mt-1 text-sm text-filevine-gray-600">
-          Choose which arguments to present to the focus group
-        </p>
-      </div>
-
-      {/* Available Arguments */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-filevine-gray-700">
-          Available Arguments ({selectedArguments.length} selected)
-        </label>
-
-        {caseArguments.map((arg) => {
-          const isSelected = selectedArguments.some((a) => a.argumentId === arg.id);
-          const selectedArg = selectedArguments.find((a) => a.argumentId === arg.id);
-
-          return (
-            <div
-              key={arg.id}
-              className={`rounded-lg border-2 p-4 transition-colors ${
-                isSelected
-                  ? 'border-filevine-blue bg-blue-50'
-                  : 'border-filevine-gray-200 hover:border-filevine-gray-300'
-              }`}
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3">
-                    {isSelected && (
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-filevine-blue text-xs font-semibold text-white">
-                        {selectedArg?.order}
-                      </span>
-                    )}
-                    <div>
-                      <p className="font-medium text-filevine-gray-900">{arg.title}</p>
-                      <p className="text-xs text-filevine-gray-600 mt-1">
-                        {arg.argumentType} • {arg.content.length} characters
-                      </p>
-                    </div>
-                  </div>
-                  <p className="mt-2 text-sm text-filevine-gray-700 line-clamp-2">{arg.content}</p>
-                </div>
-                <Button
-                  variant={isSelected ? 'outline' : 'primary'}
-                  size="sm"
-                  onClick={() => handleToggleArgument(arg)}
-                  className="ml-4 flex-shrink-0"
-                >
-                  {isSelected ? 'Remove' : 'Add'}
-                </Button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {selectedArguments.length === 0 && (
-        <div className="rounded-md bg-yellow-50 p-4">
-          <p className="text-sm text-yellow-800">
-            Please select at least one argument to test with the focus group.
-          </p>
-        </div>
-      )}
-    </div>
+    <ArgumentCheckboxList
+      arguments={caseArguments}
+      selectedArguments={session.selectedArguments || []}
+      onUpdate={handleUpdateArguments}
+    />
   );
 }
 
