@@ -16,7 +16,7 @@ import {
   ConfigurationStep,
 } from '@/types/focus-group';
 import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles, X } from 'lucide-react';
-import { ArgumentCheckboxList } from './focus-group-setup-wizard/ArgumentCheckboxList';
+import { ArgumentCheckboxList, WizardProgressFooter } from './focus-group-setup-wizard';
 
 interface FocusGroupSetupWizardProps {
   caseId: string;
@@ -164,6 +164,14 @@ export function FocusGroupSetupWizard({
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
+  // Calculate progress for footer
+  const isPanelConfigured =
+    session.session.panelSelectionMode !== null &&
+    (session.session.panelSelectionMode === 'random' ||
+     (session.session.selectedPersonas && session.session.selectedPersonas.length > 0));
+  const argumentsCount = session.session.selectedArguments?.length || 0;
+  const questionsCount = session.session.customQuestions?.length || 0;
+
   const handleNext = async () => {
     if (currentStepIndex < steps.length - 1) {
       const nextStep = steps[currentStepIndex + 1].key;
@@ -301,6 +309,14 @@ export function FocusGroupSetupWizard({
           )}
         </div>
       </div>
+
+      {/* Persistent Progress Footer */}
+      <WizardProgressFooter
+        currentStep={currentStepIndex}
+        isPanelConfigured={isPanelConfigured}
+        argumentsCount={argumentsCount}
+        questionsCount={questionsCount}
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ArgumentListItem } from './ArgumentListItem';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { ValidationBanner } from './ValidationBanner';
@@ -32,6 +32,34 @@ export function ArgumentCheckboxList({
   selectedArguments,
   onUpdate,
 }: ArgumentCheckboxListProps) {
+  const hasInitialized = useRef(false);
+
+  // Smart Defaults: Auto-select opening and closing arguments on initial load
+  useEffect(() => {
+    // Only run once on mount, and only if no arguments are selected yet
+    if (!hasInitialized.current && selectedArguments.length === 0 && caseArguments.length > 0) {
+      hasInitialized.current = true;
+
+      // Find opening and closing arguments
+      const defaultArgs = caseArguments.filter(
+        (arg) => arg.argumentType === 'opening' || arg.argumentType === 'closing'
+      );
+
+      if (defaultArgs.length > 0) {
+        // Auto-select them with proper ordering
+        const autoSelected: SelectedArgument[] = defaultArgs.map((arg, index) => ({
+          argumentId: arg.id,
+          order: index + 1,
+          title: arg.title,
+          content: arg.content,
+          argumentType: arg.argumentType,
+        }));
+
+        onUpdate(autoSelected);
+      }
+    }
+  }, [caseArguments, selectedArguments.length, onUpdate]);
+
   const handleToggle = (argId: string) => {
     const isSelected = selectedArguments.some((a) => a.argumentId === argId);
 
