@@ -196,21 +196,23 @@ async function extractTextInBackground(
       data: { textExtractionStatus: 'processing' },
     });
 
-    // Extract text
-    const extractedText = await textExtractionService.extractText(fileUrl, filename);
+    // Extract text and upload to Vercel Blob
+    const result = await textExtractionService.extractAndUploadText(fileUrl, filename, documentId);
 
-    if (extractedText) {
-      // Save extracted text
+    if (result) {
+      // Save text URL and character count
       await prisma.importedDocument.update({
         where: { id: documentId },
         data: {
-          extractedText,
+          extractedTextUrl: result.textUrl,
+          extractedTextChars: result.charCount,
           textExtractionStatus: 'completed',
           textExtractedAt: new Date(),
         },
       });
 
-      console.log(`[TEXT_EXTRACTION] Successfully extracted ${extractedText.length} characters from document ${documentId}`);
+      console.log(`[TEXT_EXTRACTION] Successfully extracted ${result.charCount} characters from document ${documentId}`);
+      console.log(`[TEXT_EXTRACTION] Text stored at: ${result.textUrl}`);
     } else {
       // Not a supported file type
       await prisma.importedDocument.update({

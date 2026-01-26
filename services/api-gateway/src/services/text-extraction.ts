@@ -1,6 +1,9 @@
+import { put } from '@vercel/blob';
+
 /**
  * Text Extraction Service
  * Extracts text from various document formats for AI processing
+ * Stores extracted text in Vercel Blob for scalability
  *
  * Supported formats:
  * - PDF (via pdf-parse v1.1.1)
@@ -145,8 +148,38 @@ export class TextExtractionService {
   }
 
   /**
+   * Upload extracted text to Vercel Blob storage
+   * @param text - Extracted text content
+   * @param originalFilename - Original document filename
+   * @param documentId - Document ID for naming
+   * @returns URL to the uploaded text file
+   */
+  async uploadExtractedText(text: string, originalFilename: string, documentId: string): Promise<string> {
+    try {
+      // Create filename for extracted text: {documentId}-extracted.txt
+      const textFilename = `${documentId}-extracted.txt`;
+
+      console.log(`[TEXT_EXTRACTION] Uploading extracted text to Vercel Blob: ${textFilename}`);
+
+      // Upload text as a blob
+      const blob = await put(textFilename, text, {
+        access: 'public',
+        contentType: 'text/plain; charset=utf-8',
+      });
+
+      console.log(`[TEXT_EXTRACTION] Text uploaded successfully: ${blob.url}`);
+
+      return blob.url;
+    } catch (error: any) {
+      console.error('[TEXT_EXTRACTION] Error uploading extracted text:', error);
+      throw new Error(`Failed to upload extracted text: ${error.message}`);
+    }
+  }
+
+  /**
    * Extract text from a document based on its file type
    * Supports PDF, DOCX, and DOC formats
+   * @returns Extracted text string or null if unsupported
    */
   async extractText(fileUrl: string, filename: string): Promise<string | null> {
     try {
@@ -169,5 +202,28 @@ export class TextExtractionService {
       console.error(`[TEXT_EXTRACTION] Failed to extract text from ${filename}:`, error);
       throw error;
     }
+  }
+
+  /**
+   * Extract text and upload to Vercel Blob
+   * @returns Object with text URL and character count, or null if unsupported
+   */
+  async extractAndUploadText(
+    fileUrl: string,
+    filename: string,
+    documentId: string
+  ): Promise<{ textUrl: string; charCount: number } | null> {
+    const extractedText = await this.extractText(fileUrl, filename);
+
+    if (!extractedText) {
+      return null;
+    }
+
+    const textUrl = await this.uploadExtractedText(extractedText, filename, documentId);
+
+    return {
+      textUrl,
+      charCount: extractedText.length,
+    };
   }
 }

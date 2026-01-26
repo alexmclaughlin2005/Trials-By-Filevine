@@ -1129,7 +1129,8 @@ model ImportedDocument {
   notes                 String?  @db.Text
 
   // Text Extraction (for AI use)
-  extractedText         String?   @map("extracted_text") @db.Text // Extracted text content for AI
+  extractedTextUrl      String?   @map("extracted_text_url") @db.Text // URL to extracted text file in Vercel Blob
+  extractedTextChars    Int?      @map("extracted_text_chars") // Character count of extracted text
   textExtractionStatus  String    @default("pending") @map("text_extraction_status") // pending | processing | completed | failed | not_needed
   textExtractedAt       DateTime? @map("text_extracted_at")
   textExtractionError   String?   @map("text_extraction_error") @db.Text

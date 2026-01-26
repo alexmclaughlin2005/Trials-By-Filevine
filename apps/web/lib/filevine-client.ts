@@ -196,6 +196,19 @@ export interface ImportedDocument {
   textExtractionStatus?: 'pending' | 'processing' | 'completed' | 'failed' | 'not_needed';
   textExtractedAt?: string;
   textExtractionError?: string;
+  extractedTextUrl?: string;
+  extractedTextChars?: number;
+}
+
+/**
+ * Fetch extracted text content for a document
+ */
+export async function getDocumentExtractedText(textUrl: string): Promise<string> {
+  const response = await fetch(textUrl);
+  if (!response.ok) {
+    throw new Error('Failed to fetch extracted text');
+  }
+  return response.text();
 }
 
 /**

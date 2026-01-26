@@ -651,18 +651,20 @@ async function extractTextInBackground(
       data: { textExtractionStatus: 'processing' },
     });
 
-    const extractedText = await textExtractionService.extractText(fileUrl, filename);
+    const result = await textExtractionService.extractAndUploadText(fileUrl, filename, documentId);
 
-    if (extractedText) {
+    if (result) {
       await server.prisma.importedDocument.update({
         where: { id: documentId },
         data: {
-          extractedText,
+          extractedTextUrl: result.textUrl,
+          extractedTextChars: result.charCount,
           textExtractionStatus: 'completed',
           textExtractedAt: new Date(),
         },
       });
-      console.log(`[TEXT_EXTRACTION] Successfully extracted ${extractedText.length} characters from document ${documentId}`);
+      console.log(`[TEXT_EXTRACTION] Successfully extracted ${result.charCount} characters from document ${documentId}`);
+      console.log(`[TEXT_EXTRACTION] Text stored at: ${result.textUrl}`);
     } else {
       await server.prisma.importedDocument.update({
         where: { id: documentId },
