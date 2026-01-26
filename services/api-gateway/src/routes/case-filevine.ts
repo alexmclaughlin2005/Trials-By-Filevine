@@ -433,20 +433,30 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
         });
       }
 
-      // Get the uploaded file
-      const data = await request.file();
+      // Get multipart data
+      const parts = request.parts();
+      const fields: Record<string, any> = {};
+      let fileBuffer: Buffer | null = null;
+      let filename = '';
 
-      if (!data) {
+      // Process all parts (file + fields)
+      for await (const part of parts) {
+        if (part.type === 'file') {
+          filename = part.filename;
+          fileBuffer = await part.toBuffer();
+          console.log('[MANUAL_UPLOAD] File received:', { filename, size: fileBuffer.length });
+        } else if (part.type === 'field') {
+          fields[part.fieldname] = part.value;
+        }
+      }
+
+      if (!fileBuffer || !filename) {
         console.error('[MANUAL_UPLOAD] No file provided');
         reply.code(400);
         return { error: 'No file provided' };
       }
 
-      const filename = data.filename;
-      const fileBuffer = await data.toBuffer();
       const fileSize = fileBuffer.length;
-
-      console.log('[MANUAL_UPLOAD] File received:', { filename, size: fileSize });
 
       // Validate file size (10MB max)
       if (fileSize > 10 * 1024 * 1024) {
@@ -455,6 +465,8 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
         return { error: 'File too large. Maximum size is 10MB.' };
       }
 
+      console.log('[MANUAL_UPLOAD] Additional fields:', fields);
+
       // Upload to Vercel Blob
       console.log('[MANUAL_UPLOAD] Uploading to Vercel Blob...');
       const blobResult = await put(filename, fileBuffer, {
@@ -462,23 +474,6 @@ export async function caseFilevineRoutes(server: FastifyInstance) {
         addRandomSuffix: true,
       });
       console.log('[MANUAL_UPLOAD] Uploaded to Vercel Blob:', blobResult.url);
-
-      // Get optional metadata from multipart fields
-      const fields: Record<string, any> = {};
-
-      // Try to get additional form fields if they exist
-      try {
-        const parts = await request.parts();
-        for await (const part of parts) {
-          if (part.type === 'field') {
-            fields[part.fieldname] = part.value;
-          }
-        }
-      } catch (e) {
-        // Ignore errors - fields are optional
-      }
-
-      console.log('[MANUAL_UPLOAD] Additional fields:', fields);
 
       // Create import record with completed status
       const importedDoc = await server.prisma.importedDocument.create({
