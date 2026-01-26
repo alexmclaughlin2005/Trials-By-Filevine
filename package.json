@@ -25,7 +25,8 @@
     "import-personas": "npx tsx scripts/import-personas.ts",
     "list-personas": "npx tsx scripts/list-personas.ts",
     "cleanup-personas": "npx tsx scripts/cleanup-duplicate-personas.ts",
-    "deploy-personas": "npx tsx scripts/deploy-personas-to-production.ts"
+    "deploy-personas": "npx tsx scripts/deploy-personas-to-production.ts",
+    "test:pdf-extraction": "npx tsx scripts/test-pdf-extraction.ts"
   },
   "devDependencies": {
     "prettier": "^3.2.4",
