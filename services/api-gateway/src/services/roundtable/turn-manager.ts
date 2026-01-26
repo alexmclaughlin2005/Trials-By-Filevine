@@ -304,46 +304,57 @@ export class TurnManager {
 
   /**
    * Detect if conversation is going in circles or has naturally concluded
-   * Uses semantic similarity (keyword overlap) and explicit agreement detection
+   * Uses key point novelty detection as primary signal, with semantic similarity as fallback
    */
   private detectStagnation(): boolean {
-    // Need at least 3 statements to detect semantic similarity
-    if (this.conversationHistory.length < 3) {
+    // Need at least 4 statements to detect patterns
+    if (this.conversationHistory.length < 4) {
       return false;
     }
 
     const recent = this.conversationHistory.slice(-3);
 
-    // PRIMARY: Check for semantic similarity using keyword overlap (>2 consecutive similar turns)
+    // PRIMARY: Check for lack of novelty (no new key points in recent statements)
+    // This is the most reliable signal from design doc section 2.3
+    const noveltyCheck = this.detectNoveltyStagnation(recent);
+    if (noveltyCheck) {
+      console.log('[STAGNATION] Detected lack of novelty in recent statements');
+      return true;
+    }
+
+    // SECONDARY: Detect agreement without substantive additions
+    const agreementCheck = this.detectAgreementStagnation(recent);
+    if (agreementCheck) {
+      console.log('[STAGNATION] Detected agreement without substantive additions');
+      return true;
+    }
+
+    // FALLBACK: Semantic similarity (keyword overlap) - legacy detection
     const keywords = recent.map(s => this.extractKeywords(s.content));
     const sim_1_2 = this.jaccardSimilarity(keywords[0], keywords[1]);
     const sim_2_3 = this.jaccardSimilarity(keywords[1], keywords[2]);
 
     const SIMILARITY_THRESHOLD = 0.7;
     if (sim_1_2 > SIMILARITY_THRESHOLD && sim_2_3 > SIMILARITY_THRESHOLD) {
+      console.log('[STAGNATION] Detected semantic similarity in recent statements');
       return true; // Semantically stagnant - people repeating same ideas
     }
 
-    // SECONDARY: Detect explicit agreement phrases
-    const agreementPattern = /^(I agree|Same here|Nothing to add|Exactly|That's right)/i;
-    const recentAgreements = recent.filter(s => agreementPattern.test(s.content.trim()));
-    if (recentAgreements.length >= 2) {
-      return true; // Multiple explicit agreements indicate consensus
-    }
-
-    // FALLBACK: Keep existing heuristics for additional signals
+    // Additional heuristics for conversation winding down
     if (this.conversationHistory.length >= 8) {
       const recentFour = this.conversationHistory.slice(-4);
 
       // Very short statements (conversation winding down)
       const allVeryShort = recentFour.every(s => s.content.length < 50);
       if (allVeryShort) {
+        console.log('[STAGNATION] Detected very short statements (winding down)');
         return true;
       }
 
       // Low average length
       const avgLength = recentFour.reduce((sum, s) => sum + s.content.length, 0) / recentFour.length;
       if (avgLength < 60) {
+        console.log('[STAGNATION] Detected low average statement length');
         return true;
       }
 
@@ -355,12 +366,133 @@ export class TurnManager {
       if (sentiments.length >= 3) {
         const allSame = sentiments.every(s => s === sentiments[0]);
         if (allSame) {
+          console.log('[STAGNATION] Detected repetitive sentiment (consensus reached)');
           return true;
         }
       }
     }
 
     return false;
+  }
+
+  /**
+   * Detect stagnation based on lack of novelty in key points
+   * Per design doc 2.3: "Stagnation = 2+ consecutive statements with no novel points"
+   */
+  private detectNoveltyStagnation(recentStatements: Statement[]): boolean {
+    // Count consecutive statements with no novel points
+    let repetitiveStreak = 0;
+
+    // We need keyPoints to be extracted for this to work
+    // Check the most recent statements for keyPoints
+    for (let i = recentStatements.length - 1; i >= 0; i--) {
+      const statement = recentStatements[i];
+
+      // If no keyPoints extracted, we can't determine novelty
+      if (!statement.keyPoints || statement.keyPoints.length === 0) {
+        // Consider empty keyPoints as potentially repetitive if content is short
+        if (statement.content.length < 100) {
+          repetitiveStreak++;
+        }
+        continue;
+      }
+
+      // Get all established points from earlier statements
+      const earlierStatements = this.conversationHistory.slice(0, -recentStatements.length + i);
+      const establishedPoints = this.getAllKeyPoints(earlierStatements);
+
+      // Check if this statement's key points are novel
+      const novelPoints = this.filterNovelPoints(statement.keyPoints, establishedPoints);
+
+      if (novelPoints.length === 0) {
+        repetitiveStreak++;
+      } else {
+        break; // Found a novel statement, reset streak
+      }
+    }
+
+    // Stagnation if 2+ consecutive statements with no novel points
+    return repetitiveStreak >= 2;
+  }
+
+  /**
+   * Detect stagnation based on agreement without substantive additions
+   * Per design doc 2.3: "2+ agreements without substantive addition"
+   */
+  private detectAgreementStagnation(recentStatements: Statement[]): boolean {
+    const agreementPhrases = [
+      "you're right", "exactly", "i agree", "you nailed it",
+      "you hit the nail", "that's what i was thinking", "same here",
+      "nothing to add", "that's right", "i'm with you"
+    ];
+
+    let agreementCount = 0;
+
+    for (const statement of recentStatements) {
+      const lowerContent = statement.content.toLowerCase();
+
+      // Check if statement contains agreement phrase
+      const hasAgreement = agreementPhrases.some(phrase => lowerContent.includes(phrase));
+
+      if (hasAgreement) {
+        // Check if there's substantive addition (novel key points)
+        const hasSubstance = statement.keyPoints && statement.keyPoints.length > 0 &&
+                            statement.content.length > 100; // Not just a quick agreement
+
+        if (!hasSubstance) {
+          agreementCount++;
+        }
+      }
+    }
+
+    // Stagnation if 2+ agreement statements without substance
+    return agreementCount >= 2;
+  }
+
+  /**
+   * Get all key points from a set of statements
+   */
+  private getAllKeyPoints(statements: Statement[]): string[] {
+    const allPoints: string[] = [];
+
+    for (const statement of statements) {
+      if (statement.keyPoints && Array.isArray(statement.keyPoints)) {
+        allPoints.push(...statement.keyPoints);
+      }
+    }
+
+    return allPoints;
+  }
+
+  /**
+   * Filter out points that are semantically similar to established points
+   * Returns only novel points
+   */
+  private filterNovelPoints(newPoints: string[], establishedPoints: string[]): string[] {
+    const novel: string[] = [];
+
+    for (const newPoint of newPoints) {
+      const newKeywords = this.extractKeywords(newPoint);
+      let isNovel = true;
+
+      // Check similarity against all established points
+      for (const established of establishedPoints) {
+        const establishedKeywords = this.extractKeywords(established);
+        const similarity = this.jaccardSimilarity(newKeywords, establishedKeywords);
+
+        // If very similar to an established point, not novel
+        if (similarity > 0.6) {
+          isNovel = false;
+          break;
+        }
+      }
+
+      if (isNovel) {
+        novel.push(newPoint);
+      }
+    }
+
+    return novel;
   }
 
   /**

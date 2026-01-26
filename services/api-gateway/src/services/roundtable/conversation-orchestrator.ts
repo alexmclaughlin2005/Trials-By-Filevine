@@ -214,11 +214,16 @@ export class ConversationOrchestrator {
     for (const persona of sorted) {
       const statement = await this.generateInitialReaction(persona, input);
       await this.saveStatement(conversationId, persona, statement);
+
+      // Extract key points for novelty tracking
+      const keyPoints = await this.extractKeyPoints(statement);
+
       this.turnManager!.recordStatement({
         personaId: persona.id,
         personaName: persona.name,
         content: statement,
-        sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1
+        sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
+        keyPoints
       });
     }
   }
@@ -247,11 +252,15 @@ export class ConversationOrchestrator {
       const statement = await this.generateConversationTurn(persona, input);
       await this.saveStatement(conversationId, persona, statement);
 
+      // Extract key points for novelty tracking
+      const keyPoints = await this.extractKeyPoints(statement);
+
       this.turnManager!.recordStatement({
         personaId: persona.id,
         personaName: persona.name,
         content: statement,
-        sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1
+        sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
+        keyPoints
       });
 
       iterationCount++;

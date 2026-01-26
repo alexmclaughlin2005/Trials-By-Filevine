@@ -249,14 +249,84 @@ Example persona assignments:
 
 ---
 
+## Phase 4: Strengthened Stagnation Detection ✅
+
+### Problem
+- Current stagnation detection uses simple keyword overlap
+- Doesn't detect when personas restate same facts in different words
+- Can't identify agreement statements without substance
+- Conversations run too long even when nothing new is being said
+
+### Solution Implemented
+
+#### 4.1 Novelty-Based Detection
+**File:** `services/api-gateway/src/services/roundtable/turn-manager.ts`
+
+Added new method `detectNoveltyStagnation()`:
+- Checks last 3 statements for novel key points
+- Compares each statement's key points against all established points
+- Uses semantic similarity (0.6 threshold) to filter novel vs repetitive points
+- Triggers stagnation if 2+ consecutive statements have zero novel points
+
+#### 4.2 Agreement-Based Detection
+Added new method `detectAgreementStagnation()`:
+- Detects agreement phrases: "you're right", "exactly", "i agree", etc.
+- Checks if agreement has substance (key points + length > 100 words)
+- Triggers stagnation if 2+ agreements without substance
+
+#### 4.3 Updated Detection Hierarchy
+Modified `detectStagnation()` to use priority order:
+1. **PRIMARY:** Novelty detection (checks key points)
+2. **SECONDARY:** Agreement detection (checks for empty agreements)
+3. **FALLBACK:** Semantic similarity (legacy keyword overlap)
+4. **ADDITIONAL:** Heuristics (short statements, sentiment patterns)
+
+#### 4.4 Key Point Integration
+Modified `conversation-orchestrator.ts`:
+- Extract key points after generating each statement
+- Pass key points when recording to turn manager
+- Both initial reactions and conversation turns now include key points
+
+```typescript
+// Extract key points for novelty tracking
+const keyPoints = await this.extractKeyPoints(statement);
+
+this.turnManager!.recordStatement({
+  personaId: persona.id,
+  personaName: persona.name,
+  content: statement,
+  sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
+  keyPoints  // ← Now included
+});
+```
+
+#### 4.5 Logging Improvements
+Added specific console logs for each stagnation trigger:
+- `[STAGNATION] Detected lack of novelty in recent statements`
+- `[STAGNATION] Detected agreement without substantive additions`
+- `[STAGNATION] Detected semantic similarity in recent statements`
+- `[STAGNATION] Detected very short statements (winding down)`
+- `[STAGNATION] Detected low average statement length`
+- `[STAGNATION] Detected repetitive sentiment (consensus reached)`
+
+### Files Modified
+- ✅ `services/api-gateway/src/services/roundtable/turn-manager.ts` - Enhanced stagnation detection
+- ✅ `services/api-gateway/src/services/roundtable/conversation-orchestrator.ts` - Key point integration
+
+### Expected Impact
+- Conversations end at 10-15 statements (down from 19+)
+- Detects when facts are repeated in different phrasings
+- Catches agreement without new perspectives
+- Better logging for debugging stagnation triggers
+
+### Documentation
+- ✅ `PHASE_4_STAGNATION_DETECTION.md` - Detailed implementation guide
+
+---
+
 ## Remaining Work (Future Phases)
 
 Based on `focus_group_simulation_update_3.md`, these remain to be implemented:
-
-### Phase 4: Strengthened Stagnation Detection (Priority #4)
-- **Current:** Simple semantic similarity check
-- **Needed:** Novelty scoring - exit after 2+ turns with no novel points
-- **Implementation:** Add novelty check to stagnation detection logic
 
 ### Phase 5: Dissent Engagement (Priority #5)
 - **Needed:** Detect contrarian positions
