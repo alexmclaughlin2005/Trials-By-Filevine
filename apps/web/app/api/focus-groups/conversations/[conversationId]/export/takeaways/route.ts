@@ -10,15 +10,15 @@ import { generatePDFBuffer, generatePDFFilename } from '@/src/lib/pdf/utils/gene
 import { TakeawaysPDFDocument } from '@/src/lib/pdf/templates/TakeawaysPDFDocument';
 import type { TakeawaysPDFData } from '@/src/lib/pdf/types';
 
-interface RouteParams {
-  params: {
+interface RouteContext {
+  params: Promise<{
     conversationId: string;
-  };
+  }>;
 }
 
 export async function GET(
   request: NextRequest,
-  context: RouteParams
+  context: RouteContext
 ) {
   try {
     // Await params in Next.js 15+

@@ -75,7 +75,6 @@ const priorityColors = {
 export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTabProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [hasGenerated, setHasGenerated] = useState(false);
 
   // Check if takeaways exist
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
@@ -89,7 +88,6 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     mutationFn: () => apiClient.post<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/generate-takeaways`, {}),
     onSuccess: (data) => {
       queryClient.setQueryData(['conversation-takeaways', conversationId], data);
-      setHasGenerated(true);
     },
   });
 
@@ -106,7 +104,6 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   if (error || !data) {
     const errorMessage = error instanceof Error ? error.message : '';
     const isIncomplete = errorMessage.includes('incomplete');
-    const notFound = errorMessage.includes('not found') || errorMessage.includes('404');
 
     if (generateMutation.isPending) {
       return (
