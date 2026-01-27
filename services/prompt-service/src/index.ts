@@ -47,6 +47,7 @@ await fastify.register(promptRoutes, {
 await fastify.register(adminRoutes, {
   prefix: '/api/v1/admin',
   promptService,
+  prisma,
 });
 
 // Graceful shutdown

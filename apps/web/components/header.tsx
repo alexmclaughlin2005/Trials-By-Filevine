@@ -14,6 +14,7 @@ import {
   Menu,
   UserSearch,
   Bot,
+  Settings,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -30,6 +31,7 @@ export function Header({ onOpenChat }: HeaderProps) {
     { icon: Folder, label: 'Cases', href: '/cases' },
     { icon: UserSearch, label: 'Personas', href: '/personas' },
     { icon: MessageSquare, label: 'Focus Groups', href: '/focus-groups' },
+    { icon: Settings, label: 'Admin', href: '/admin' },
   ];
 
   const getInitials = (name: string) => {
