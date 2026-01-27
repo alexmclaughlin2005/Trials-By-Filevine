@@ -193,9 +193,35 @@ export function UnifiedConversationView({
                   {customQuestions
                     .sort((a, b) => a.order - b.order)
                     .map((question, idx) => {
-                      const questionStatements = statements.filter(
+                      // Get all statements that have this questionId OR are part of the discussion
+                      // Find statements with explicit questionId match
+                      const explicitResponses = statements.filter(
                         statement => statement.questionId === question.id
                       );
+
+                      // If we have explicit responses, find their sequence numbers range
+                      const questionStatements = explicitResponses.length > 0
+                        ? (() => {
+                            const minSeq = Math.min(...explicitResponses.map(s => s.sequenceNumber));
+                            const maxSeq = Math.max(...explicitResponses.map(s => s.sequenceNumber));
+
+                            // Get the next question's first response (if exists)
+                            const nextQuestion = customQuestions.find(q => q.order === question.order + 1);
+                            const nextQuestionFirstResponse = nextQuestion
+                              ? statements.find(s => s.questionId === nextQuestion.id)
+                              : null;
+                            const endSeq = nextQuestionFirstResponse
+                              ? nextQuestionFirstResponse.sequenceNumber - 1
+                              : statements.length > 0
+                                ? Math.max(...statements.map(s => s.sequenceNumber))
+                                : maxSeq;
+
+                            // Include all statements in this range
+                            return statements.filter(
+                              s => s.sequenceNumber >= minSeq && s.sequenceNumber <= endSeq
+                            );
+                          })()
+                        : [];
 
                       return (
                         <div key={question.id} className="bg-white border rounded-lg overflow-hidden">
@@ -224,9 +250,10 @@ export function UnifiedConversationView({
                               questionStatements.map((statement) => {
                                 const personaSummary = personaSummaries.find(ps => ps.personaId === statement.personaId);
                                 const archetype = personaSummary?.persona?.archetype;
+                                const isExplicitResponse = statement.questionId === question.id;
 
                                 return (
-                                  <div key={statement.id} className="px-4 py-3">
+                                  <div key={statement.id} className={cn("px-4 py-3", !isExplicitResponse && "bg-gray-50")}>
                                     <div className="flex items-start gap-3">
                                       <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
                                         {statement.sequenceNumber}
@@ -234,6 +261,11 @@ export function UnifiedConversationView({
                                       <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                                           <span className="font-medium text-gray-900 text-sm">{statement.personaName}</span>
+                                          {!isExplicitResponse && (
+                                            <span className="px-1.5 py-0.5 text-xs font-medium border rounded bg-gray-100 text-gray-600 border-gray-300">
+                                              Follow-up
+                                            </span>
+                                          )}
                                           {archetype && personaSummary?.persona && (
                                             <button
                                               onClick={() => setSelectedPersona({ name: statement.personaName, details: personaSummary.persona! })}
