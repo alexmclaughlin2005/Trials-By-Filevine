@@ -197,7 +197,8 @@ export class ConversationOrchestrator {
   /**
    * Phase 1: Initial reactions from all personas
    *
-   * If custom questions exist, ask each question to all personas sequentially.
+   * If custom questions exist, ask each question to all personas sequentially,
+   * followed by deliberation on that specific question.
    * Otherwise, get initial reactions to the argument.
    */
   private async runInitialReactions(conversationId: string, input: ConversationInput): Promise<void> {
@@ -214,7 +215,7 @@ export class ConversationOrchestrator {
       return weights[levelB] - weights[levelA];
     });
 
-    // If we have custom questions, ask them sequentially
+    // If we have custom questions, ask them sequentially with deliberation per question
     if (input.customQuestions && input.customQuestions.length > 0) {
       console.log(`📝 Asking ${input.customQuestions.length} custom questions to ${sorted.length} personas`);
 
@@ -252,6 +253,10 @@ export class ConversationOrchestrator {
 
           console.log(`  ✓ ${persona.name} responded (${statement.split(' ').length} words)`);
         }
+
+        // After all personas answer this question, run deliberation for THIS question only
+        console.log(`💬 Running deliberation for question ${question.order}...`);
+        await this.runQuestionDeliberation(conversationId, input, question.id);
       }
     } else {
       // No custom questions - use original flow for initial reactions
@@ -315,6 +320,52 @@ export class ConversationOrchestrator {
 
     if (iterationCount >= maxIterations) {
       console.warn('⚠️ Maximum iteration count reached');
+    }
+  }
+
+  /**
+   * Run deliberation for a specific question
+   * Similar to runDynamicDeliberation but scoped to statements about one question
+   */
+  private async runQuestionDeliberation(conversationId: string, input: ConversationInput, questionId: string): Promise<void> {
+    let iterationCount = 0;
+    const maxIterations = 30; // Slightly lower limit per question
+
+    while (this.turnManager!.shouldContinue() && iterationCount < maxIterations) {
+      const nextSpeaker = this.turnManager!.determineNextSpeaker();
+
+      if (!nextSpeaker) {
+        console.log('  No more eligible speakers for this question.');
+        break;
+      }
+
+      const persona = input.personas.find(p => p.id === nextSpeaker.personaId);
+      if (!persona) {
+        console.error(`  Persona not found: ${nextSpeaker.personaId}`);
+        break;
+      }
+
+      const statement = await this.generateConversationTurn(persona, input);
+      await this.saveStatement(conversationId, persona, statement, questionId);
+
+      // Extract key points for novelty tracking
+      const keyPoints = await this.extractKeyPoints(statement);
+
+      this.turnManager!.recordStatement({
+        personaId: persona.id,
+        personaName: persona.name,
+        content: statement,
+        sequenceNumber: this.turnManager!.getStatistics().totalStatements + 1,
+        keyPoints
+      });
+
+      iterationCount++;
+    }
+
+    if (iterationCount >= maxIterations) {
+      console.log('  ⚠️ Maximum iteration count reached for this question');
+    } else {
+      console.log(`  ✓ Question deliberation complete (${iterationCount} additional statements)`);
     }
   }
 
