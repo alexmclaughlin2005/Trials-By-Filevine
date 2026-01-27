@@ -132,6 +132,8 @@ export default function ConversationDetailPage() {
         <UnifiedConversationView
           conversationId={conversationId}
           caseId={caseId}
+          argumentId={conversation.argumentId}
+          argumentTitle={conversation.argumentTitle}
           personaSummaries={conversation.personaSummaries}
           allStatements={conversation.allStatements}
           overallAnalysis={conversation.overallAnalysis}

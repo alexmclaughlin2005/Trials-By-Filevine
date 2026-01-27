@@ -13,6 +13,8 @@ import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPers
 interface UnifiedConversationViewProps {
   conversationId: string;
   caseId: string;
+  argumentId: string;
+  argumentTitle: string;
   personaSummaries: PersonaSummary[];
   allStatements: ConversationStatement[];
   overallAnalysis?: OverallAnalysis;
@@ -46,6 +48,8 @@ const sentimentLabels = {
 export function UnifiedConversationView({
   conversationId,
   caseId,
+  argumentId,
+  argumentTitle,
   personaSummaries,
   allStatements,
   overallAnalysis,
@@ -105,7 +109,7 @@ export function UnifiedConversationView({
                   Roundtable Discussion
                 </CardTitle>
                 <CardDescription className="mt-1">
-                  {conversation?.argumentTitle || 'Loading...'}
+                  {argumentTitle}
                 </CardDescription>
               </div>
               <div className="flex items-center gap-4 text-sm">
@@ -384,7 +388,7 @@ export function UnifiedConversationView({
           {activeTab === 'takeaways' && isComplete && (
             <TakeawaysTab
               conversationId={conversationId}
-              argumentId={conversation?.argumentId || ''}
+              argumentId={argumentId}
               caseId={caseId}
             />
           )}
