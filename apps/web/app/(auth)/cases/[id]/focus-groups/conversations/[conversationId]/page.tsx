@@ -4,13 +4,14 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { ConversationDetail } from '@/types/focus-group';
-import { ConversationTabs } from '@/components/focus-groups/ConversationTabs';
+import { RoundtableConversationViewer } from '@/components/roundtable-conversation-viewer';
 import { Loader2 } from 'lucide-react';
 
 export default function ConversationDetailPage() {
   const params = useParams();
   const router = useRouter();
   const conversationId = params.conversationId as string;
+  const caseId = params.id as string;
 
   const [conversation, setConversation] = useState<ConversationDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -112,58 +113,23 @@ export default function ConversationDetailPage() {
 
   return (
     <div className="h-full p-8">
-      {/* Conversation Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-filevine-gray-900 mb-2">
-          {conversation.argumentTitle}
-        </h1>
-        <div className="flex items-center gap-4 text-sm text-filevine-gray-600">
-          <span>Started: {new Date(conversation.startedAt).toLocaleString()}</span>
-          {conversation.completedAt ? (
-            <>
-              <span>•</span>
-              <span>Completed: {new Date(conversation.completedAt).toLocaleString()}</span>
-            </>
-          ) : (
-            <>
-              <span>•</span>
-              <span className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin text-filevine-blue" />
-                <span className="text-filevine-blue font-medium">In Progress</span>
-              </span>
-            </>
-          )}
-          {conversation.converged && (
-            <>
-              <span>•</span>
-              <span className="flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                Converged
-              </span>
-            </>
-          )}
-        </div>
-        {conversation.convergenceReason && (
-          <p className="mt-2 text-sm text-filevine-gray-600 italic">
-            {conversation.convergenceReason}
-          </p>
-        )}
-        {!conversation.completedAt && (
-          <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+      {/* In-Progress Notice */}
+      {!conversation.completedAt && (
+        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin text-filevine-blue" />
             <p className="text-sm text-blue-900">
               The roundtable discussion is currently running. New statements will appear
               automatically as personas respond. This usually takes 2-3 minutes to complete.
             </p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Conversation Tabs */}
-      <ConversationTabs
-        personaSummaries={conversation.personaSummaries}
-        allStatements={conversation.allStatements}
-        overallAnalysis={conversation.overallAnalysis}
-        customQuestions={conversation.customQuestions}
+      {/* Roundtable Conversation Viewer with Takeaways */}
+      <RoundtableConversationViewer
+        conversationId={conversationId}
+        caseId={caseId}
       />
     </div>
   );

@@ -5,8 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { MessageSquare, TrendingUp, TrendingDown, Minus, AlertCircle } from 'lucide-react';
+import { Button } from './ui/button';
+import { MessageSquare, TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { TakeawaysTab } from './focus-groups/TakeawaysTab';
 
 interface Statement {
   id: string;
@@ -41,6 +43,7 @@ interface Conversation {
 
 interface RoundtableConversationViewerProps {
   conversationId: string;
+  caseId?: string;
 }
 
 const sentimentIcons = {
@@ -64,7 +67,10 @@ const sentimentLabels = {
   conflicted: 'Conflicted'
 };
 
-export function RoundtableConversationViewer({ conversationId }: RoundtableConversationViewerProps) {
+type TabType = 'takeaways' | 'transcript';
+
+export function RoundtableConversationViewer({ conversationId, caseId }: RoundtableConversationViewerProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('takeaways');
   const [expandedStatement, setExpandedStatement] = useState<string | null>(null);
 
   const { data: conversation, isLoading, error } = useQuery<Conversation>({
@@ -94,6 +100,11 @@ export function RoundtableConversationViewer({ conversationId }: RoundtableConve
   const toggleStatement = (statementId: string) => {
     setExpandedStatement(expandedStatement === statementId ? null : statementId);
   };
+
+  const tabs = [
+    { id: 'takeaways' as TabType, label: 'Key Takeaways', icon: Sparkles },
+    { id: 'transcript' as TabType, label: 'Full Transcript', icon: FileText },
+  ];
 
   return (
     <div className="space-y-6">
@@ -142,201 +153,238 @@ export function RoundtableConversationViewer({ conversationId }: RoundtableConve
         </CardContent>
       </Card>
 
-      {/* Consensus & Fracture Points */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {conversation.consensusAreas && conversation.consensusAreas.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Consensus Areas</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {conversation.consensusAreas.map((area, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0"></div>
-                    <span className="text-sm text-filevine-gray-700">{area}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-
-        {conversation.fracturePoints && conversation.fracturePoints.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Fracture Points</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {conversation.fracturePoints.map((point, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <div className="mt-1 h-1.5 w-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
-                    <span className="text-sm text-filevine-gray-700">{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Key Debate Points */}
-      {conversation.keyDebatePoints && conversation.keyDebatePoints.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Key Debate Points</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {conversation.keyDebatePoints.map((point, index) => (
-                <li key={index} className="flex items-start gap-2">
-                  <div className="mt-1 h-1.5 w-1.5 rounded-full bg-filevine-blue flex-shrink-0"></div>
-                  <span className="text-sm text-filevine-gray-700">{point}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Conversation Transcript */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Conversation Transcript</CardTitle>
-          <CardDescription>
-            Full roundtable discussion in chronological order
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {conversation.statements.map((statement) => (
-              <div
-                key={statement.id}
+      {/* Tabs */}
+      <div className="border-b border-filevine-gray-200">
+        <div className="flex gap-4">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'border rounded-lg p-4 transition-all',
-                  statement.sentiment && sentimentColors[statement.sentiment as keyof typeof sentimentColors],
-                  expandedStatement === statement.id && 'shadow-md'
+                  'flex items-center gap-2 px-4 py-3 border-b-2 transition-colors',
+                  activeTab === tab.id
+                    ? 'border-filevine-blue text-filevine-blue font-medium'
+                    : 'border-transparent text-filevine-gray-600 hover:text-filevine-gray-900'
                 )}
               >
-                {/* Statement Header */}
-                <div className="flex items-start justify-between gap-4 mb-2">
-                  <div className="flex items-center gap-2 flex-1">
-                    <div className="font-semibold text-filevine-gray-900">
-                      {statement.personaName}
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      #{statement.sequenceNumber}
-                    </Badge>
-                    {statement.sentiment && (
-                      <div className="flex items-center gap-1 text-xs text-filevine-gray-600">
-                        {sentimentIcons[statement.sentiment as keyof typeof sentimentIcons]}
-                        <span>{sentimentLabels[statement.sentiment as keyof typeof sentimentLabels]}</span>
-                      </div>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => toggleStatement(statement.id)}
-                    className="text-xs text-filevine-blue hover:underline"
-                  >
-                    {expandedStatement === statement.id ? 'Less' : 'More'}
-                  </button>
-                </div>
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-                {/* Statement Content */}
-                <div className="text-filevine-gray-700 italic mb-3">
-                  &ldquo;{statement.content}&rdquo;
-                </div>
+      {/* Tab Content */}
+      {activeTab === 'takeaways' && (
+        <TakeawaysTab
+          conversationId={conversationId}
+          argumentId={conversation.argumentId}
+          caseId={caseId || ''}
+        />
+      )}
 
-                {/* Expanded Details */}
-                {expandedStatement === statement.id && (
-                  <div className="mt-4 pt-4 border-t space-y-3 text-sm">
-                    {statement.emotionalIntensity !== undefined && (
-                      <div>
-                        <span className="font-medium text-filevine-gray-600">Emotional Intensity:</span>
-                        <div className="mt-1 flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-filevine-blue"
-                              style={{ width: `${statement.emotionalIntensity * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-xs text-filevine-gray-600">
-                            {Math.round(statement.emotionalIntensity * 100)}%
-                          </span>
-                        </div>
-                      </div>
-                    )}
+      {activeTab === 'transcript' && (
+        <div className="space-y-6">
+          {/* Consensus & Fracture Points */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {conversation.consensusAreas && conversation.consensusAreas.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Consensus Areas</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {conversation.consensusAreas.map((area, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="mt-1 h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0"></div>
+                        <span className="text-sm text-filevine-gray-700">{area}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
-                    {statement.keyPoints && statement.keyPoints.length > 0 && (
-                      <div>
-                        <span className="font-medium text-filevine-gray-600">Key Points:</span>
-                        <ul className="mt-1 space-y-1 ml-4">
-                          {statement.keyPoints.map((point, index) => (
-                            <li key={index} className="text-filevine-gray-700 list-disc">
-                              {point}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {statement.addressedTo && statement.addressedTo.length > 0 && (
-                      <div>
-                        <span className="font-medium text-filevine-gray-600">Addressed To:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {statement.addressedTo.map((name, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {statement.agreementSignals && statement.agreementSignals.length > 0 && (
-                      <div>
-                        <span className="font-medium text-filevine-gray-600">Agreed With:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {statement.agreementSignals.map((name, index) => (
-                            <Badge key={index} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-                              {name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {statement.disagreementSignals && statement.disagreementSignals.length > 0 && (
-                      <div>
-                        <span className="font-medium text-filevine-gray-600">Disagreed With:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {statement.disagreementSignals.map((name, index) => (
-                            <Badge key={index} variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                              {name}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            ))}
+            {conversation.fracturePoints && conversation.fracturePoints.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Fracture Points</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {conversation.fracturePoints.map((point, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <div className="mt-1 h-1.5 w-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
+                        <span className="text-sm text-filevine-gray-700">{point}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Convergence Reason */}
-      {conversation.convergenceReason && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Why Conversation Ended</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-filevine-gray-700">{conversation.convergenceReason}</p>
-          </CardContent>
-        </Card>
+          {/* Key Debate Points */}
+          {conversation.keyDebatePoints && conversation.keyDebatePoints.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Key Debate Points</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2">
+                  {conversation.keyDebatePoints.map((point, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <div className="mt-1 h-1.5 w-1.5 rounded-full bg-filevine-blue flex-shrink-0"></div>
+                      <span className="text-sm text-filevine-gray-700">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Conversation Transcript */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Conversation Transcript</CardTitle>
+              <CardDescription>
+                Full roundtable discussion in chronological order
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {conversation.statements.map((statement) => (
+                  <div
+                    key={statement.id}
+                    className={cn(
+                      'border rounded-lg p-4 transition-all',
+                      statement.sentiment && sentimentColors[statement.sentiment as keyof typeof sentimentColors],
+                      expandedStatement === statement.id && 'shadow-md'
+                    )}
+                  >
+                    {/* Statement Header */}
+                    <div className="flex items-start justify-between gap-4 mb-2">
+                      <div className="flex items-center gap-2 flex-1">
+                        <div className="font-semibold text-filevine-gray-900">
+                          {statement.personaName}
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          #{statement.sequenceNumber}
+                        </Badge>
+                        {statement.sentiment && (
+                          <div className="flex items-center gap-1 text-xs text-filevine-gray-600">
+                            {sentimentIcons[statement.sentiment as keyof typeof sentimentIcons]}
+                            <span>{sentimentLabels[statement.sentiment as keyof typeof sentimentLabels]}</span>
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => toggleStatement(statement.id)}
+                        className="text-xs text-filevine-blue hover:underline"
+                      >
+                        {expandedStatement === statement.id ? 'Less' : 'More'}
+                      </button>
+                    </div>
+
+                    {/* Statement Content */}
+                    <div className="text-filevine-gray-700 italic mb-3">
+                      &ldquo;{statement.content}&rdquo;
+                    </div>
+
+                    {/* Expanded Details */}
+                    {expandedStatement === statement.id && (
+                      <div className="mt-4 pt-4 border-t space-y-3 text-sm">
+                        {statement.emotionalIntensity !== undefined && (
+                          <div>
+                            <span className="font-medium text-filevine-gray-600">Emotional Intensity:</span>
+                            <div className="mt-1 flex items-center gap-2">
+                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-filevine-blue"
+                                  style={{ width: `${statement.emotionalIntensity * 100}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-xs text-filevine-gray-600">
+                                {Math.round(statement.emotionalIntensity * 100)}%
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {statement.keyPoints && statement.keyPoints.length > 0 && (
+                          <div>
+                            <span className="font-medium text-filevine-gray-600">Key Points:</span>
+                            <ul className="mt-1 space-y-1 ml-4">
+                              {statement.keyPoints.map((point, index) => (
+                                <li key={index} className="text-filevine-gray-700 list-disc">
+                                  {point}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {statement.addressedTo && statement.addressedTo.length > 0 && (
+                          <div>
+                            <span className="font-medium text-filevine-gray-600">Addressed To:</span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {statement.addressedTo.map((name, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                  {name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {statement.agreementSignals && statement.agreementSignals.length > 0 && (
+                          <div>
+                            <span className="font-medium text-filevine-gray-600">Agreed With:</span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {statement.agreementSignals.map((name, index) => (
+                                <Badge key={index} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+                                  {name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {statement.disagreementSignals && statement.disagreementSignals.length > 0 && (
+                          <div>
+                            <span className="font-medium text-filevine-gray-600">Disagreed With:</span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {statement.disagreementSignals.map((name, index) => (
+                                <Badge key={index} variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                                  {name}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Convergence Reason */}
+          {conversation.convergenceReason && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Why Conversation Ended</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-filevine-gray-700">{conversation.convergenceReason}</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       )}
     </div>
   );
