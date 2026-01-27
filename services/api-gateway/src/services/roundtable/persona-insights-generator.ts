@@ -46,16 +46,32 @@ export class PersonaInsightsGenerator {
     // Get persona summaries
     const personaSummaries = await this.prisma.focusGroupPersonaSummary.findMany({
       where: { conversationId },
-      include: {
-        persona: true,
-        statements: {
-          orderBy: { sequenceNumber: 'asc' },
-        },
-      },
     });
 
     if (personaSummaries.length === 0) {
       throw new Error('No persona summaries found');
+    }
+
+    // Fetch personas separately (no relation in schema)
+    const personaIds = personaSummaries.map(s => s.personaId);
+    const personas = await this.prisma.juryPersona.findMany({
+      where: { id: { in: personaIds } },
+    });
+
+    // Fetch statements for all summaries
+    const statements = await this.prisma.focusGroupStatement.findMany({
+      where: { conversationId },
+      orderBy: { sequenceNumber: 'asc' },
+    });
+
+    // Create maps for easy lookup
+    const personaMap = new Map(personas.map(p => [p.id, p]));
+    const statementsMap = new Map<string, any[]>();
+    for (const stmt of statements) {
+      if (!statementsMap.has(stmt.personaId)) {
+        statementsMap.set(stmt.personaId, []);
+      }
+      statementsMap.get(stmt.personaId)!.push(stmt);
     }
 
     // Get the argument
@@ -71,7 +87,9 @@ export class PersonaInsightsGenerator {
     const insights: PersonaInsight[] = [];
     for (const summary of personaSummaries) {
       console.log(`  📊 Analyzing ${summary.personaName}...`);
-      const insight = await this.generatePersonaInsight(summary, argument, conversation);
+      const persona = personaMap.get(summary.personaId);
+      const personaStatements = statementsMap.get(summary.personaId) || [];
+      const insight = await this.generatePersonaInsight(summary, persona, personaStatements, argument, conversation);
       insights.push(insight);
     }
 
@@ -84,16 +102,18 @@ export class PersonaInsightsGenerator {
    */
   private async generatePersonaInsight(
     summary: any,
+    persona: any,
+    statements: any[],
     argument: any,
     conversation: any
   ): Promise<PersonaInsight> {
     // Format persona's statements
-    const personaStatements = summary.statements
+    const personaStatements = statements
       .map((s: any) => `Statement #${s.sequenceNumber}: "${s.content}"`)
       .join('\n\n');
 
     // Format persona profile
-    const personaProfile = this.formatPersonaProfile(summary.persona);
+    const personaProfile = this.formatPersonaProfile(persona);
 
     // Format existing summary
     const existingSummary = `
@@ -120,7 +140,7 @@ ${summary.concernsRaised.map((c: string) => `- ${c}`).join('\n')}
           argumentContent: argument.content || '',
           personaStatements,
           existingSummary,
-          archetype: summary.persona?.archetype || 'UNKNOWN',
+          archetype: persona?.archetype || 'UNKNOWN',
         },
       });
 
@@ -130,7 +150,7 @@ ${summary.concernsRaised.map((c: string) => `- ${c}`).join('\n')}
       return {
         personaId: summary.personaId,
         personaName: summary.personaName,
-        archetype: summary.persona?.archetype || 'UNKNOWN',
+        archetype: persona?.archetype || 'UNKNOWN',
         ...parsed,
       };
     } catch (error) {
@@ -139,7 +159,7 @@ ${summary.concernsRaised.map((c: string) => `- ${c}`).join('\n')}
       return {
         personaId: summary.personaId,
         personaName: summary.personaName,
-        archetype: summary.persona?.archetype || 'UNKNOWN',
+        archetype: persona?.archetype || 'UNKNOWN',
         caseInterpretation: 'Unable to generate insights at this time.',
         keyBiases: [],
         decisionDrivers: [],

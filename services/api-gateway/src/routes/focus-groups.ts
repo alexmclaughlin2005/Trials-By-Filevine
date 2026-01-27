@@ -1394,7 +1394,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
 
         // Initialize generator
         const promptClient = new PromptClient({
-          baseUrl: process.env.PROMPT_SERVICE_URL || 'http://localhost:3002',
+          serviceUrl: process.env.PROMPT_SERVICE_URL || 'http://localhost:3002',
         });
         const generator = new PersonaInsightsGenerator(server.prisma, promptClient);
 
