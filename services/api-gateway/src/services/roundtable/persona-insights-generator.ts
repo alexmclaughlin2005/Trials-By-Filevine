@@ -54,7 +54,7 @@ export class PersonaInsightsGenerator {
 
     // Fetch personas separately (no relation in schema)
     const personaIds = personaSummaries.map(s => s.personaId);
-    const personas = await this.prisma.juryPersona.findMany({
+    const personas = await this.prisma.persona.findMany({
       where: { id: { in: personaIds } },
     });
 
@@ -65,7 +65,7 @@ export class PersonaInsightsGenerator {
     });
 
     // Create maps for easy lookup
-    const personaMap = new Map(personas.map(p => [p.id, p]));
+    const personaMap = new Map(personas.map((p) => [p.id, p]));
     const statementsMap = new Map<string, any[]>();
     for (const stmt of statements) {
       if (!statementsMap.has(stmt.personaId)) {
