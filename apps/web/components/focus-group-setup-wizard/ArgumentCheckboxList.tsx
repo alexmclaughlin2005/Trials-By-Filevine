@@ -34,6 +34,29 @@ export function ArgumentCheckboxList({
 }: ArgumentCheckboxListProps) {
   const hasInitialized = useRef(false);
 
+  // Keyboard shortcuts: Cmd+A (Select All), Cmd+D (Clear All)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Cmd (Mac) or Ctrl (Windows/Linux)
+      const isModifierKey = e.metaKey || e.ctrlKey;
+
+      // Cmd/Ctrl + A: Select All
+      if (isModifierKey && e.key === 'a') {
+        e.preventDefault();
+        handleSelectAll();
+      }
+
+      // Cmd/Ctrl + D: Clear All (Deselect)
+      if (isModifierKey && e.key === 'd') {
+        e.preventDefault();
+        handleClearAll();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [caseArguments, selectedArguments]);
+
   // Smart Defaults: Auto-select opening and closing arguments on initial load
   useEffect(() => {
     // Only run once on mount, and only if no arguments are selected yet
@@ -129,11 +152,13 @@ export function ArgumentCheckboxList({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" role="region" aria-label="Argument selection">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Select Arguments to Test</h3>
+          <h3 className="text-lg font-semibold text-gray-900" id="argument-selection-heading">
+            Select Arguments to Test
+          </h3>
           <p className="mt-1 text-sm text-gray-600">
             Choose which arguments to present to the focus group
           </p>
@@ -150,7 +175,11 @@ export function ArgumentCheckboxList({
       />
 
       {/* Arguments List */}
-      <div className="rounded-lg border border-gray-200 bg-white">
+      <div
+        className="rounded-lg border border-gray-200 bg-white"
+        role="list"
+        aria-labelledby="argument-selection-heading"
+      >
         {caseArguments.map((arg) => {
           const isSelected = selectedArguments.some((a) => a.argumentId === arg.id);
           const selectedArg = selectedArguments.find((a) => a.argumentId === arg.id);
@@ -174,6 +203,15 @@ export function ArgumentCheckboxList({
 
       {/* Validation Banner */}
       <ValidationBanner selectedCount={selectedArguments.length} type="arguments" />
+
+      {/* Screen reader announcements */}
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {selectedArguments.length === 0
+          ? 'No arguments selected'
+          : `${selectedArguments.length} ${
+              selectedArguments.length === 1 ? 'argument' : 'arguments'
+            } selected`}
+      </div>
     </div>
   );
 }

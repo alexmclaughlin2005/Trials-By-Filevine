@@ -26,15 +26,15 @@ export function WizardProgressFooter({
   const progressPercent = Math.round((completedSteps / steps.length) * 100);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 animate-in slide-in-from-bottom duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="py-3 flex items-center justify-between">
+        <div className="py-3 flex items-center justify-between transition-all duration-300">
           {/* Progress Steps */}
           <div className="flex items-center gap-4">
             {steps.map((step, index) => (
               <div
                 key={step.label}
-                className={`flex items-center gap-1.5 ${
+                className={`flex items-center gap-1.5 transition-all duration-300 ${
                   index === currentStep
                     ? 'text-blue-600 font-semibold'
                     : step.completed
@@ -43,7 +43,7 @@ export function WizardProgressFooter({
                 }`}
               >
                 {step.completed ? (
-                  <CheckCircle className="h-4 w-4" />
+                  <CheckCircle className="h-4 w-4 animate-in zoom-in duration-300" />
                 ) : (
                   <Circle className="h-4 w-4" />
                 )}

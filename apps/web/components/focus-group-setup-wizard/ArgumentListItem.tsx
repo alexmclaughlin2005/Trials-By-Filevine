@@ -33,20 +33,23 @@ export function ArgumentListItem({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="py-3 px-4 border-b border-gray-200 last:border-b-0">
+    <div
+      className="py-3 px-4 border-b border-gray-200 last:border-b-0 transition-colors duration-150 hover:bg-gray-50"
+      role="listitem"
+    >
       <div className="flex items-start gap-3">
         {/* Checkbox */}
         <input
           type="checkbox"
           checked={isSelected}
           onChange={onToggle}
-          className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer"
+          className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-150"
           aria-label={`Select ${argument.title}`}
         />
 
         {/* Order Badge (only if selected) */}
         {isSelected && order && (
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white flex-shrink-0 mt-0.5">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white flex-shrink-0 mt-0.5 animate-in fade-in zoom-in duration-200">
             {order}
           </span>
         )}
@@ -60,7 +63,7 @@ export function ArgumentListItem({
 
           {/* Expandable content */}
           {isExpanded && (
-            <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">
+            <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap animate-in slide-in-from-top-2 fade-in duration-200">
               {argument.content}
             </p>
           )}
@@ -69,7 +72,9 @@ export function ArgumentListItem({
           <div className="flex gap-3 mt-2">
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+              className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 transition-colors duration-150"
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? `Collapse ${argument.title}` : `Show full content for ${argument.title}`}
             >
               {isExpanded ? (
                 <>
@@ -89,7 +94,7 @@ export function ArgumentListItem({
                 {!isFirst && (
                   <button
                     onClick={onMoveUp}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 transition-colors duration-150"
                     aria-label="Move up"
                   >
                     <ArrowUp className="h-3 w-3" />
@@ -99,7 +104,7 @@ export function ArgumentListItem({
                 {!isLast && (
                   <button
                     onClick={onMoveDown}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                    className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1 transition-colors duration-150"
                     aria-label="Move down"
                   >
                     <ArrowDown className="h-3 w-3" />

@@ -23,8 +23,8 @@ export function ValidationBanner({ selectedCount, type }: ValidationBannerProps)
     const iconColor = type === 'arguments' ? 'text-yellow-600' : 'text-blue-600';
 
     return (
-      <div className={`rounded-md ${bgColor} border ${borderColor} p-3 flex items-start gap-2`}>
-        <AlertCircle className={`h-5 w-5 ${iconColor} flex-shrink-0 mt-0.5`} />
+      <div className={`rounded-md ${bgColor} border ${borderColor} p-3 flex items-start gap-2 animate-in slide-in-from-top-2 fade-in duration-300`}>
+        <AlertCircle className={`h-5 w-5 ${iconColor} flex-shrink-0 mt-0.5 animate-in zoom-in duration-300`} />
         <div>
           <p className={`text-sm font-medium ${textColor}`}>
             {message}
@@ -43,8 +43,8 @@ export function ValidationBanner({ selectedCount, type }: ValidationBannerProps)
   }`;
 
   return (
-    <div className="rounded-md bg-green-50 border border-green-200 p-3 flex items-center gap-2">
-      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+    <div className="rounded-md bg-green-50 border border-green-200 p-3 flex items-center gap-2 animate-in slide-in-from-top-2 fade-in duration-300">
+      <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 animate-in zoom-in duration-300" />
       <p className="text-sm text-green-800">
         {message}
       </p>
