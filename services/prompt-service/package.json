@@ -12,7 +12,8 @@
     "seed:key-points": "tsx scripts/seed-extract-key-points.ts",
     "seed:takeaways": "tsx scripts/seed-roundtable-takeaways.ts",
     "seed:archetype": "tsx scripts/seed-archetype-classifier.ts",
-    "seed:all": "npm run seed:key-points && npm run seed:takeaways && npm run seed:archetype"
+    "seed:all": "tsx scripts/seed-all-production.ts",
+    "seed:production": "tsx scripts/seed-all-production.ts"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
