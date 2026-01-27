@@ -57,7 +57,7 @@ export default function AdminPage() {
       setSeedError(null);
       setSeedResult(null);
 
-      const response = await apiClient.post('/admin/seed-prompts');
+      const response = await apiClient.post<SeedResult>('/admin/seed-prompts');
 
       setSeedResult(response);
 
