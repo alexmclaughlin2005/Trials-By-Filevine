@@ -335,76 +335,96 @@ You will analyze a focus group conversation and extract:
 4. Top questions jurors will ask during deliberation
 5. Concrete recommendations for improving the argument
 
-Be specific and evidence-based. Reference exact statements from the conversation to support your analysis. Focus on providing actionable insights that attorneys can immediately use to improve their arguments.`,
+Be specific and evidence-based. Reference exact statements from the conversation to support your analysis. Focus on providing actionable insights that attorneys can immediately use to improve their arguments.
+
+CRITICAL: You MUST respond with ONLY a valid JSON object. Do not include any text before or after the JSON. Do not use markdown formatting. Return raw JSON only.`,
       userPromptTemplate: `# Focus Group Analysis Task
 
 ## Argument Being Tested
+
 **Title:** {{argumentTitle}}
 
 **Content:**
 {{argumentContent}}
 
 ## Conversation Transcript
+
 {{conversationTranscript}}
 
 ## Persona Summaries
+
 {{personaSummaries}}
 
-{{#if consensusAreas}}
-## Consensus Areas
-{{consensusAreas}}
-{{/if}}
+## Existing Analysis
 
-{{#if fracturePoints}}
-## Fracture Points
+**Consensus Areas:**
+{{consensusAreas}}
+
+**Fracture Points:**
 {{fracturePoints}}
-{{/if}}
 
 ---
 
-# Your Task
+# OUTPUT FORMAT - CRITICAL INSTRUCTIONS
 
-Analyze this focus group conversation and provide strategic insights in the following format:
+You MUST return ONLY a raw JSON object. Do not include:
+- Any markdown formatting or code blocks
+- Any text before the JSON
+- Any text after the JSON
+- Any explanatory comments
 
-## 1. What Landed Well
-Identify 2-4 arguments or points that resonated positively with the panel. For each:
-- **Point**: Clear description of what worked
-- **Evidence**: Quote specific statements from personas showing support
-- **Why It Worked**: Explain the psychological or logical reason this resonated
-- **Personas Supporting**: List which personas responded positively
+Start your response with { and end with }
 
-## 2. What Confused the Panel
-Identify 2-4 points that caused confusion or uncertainty. For each:
-- **Point**: What was unclear or confusing
-- **Evidence**: Quote statements showing confusion
-- **Why It Failed**: Explain what made it confusing
-- **Severity**: Rate as "Minor", "Moderate", or "Critical"
-- **Recommendation**: How to clarify this point
+The JSON structure must be:
 
-## 3. What Backfired
-Identify 1-3 arguments that had negative effects (made jurors MORE sympathetic to the other side). For each:
-- **Point**: What backfired
-- **Evidence**: Quote statements showing negative reaction
-- **Why It Backfired**: Explain the unintended consequence
-- **Severity**: Rate as "Minor", "Moderate", or "Critical"
-- **Alternative Approach**: Suggest a better way to make this point
+{
+  "whatLanded": [
+    {
+      "point": "string describing what landed well",
+      "personaSupport": ["PersonaName1", "PersonaName2"],
+      "evidence": ["Statement #X: 'quote'", "Statement #Y: 'quote'"]
+    }
+  ],
+  "whatConfused": [
+    {
+      "point": "string describing confusion",
+      "personasConfused": ["PersonaName1", "PersonaName2"],
+      "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+      "evidence": ["Statement #X: 'quote'"]
+    }
+  ],
+  "whatBackfired": [
+    {
+      "point": "string describing what backfired",
+      "personasCritical": ["PersonaName1"],
+      "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+      "evidence": ["Statement #X: 'quote'"]
+    }
+  ],
+  "topQuestions": [
+    {
+      "question": "The question jurors will ask",
+      "askedByCount": 3,
+      "personaNames": ["PersonaName1", "PersonaName2"],
+      "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+      "priority": "LOW" | "MEDIUM" | "HIGH"
+    }
+  ],
+  "recommendedEdits": [
+    {
+      "editNumber": 1,
+      "section": "Specific section name",
+      "type": "CLARIFY" | "ADD" | "REMOVE" | "SOFTEN" | "STRENGTHEN",
+      "originalText": "current text or null",
+      "suggestedText": "improved text",
+      "reason": "why this change is needed",
+      "affectedPersonas": ["PersonaName1"],
+      "priority": "LOW" | "MEDIUM" | "HIGH"
+    }
+  ]
+}
 
-## 4. Top Questions Jurors Will Ask
-List 5-8 questions that jurors are likely to raise during deliberation based on this conversation:
-- **Question**: The specific question
-- **Why It Matters**: Why this question is important
-- **Suggested Answer**: How the attorney should address this
-- **Priority**: Rate as "High", "Medium", or "Low"
-
-## 5. Recommended Edits
-Provide 5-10 concrete, actionable recommendations for improving the argument:
-- **Section/Point to Change**: What specific part needs editing
-- **Current Language/Approach**: What it says now (if applicable)
-- **Recommended Change**: Specific new language or approach
-- **Expected Impact**: How this will improve jury reception
-- **Priority**: Rate as "High", "Medium", or "Low"
-
-Focus on actionable, specific advice. Use exact quotes from the conversation to support your analysis.`,
+Remember: Your entire response must be valid JSON. No markdown, no explanations, just JSON.`,
       config: {
         model: 'claude-sonnet-4-20250514',
         temperature: 0.7,
