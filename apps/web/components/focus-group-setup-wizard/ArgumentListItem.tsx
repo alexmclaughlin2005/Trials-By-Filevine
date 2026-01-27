@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { ChevronDown, ChevronUp, ArrowUp, ArrowDown } from 'lucide-react';
-import { Button } from '../ui/button';
 
 interface ArgumentListItemProps {
   argument: {

@@ -72,7 +72,6 @@ export function UnifiedConversationView({
   isComplete
 }: UnifiedConversationViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('questions');
-  const [expandedStatement, setExpandedStatement] = useState<string | null>(null);
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
   const hasAutoSwitchedRef = useRef(false);
 
