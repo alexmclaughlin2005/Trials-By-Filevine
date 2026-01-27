@@ -24,6 +24,18 @@ interface CreateArgumentDialogProps {
   onSuccess?: () => void;
 }
 
+interface CreateArgumentResponse {
+  argument: {
+    id: string;
+    title: string;
+    content: string;
+    argumentType: string;
+    caseId: string;
+    createdAt: string;
+    updatedAt: string;
+  };
+}
+
 export function CreateArgumentDialog({ caseId, onSuccess }: CreateArgumentDialogProps) {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -58,7 +70,7 @@ export function CreateArgumentDialog({ caseId, onSuccess }: CreateArgumentDialog
     }
   };
 
-  const createMutation = useMutation({
+  const createMutation = useMutation<CreateArgumentResponse, Error, typeof formData>({
     mutationFn: async (data: typeof formData) => {
       return await apiClient.post(`/cases/${caseId}/arguments`, data);
     },
