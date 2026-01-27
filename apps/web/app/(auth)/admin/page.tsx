@@ -19,9 +19,22 @@ interface SeedStatusResponse {
   allSeeded: boolean;
 }
 
+interface SeedResult {
+  success: boolean;
+  message: string;
+  data?: {
+    results: Array<{
+      serviceId: string;
+      action: string;
+      promptId: string;
+      versionId?: string;
+    }>;
+  };
+}
+
 export default function AdminPage() {
   const [isSeeding, setIsSeeding] = useState(false);
-  const [seedResult, setSeedResult] = useState<any>(null);
+  const [seedResult, setSeedResult] = useState<SeedResult | null>(null);
   const [seedError, setSeedError] = useState<string | null>(null);
   const [status, setStatus] = useState<SeedStatusResponse | null>(null);
   const [isCheckingStatus, setIsCheckingStatus] = useState(false);
@@ -125,7 +138,7 @@ export default function AdminPage() {
               {!status.allSeeded && (
                 <Alert>
                   <AlertDescription>
-                    Some prompts are missing or misconfigured. Click "Seed Prompts" to fix.
+                    Some prompts are missing or misconfigured. Click &quot;Seed Prompts&quot; to fix.
                   </AlertDescription>
                 </Alert>
               )}
@@ -160,7 +173,7 @@ export default function AdminPage() {
                 {seedResult.message}
                 {seedResult.data?.results && (
                   <div className="mt-2 text-xs">
-                    {seedResult.data.results.map((result: any, idx: number) => (
+                    {seedResult.data.results.map((result, idx) => (
                       <div key={idx}>
                         • {result.serviceId}: {result.action}
                       </div>
@@ -186,8 +199,8 @@ export default function AdminPage() {
             <p className="font-medium">When to use this:</p>
             <ul className="list-disc list-inside space-y-1 ml-2">
               <li>After deploying to a new environment</li>
-              <li>If you see "Prompt not found" errors in logs</li>
-              <li>If conversations are failing with "Failed to render prompt" errors</li>
+              <li>If you see &quot;Prompt not found&quot; errors in logs</li>
+              <li>If conversations are failing with &quot;Failed to render prompt&quot; errors</li>
             </ul>
           </div>
         </CardContent>

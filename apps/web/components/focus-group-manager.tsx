@@ -34,7 +34,6 @@ type View = 'list' | 'setup' | 'results';
 
 export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGroupManagerProps) {
   const [currentView, setCurrentView] = useState<View>('list');
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const router = useRouter();
