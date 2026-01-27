@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Button } from './ui/button';
+// Button import removed - not used in this component
 import { MessageSquare, TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './focus-groups/TakeawaysTab';

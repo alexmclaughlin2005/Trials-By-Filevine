@@ -15,7 +15,7 @@ import {
   SuggestedQuestion,
   ConfigurationStep,
 } from '@/types/focus-group';
-import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles, X } from 'lucide-react';
+import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles } from 'lucide-react';
 import { ArgumentCheckboxList, EmptyArgumentsState, WizardProgressFooter, UnifiedQuestionList } from './focus-group-setup-wizard/index';
 
 interface FocusGroupSetupWizardProps {

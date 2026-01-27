@@ -77,9 +77,10 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
     queryFn: () => apiClient.post<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/generate-takeaways`, {}),
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: unknown) => {
       // Don't retry if conversation is incomplete (400 error)
-      if (error?.message?.includes('incomplete') || error?.response?.status === 400) {
+      const err = error as { message?: string; response?: { status?: number } };
+      if (err?.message?.includes('incomplete') || err?.response?.status === 400) {
         return false;
       }
       // Retry once for other errors

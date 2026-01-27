@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { MessageSquare, Sparkles, FileText, MessageCircle, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle } from 'lucide-react';
+import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './TakeawaysTab';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
@@ -101,10 +101,6 @@ export function UnifiedConversationView({
       { id: 'transcript' as TabType, label: 'Full Transcript', icon: FileText },
     ] : [])
   ];
-
-  const handleStatementToggle = (statementId: string) => {
-    setExpandedStatement(expandedStatement === statementId ? null : statementId);
-  };
 
   // Support both statements and allStatements (from different API responses)
   const statements = conversation?.statements || conversation?.allStatements || allStatements || [];
