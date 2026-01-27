@@ -261,7 +261,6 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setActiveSessionId(session.id);
                           setCurrentView('setup');
                         }}
                       >
