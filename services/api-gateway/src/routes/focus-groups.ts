@@ -2,6 +2,7 @@ import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { FocusGroupEngineService } from '../services/focus-group-engine';
 import { FocusGroupQuestionGeneratorService } from '../services/focus-group-question-generator';
 import { ConversationOrchestrator, StatementAnalyzer } from '../services/roundtable';
+import { TakeawaysGenerator } from '../services/roundtable/takeaways-generator';
 import { PromptClient } from '@juries/prompt-client';
 
 export async function focusGroupsRoutes(server: FastifyInstance) {
@@ -1197,5 +1198,87 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         })
       };
     }
+  });
+
+  // Generate strategic takeaways for a conversation
+  server.post<{
+    Params: { conversationId: string };
+    Querystring: { forceRegenerate?: boolean };
+  }>('/conversations/:conversationId/generate-takeaways', {
+    onRequest: [server.authenticate],
+    handler: async (request, reply) => {
+      const { organizationId } = request.user as any;
+      const { conversationId } = request.params;
+      const forceRegenerate = request.query.forceRegenerate === true;
+
+      console.log(`📊 Generate takeaways request for conversation: ${conversationId}`);
+
+      try {
+        // Verify conversation exists and belongs to user's organization
+        const conversation = await server.prisma.focusGroupConversation.findFirst({
+          where: {
+            id: conversationId,
+            session: {
+              case: {
+                organizationId,
+              },
+            },
+          },
+          include: {
+            session: {
+              include: {
+                case: true,
+              },
+            },
+          },
+        });
+
+        if (!conversation) {
+          reply.code(404);
+          return { error: 'Conversation not found' };
+        }
+
+        if (!conversation.completedAt) {
+          reply.code(400);
+          return { error: 'Cannot generate takeaways for incomplete conversation' };
+        }
+
+        // Initialize services
+        const promptServiceUrl = process.env.PROMPT_SERVICE_URL || 'http://localhost:3002';
+        const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+
+        if (!anthropicApiKey) {
+          reply.code(500);
+          return { error: 'ANTHROPIC_API_KEY not configured' };
+        }
+
+        const promptClient = new PromptClient({
+          serviceUrl: promptServiceUrl,
+          anthropicApiKey,
+        });
+
+        const takeawaysGenerator = new TakeawaysGenerator(server.prisma, promptClient);
+
+        // Generate takeaways
+        const takeaways = await takeawaysGenerator.generateTakeaways(
+          conversationId,
+          forceRegenerate
+        );
+
+        return {
+          conversationId,
+          takeaways,
+          generatedAt: new Date().toISOString(),
+          promptVersion: 'takeaways-v1.0.0',
+        };
+      } catch (error) {
+        console.error('Error generating takeaways:', error);
+        reply.code(500);
+        return {
+          error: 'Failed to generate takeaways',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    },
   });
 }

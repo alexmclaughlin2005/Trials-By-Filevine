@@ -609,6 +609,7 @@ model FocusGroupConversation {
   session          FocusGroupSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   statements       FocusGroupStatement[]
   personaSummaries FocusGroupPersonaSummary[]
+  takeaways        FocusGroupTakeaways?
 
   @@index([sessionId])
   @@index([argumentId])
@@ -696,6 +697,29 @@ model FocusGroupPersonaSummary {
   @@index([conversationId])
   @@index([personaId])
   @@map("focus_group_persona_summaries")
+}
+
+// Strategic takeaways and recommendations from a focus group conversation
+model FocusGroupTakeaways {
+  id             String   @id @default(uuid())
+  conversationId String   @unique @map("conversation_id")
+
+  // Strategic analysis (AI-generated)
+  whatLanded     Json @map("what_landed")     // Array of { point, personaSupport, evidence }
+  whatConfused   Json @map("what_confused")   // Array of { point, personasConfused, severity, evidence }
+  whatBackfired  Json @map("what_backfired")  // Array of { point, personasCritical, severity, evidence }
+  topQuestions   Json @map("top_questions")   // Array of { question, askedByCount, personaNames, severity, priority }
+  recommendedEdits Json @map("recommended_edits") // Array of edit objects with before/after
+
+  // Metadata
+  promptVersion String   @map("prompt_version") // e.g., "takeaways-v1.0.0"
+  generatedAt   DateTime @default(now()) @map("generated_at")
+
+  // Relations
+  conversation FocusGroupConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("focus_group_takeaways")
 }
 
 // ============================================
