@@ -10,11 +10,11 @@ interface ValidationBannerProps {
 export function ValidationBanner({ selectedCount, type }: ValidationBannerProps) {
   if (selectedCount === 0) {
     const message = type === 'arguments'
-      ? 'No arguments selected'
+      ? 'At least 1 argument required'
       : 'No questions added';
 
     const description = type === 'arguments'
-      ? 'Select at least one argument to test with the focus group.'
+      ? 'Select at least one argument to continue. The focus group panel needs something to react to.'
       : 'Questions are optional. The focus group will discuss the arguments naturally without specific prompts.';
 
     const bgColor = type === 'arguments' ? 'bg-yellow-50' : 'bg-blue-50';
@@ -23,13 +23,13 @@ export function ValidationBanner({ selectedCount, type }: ValidationBannerProps)
     const iconColor = type === 'arguments' ? 'text-yellow-600' : 'text-blue-600';
 
     return (
-      <div className={`rounded-md ${bgColor} border ${borderColor} p-3 flex items-start gap-2 animate-in slide-in-from-top-2 fade-in duration-300`}>
+      <div className={`rounded-md ${bgColor} border ${borderColor} p-4 flex items-start gap-3 animate-in slide-in-from-top-2 fade-in duration-300`}>
         <AlertCircle className={`h-5 w-5 ${iconColor} flex-shrink-0 mt-0.5 animate-in zoom-in duration-300`} />
-        <div>
+        <div className="flex-1">
           <p className={`text-sm font-medium ${textColor}`}>
             {message}
           </p>
-          <p className={`text-xs ${textColor} mt-1 opacity-90`}>
+          <p className={`text-sm ${textColor} mt-1 opacity-90`}>
             {description}
           </p>
         </div>
