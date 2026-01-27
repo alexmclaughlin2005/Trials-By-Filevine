@@ -901,6 +901,28 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           await analyzer.analyzeConversation(conversation.id);
           await analyzer.getConversationStatistics(conversation.id);
           console.log(`✅ Roundtable conversation complete: ${conversation.id}`);
+
+          // Auto-generate takeaways after conversation completes
+          try {
+            console.log(`📊 Auto-generating takeaways for conversation: ${conversation.id}`);
+            const takeawaysGenerator = new TakeawaysGenerator(server.prisma, promptClient);
+            await takeawaysGenerator.generateTakeaways(conversation.id, false);
+            console.log(`✅ Takeaways generated for conversation: ${conversation.id}`);
+
+            // Auto-generate persona insights after takeaways complete
+            try {
+              console.log(`🧠 Auto-generating persona insights for conversation: ${conversation.id}`);
+              const insightsGenerator = new PersonaInsightsGenerator(server.prisma, promptClient);
+              await insightsGenerator.generateInsights(conversation.id);
+              console.log(`✅ Persona insights generated for conversation: ${conversation.id}`);
+            } catch (insightsError) {
+              console.error(`⚠️ Failed to auto-generate persona insights for ${conversation.id}:`, insightsError);
+              // Don't fail the whole process if insights generation fails
+            }
+          } catch (takeawaysError) {
+            console.error(`⚠️ Failed to auto-generate takeaways for ${conversation.id}:`, takeawaysError);
+            // Don't fail the whole process if takeaways generation fails
+          }
         } catch (error) {
           console.error(`❌ Error in background conversation ${conversation.id}:`, error);
           console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
@@ -1338,17 +1360,6 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         );
         server.log.info('Takeaways generation completed successfully');
 
-        // Auto-generate persona insights after takeaways complete
-        try {
-          server.log.info('Auto-generating persona insights...');
-          const insightsGenerator = new PersonaInsightsGenerator(server.prisma, promptClient);
-          await insightsGenerator.generateInsights(conversationId);
-          server.log.info('Persona insights generation completed successfully');
-        } catch (insightsError) {
-          // Log error but don't fail the takeaways request
-          server.log.error({ error: insightsError }, 'Failed to auto-generate persona insights');
-        }
-
         return {
           conversationId,
           takeaways,
@@ -1367,7 +1378,68 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
     },
   });
 
-  // Generate persona case insights
+  // Get persona case insights (if they exist)
+  server.get<{
+    Params: { conversationId: string };
+  }>('/conversations/:conversationId/persona-insights', {
+    onRequest: [server.authenticate],
+    handler: async (request, reply) => {
+      const { organizationId } = request.user as any;
+      const { conversationId } = request.params;
+
+      try {
+        // Verify conversation exists and belongs to user's organization
+        const conversation = await server.prisma.focusGroupConversation.findFirst({
+          where: {
+            id: conversationId,
+            session: {
+              case: {
+                organizationId,
+              },
+            },
+          },
+          include: {
+            personaSummaries: true,
+          },
+        });
+
+        if (!conversation) {
+          server.log.warn({ conversationId }, 'Conversation not found');
+          reply.code(404);
+          return { error: 'Conversation not found' };
+        }
+
+        if (!conversation.completedAt) {
+          server.log.warn({ conversationId }, 'Conversation not completed');
+          reply.code(400);
+          return { error: 'Insights not available for incomplete conversation' };
+        }
+
+        // Initialize generator to fetch existing insights
+        const promptClient = new PromptClient({
+          serviceUrl: process.env.PROMPT_SERVICE_URL || 'http://localhost:3002',
+        });
+        const generator = new PersonaInsightsGenerator(server.prisma, promptClient);
+
+        // Get insights (will be generated if they don't exist, but should already exist from auto-gen)
+        const insights = await generator.generateInsights(conversationId);
+
+        return {
+          conversationId,
+          insights,
+        };
+      } catch (error) {
+        server.log.error({ error, conversationId }, 'Error fetching persona insights');
+        reply.code(500);
+        return {
+          error: 'Failed to fetch persona insights',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    },
+  });
+
+  // Generate persona case insights (manual regeneration)
   server.post<{
     Params: { conversationId: string };
   }>('/conversations/:conversationId/generate-persona-insights', {

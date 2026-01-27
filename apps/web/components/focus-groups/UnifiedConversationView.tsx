@@ -62,9 +62,10 @@ export function UnifiedConversationView({
   const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
   const [personaInsights, setPersonaInsights] = useState<PersonaInsight[] | null>(null);
-  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [isLoadingInsights, setIsLoadingInsights] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
   const hasAutoSwitchedRef = useRef(false);
+  const hasFetchedInsightsRef = useRef(false);
 
   // Auto-switch to takeaways when conversation completes (only once)
   useEffect(() => {
@@ -74,25 +75,26 @@ export function UnifiedConversationView({
     }
   }, [isComplete]);
 
-  // Auto-fetch persona insights when component loads and conversation is complete
+  // Fetch persona insights when component loads and conversation is complete
+  // This only fetches existing insights - they should already be generated on backend
   useEffect(() => {
     const fetchInsights = async () => {
-      if (!isComplete || personaInsights !== null) return;
+      if (!isComplete || personaInsights !== null || hasFetchedInsightsRef.current) return;
 
-      setIsGeneratingInsights(true);
+      hasFetchedInsightsRef.current = true;
+      setIsLoadingInsights(true);
       setInsightsError(null);
 
       try {
-        const response = await apiClient.post<{ insights: PersonaInsight[] }>(
-          `/focus-groups/conversations/${conversationId}/generate-persona-insights`,
-          {}
+        const response = await apiClient.get<{ insights: PersonaInsight[] }>(
+          `/focus-groups/conversations/${conversationId}/persona-insights`
         );
         setPersonaInsights(response.insights);
       } catch (error) {
         console.error('Error fetching insights:', error);
         setInsightsError(error instanceof Error ? error.message : 'Failed to fetch insights');
       } finally {
-        setIsGeneratingInsights(false);
+        setIsLoadingInsights(false);
       }
     };
 
@@ -101,7 +103,7 @@ export function UnifiedConversationView({
 
   // Handler for manually regenerating persona insights
   const handleGenerateInsights = async () => {
-    setIsGeneratingInsights(true);
+    setIsLoadingInsights(true);
     setInsightsError(null);
 
     try {
@@ -114,7 +116,7 @@ export function UnifiedConversationView({
       console.error('Error generating insights:', error);
       setInsightsError(error instanceof Error ? error.message : 'Failed to generate insights');
     } finally {
-      setIsGeneratingInsights(false);
+      setIsLoadingInsights(false);
     }
   };
 
@@ -394,10 +396,10 @@ export function UnifiedConversationView({
                   <p className="text-sm text-gray-500">
                     {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
                   </p>
-                  {isComplete && isGeneratingInsights && (
+                  {isComplete && isLoadingInsights && (
                     <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1">
                       <Loader2 className="h-3 w-3 animate-spin" />
-                      Generating case insights...
+                      Loading case insights...
                     </p>
                   )}
                 </div>
@@ -408,7 +410,7 @@ export function UnifiedConversationView({
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
                   <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-red-900">Failed to generate insights</p>
+                    <p className="text-sm font-medium text-red-900">Failed to load insights</p>
                     <p className="text-sm text-red-700 mt-1">{insightsError}</p>
                   </div>
                   <Button
@@ -417,21 +419,18 @@ export function UnifiedConversationView({
                     size="sm"
                     className="border-red-300 text-red-700 hover:bg-red-100"
                   >
-                    Try Again
+                    Regenerate
                   </Button>
                 </div>
               )}
 
               {/* Loading state */}
-              {isGeneratingInsights && (
+              {isLoadingInsights && (
                 <div className="flex flex-col items-center justify-center py-12 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-200">
                   <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
-                  <p className="text-lg font-semibold text-indigo-900">Analyzing Persona Psychology...</p>
+                  <p className="text-lg font-semibold text-indigo-900">Loading Persona Insights...</p>
                   <p className="text-sm text-indigo-700 mt-2">
-                    Generating deep insights for each persona
-                  </p>
-                  <p className="text-xs text-indigo-600 mt-4">
-                    This may take 30-60 seconds
+                    Fetching psychological analysis for each persona
                   </p>
                 </div>
               )}
