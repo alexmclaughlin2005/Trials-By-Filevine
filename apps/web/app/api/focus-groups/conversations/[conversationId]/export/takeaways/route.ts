@@ -20,20 +20,15 @@ export async function GET(
   request: NextRequest,
   context: RouteContext
 ) {
-  console.log('=== PDF Export Route Handler Called ===');
   try {
     // Await params in Next.js 15+
     const { conversationId } = await context.params;
-    console.log('Conversation ID:', conversationId);
 
     // Get auth token from Authorization header
     const authHeader = request.headers.get('authorization');
     const authToken = authHeader?.replace('Bearer ', '');
-    console.log('Auth header:', authHeader ? 'present' : 'missing');
-    console.log('Auth token:', authToken ? 'present' : 'missing');
 
     if (!authToken) {
-      console.error('No auth token provided');
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
@@ -42,19 +37,16 @@ export async function GET(
 
     // Make direct authenticated fetch calls with the token
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-    console.log('API URL:', apiUrl);
     const headers = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${authToken}`,
     };
 
     // Fetch conversation data
-    console.log('Fetching conversation from:', `${apiUrl}/focus-groups/conversations/${conversationId}`);
     const conversationRes = await fetch(
       `${apiUrl}/focus-groups/conversations/${conversationId}`,
       { headers }
     );
-    console.log('Conversation response status:', conversationRes.status);
     if (!conversationRes.ok) {
       const errorText = await conversationRes.text();
       console.error(`Failed to fetch conversation: ${conversationRes.status}`, errorText);
@@ -63,27 +55,13 @@ export async function GET(
         { status: 404 }
       );
     }
-
-    console.log('About to parse conversation JSON...');
-    let conversation;
-    try {
-      conversation = await conversationRes.json();
-      console.log('Conversation fetched successfully');
-      console.log('Conversation keys:', Object.keys(conversation));
-      console.log('Conversation session:', conversation.session ? 'present' : 'null');
-      console.log('Conversation sessionId:', conversation.sessionId);
-    } catch (parseError) {
-      console.error('Failed to parse conversation JSON:', parseError);
-      throw parseError;
-    }
+    const conversation = await conversationRes.json();
 
     // Fetch takeaways
-    console.log('Fetching takeaways from:', `${apiUrl}/focus-groups/conversations/${conversationId}/takeaways`);
     const takeawaysRes = await fetch(
       `${apiUrl}/focus-groups/conversations/${conversationId}/takeaways`,
       { headers }
     );
-    console.log('Takeaways response status:', takeawaysRes.status);
     if (!takeawaysRes.ok) {
       const errorText = await takeawaysRes.text();
       console.error(`Failed to fetch takeaways: ${takeawaysRes.status}`, errorText);
@@ -93,15 +71,12 @@ export async function GET(
       );
     }
     const takeawaysResponse = await takeawaysRes.json();
-    console.log('Takeaways parsed successfully');
 
     // Fetch case information
     let caseId = conversation.session?.caseId || conversation.caseId;
-    console.log('Initial caseId from conversation:', caseId);
 
     // If caseId not in conversation, try to fetch the session
     if (!caseId && conversation.sessionId) {
-      console.log('Fetching session to get caseId, sessionId:', conversation.sessionId);
       const sessionRes = await fetch(
         `${apiUrl}/focus-groups/sessions/${conversation.sessionId}`,
         { headers }
@@ -109,24 +84,19 @@ export async function GET(
       if (sessionRes.ok) {
         const session = await sessionRes.json();
         caseId = session.caseId;
-        console.log('Got caseId from session:', caseId);
       }
     }
 
     // If still no caseId, try to extract from referer URL
     if (!caseId) {
       const referer = request.headers.get('referer');
-      console.log('Trying referer for caseId, referer:', referer);
       if (referer) {
         const match = referer.match(/\/cases\/([a-f0-9-]+)\//);
         if (match) {
           caseId = match[1];
-          console.log('Extracted caseId from referer:', caseId);
         }
       }
     }
-
-    console.log('Final caseId:', caseId);
 
     if (!caseId) {
       console.error('No caseId found in conversation, session, or referer');
@@ -137,7 +107,6 @@ export async function GET(
     }
 
     const caseRes = await fetch(`${apiUrl}/cases/${caseId}`, { headers });
-    console.log('Case response status:', caseRes.status);
     if (!caseRes.ok) {
       return NextResponse.json(
         { error: 'Case not found' },
