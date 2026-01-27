@@ -3,15 +3,21 @@
 import { useState } from 'react';
 import { PersonaSummary } from '@/types/focus-group';
 import { PersonaDetailModal } from './PersonaDetailModal';
-import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, ArrowRight } from 'lucide-react';
+import { PersonaInsight } from './PersonaInsightsCard';
+import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface PersonaSummaryCardProps {
   summary: PersonaSummary;
+  insight?: PersonaInsight | null;
 }
 
-export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
+type TabType = 'conversation' | 'insights';
+
+export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [showPersonaModal, setShowPersonaModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('conversation');
 
   // Position badge colors
   const getPositionColor = (position: string) => {
@@ -128,8 +134,41 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
         </div>
       </div>
 
+      {/* Tabs (only show if insights are available) */}
+      {insight && (
+        <div className="border-b bg-gray-50">
+          <div className="flex px-6">
+            <button
+              onClick={() => setActiveTab('conversation')}
+              className={cn(
+                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'conversation'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              )}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Conversation
+            </button>
+            <button
+              onClick={() => setActiveTab('insights')}
+              className={cn(
+                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'insights'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              )}
+            >
+              <Brain className="h-4 w-4" />
+              Case Insights
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Summary Content */}
-      <div className="p-6">
+      <div className="p-6">{activeTab === 'conversation' && (
+        <>
         {/* Position Shift Description */}
         {summary.positionShifted && summary.shiftDescription && (
           <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -257,6 +296,102 @@ export function PersonaSummaryCard({ summary }: PersonaSummaryCardProps) {
             </div>
           )}
         </div>
+        </>
+      )}
+
+      {/* Insights Tab */}
+      {activeTab === 'insights' && insight && (
+        <div className="space-y-6">
+          {/* Case Interpretation */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <Target className="h-4 w-4 text-purple-600" />
+              How They See the Case
+            </h4>
+            <p className="text-sm text-gray-700 leading-relaxed bg-white p-3 rounded-md border border-purple-100">
+              {insight.caseInterpretation}
+            </p>
+          </div>
+
+          {/* Key Biases */}
+          {insight.keyBiases.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                Key Biases & Lenses
+              </h4>
+              <ul className="space-y-1.5">
+                {insight.keyBiases.map((bias, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 pl-3 border-l-2 border-amber-400 bg-amber-50 p-2 rounded-r-md">
+                    {bias}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Decision Drivers */}
+          {insight.decisionDrivers.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                What Drives Their Decision
+              </h4>
+              <ul className="space-y-1.5">
+                {insight.decisionDrivers.map((driver, idx) => (
+                  <li key={idx} className="text-sm text-gray-700 pl-3 border-l-2 border-blue-400 bg-blue-50 p-2 rounded-r-md">
+                    {driver}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Persuasion Strategy */}
+          <div>
+            <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+              <Lightbulb className="h-4 w-4 text-green-600" />
+              Persuasion Strategy
+            </h4>
+            <p className="text-sm text-gray-700 leading-relaxed bg-green-50 p-3 rounded-md border border-green-200">
+              {insight.persuasionStrategy}
+            </p>
+          </div>
+
+          {/* Vulnerabilities & Strengths Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {insight.vulnerabilities.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                  Vulnerabilities to Address
+                </h4>
+                <ul className="space-y-1">
+                  {insight.vulnerabilities.map((vuln, idx) => (
+                    <li key={idx} className="text-xs text-gray-700 pl-2 border-l-2 border-red-300 bg-red-50 p-1.5 rounded-r">
+                      {vuln}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {insight.strengths.length > 0 && (
+              <div>
+                <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">
+                  Strengths to Leverage
+                </h4>
+                <ul className="space-y-1">
+                  {insight.strengths.map((strength, idx) => (
+                    <li key={idx} className="text-xs text-gray-700 pl-2 border-l-2 border-green-300 bg-green-50 p-1.5 rounded-r">
+                      {strength}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
       </div>
     </div>
     </>

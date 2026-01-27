@@ -432,28 +432,17 @@ export function UnifiedConversationView({
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {/* Show persona summaries */}
-                  {personaSummaries.map((summary) => (
-                    <PersonaSummaryCard key={summary.personaId} summary={summary} />
-                  ))}
-
-                  {/* Show persona insights if generated */}
-                  {personaInsights && personaInsights.length > 0 && (
-                    <>
-                      <div className="pt-8 border-t-2 border-indigo-200">
-                        <h3 className="text-lg font-semibold text-indigo-900 mb-1 flex items-center gap-2">
-                          <Sparkles className="h-5 w-5" />
-                          Deep Case Interpretation Insights
-                        </h3>
-                        <p className="text-sm text-indigo-700 mb-6">
-                          How each persona uniquely interprets this case and targeted persuasion strategies
-                        </p>
-                      </div>
-                      {personaInsights.map((insight) => (
-                        <PersonaInsightsCard key={insight.personaId} insight={insight} />
-                      ))}
-                    </>
-                  )}
+                  {/* Show persona summaries with insights */}
+                  {personaSummaries.map((summary) => {
+                    const insight = personaInsights?.find(i => i.personaId === summary.personaId);
+                    return (
+                      <PersonaSummaryCard
+                        key={summary.personaId}
+                        summary={summary}
+                        insight={insight}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
