@@ -1217,10 +1217,11 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       const { conversationId } = request.params;
       const forceRegenerate = request.query.forceRegenerate === true;
 
-      console.log(`📊 Generate takeaways request for conversation: ${conversationId}`);
+      server.log.info({ conversationId, forceRegenerate }, '📊 Generate takeaways request');
 
       try {
         // Verify conversation exists and belongs to user's organization
+        server.log.info('Verifying conversation ownership...');
         const conversation = await server.prisma.focusGroupConversation.findFirst({
           where: {
             id: conversationId,
@@ -1240,11 +1241,13 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         });
 
         if (!conversation) {
+          server.log.warn({ conversationId }, 'Conversation not found');
           reply.code(404);
           return { error: 'Conversation not found' };
         }
 
         if (!conversation.completedAt) {
+          server.log.warn({ conversationId }, 'Conversation not completed');
           reply.code(400);
           return { error: 'Cannot generate takeaways for incomplete conversation' };
         }
@@ -1253,7 +1256,10 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         const promptServiceUrl = process.env.PROMPT_SERVICE_URL || 'http://localhost:3002';
         const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
 
+        server.log.info({ promptServiceUrl }, 'Initializing takeaways generator');
+
         if (!anthropicApiKey) {
+          server.log.error('ANTHROPIC_API_KEY not configured');
           reply.code(500);
           return { error: 'ANTHROPIC_API_KEY not configured' };
         }
@@ -1266,10 +1272,12 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         const takeawaysGenerator = new TakeawaysGenerator(server.prisma, promptClient);
 
         // Generate takeaways
+        server.log.info('Starting takeaways generation...');
         const takeaways = await takeawaysGenerator.generateTakeaways(
           conversationId,
           forceRegenerate
         );
+        server.log.info('Takeaways generation completed successfully');
 
         return {
           conversationId,
@@ -1278,11 +1286,12 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           promptVersion: 'takeaways-v1.0.0',
         };
       } catch (error) {
-        console.error('Error generating takeaways:', error);
+        server.log.error({ error, conversationId }, 'Error generating takeaways');
         reply.code(500);
         return {
           error: 'Failed to generate takeaways',
           message: error instanceof Error ? error.message : 'Unknown error',
+          stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined,
         };
       }
     },

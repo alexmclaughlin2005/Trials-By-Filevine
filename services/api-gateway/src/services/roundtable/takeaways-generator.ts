@@ -90,9 +90,24 @@ export class TakeawaysGenerator {
 
     // Execute prompt
     console.log('📝 Executing takeaways synthesis prompt...');
-    const { result } = await this.promptClient.execute('roundtable-takeaways-synthesis', {
-      variables: promptVariables,
+    console.log('Prompt variables:', {
+      argumentTitle: promptVariables.argumentTitle,
+      argumentContentLength: promptVariables.argumentContent?.length,
+      transcriptLength: promptVariables.conversationTranscript?.length,
+      personaSummariesLength: promptVariables.personaSummaries?.length,
     });
+
+    let result;
+    try {
+      const response = await this.promptClient.execute('roundtable-takeaways-synthesis', {
+        variables: promptVariables,
+      });
+      result = response.result;
+      console.log('✅ Prompt execution successful');
+    } catch (error) {
+      console.error('❌ Prompt execution failed:', error);
+      throw error;
+    }
 
     // Parse and validate result
     const takeaways = this.parseAndValidate(result);
