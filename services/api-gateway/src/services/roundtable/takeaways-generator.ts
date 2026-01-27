@@ -240,13 +240,27 @@ export class TakeawaysGenerator {
         const text = result.content[0].text;
         console.log('Text length:', text.length);
         console.log('First 200 chars:', text.substring(0, 200));
+
+        // Try to find JSON in code blocks
         const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
         if (jsonMatch) {
           console.log('Found JSON in code block');
           parsed = JSON.parse(jsonMatch[1]);
-        } else {
-          console.log('No code block found, trying direct parse');
+        } else if (text.trim().startsWith('{')) {
+          // Try direct JSON parse if starts with {
+          console.log('Text starts with {, trying direct parse');
           parsed = JSON.parse(text);
+        } else {
+          // Fallback: Try to find any JSON object in the text
+          console.log('Looking for JSON object in text');
+          const jsonObjectMatch = text.match(/\{[\s\S]*\}/);
+          if (jsonObjectMatch) {
+            console.log('Found JSON object, attempting parse');
+            parsed = JSON.parse(jsonObjectMatch[0]);
+          } else {
+            console.log('No JSON found, response appears to be markdown. Failing with detailed error.');
+            throw new Error(`Response is not JSON. First 500 chars: ${text.substring(0, 500)}`);
+          }
         }
       } else if (typeof result === 'object') {
         console.log('Response is object, using directly');
