@@ -76,11 +76,26 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Check if takeaways exist
+  // Check if takeaways exist - with polling
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
     queryFn: () => apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`),
     retry: false,
+    // Poll every 3 seconds if takeaways don't exist yet (they're being generated in background)
+    refetchInterval: (query) => {
+      // Stop polling if we have data or if there's an error that's not a 404
+      if (query.state.data) return false;
+      if (query.state.error) {
+        const errorMessage = (query.state.error as Error).message || '';
+        // Keep polling on 404 (not found) - they might still be generating
+        if (errorMessage.includes('404') || errorMessage.includes('not found')) {
+          return 3000; // Poll every 3 seconds
+        }
+        return false; // Stop polling on other errors
+      }
+      return 3000; // Poll every 3 seconds while loading
+    },
+    refetchIntervalInBackground: false,
   });
 
   // Generate takeaways mutation
@@ -156,7 +171,34 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
       );
     }
 
-    // No takeaways found - show generate button
+    // No takeaways found - check if they might be generating
+    const isNotFound = errorMessage.includes('404') || errorMessage.includes('not found');
+
+    if (isNotFound) {
+      // Takeaways don't exist yet - might be generating in background
+      return (
+        <div className="p-12 text-center max-w-2xl mx-auto">
+          <div className="bg-gradient-to-br from-filevine-blue/10 to-purple-100/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+            <Loader2 className="h-10 w-10 text-filevine-blue animate-spin" />
+          </div>
+          <h3 className="text-2xl font-semibold text-filevine-gray-900 mb-3">
+            Generating Strategic Takeaways
+          </h3>
+          <p className="text-base text-filevine-gray-600 mb-6">
+            Analyzing the focus group conversation to extract key insights, identify what landed well,
+            what confused the panel, and generate concrete recommendations for improving your argument.
+          </p>
+          <p className="text-sm text-filevine-gray-500">
+            This process typically takes 30-60 seconds...
+          </p>
+          <p className="text-xs text-filevine-gray-400 mt-4">
+            Checking every few seconds for completion
+          </p>
+        </div>
+      );
+    }
+
+    // Other error - show generate button
     return (
       <div className="p-12 text-center max-w-2xl mx-auto">
         <div className="bg-gradient-to-br from-filevine-blue/10 to-purple-100/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
