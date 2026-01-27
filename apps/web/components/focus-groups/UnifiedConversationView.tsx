@@ -199,29 +199,61 @@ export function UnifiedConversationView({
                         statement => statement.questionId === question.id
                       );
 
-                      // If we have explicit responses, find their sequence numbers range
-                      const questionStatements = explicitResponses.length > 0
-                        ? (() => {
-                            const minSeq = Math.min(...explicitResponses.map(s => s.sequenceNumber));
-                            const maxSeq = Math.max(...explicitResponses.map(s => s.sequenceNumber));
+                      // Determine which statements belong to this question
+                      const questionStatements = (() => {
+                        if (explicitResponses.length > 0) {
+                          // Use explicit responses to determine range
+                          const minSeq = Math.min(...explicitResponses.map(s => s.sequenceNumber));
 
-                            // Get the next question's first response (if exists)
-                            const nextQuestion = customQuestions.find(q => q.order === question.order + 1);
-                            const nextQuestionFirstResponse = nextQuestion
-                              ? statements.find(s => s.questionId === nextQuestion.id)
-                              : null;
-                            const endSeq = nextQuestionFirstResponse
-                              ? nextQuestionFirstResponse.sequenceNumber - 1
-                              : statements.length > 0
-                                ? Math.max(...statements.map(s => s.sequenceNumber))
-                                : maxSeq;
+                          // Get the next question's first response (if exists)
+                          const nextQuestion = customQuestions.find(q => q.order === question.order + 1);
+                          const nextQuestionFirstResponse = nextQuestion
+                            ? statements.find(s => s.questionId === nextQuestion.id)
+                            : null;
+                          const endSeq = nextQuestionFirstResponse
+                            ? nextQuestionFirstResponse.sequenceNumber - 1
+                            : statements.length > 0
+                              ? Math.max(...statements.map(s => s.sequenceNumber))
+                              : minSeq;
 
-                            // Include all statements in this range
-                            return statements.filter(
-                              s => s.sequenceNumber >= minSeq && s.sequenceNumber <= endSeq
-                            );
-                          })()
-                        : [];
+                          // Include all statements in this range
+                          return statements.filter(
+                            s => s.sequenceNumber >= minSeq && s.sequenceNumber <= endSeq
+                          );
+                        } else {
+                          // No explicit responses - try to find range based on previous question
+                          const sortedQuestions = [...customQuestions].sort((a, b) => a.order - b.order);
+                          const questionIndex = sortedQuestions.findIndex(q => q.id === question.id);
+
+                          // Find where previous question ended
+                          let startSeq = 1;
+                          if (questionIndex > 0) {
+                            const prevQuestion = sortedQuestions[questionIndex - 1];
+                            const prevExplicitResponses = statements.filter(s => s.questionId === prevQuestion.id);
+                            if (prevExplicitResponses.length > 0) {
+                              const prevMaxSeq = Math.max(...prevExplicitResponses.map(s => s.sequenceNumber));
+                              // Start from where we left off searching forward
+                              startSeq = prevMaxSeq + 1;
+                            }
+                          }
+
+                          // Find where next question starts
+                          let endSeq = statements.length > 0 ? Math.max(...statements.map(s => s.sequenceNumber)) : startSeq;
+                          if (questionIndex < sortedQuestions.length - 1) {
+                            const nextQuestion = sortedQuestions[questionIndex + 1];
+                            const nextExplicitResponses = statements.filter(s => s.questionId === nextQuestion.id);
+                            if (nextExplicitResponses.length > 0) {
+                              const nextMinSeq = Math.min(...nextExplicitResponses.map(s => s.sequenceNumber));
+                              endSeq = nextMinSeq - 1;
+                            }
+                          }
+
+                          // Return statements in this range
+                          return statements.filter(
+                            s => s.sequenceNumber >= startSeq && s.sequenceNumber <= endSeq
+                          );
+                        }
+                      })();
 
                       return (
                         <div key={question.id} className="bg-white border rounded-lg overflow-hidden">
