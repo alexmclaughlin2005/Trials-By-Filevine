@@ -42,7 +42,7 @@ export function Header({ onOpenChat }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-filevine-gray-800 bg-filevine-black">
+    <header className="sticky top-0 z-50 w-full border-b border-filevine-gray-800 bg-filevine-black" style={{ transform: 'translateZ(0)' }}>
       <div className="flex h-14 items-center px-4">
         {/* Mobile menu button */}
         <button className="mr-3 flex items-center justify-center rounded p-2 text-white hover:bg-filevine-gray-900 lg:hidden">
@@ -57,10 +57,12 @@ export function Header({ onOpenChat }: HeaderProps) {
             width={32}
             height={32}
             className="h-8 w-8 rounded"
+            quality={100}
+            priority
           />
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white leading-tight">Juries</span>
-            <span className="text-xs text-filevine-gray-400 leading-tight">by Filevine</span>
+            <span className="text-sm font-semibold text-white leading-tight tracking-tight">Juries</span>
+            <span className="text-xs text-filevine-gray-400 leading-tight tracking-normal">by Filevine</span>
           </div>
         </Link>
 
@@ -74,7 +76,7 @@ export function Header({ onOpenChat }: HeaderProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex items-center gap-2 rounded px-3 py-2 text-sm font-medium transition-colors tracking-normal ${
                   isActive
                     ? 'bg-filevine-gray-900 text-white'
                     : 'text-filevine-gray-400 hover:bg-filevine-gray-900 hover:text-white'

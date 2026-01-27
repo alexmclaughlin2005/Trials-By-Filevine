@@ -18,12 +18,16 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: [
-          'var(--font-helvetica-now)',
-          'system-ui',
           '-apple-system',
           'BlinkMacSystemFont',
           'Segoe UI',
           'Roboto',
+          'Oxygen',
+          'Ubuntu',
+          'Cantarell',
+          'Fira Sans',
+          'Droid Sans',
+          'Helvetica Neue',
           'sans-serif',
         ],
       },

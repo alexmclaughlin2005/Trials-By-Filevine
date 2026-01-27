@@ -33,6 +33,7 @@ interface Case {
     id: string;
     jurors?: Array<{ id: string }>;
   }>;
+  focusGroupSessions?: Array<{ id: string }>;
 }
 
 interface CaseResponse {
@@ -86,6 +87,7 @@ export default function CaseLayout({ children }: { children: React.ReactNode }) 
   const factsCount = data.facts?.length || 0;
   const argumentsCount = data.arguments?.length || 0;
   const witnessesCount = data.witnesses?.length || 0;
+  const focusGroupsCount = data.focusGroupSessions?.length || 0;
 
   return (
     <div className="flex h-full overflow-hidden">
@@ -96,14 +98,14 @@ export default function CaseLayout({ children }: { children: React.ReactNode }) 
         factsCount={factsCount}
         argumentsCount={argumentsCount}
         witnessesCount={witnessesCount}
+        focusGroupsCount={focusGroupsCount}
       />
 
       {/* Main Content Area */}
       <div className="flex-1 overflow-auto">
         {/* Header Section */}
-        <div className="border-b border-filevine-gray-200 bg-white px-6 py-4">
-          <div className="mx-auto max-w-7xl">
-            <div className="flex items-start justify-between">
+        <div className="border-b border-filevine-gray-200 bg-white px-4 py-4">
+          <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-4">
                   <h1 className="text-2xl font-bold text-filevine-gray-900">{data.name}</h1>
@@ -179,12 +181,11 @@ export default function CaseLayout({ children }: { children: React.ReactNode }) 
                 <ActiveViewers count={viewerCount} isConnected={isConnected} />
               </div>
             </div>
-          </div>
         </div>
 
         {/* Page Content */}
-        <div className="px-6 py-6">
-          <div className="mx-auto max-w-7xl">{children}</div>
+        <div className="px-4 py-6">
+          {children}
         </div>
       </div>
     </div>

@@ -20,6 +20,7 @@ interface CaseSidebarProps {
   factsCount?: number;
   argumentsCount?: number;
   witnessesCount?: number;
+  focusGroupsCount?: number;
 }
 
 export function CaseSidebar({
@@ -28,6 +29,7 @@ export function CaseSidebar({
   factsCount = 0,
   argumentsCount = 0,
   witnessesCount = 0,
+  focusGroupsCount = 0,
 }: CaseSidebarProps) {
   const pathname = usePathname();
 
@@ -71,6 +73,7 @@ export function CaseSidebar({
       name: 'Focus Groups',
       href: `/cases/${caseId}/focus-groups`,
       icon: Scale,
+      count: focusGroupsCount,
     },
     {
       name: 'Documents',

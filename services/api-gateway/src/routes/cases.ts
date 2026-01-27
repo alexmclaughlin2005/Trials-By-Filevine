@@ -71,6 +71,11 @@ export async function casesRoutes(server: FastifyInstance) {
               },
             },
           },
+          focusGroupSessions: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
 

@@ -235,6 +235,65 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
     },
   });
 
+  // Get recent focus group sessions across all cases
+  server.get('/recent', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { limit = '50', caseId, status } = request.query as any;
+
+      // Build where clause with optional filters
+      const where: any = {
+        case: { organizationId },
+      };
+
+      if (caseId) {
+        where.caseId = caseId;
+      }
+
+      if (status) {
+        where.status = status;
+      }
+
+      const sessions = await server.prisma.focusGroupSession.findMany({
+        where,
+        include: {
+          case: {
+            select: {
+              id: true,
+              name: true,
+              caseNumber: true,
+              caseType: true,
+              status: true,
+            },
+          },
+          _count: {
+            select: {
+              personas: true,
+              results: true,
+              recommendations: true,
+            },
+          },
+        },
+        orderBy: [
+          { completedAt: 'desc' },
+          { updatedAt: 'desc' },
+        ],
+        take: parseInt(limit, 10),
+      });
+
+      // Map database fields to new API field names
+      const mappedSessions = sessions.map((session) => ({
+        ...session,
+        panelSelectionMode: session.archetypeSelectionMode,
+        selectedPersonas: session.selectedArchetypes,
+        panelSize: session.archetypeCount,
+      }));
+
+      return { sessions: mappedSessions };
+    },
+  });
+
   // Get focus group session details
   server.get('/:sessionId', {
     onRequest: [server.authenticate],
@@ -1024,6 +1083,60 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
 
         // Custom questions for this session
         customQuestions: conversation.session.customQuestions as any[] || []
+      };
+    }
+  });
+
+  // Get case information for a conversation (for breadcrumbs and context)
+  server.get('/conversations/:conversationId/case', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<{
+      Params: { conversationId: string };
+    }>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { conversationId } = request.params;
+
+      const conversation = await server.prisma.focusGroupConversation.findFirst({
+        where: {
+          id: conversationId,
+          session: {
+            case: { organizationId }
+          }
+        },
+        include: {
+          session: {
+            select: {
+              id: true,
+              name: true,
+              caseId: true,
+              case: {
+                select: {
+                  id: true,
+                  name: true,
+                  caseNumber: true,
+                  caseType: true,
+                  status: true,
+                  trialDate: true,
+                  venue: true,
+                  jurisdiction: true,
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!conversation) {
+        reply.code(404);
+        return { error: 'Conversation not found' };
+      }
+
+      return {
+        case: conversation.session.case,
+        session: {
+          id: conversation.session.id,
+          name: conversation.session.name,
+        }
       };
     }
   });

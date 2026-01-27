@@ -124,8 +124,8 @@ export function FocusGroupSetupWizard({
     },
     onSuccess: (result) => {
       if (result && result.conversationId) {
-        // Navigate directly to the conversation
-        router.push(`/focus-groups/conversations/${result.conversationId}`);
+        // Navigate directly to the conversation within the case context
+        router.push(`/cases/${caseId}/focus-groups/conversations/${result.conversationId}`);
       } else if (onComplete && sessionId) {
         // Fallback if no arguments selected (shouldn't happen)
         onComplete(sessionId);

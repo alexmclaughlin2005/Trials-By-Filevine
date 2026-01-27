@@ -6,7 +6,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { FocusGroupSetupWizard } from './focus-group-setup-wizard';
 import { FocusGroupSession } from '@/types/focus-group';
-import { Plus, History, PlayCircle, Trash2 } from 'lucide-react';
+import { Plus, History, PlayCircle, Trash2, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 
 type FocusGroupSessionWithCount = FocusGroupSession & {
   _count?: {
@@ -104,13 +105,20 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div>
+        <div className="flex-1">
           <h3 className="text-lg font-semibold text-filevine-gray-900">
             Focus Group Sessions
           </h3>
-          <p className="text-sm text-filevine-gray-600">
-            Test your arguments with AI-powered jury simulations
+          <p className="text-sm text-filevine-gray-600 mt-1">
+            Test your arguments with AI-powered jury simulations. Results appear here after each session completes.
           </p>
+          <Link
+            href="/focus-groups"
+            className="inline-flex items-center gap-1.5 text-xs text-filevine-blue hover:underline mt-2"
+          >
+            <ExternalLink className="h-3 w-3" />
+            View all focus groups across cases
+          </Link>
         </div>
         <Button onClick={handleStartNew} className="flex items-center gap-2">
           <Plus className="h-4 w-4" />

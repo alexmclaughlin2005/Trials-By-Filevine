@@ -16,6 +16,7 @@ interface Argument {
 
 interface RoundtableConversationTriggerProps {
   sessionId: string;
+  caseId: string;
   arguments: Argument[];
 }
 
@@ -27,6 +28,7 @@ interface ConversationResult {
 
 export function RoundtableConversationTrigger({
   sessionId,
+  caseId,
   arguments: caseArguments
 }: RoundtableConversationTriggerProps) {
   const [selectedArgumentId, setSelectedArgumentId] = useState<string | null>(null);
@@ -43,8 +45,8 @@ export function RoundtableConversationTrigger({
     },
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['conversations', sessionId] });
-      // Navigate to the conversation detail page
-      router.push(`/focus-groups/conversations/${result.conversationId}`);
+      // Navigate to the conversation detail page within the case context
+      router.push(`/cases/${caseId}/focus-groups/conversations/${result.conversationId}`);
     }
   });
 
