@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { ConversationDetail } from '@/types/focus-group';
-import { RoundtableConversationViewer } from '@/components/roundtable-conversation-viewer';
-import { ConversationTabs } from '@/components/focus-groups/ConversationTabs';
+import { UnifiedConversationView } from '@/components/focus-groups/UnifiedConversationView';
 import { Loader2 } from 'lucide-react';
 
 export default function ConversationDetailPage() {
@@ -112,10 +111,12 @@ export default function ConversationDetailPage() {
     );
   }
 
+  const isComplete = !!conversation.completedAt;
+
   return (
     <div className="h-full px-8 py-6">
       {/* In-Progress Notice */}
-      {!conversation.completedAt && (
+      {!isComplete && (
         <div className="mb-4 p-2.5 bg-blue-50 border border-blue-200 rounded-md">
           <div className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin text-filevine-blue" />
@@ -126,22 +127,17 @@ export default function ConversationDetailPage() {
         </div>
       )}
 
-      {/* Conversation Header Summary */}
-      <RoundtableConversationViewer
-        conversationId={conversationId}
-        caseId={caseId}
-      />
-
-      {/* Detailed Conversation Tabs (By Question, By Persona, Overall Analysis) */}
+      {/* Unified Conversation View */}
       {conversation.allStatements.length > 0 && (
-        <div className="mt-6">
-          <ConversationTabs
-            personaSummaries={conversation.personaSummaries}
-            allStatements={conversation.allStatements}
-            overallAnalysis={conversation.overallAnalysis}
-            customQuestions={conversation.customQuestions}
-          />
-        </div>
+        <UnifiedConversationView
+          conversationId={conversationId}
+          caseId={caseId}
+          personaSummaries={conversation.personaSummaries}
+          allStatements={conversation.allStatements}
+          overallAnalysis={conversation.overallAnalysis}
+          customQuestions={conversation.customQuestions}
+          isComplete={isComplete}
+        />
       )}
     </div>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -77,13 +77,28 @@ const sentimentLabels = {
 type TabType = 'takeaways' | 'transcript';
 
 export function RoundtableConversationViewer({ conversationId, caseId }: RoundtableConversationViewerProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('takeaways');
+  const [activeTab, setActiveTab] = useState<TabType | null>(null);
   const [expandedStatement, setExpandedStatement] = useState<string | null>(null);
 
   const { data: conversation, isLoading, error } = useQuery<Conversation>({
     queryKey: ['conversation', conversationId],
     queryFn: () => apiClient.get<Conversation>(`/focus-groups/conversations/${conversationId}`)
   });
+
+  // Set initial tab based on conversation completion status
+  useEffect(() => {
+    if (conversation && activeTab === null) {
+      // Default to takeaways if complete, transcript if not
+      setActiveTab(conversation.completedAt ? 'takeaways' : 'transcript');
+    }
+  }, [conversation, activeTab]);
+
+  // Auto-switch to takeaways when conversation completes
+  useEffect(() => {
+    if (conversation?.completedAt && activeTab === 'transcript') {
+      setActiveTab('takeaways');
+    }
+  }, [conversation?.completedAt, activeTab]);
 
   if (isLoading) {
     return (

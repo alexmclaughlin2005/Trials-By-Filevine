@@ -4,17 +4,19 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-async function seedRoundtableTakeaways() {
-  console.log('Seeding Roundtable Takeaways Synthesis prompt...');
+async function reseedRoundtableTakeaways() {
+  console.log('Re-seeding Roundtable Takeaways Synthesis prompt...');
 
-  // Check if already exists
+  // Delete existing prompt (cascades to versions)
   const existing = await prisma.prompt.findUnique({
     where: { serviceId: 'roundtable-takeaways-synthesis' },
   });
 
   if (existing) {
-    console.log('Roundtable Takeaways prompt already exists. Skipping...');
-    return;
+    console.log('Deleting existing prompt...');
+    await prisma.prompt.delete({
+      where: { id: existing.id },
+    });
   }
 
   // Create prompt
@@ -269,9 +271,9 @@ Return your analysis as a JSON object with this exact structure:
 - Prioritize actionable recommendations over general observations`;
 
 // Run the seed function
-seedRoundtableTakeaways()
+reseedRoundtableTakeaways()
   .then(() => {
-    console.log('✅ Roundtable Takeaways prompt seeded successfully');
+    console.log('✅ Roundtable Takeaways prompt re-seeded successfully');
     process.exit(0);
   })
   .catch((error) => {
