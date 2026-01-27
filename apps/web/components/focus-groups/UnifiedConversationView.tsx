@@ -3,10 +3,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle, Loader2 } from 'lucide-react';
 import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './TakeawaysTab';
-import { PersonaSummaryCard } from './PersonaSummaryCard';
+import { PersonaDetailModal } from './PersonaDetailModal';
+import { PersonaInsightsCard, PersonaInsight } from './PersonaInsightsCard';
+import { apiClient } from '@/lib/api-client';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
 
@@ -58,6 +61,7 @@ export function UnifiedConversationView({
 }: UnifiedConversationViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
+  const [showInsightsButton, setShowInsightsButton] = useState(true);
   const hasAutoSwitchedRef = useRef(false);
 
   // Auto-switch to takeaways when conversation completes (only once)
@@ -337,12 +341,26 @@ export function UnifiedConversationView({
           {activeTab === 'personas' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">
-                  Persona Journeys
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
-                </p>
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Persona Journeys
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                {isComplete && personaSummaries.length > 0 && showInsightsButton && (
+                  <button
+                    onClick={() => {
+                      alert('Coming soon: Generate deep persona case insights');
+                      // TODO: Implement persona insights generation
+                    }}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                  >
+                    <Sparkles className="h-4 w-4" />
+                    Generate Case Insights
+                  </button>
+                )}
               </div>
 
               {personaSummaries.length === 0 ? (
