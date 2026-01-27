@@ -8,6 +8,7 @@ import { FocusGroupSetupWizard } from './focus-group-setup-wizard';
 import { FocusGroupSession } from '@/types/focus-group';
 import { Plus, History, PlayCircle, Trash2, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type FocusGroupSessionWithCount = FocusGroupSession & {
   _count?: {
@@ -36,6 +37,7 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // Load focus group sessions for this case
   const { data: sessionsData, isLoading } = useQuery<{ sessions: FocusGroupSessionWithCount[] }>({
@@ -72,9 +74,23 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
     setActiveSessionId(null);
   };
 
-  const handleViewSession = (sessionId: string) => {
-    setActiveSessionId(sessionId);
-    setCurrentView('results');
+  const handleViewSession = async (sessionId: string) => {
+    try {
+      // Fetch conversations for this session
+      const conversationsResponse = await apiClient.get<{ conversations: Array<{ id: string }> }>(
+        `/focus-groups/sessions/${sessionId}/conversations`
+      );
+
+      if (conversationsResponse.conversations && conversationsResponse.conversations.length > 0) {
+        // Navigate to the first conversation within the case context
+        router.push(`/cases/${caseId}/focus-groups/conversations/${conversationsResponse.conversations[0].id}`);
+      } else {
+        // No conversations yet, just stay on this page
+        console.warn('No conversations found for session:', sessionId);
+      }
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+    }
   };
 
   if (currentView === 'setup') {
@@ -225,11 +241,11 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
                   {session.status === 'running' && (
                     <>
                       <Button
-                        variant="outline"
+                        variant="primary"
                         size="sm"
-                        disabled
+                        onClick={() => handleViewSession(session.id)}
                       >
-                        In Progress...
+                        View Progress
                       </Button>
                       <Button
                         variant="ghost"
