@@ -115,3 +115,5 @@ When I make changes, I will:
 - **Current Status:** See [CURRENT_STATE.md](CURRENT_STATE.md)
 - **Phase Status:** See [PROJECT_STATUS.md](PROJECT_STATUS.md)
 - **Demo Script:** See [QUICK_DEMO.md](QUICK_DEMO.md)
+
+When making changes that involve new prompts, use the prompt/seed endpoint to create/update the admin tool for prompt seeding in the prod database.

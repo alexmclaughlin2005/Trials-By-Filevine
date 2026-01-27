@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { CheckCircle, AlertCircle, XCircle, HelpCircle, FileEdit, Loader2, Sparkles, RefreshCw } from 'lucide-react';
+import { CheckCircle, AlertCircle, XCircle, HelpCircle, FileEdit, Loader2, Sparkles, RefreshCw, FileDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TakeawaysData {
@@ -198,33 +198,48 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     generateMutation.mutate();
   };
 
+  const handleExportPDF = () => {
+    // Open PDF in new tab for download
+    window.open(`/api/focus-groups/conversations/${conversationId}/export/takeaways`, '_blank');
+  };
+
   return (
     <div className="space-y-6">
-      {/* Regenerate Button */}
+      {/* Action Buttons */}
       <div className="flex justify-between items-center">
         <div>
           <p className="text-sm text-filevine-gray-600">
             Generated {new Date(data.generatedAt).toLocaleString()}
           </p>
         </div>
-        <Button
-          onClick={handleRegenerate}
-          variant="outline"
-          size="sm"
-          disabled={generateMutation.isPending}
-        >
-          {generateMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Regenerating...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Regenerate Takeaways
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleExportPDF}
+            variant="outline"
+            size="sm"
+          >
+            <FileDown className="mr-2 h-4 w-4" />
+            Export PDF
+          </Button>
+          <Button
+            onClick={handleRegenerate}
+            variant="outline"
+            size="sm"
+            disabled={generateMutation.isPending}
+          >
+            {generateMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Regenerating...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Regenerate Takeaways
+              </>
+            )}
+          </Button>
+        </div>
       </div>
       {/* Strategic Summary - 3 Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

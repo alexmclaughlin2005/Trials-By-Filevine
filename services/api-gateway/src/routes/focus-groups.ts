@@ -1338,6 +1338,17 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         );
         server.log.info('Takeaways generation completed successfully');
 
+        // Auto-generate persona insights after takeaways complete
+        try {
+          server.log.info('Auto-generating persona insights...');
+          const insightsGenerator = new PersonaInsightsGenerator(server.prisma, promptClient);
+          await insightsGenerator.generateInsights(conversationId);
+          server.log.info('Persona insights generation completed successfully');
+        } catch (insightsError) {
+          // Log error but don't fail the takeaways request
+          server.log.error({ error: insightsError }, 'Failed to auto-generate persona insights');
+        }
+
         return {
           conversationId,
           takeaways,

@@ -74,7 +74,32 @@ export function UnifiedConversationView({
     }
   }, [isComplete]);
 
-  // Handler for generating persona insights
+  // Auto-fetch persona insights when component loads and conversation is complete
+  useEffect(() => {
+    const fetchInsights = async () => {
+      if (!isComplete || personaInsights !== null) return;
+
+      setIsGeneratingInsights(true);
+      setInsightsError(null);
+
+      try {
+        const response = await apiClient.post<{ insights: PersonaInsight[] }>(
+          `/focus-groups/conversations/${conversationId}/generate-persona-insights`,
+          {}
+        );
+        setPersonaInsights(response.insights);
+      } catch (error) {
+        console.error('Error fetching insights:', error);
+        setInsightsError(error instanceof Error ? error.message : 'Failed to fetch insights');
+      } finally {
+        setIsGeneratingInsights(false);
+      }
+    };
+
+    fetchInsights();
+  }, [isComplete, conversationId, personaInsights]);
+
+  // Handler for manually regenerating persona insights
   const handleGenerateInsights = async () => {
     setIsGeneratingInsights(true);
     setInsightsError(null);
@@ -361,7 +386,7 @@ export function UnifiedConversationView({
           {/* By Persona Tab */}
           {activeTab === 'personas' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">
                     Persona Journeys
@@ -369,26 +394,13 @@ export function UnifiedConversationView({
                   <p className="text-sm text-gray-500">
                     {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
                   </p>
+                  {isComplete && isGeneratingInsights && (
+                    <p className="text-xs text-indigo-600 mt-1 flex items-center gap-1">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Generating case insights...
+                    </p>
+                  )}
                 </div>
-                {isComplete && personaSummaries.length > 0 && !personaInsights && (
-                  <Button
-                    onClick={handleGenerateInsights}
-                    disabled={isGeneratingInsights}
-                    className="bg-indigo-600 hover:bg-indigo-700 shadow-sm"
-                  >
-                    {isGeneratingInsights ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Generating Insights...
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="mr-2 h-4 w-4" />
-                        Generate Case Insights
-                      </>
-                    )}
-                  </Button>
-                )}
               </div>
 
               {/* Error state */}

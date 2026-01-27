@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { PersonaSummary } from '@/types/focus-group';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsight } from './PersonaInsightsCard';
-import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface PersonaSummaryCardProps {
@@ -12,12 +12,11 @@ interface PersonaSummaryCardProps {
   insight?: PersonaInsight | null;
 }
 
-type TabType = 'conversation' | 'insights';
+type TabType = 'insights' | 'conversation';
 
 export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps) {
-  const [expanded, setExpanded] = useState(false);
   const [showPersonaModal, setShowPersonaModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('conversation');
+  const [activeTab, setActiveTab] = useState<TabType>('insights');
 
   // Position badge colors
   const getPositionColor = (position: string) => {
@@ -139,18 +138,6 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
         <div className="border-b bg-gray-50">
           <div className="flex px-6">
             <button
-              onClick={() => setActiveTab('conversation')}
-              className={cn(
-                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'conversation'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              )}
-            >
-              <MessageSquare className="h-4 w-4" />
-              Conversation
-            </button>
-            <button
               onClick={() => setActiveTab('insights')}
               className={cn(
                 'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
@@ -161,6 +148,18 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
             >
               <Brain className="h-4 w-4" />
               Case Insights
+            </button>
+            <button
+              onClick={() => setActiveTab('conversation')}
+              className={cn(
+                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                activeTab === 'conversation'
+                  ? 'border-indigo-600 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              )}
+            >
+              <MessageSquare className="h-4 w-4" />
+              Conversation
             </button>
           </div>
         </div>
@@ -177,12 +176,6 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
             </p>
           </div>
         )}
-
-        {/* Narrative Summary */}
-        <div className="prose prose-sm max-w-none mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-2">Journey Summary</h4>
-          <p className="text-gray-700 whitespace-pre-line">{summary.summary}</p>
-        </div>
 
         {/* Key Points */}
         {summary.mainPoints.length > 0 && (
@@ -262,39 +255,32 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
           )}
         </div>
 
-        {/* Expandable Statements */}
+        {/* All Statements - No longer collapsible */}
         <div className="mt-4 border-t pt-4">
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="flex items-center justify-between w-full text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-          >
-            <span>View All {summary.totalStatements} Statement{summary.totalStatements !== 1 ? 's' : ''}</span>
-            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </button>
-
-          {expanded && (
-            <div className="mt-4 space-y-3">
-              {summary.statements.map((statement) => (
-                <div key={statement.id} className="p-3 bg-gray-50 border border-gray-200 rounded-md">
-                  <div className="flex items-start justify-between mb-1">
-                    <span className="text-xs font-semibold text-gray-500">
-                      Statement {statement.sequenceNumber} (Round {statement.speakCount})
+          <h4 className="text-sm font-semibold text-gray-700 mb-3">
+            All {summary.totalStatements} Statement{summary.totalStatements !== 1 ? 's' : ''}
+          </h4>
+          <div className="space-y-3">
+            {summary.statements.map((statement) => (
+              <div key={statement.id} className="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                <div className="flex items-start justify-between mb-1">
+                  <span className="text-xs font-semibold text-gray-500">
+                    Statement {statement.sequenceNumber} (Round {statement.speakCount})
+                  </span>
+                  {statement.sentiment && (
+                    <span className={`px-2 py-0.5 text-xs border rounded ${
+                      statement.sentiment === 'plaintiff_leaning' ? 'bg-green-50 text-green-700 border-green-200' :
+                      statement.sentiment === 'defense_leaning' ? 'bg-red-50 text-red-700 border-red-200' :
+                      'bg-gray-50 text-gray-700 border-gray-200'
+                    }`}>
+                      {statement.sentiment.replace('_', ' ')}
                     </span>
-                    {statement.sentiment && (
-                      <span className={`px-2 py-0.5 text-xs border rounded ${
-                        statement.sentiment === 'plaintiff_leaning' ? 'bg-green-50 text-green-700 border-green-200' :
-                        statement.sentiment === 'defense_leaning' ? 'bg-red-50 text-red-700 border-red-200' :
-                        'bg-gray-50 text-gray-700 border-gray-200'
-                      }`}>
-                        {statement.sentiment.replace('_', ' ')}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-sm text-gray-700">{statement.content}</p>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
+                <p className="text-sm text-gray-700">{statement.content}</p>
+              </div>
+            ))}
+          </div>
         </div>
         </>
       )}
