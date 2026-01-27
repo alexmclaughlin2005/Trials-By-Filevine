@@ -34,7 +34,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         data,
       };
     } catch (error) {
-      fastify.log.error('Error seeding prompts:', error);
+      fastify.log.error({ error }, 'Error seeding prompts');
       return reply.status(500).send({
         success: false,
         error: 'Failed to seed prompts',
@@ -59,7 +59,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
       return data;
     } catch (error) {
-      fastify.log.error('Error getting seed status:', error);
+      fastify.log.error({ error }, 'Error getting seed status');
       return reply.status(500).send({
         error: 'Failed to get seed status',
         message: error instanceof Error ? error.message : 'Unknown error',
