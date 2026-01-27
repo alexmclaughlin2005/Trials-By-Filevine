@@ -38,7 +38,14 @@ interface Conversation {
   fracturePoints?: string[];
   keyDebatePoints?: string[];
   influentialPersonas?: Array<{ personaId: string; personaName: string; influence: string }>;
-  statements: Statement[];
+  statements?: Statement[];
+  allStatements?: Statement[];
+  overallAnalysis?: {
+    consensusAreas?: string[];
+    fracturePoints?: string[];
+    keyDebatePoints?: string[];
+    influentialPersonas?: Array<{ personaId: string; personaName: string; influenceType: string }>;
+  };
 }
 
 interface RoundtableConversationViewerProps {
@@ -106,6 +113,12 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
     { id: 'transcript' as TabType, label: 'Full Transcript', icon: FileText },
   ];
 
+  // Support both statements and allStatements (from different API responses)
+  const statements = conversation.statements || conversation.allStatements || [];
+  const consensusAreas = conversation.consensusAreas || conversation.overallAnalysis?.consensusAreas || [];
+  const fracturePoints = conversation.fracturePoints || conversation.overallAnalysis?.fracturePoints || [];
+  const keyDebatePoints = conversation.keyDebatePoints || conversation.overallAnalysis?.keyDebatePoints || [];
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -124,7 +137,7 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
             <div>
               <div className="text-sm font-medium text-filevine-gray-600">Statements</div>
               <div className="text-2xl font-bold text-filevine-gray-900">
-                {conversation.statements.length}
+                {statements.length}
               </div>
             </div>
             <div>
@@ -190,14 +203,14 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
         <div className="space-y-6">
           {/* Consensus & Fracture Points */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {conversation.consensusAreas && conversation.consensusAreas.length > 0 && (
+            {consensusAreas.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Consensus Areas</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {conversation.consensusAreas.map((area, index) => (
+                    {consensusAreas.map((area, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="mt-1 h-1.5 w-1.5 rounded-full bg-green-500 flex-shrink-0"></div>
                         <span className="text-sm text-filevine-gray-700">{area}</span>
@@ -208,14 +221,14 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
               </Card>
             )}
 
-            {conversation.fracturePoints && conversation.fracturePoints.length > 0 && (
+            {fracturePoints.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base">Fracture Points</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-2">
-                    {conversation.fracturePoints.map((point, index) => (
+                    {fracturePoints.map((point, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <div className="mt-1 h-1.5 w-1.5 rounded-full bg-red-500 flex-shrink-0"></div>
                         <span className="text-sm text-filevine-gray-700">{point}</span>
@@ -228,14 +241,14 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
           </div>
 
           {/* Key Debate Points */}
-          {conversation.keyDebatePoints && conversation.keyDebatePoints.length > 0 && (
+          {keyDebatePoints.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Key Debate Points</CardTitle>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {conversation.keyDebatePoints.map((point, index) => (
+                  {keyDebatePoints.map((point, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <div className="mt-1 h-1.5 w-1.5 rounded-full bg-filevine-blue flex-shrink-0"></div>
                       <span className="text-sm text-filevine-gray-700">{point}</span>
@@ -256,7 +269,7 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {conversation.statements.map((statement) => (
+                {statements.map((statement) => (
                   <div
                     key={statement.id}
                     className={cn(
