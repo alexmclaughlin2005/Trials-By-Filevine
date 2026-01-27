@@ -165,10 +165,11 @@ export function FocusGroupSetupWizard({
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
   // Calculate progress for footer
-  const isPanelConfigured =
+  const isPanelConfigured = Boolean(
     session.session.panelSelectionMode !== null &&
     (session.session.panelSelectionMode === 'random' ||
-     (session.session.selectedPersonas && session.session.selectedPersonas.length > 0));
+     (session.session.selectedPersonas && session.session.selectedPersonas.length > 0))
+  );
   const argumentsCount = session.session.selectedArguments?.length || 0;
   const questionsCount = session.session.customQuestions?.length || 0;
 
