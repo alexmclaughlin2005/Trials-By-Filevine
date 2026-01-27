@@ -17,7 +17,6 @@ import {
 } from '../styles/pdfStyles';
 import { PDFHeader } from '../components/PDFHeader';
 import { PDFFooter } from '../components/PDFFooter';
-import { PDFSection } from '../components/PDFSection';
 import {
   formatDate,
   formatDateTime,
@@ -213,7 +212,7 @@ const styles = StyleSheet.create({
   },
 });
 
-interface TakeawaysPDFDocumentProps extends TakeawaysPDFData {}
+type TakeawaysPDFDocumentProps = TakeawaysPDFData;
 
 export const TakeawaysPDFDocument: React.FC<TakeawaysPDFDocumentProps> = ({
   conversation,
@@ -350,7 +349,7 @@ export const TakeawaysPDFDocument: React.FC<TakeawaysPDFDocumentProps> = ({
                   <Text style={styles.evidenceLabel}>Evidence:</Text>
                   {item.evidence.slice(0, 2).map((evidence, evidenceIdx) => (
                     <Text key={evidenceIdx} style={styles.evidenceItem}>
-                      "{sanitizeText(evidence)}"
+                      &ldquo;{sanitizeText(evidence)}&rdquo;
                     </Text>
                   ))}
                 </View>
@@ -397,7 +396,7 @@ export const TakeawaysPDFDocument: React.FC<TakeawaysPDFDocumentProps> = ({
                   <Text style={styles.evidenceLabel}>Evidence:</Text>
                   {item.evidence.slice(0, 2).map((evidence, evidenceIdx) => (
                     <Text key={evidenceIdx} style={styles.evidenceItem}>
-                      "{sanitizeText(evidence)}"
+                      &ldquo;{sanitizeText(evidence)}&rdquo;
                     </Text>
                   ))}
                 </View>
@@ -444,7 +443,7 @@ export const TakeawaysPDFDocument: React.FC<TakeawaysPDFDocumentProps> = ({
                   <Text style={styles.evidenceLabel}>Evidence:</Text>
                   {item.evidence.slice(0, 2).map((evidence, evidenceIdx) => (
                     <Text key={evidenceIdx} style={styles.evidenceItem}>
-                      "{sanitizeText(evidence)}"
+                      &ldquo;{sanitizeText(evidence)}&rdquo;
                     </Text>
                   ))}
                 </View>

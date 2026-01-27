@@ -9,7 +9,6 @@ import React from 'react';
 import { generatePDFBuffer, generatePDFFilename } from '@/src/lib/pdf/utils/generatePDF';
 import { TakeawaysPDFDocument } from '@/src/lib/pdf/templates/TakeawaysPDFDocument';
 import type { TakeawaysPDFData } from '@/src/lib/pdf/types';
-import { apiClient } from '@/lib/api-client';
 
 interface RouteParams {
   params: {
@@ -19,44 +18,73 @@ interface RouteParams {
 
 export async function GET(
   request: NextRequest,
-  { params }: RouteParams
+  context: RouteParams
 ) {
   try {
-    const { conversationId } = params;
+    // Await params in Next.js 15+
+    const { conversationId } = await context.params;
+
+    // Get auth token from Authorization header
+    const authHeader = request.headers.get('authorization');
+    const authToken = authHeader?.replace('Bearer ', '');
+
+    if (!authToken) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Make direct authenticated fetch calls with the token
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+    const headers = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${authToken}`,
+    };
 
     // Fetch conversation data
-    const conversation = await apiClient.get<any>(
-      `/focus-groups/conversations/${conversationId}`
+    const conversationRes = await fetch(
+      `${apiUrl}/focus-groups/conversations/${conversationId}`,
+      { headers }
     );
-
-    if (!conversation) {
+    if (!conversationRes.ok) {
       return NextResponse.json(
         { error: 'Conversation not found' },
         { status: 404 }
       );
     }
+    const conversation = await conversationRes.json();
 
     // Fetch takeaways
-    const takeawaysResponse = await apiClient.get<any>(
-      `/focus-groups/conversations/${conversationId}/takeaways`
+    const takeawaysRes = await fetch(
+      `${apiUrl}/focus-groups/conversations/${conversationId}/takeaways`,
+      { headers }
     );
-
-    if (!takeawaysResponse || !takeawaysResponse.takeaways) {
+    if (!takeawaysRes.ok) {
       return NextResponse.json(
         { error: 'Takeaways not found. Please generate takeaways first.' },
         { status: 404 }
       );
     }
+    const takeawaysResponse = await takeawaysRes.json();
 
     // Fetch case information
-    const caseInfo = await apiClient.get<any>(
-      `/cases/${conversation.session?.caseId || conversation.caseId}`
-    );
+    const caseId = conversation.session?.caseId || conversation.caseId;
+    const caseRes = await fetch(`${apiUrl}/cases/${caseId}`, { headers });
+    if (!caseRes.ok) {
+      return NextResponse.json(
+        { error: 'Case not found' },
+        { status: 404 }
+      );
+    }
+    const caseInfo = await caseRes.json();
 
     // Fetch persona summaries
-    const personaSummaries = await apiClient.get<any>(
-      `/focus-groups/conversations/${conversationId}/persona-summaries`
+    const summariesRes = await fetch(
+      `${apiUrl}/focus-groups/conversations/${conversationId}/persona-summaries`,
+      { headers }
     );
+    const personaSummaries = summariesRes.ok ? await summariesRes.json() : [];
 
     // Prepare PDF data
     const pdfData: TakeawaysPDFData = {

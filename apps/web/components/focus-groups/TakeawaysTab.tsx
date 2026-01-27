@@ -198,9 +198,39 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     generateMutation.mutate();
   };
 
-  const handleExportPDF = () => {
-    // Open PDF in new tab for download
-    window.open(`/api/focus-groups/conversations/${conversationId}/export/takeaways`, '_blank');
+  const handleExportPDF = async () => {
+    try {
+      // Get auth token from localStorage
+      const token = localStorage.getItem('auth_token');
+
+      // Fetch PDF with authentication
+      const response = await fetch(
+        `/api/focus-groups/conversations/${conversationId}/export/takeaways`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Get blob and create download link
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `focus-group-takeaways-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      // TODO: Show error toast to user
+    }
   };
 
   return (

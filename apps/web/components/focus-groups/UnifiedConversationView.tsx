@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './TakeawaysTab';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
 import { PersonaDetailModal } from './PersonaDetailModal';
-import { PersonaInsightsCard, PersonaInsight } from './PersonaInsightsCard';
+import { PersonaInsight } from './PersonaInsightsCard';
 import { apiClient } from '@/lib/api-client';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
 
