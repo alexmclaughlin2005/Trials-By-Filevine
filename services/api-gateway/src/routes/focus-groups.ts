@@ -3,6 +3,7 @@ import { FocusGroupEngineService } from '../services/focus-group-engine';
 import { FocusGroupQuestionGeneratorService } from '../services/focus-group-question-generator';
 import { ConversationOrchestrator, StatementAnalyzer } from '../services/roundtable';
 import { TakeawaysGenerator } from '../services/roundtable/takeaways-generator';
+import { PersonaInsightsGenerator } from '../services/roundtable/persona-insights-generator';
 import { PromptClient } from '@juries/prompt-client';
 
 export async function focusGroupsRoutes(server: FastifyInstance) {
@@ -1348,6 +1349,67 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         reply.code(500);
         return {
           error: 'Failed to generate takeaways',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined,
+        };
+      }
+    },
+
+  // Generate persona case insights
+  server.post<{
+    Params: { conversationId: string };
+  }>('/conversations/:conversationId/generate-persona-insights', {
+    onRequest: [server.authenticate],
+    handler: async (request, reply) => {
+      const { organizationId } = request.user as any;
+      const { conversationId } = request.params;
+
+      server.log.info({ conversationId }, '🧠 Generate persona insights request');
+
+      try {
+        // Verify conversation exists and belongs to user's organization
+        const conversation = await server.prisma.focusGroupConversation.findFirst({
+          where: {
+            id: conversationId,
+            session: {
+              case: {
+                organizationId,
+              },
+            },
+          },
+        });
+
+        if (!conversation) {
+          server.log.warn({ conversationId }, 'Conversation not found');
+          reply.code(404);
+          return { error: 'Conversation not found' };
+        }
+
+        if (!conversation.completedAt) {
+          server.log.warn({ conversationId }, 'Conversation not completed');
+          reply.code(400);
+          return { error: 'Cannot generate insights for incomplete conversation' };
+        }
+
+        // Initialize generator
+        const promptClient = new PromptClient({
+          baseUrl: process.env.PROMPT_SERVICE_URL || 'http://localhost:3002',
+        });
+        const generator = new PersonaInsightsGenerator(server.prisma, promptClient);
+
+        // Generate insights
+        const insights = await generator.generateInsights(conversationId);
+
+        return {
+          conversationId,
+          insights,
+          generatedAt: new Date().toISOString(),
+        };
+      } catch (error) {
+        server.log.error({ error, conversationId }, 'Error generating persona insights');
+        reply.code(500);
+        return {
+          error: 'Failed to generate persona insights',
           message: error instanceof Error ? error.message : 'Unknown error',
           stack: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : undefined) : undefined,
         };

@@ -3,14 +3,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
 import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle, Loader2 } from 'lucide-react';
-import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './TakeawaysTab';
+import { PersonaSummaryCard } from './PersonaSummaryCard';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsightsCard, PersonaInsight } from './PersonaInsightsCard';
 import { apiClient } from '@/lib/api-client';
-import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
 
 interface UnifiedConversationViewProps {
