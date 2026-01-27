@@ -1,11 +1,12 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { CheckCircle, AlertCircle, XCircle, HelpCircle, FileEdit, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, XCircle, HelpCircle, FileEdit, Loader2, Sparkles, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TakeawaysData {
@@ -73,18 +74,22 @@ const priorityColors = {
 
 export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTabProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [hasGenerated, setHasGenerated] = useState(false);
 
+  // Check if takeaways exist
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
-    queryFn: () => apiClient.post<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/generate-takeaways`, {}),
-    retry: (failureCount, error: unknown) => {
-      // Don't retry if conversation is incomplete (400 error)
-      const err = error as { message?: string; response?: { status?: number } };
-      if (err?.message?.includes('incomplete') || err?.response?.status === 400) {
-        return false;
-      }
-      // Retry once for other errors
-      return failureCount < 1;
+    queryFn: () => apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`),
+    retry: false,
+  });
+
+  // Generate takeaways mutation
+  const generateMutation = useMutation({
+    mutationFn: () => apiClient.post<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/generate-takeaways`, {}),
+    onSuccess: (data) => {
+      queryClient.setQueryData(['conversation-takeaways', conversationId], data);
+      setHasGenerated(true);
     },
   });
 
@@ -92,29 +97,91 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     return (
       <div className="flex flex-col items-center justify-center p-12">
         <Loader2 className="h-12 w-12 animate-spin text-filevine-blue mb-4" />
-        <p className="text-lg font-medium text-filevine-gray-900">Analyzing conversation...</p>
-        <p className="text-sm text-filevine-gray-600 mt-2">
-          Generating strategic insights and recommendations
-        </p>
+        <p className="text-lg font-medium text-filevine-gray-900">Checking for takeaways...</p>
       </div>
     );
   }
 
+  // Show generate button if no takeaways exist
   if (error || !data) {
-    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const errorMessage = error instanceof Error ? error.message : '';
     const isIncomplete = errorMessage.includes('incomplete');
+    const notFound = errorMessage.includes('not found') || errorMessage.includes('404');
 
+    if (generateMutation.isPending) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12">
+          <Loader2 className="h-12 w-12 animate-spin text-filevine-blue mb-4" />
+          <p className="text-lg font-medium text-filevine-gray-900">Analyzing conversation...</p>
+          <p className="text-sm text-filevine-gray-600 mt-2">
+            Generating strategic insights and recommendations
+          </p>
+          <p className="text-xs text-filevine-gray-500 mt-4">
+            This may take 30-60 seconds
+          </p>
+        </div>
+      );
+    }
+
+    if (generateMutation.isError) {
+      const genError = generateMutation.error as Error;
+      return (
+        <div className="p-8 text-center">
+          <AlertCircle className="h-10 w-10 mx-auto mb-3 text-red-500" />
+          <p className="text-base font-medium text-filevine-gray-900">
+            Failed to generate takeaways
+          </p>
+          <p className="text-sm text-filevine-gray-600 mt-1.5">
+            {genError.message || 'An unexpected error occurred'}
+          </p>
+          <Button
+            onClick={() => generateMutation.mutate()}
+            className="mt-4"
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+
+    if (isIncomplete) {
+      return (
+        <div className="p-8 text-center">
+          <AlertCircle className="h-10 w-10 mx-auto mb-3 text-blue-500" />
+          <p className="text-base font-medium text-filevine-gray-900">
+            Conversation in Progress
+          </p>
+          <p className="text-sm text-filevine-gray-600 mt-1.5">
+            Key takeaways will be available once the roundtable discussion is complete.
+          </p>
+        </div>
+      );
+    }
+
+    // No takeaways found - show generate button
     return (
-      <div className="p-8 text-center">
-        <AlertCircle className={`h-10 w-10 mx-auto mb-3 ${isIncomplete ? 'text-blue-500' : 'text-red-500'}`} />
-        <p className="text-base font-medium text-filevine-gray-900">
-          {isIncomplete ? 'Conversation in Progress' : 'Failed to generate takeaways'}
+      <div className="p-12 text-center max-w-2xl mx-auto">
+        <div className="bg-gradient-to-br from-filevine-blue/10 to-purple-100/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+          <Sparkles className="h-10 w-10 text-filevine-blue" />
+        </div>
+        <h3 className="text-2xl font-semibold text-filevine-gray-900 mb-3">
+          Generate Strategic Takeaways
+        </h3>
+        <p className="text-base text-filevine-gray-600 mb-6">
+          Analyze this focus group conversation to extract key insights, identify what landed well,
+          what confused the panel, and get concrete recommendations for improving your argument.
         </p>
-        <p className="text-sm text-filevine-gray-600 mt-1.5">
-          {isIncomplete
-            ? 'Key takeaways will be available once the roundtable discussion is complete.'
-            : errorMessage
-          }
+        <Button
+          onClick={() => generateMutation.mutate()}
+          size="lg"
+          className="bg-filevine-blue hover:bg-filevine-blue/90"
+        >
+          <Sparkles className="mr-2 h-5 w-5" />
+          Generate Takeaways
+        </Button>
+        <p className="text-xs text-filevine-gray-500 mt-4">
+          Generation takes 30-60 seconds
         </p>
       </div>
     );
@@ -127,8 +194,38 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     router.push(`/cases/${caseId}/arguments/${argumentId}/edit?applyRecommendations=${conversationId}`);
   };
 
+  const handleRegenerate = () => {
+    generateMutation.mutate();
+  };
+
   return (
     <div className="space-y-6">
+      {/* Regenerate Button */}
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-sm text-filevine-gray-600">
+            Generated {new Date(data.generatedAt).toLocaleString()}
+          </p>
+        </div>
+        <Button
+          onClick={handleRegenerate}
+          variant="outline"
+          size="sm"
+          disabled={generateMutation.isPending}
+        >
+          {generateMutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Regenerating...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Regenerate Takeaways
+            </>
+          )}
+        </Button>
+      </div>
       {/* Strategic Summary - 3 Column Layout */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* What Landed */}

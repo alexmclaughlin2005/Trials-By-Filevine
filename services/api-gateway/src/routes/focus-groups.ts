@@ -1206,6 +1206,64 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
     }
   });
 
+  // Get takeaways for a conversation (if they exist)
+  server.get<{
+    Params: { conversationId: string };
+  }>('/conversations/:conversationId/takeaways', {
+    onRequest: [server.authenticate],
+    handler: async (request, reply) => {
+      const { organizationId } = request.user as any;
+      const { conversationId } = request.params;
+
+      try {
+        // Verify conversation belongs to organization
+        const conversation = await server.prisma.focusGroupConversation.findFirst({
+          where: {
+            id: conversationId,
+            session: {
+              case: { organizationId }
+            }
+          }
+        });
+
+        if (!conversation) {
+          reply.code(404);
+          return { error: 'Conversation not found' };
+        }
+
+        // Check if takeaways exist
+        const takeawaysRecord = await server.prisma.focusGroupTakeaways.findUnique({
+          where: { conversationId }
+        });
+
+        if (!takeawaysRecord) {
+          reply.code(404);
+          return { error: 'Takeaways not found for this conversation' };
+        }
+
+        return {
+          conversationId,
+          takeaways: {
+            whatLanded: takeawaysRecord.whatLanded,
+            whatConfused: takeawaysRecord.whatConfused,
+            whatBackfired: takeawaysRecord.whatBackfired,
+            topQuestions: takeawaysRecord.topQuestions,
+            recommendedEdits: takeawaysRecord.recommendedEdits,
+          },
+          generatedAt: takeawaysRecord.createdAt.toISOString(),
+          promptVersion: takeawaysRecord.promptVersion,
+        };
+      } catch (error) {
+        server.log.error({ error, conversationId }, 'Error fetching takeaways');
+        reply.code(500);
+        return {
+          error: 'Failed to fetch takeaways',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
+    }
+  });
+
   // Generate strategic takeaways for a conversation
   server.post<{
     Params: { conversationId: string };
