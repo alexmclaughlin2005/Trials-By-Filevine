@@ -77,11 +77,11 @@ export function UnifiedConversationView({
     ] : [])
   ];
 
-  // Support both statements and allStatements (from different API responses)
-  const statements = conversation?.statements || conversation?.allStatements || allStatements || [];
-  const consensusAreas = conversation?.consensusAreas || overallAnalysis?.consensusAreas || [];
-  const fracturePoints = conversation?.fracturePoints || overallAnalysis?.fracturePoints || [];
-  const keyDebatePoints = conversation?.keyDebatePoints || overallAnalysis?.keyDebatePoints || [];
+  // Use props directly - parent component handles data fetching
+  const statements = allStatements || [];
+  const consensusAreas = overallAnalysis?.consensusAreas || [];
+  const fracturePoints = overallAnalysis?.fracturePoints || [];
+  const keyDebatePoints = overallAnalysis?.keyDebatePoints || [];
 
   return (
     <>
