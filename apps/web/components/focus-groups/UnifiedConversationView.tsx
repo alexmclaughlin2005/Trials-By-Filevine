@@ -61,7 +61,9 @@ export function UnifiedConversationView({
 }: UnifiedConversationViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
-  const [showInsightsButton, setShowInsightsButton] = useState(true);
+  const [personaInsights, setPersonaInsights] = useState<PersonaInsight[] | null>(null);
+  const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
   const hasAutoSwitchedRef = useRef(false);
 
   // Auto-switch to takeaways when conversation completes (only once)
@@ -71,6 +73,25 @@ export function UnifiedConversationView({
       setActiveTab('takeaways');
     }
   }, [isComplete]);
+
+  // Handler for generating persona insights
+  const handleGenerateInsights = async () => {
+    setIsGeneratingInsights(true);
+    setInsightsError(null);
+
+    try {
+      const response = await apiClient.post<{ insights: PersonaInsight[] }>(
+        `/focus-groups/conversations/${conversationId}/generate-persona-insights`,
+        {}
+      );
+      setPersonaInsights(response.insights);
+    } catch (error) {
+      console.error('Error generating insights:', error);
+      setInsightsError(error instanceof Error ? error.message : 'Failed to generate insights');
+    } finally {
+      setIsGeneratingInsights(false);
+    }
+  };
 
   const tabs = [
     ...(customQuestions && customQuestions.length > 0
@@ -349,19 +370,59 @@ export function UnifiedConversationView({
                     {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
                   </p>
                 </div>
-                {isComplete && personaSummaries.length > 0 && showInsightsButton && (
-                  <button
-                    onClick={() => {
-                      alert('Coming soon: Generate deep persona case insights');
-                      // TODO: Implement persona insights generation
-                    }}
-                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2 shadow-sm"
+                {isComplete && personaSummaries.length > 0 && !personaInsights && (
+                  <Button
+                    onClick={handleGenerateInsights}
+                    disabled={isGeneratingInsights}
+                    className="bg-indigo-600 hover:bg-indigo-700 shadow-sm"
                   >
-                    <Sparkles className="h-4 w-4" />
-                    Generate Case Insights
-                  </button>
+                    {isGeneratingInsights ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Generating Insights...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Generate Case Insights
+                      </>
+                    )}
+                  </Button>
                 )}
               </div>
+
+              {/* Error state */}
+              {insightsError && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-red-900">Failed to generate insights</p>
+                    <p className="text-sm text-red-700 mt-1">{insightsError}</p>
+                  </div>
+                  <Button
+                    onClick={handleGenerateInsights}
+                    variant="outline"
+                    size="sm"
+                    className="border-red-300 text-red-700 hover:bg-red-100"
+                  >
+                    Try Again
+                  </Button>
+                </div>
+              )}
+
+              {/* Loading state */}
+              {isGeneratingInsights && (
+                <div className="flex flex-col items-center justify-center py-12 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg border-2 border-indigo-200">
+                  <Loader2 className="h-12 w-12 animate-spin text-indigo-600 mb-4" />
+                  <p className="text-lg font-semibold text-indigo-900">Analyzing Persona Psychology...</p>
+                  <p className="text-sm text-indigo-700 mt-2">
+                    Generating deep insights for each persona
+                  </p>
+                  <p className="text-xs text-indigo-600 mt-4">
+                    This may take 30-60 seconds
+                  </p>
+                </div>
+              )}
 
               {personaSummaries.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
@@ -371,9 +432,28 @@ export function UnifiedConversationView({
                 </div>
               ) : (
                 <div className="space-y-4">
+                  {/* Show persona summaries */}
                   {personaSummaries.map((summary) => (
                     <PersonaSummaryCard key={summary.personaId} summary={summary} />
                   ))}
+
+                  {/* Show persona insights if generated */}
+                  {personaInsights && personaInsights.length > 0 && (
+                    <>
+                      <div className="pt-8 border-t-2 border-indigo-200">
+                        <h3 className="text-lg font-semibold text-indigo-900 mb-1 flex items-center gap-2">
+                          <Sparkles className="h-5 w-5" />
+                          Deep Case Interpretation Insights
+                        </h3>
+                        <p className="text-sm text-indigo-700 mb-6">
+                          How each persona uniquely interprets this case and targeted persuasion strategies
+                        </p>
+                      </div>
+                      {personaInsights.map((insight) => (
+                        <PersonaInsightsCard key={insight.personaId} insight={insight} />
+                      ))}
+                    </>
+                  )}
                 </div>
               )}
             </div>
