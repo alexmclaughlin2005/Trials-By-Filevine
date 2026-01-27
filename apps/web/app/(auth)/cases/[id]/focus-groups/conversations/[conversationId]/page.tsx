@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api-client';
 import { ConversationDetail } from '@/types/focus-group';
 import { RoundtableConversationViewer } from '@/components/roundtable-conversation-viewer';
+import { ConversationTabs } from '@/components/focus-groups/ConversationTabs';
 import { Loader2 } from 'lucide-react';
 
 export default function ConversationDetailPage() {
@@ -126,11 +127,23 @@ export default function ConversationDetailPage() {
         </div>
       )}
 
-      {/* Roundtable Conversation Viewer with Takeaways */}
+      {/* Conversation Header Summary */}
       <RoundtableConversationViewer
         conversationId={conversationId}
         caseId={caseId}
       />
+
+      {/* Detailed Conversation Tabs (By Question, By Persona, Overall Analysis) */}
+      {conversation.allStatements.length > 0 && (
+        <div className="mt-8">
+          <ConversationTabs
+            personaSummaries={conversation.personaSummaries}
+            allStatements={conversation.allStatements}
+            overallAnalysis={conversation.overallAnalysis}
+            customQuestions={conversation.customQuestions}
+          />
+        </div>
+      )}
     </div>
   );
 }

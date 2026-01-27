@@ -93,12 +93,20 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   }
 
   if (error || !data) {
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    const isIncomplete = errorMessage.includes('incomplete');
+
     return (
       <div className="p-12 text-center">
-        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-        <p className="text-lg font-medium text-filevine-gray-900">Failed to generate takeaways</p>
+        <AlertCircle className={`h-12 w-12 mx-auto mb-4 ${isIncomplete ? 'text-blue-500' : 'text-red-500'}`} />
+        <p className="text-lg font-medium text-filevine-gray-900">
+          {isIncomplete ? 'Conversation in Progress' : 'Failed to generate takeaways'}
+        </p>
         <p className="text-sm text-filevine-gray-600 mt-2">
-          {error instanceof Error ? error.message : 'An unexpected error occurred'}
+          {isIncomplete
+            ? 'Key takeaways will be available once the roundtable discussion is complete. This usually takes 2-3 minutes.'
+            : errorMessage
+          }
         </p>
       </div>
     );
