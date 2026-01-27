@@ -16,7 +16,7 @@ import {
   ConfigurationStep,
 } from '@/types/focus-group';
 import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles, X } from 'lucide-react';
-import { ArgumentCheckboxList, WizardProgressFooter } from './focus-group-setup-wizard/index';
+import { ArgumentCheckboxList, WizardProgressFooter, UnifiedQuestionList } from './focus-group-setup-wizard/index';
 
 interface FocusGroupSetupWizardProps {
   caseId: string;
@@ -274,8 +274,8 @@ export function FocusGroupSetupWizard({
         )}
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between">
+      {/* Navigation Buttons - Add bottom padding to prevent footer overlap */}
+      <div className="flex items-center justify-between pb-20">
         <Button variant="outline" onClick={onCancel} disabled={updateConfigMutation.isPending}>
           Cancel
         </Button>
@@ -629,7 +629,6 @@ function QuestionsStep({
   onUpdate: (updates: FocusGroupConfigUpdate) => void;
 }) {
   const [questions, setQuestions] = useState<CustomQuestion[]>(session.customQuestions || []);
-  const [newQuestion, setNewQuestion] = useState('');
   const [suggestedQuestions, setSuggestedQuestions] = useState<SuggestedQuestion[]>([]);
 
   // Generate AI suggestions mutation
@@ -660,238 +659,102 @@ function QuestionsStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId, session.selectedArguments]);
 
-  const handleAddQuestion = () => {
-    if (!newQuestion.trim()) return;
+  const handleUpdateSelected = (updated: CustomQuestion[]) => {
+    setQuestions(updated);
+    onUpdate({ customQuestions: updated });
+  };
 
+  const handleUpdateSuggested = (updated: SuggestedQuestion[]) => {
+    setSuggestedQuestions(updated);
+  };
+
+  const handleAddCustom = (questionText: string) => {
     const updated = [
       ...questions,
       {
         id: `q-${Date.now()}`,
-        question: newQuestion,
+        question: questionText,
         order: questions.length + 1,
         targetPersonas: [],
+        metadata: {
+          source: 'custom' as const,
+        },
       },
     ];
 
     setQuestions(updated);
     onUpdate({ customQuestions: updated });
-    setNewQuestion('');
   };
 
-  const handleRemoveQuestion = (id: string) => {
-    const updated = questions.filter((q) => q.id !== id).map((q, index) => ({
-      ...q,
-      order: index + 1,
-    }));
-
-    setQuestions(updated);
-    onUpdate({ customQuestions: updated });
-  };
-
-  const handleAcceptSuggestion = (suggestion: SuggestedQuestion) => {
-    const updated = [
-      ...questions,
-      {
-        id: `accepted-${suggestion.id}`,
-        question: suggestion.question,
-        order: questions.length + 1,
-        targetPersonas: suggestion.targetArchetypes,
-      },
-    ];
-
-    setQuestions(updated);
-    onUpdate({ customQuestions: updated });
-
-    // Remove from suggestions
-    setSuggestedQuestions(suggestedQuestions.filter((s) => s.id !== suggestion.id));
-  };
-
-  const handleDismissSuggestion = (suggestionId: string) => {
-    setSuggestedQuestions(suggestedQuestions.filter((s) => s.id !== suggestionId));
-  };
-
-  const handleRegenerateQuestions = () => {
+  const handleRegenerate = () => {
     generateQuestionsMutation.mutate();
   };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-filevine-gray-900">
-          Configure Focus Group Questions
-        </h3>
-        <p className="mt-1 text-sm text-filevine-gray-600">
-          Review AI-suggested questions or add your own custom questions
-        </p>
-      </div>
-
-      {/* AI Suggested Questions */}
-      {suggestedQuestions.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-sm font-medium text-filevine-gray-700">
-              <Sparkles className="h-4 w-4 text-filevine-blue" />
-              AI Suggested Questions ({suggestedQuestions.length})
-            </label>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRegenerateQuestions}
-              disabled={generateQuestionsMutation.isPending}
-            >
-              {generateQuestionsMutation.isPending ? 'Generating...' : 'Regenerate'}
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            {suggestedQuestions.map((suggestion) => (
-              <div
-                key={suggestion.id}
-                className="rounded-lg border border-blue-200 bg-blue-50 p-4"
-              >
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 flex-shrink-0 text-filevine-blue mt-0.5" />
-                  <div className="flex-1 space-y-2">
-                    <p className="text-sm font-medium text-filevine-gray-900">
-                      {suggestion.question}
-                    </p>
-                    <div className="flex items-center gap-2 text-xs text-filevine-gray-600">
-                      <span className="rounded bg-white px-2 py-1">
-                        {suggestion.argumentTitle}
-                      </span>
-                      <span>•</span>
-                      <span className="italic">{suggestion.purpose}</span>
-                    </div>
-                    {suggestion.targetArchetypes.length > 0 &&
-                      suggestion.targetArchetypes[0] !== 'all' && (
-                        <div className="flex flex-wrap gap-1">
-                          {suggestion.targetArchetypes.map((archetype) => (
-                            <span
-                              key={archetype}
-                              className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-700"
-                            >
-                              {archetype}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                  </div>
-                  <div className="flex flex-shrink-0 gap-2">
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={() => handleAcceptSuggestion(suggestion)}
-                    >
-                      Accept
-                    </Button>
-                    <button
-                      onClick={() => handleDismissSuggestion(suggestion.id)}
-                      className="rounded p-1 text-filevine-gray-400 hover:bg-white hover:text-filevine-gray-600"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+  // Show Generate Questions button if no suggestions and not generating
+  if (
+    suggestedQuestions.length === 0 &&
+    !generateQuestionsMutation.isPending &&
+    questions.length === 0 &&
+    session.selectedArguments &&
+    session.selectedArguments.length > 0
+  ) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-filevine-gray-900">
+            Configure Focus Group Questions
+          </h3>
+          <p className="mt-1 text-sm text-filevine-gray-600">
+            Review AI-suggested questions or add your own custom questions
+          </p>
         </div>
-      )}
 
-      {/* Generate Questions Button */}
-      {suggestedQuestions.length === 0 &&
-        !generateQuestionsMutation.isPending &&
-        session.selectedArguments &&
-        session.selectedArguments.length > 0 && (
-          <div className="rounded-md border border-dashed border-filevine-gray-300 bg-filevine-gray-50 p-6 text-center">
-            <Sparkles className="mx-auto h-12 w-12 text-filevine-blue" />
-            <p className="mt-3 text-sm text-filevine-gray-600">
-              Generate AI-suggested questions for your selected arguments
-            </p>
-            <Button
-              variant="primary"
-              onClick={handleRegenerateQuestions}
-              className="mt-4"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              Generate Questions
-            </Button>
-          </div>
-        )}
+        <div className="rounded-md border border-dashed border-filevine-gray-300 bg-filevine-gray-50 p-6 text-center">
+          <Sparkles className="mx-auto h-12 w-12 text-filevine-blue" />
+          <p className="mt-3 text-sm text-filevine-gray-600">
+            Generate AI-suggested questions for your selected arguments
+          </p>
+          <Button variant="primary" onClick={handleRegenerate} className="mt-4">
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate Questions
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-      {/* Loading State */}
-      {generateQuestionsMutation.isPending && (
+  // Show loading state
+  if (generateQuestionsMutation.isPending) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold text-filevine-gray-900">
+            Configure Focus Group Questions
+          </h3>
+          <p className="mt-1 text-sm text-filevine-gray-600">
+            Review AI-suggested questions or add your own custom questions
+          </p>
+        </div>
+
         <div className="rounded-md border border-filevine-gray-200 bg-white p-8 text-center">
           <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-filevine-blue border-t-transparent"></div>
           <p className="mt-4 text-sm text-filevine-gray-600">Generating questions...</p>
         </div>
-      )}
-
-      {/* Add Custom Question Form */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-filevine-gray-700">
-          Add Custom Question
-        </label>
-        <div className="flex gap-3">
-          <input
-            type="text"
-            value={newQuestion}
-            onChange={(e) => setNewQuestion(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                handleAddQuestion();
-              }
-            }}
-            placeholder="e.g., What concerns do you have about the evidence presented?"
-            className="flex-1 rounded-md border border-filevine-gray-300 px-3 py-2 text-sm"
-          />
-          <Button onClick={handleAddQuestion} disabled={!newQuestion.trim()}>
-            Add Question
-          </Button>
-        </div>
       </div>
+    );
+  }
 
-      {/* Accepted Questions List */}
-      {questions.length > 0 && (
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-filevine-gray-700">
-            Questions to Ask ({questions.length})
-          </label>
-
-          {questions.map((question, index) => (
-            <div
-              key={question.id}
-              className="flex items-start gap-3 rounded-lg border border-filevine-gray-200 bg-white p-4"
-            >
-              <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-filevine-blue text-xs font-semibold text-white">
-                {index + 1}
-              </span>
-              <p className="flex-1 text-sm text-filevine-gray-900">{question.question}</p>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleRemoveQuestion(question.id)}
-                className="flex-shrink-0"
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {questions.length === 0 && suggestedQuestions.length === 0 && !generateQuestionsMutation.isPending && (
-        <div className="rounded-md border border-dashed border-filevine-gray-300 bg-filevine-gray-50 p-8 text-center">
-          <MessageSquare className="mx-auto h-12 w-12 text-filevine-gray-400" />
-          <p className="mt-3 text-sm text-filevine-gray-600">
-            No questions added yet. Generate AI suggestions or add custom questions above.
-          </p>
-          <p className="mt-2 text-xs text-filevine-gray-500">
-            You can also skip this step if you don&apos;t want to ask specific questions.
-          </p>
-        </div>
-      )}
-    </div>
+  // Show unified question list
+  return (
+    <UnifiedQuestionList
+      selectedQuestions={questions}
+      suggestedQuestions={suggestedQuestions}
+      onUpdateSelected={handleUpdateSelected}
+      onUpdateSuggested={handleUpdateSuggested}
+      onAddCustom={handleAddCustom}
+      isGenerating={generateQuestionsMutation.isPending}
+      onRegenerate={handleRegenerate}
+    />
   );
 }
 

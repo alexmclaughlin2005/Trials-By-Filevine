@@ -17,6 +17,12 @@ export interface CustomQuestion {
   question: string;
   order: number;
   targetPersonas?: string[]; // Empty or null = all personas
+  metadata?: {
+    source?: 'ai' | 'custom' | 'ai-auto';
+    argumentTitle?: string;
+    purpose?: string;
+    argumentId?: string;
+  };
 }
 
 export interface SuggestedQuestion {
