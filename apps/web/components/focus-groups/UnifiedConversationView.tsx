@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle } from 'lucide-react';
@@ -11,23 +9,6 @@ import { TakeawaysTab } from './TakeawaysTab';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
-
-interface Conversation {
-  id: string;
-  argumentId: string;
-  argumentTitle: string;
-  startedAt: string;
-  completedAt?: string;
-  converged: boolean;
-  convergenceReason?: string;
-  consensusAreas?: string[];
-  fracturePoints?: string[];
-  keyDebatePoints?: string[];
-  influentialPersonas?: Array<{ personaId: string; personaName: string; influence: string }>;
-  statements?: ConversationStatement[];
-  allStatements?: ConversationStatement[];
-  overallAnalysis?: OverallAnalysis;
-}
 
 interface UnifiedConversationViewProps {
   conversationId: string;
@@ -74,11 +55,6 @@ export function UnifiedConversationView({
   const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
   const hasAutoSwitchedRef = useRef(false);
-
-  const { data: conversation } = useQuery<Conversation>({
-    queryKey: ['conversation', conversationId],
-    queryFn: () => apiClient.get<Conversation>(`/focus-groups/conversations/${conversationId}`)
-  });
 
   // Auto-switch to takeaways when conversation completes (only once)
   useEffect(() => {
