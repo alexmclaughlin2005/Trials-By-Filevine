@@ -72,7 +72,9 @@ You will analyze a focus group conversation and extract:
 4. Top questions jurors will ask during deliberation
 5. Concrete recommendations for improving the argument
 
-Be specific and evidence-based. Reference exact statements from the conversation to support your analysis. Focus on providing actionable insights that attorneys can immediately use to improve their arguments.`;
+Be specific and evidence-based. Reference exact statements from the conversation to support your analysis. Focus on providing actionable insights that attorneys can immediately use to improve their arguments.
+
+CRITICAL: You MUST respond with ONLY a valid JSON object. Do not include any text before or after the JSON. Do not use markdown formatting. Return raw JSON only.`;
 
 const USER_PROMPT_TEMPLATE = `# Focus Group Analysis Task
 
@@ -209,64 +211,66 @@ Example:
 
 ---
 
-# OUTPUT FORMAT
+# OUTPUT FORMAT - CRITICAL INSTRUCTIONS
 
-Return your analysis as a JSON object with this exact structure:
+You MUST return ONLY a raw JSON object. Do not include:
+- Any markdown formatting or code blocks
+- Any text before the JSON
+- Any text after the JSON
+- Any explanatory comments
 
-\`\`\`json
+Start your response with { and end with }
+
+The JSON structure must be:
+
 {
   "whatLanded": [
     {
-      "point": "string",
-      "personaSupport": ["string"],
-      "evidence": ["string"]
+      "point": "string describing what landed well",
+      "personaSupport": ["PersonaName1", "PersonaName2"],
+      "evidence": ["Statement #X: 'quote'", "Statement #Y: 'quote'"]
     }
   ],
   "whatConfused": [
     {
-      "point": "string",
-      "personasConfused": ["string"],
+      "point": "string describing confusion",
+      "personasConfused": ["PersonaName1", "PersonaName2"],
       "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-      "evidence": ["string"]
+      "evidence": ["Statement #X: 'quote'"]
     }
   ],
   "whatBackfired": [
     {
-      "point": "string",
-      "personasCritical": ["string"],
+      "point": "string describing what backfired",
+      "personasCritical": ["PersonaName1"],
       "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
-      "evidence": ["string"]
+      "evidence": ["Statement #X: 'quote'"]
     }
   ],
   "topQuestions": [
     {
-      "question": "string",
-      "askedByCount": number,
-      "personaNames": ["string"],
+      "question": "The question jurors will ask",
+      "askedByCount": 3,
+      "personaNames": ["PersonaName1", "PersonaName2"],
       "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
       "priority": "LOW" | "MEDIUM" | "HIGH"
     }
   ],
   "recommendedEdits": [
     {
-      "editNumber": number,
-      "section": "string",
+      "editNumber": 1,
+      "section": "Specific section name",
       "type": "CLARIFY" | "ADD" | "REMOVE" | "SOFTEN" | "STRENGTHEN",
-      "originalText": "string" | null,
-      "suggestedText": "string",
-      "reason": "string",
-      "affectedPersonas": ["string"],
+      "originalText": "current text or null",
+      "suggestedText": "improved text",
+      "reason": "why this change is needed",
+      "affectedPersonas": ["PersonaName1"],
       "priority": "LOW" | "MEDIUM" | "HIGH"
     }
   ]
 }
-\`\`\`
 
-**IMPORTANT:**
-- Only return the JSON object, no additional text
-- Be specific and evidence-based
-- Reference exact statement numbers when citing evidence
-- Prioritize actionable recommendations over general observations`;
+Remember: Your entire response must be valid JSON. No markdown, no explanations, just JSON.`;
 
 // Run the seed function
 seedRoundtableTakeaways()
