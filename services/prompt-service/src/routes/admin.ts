@@ -452,39 +452,50 @@ Remember: Your entire response must be valid JSON. No markdown, no explanations,
     if (existing) {
       logger.info(`  Prompt already exists (ID: ${existing.id})`);
 
-      if (!existing.currentVersionId) {
-        logger.info(`  No currentVersionId set - fixing...`);
+      // Always create a new version with updated template
+      logger.info(`  Creating new version with updated template...`);
 
-        // Find the latest version
-        const latestVersion = await prisma.promptVersion.findFirst({
-          where: { promptId: existing.id },
-          orderBy: { createdAt: 'desc' },
-        });
+      // Find latest version to increment version number
+      const latestVersion = await prisma.promptVersion.findFirst({
+        where: { promptId: existing.id },
+        orderBy: { createdAt: 'desc' },
+      });
 
-        if (latestVersion) {
-          await prisma.prompt.update({
-            where: { id: existing.id },
-            data: { currentVersionId: latestVersion.id },
-          });
-          logger.info(`  Set currentVersionId to ${latestVersion.id}`);
-          results.push({
-            serviceId: promptData.serviceId,
-            action: 'fixed',
-            promptId: existing.id,
-          });
-        } else {
-          logger.info(`  No versions found - deleting and recreating...`);
-          await prisma.prompt.delete({ where: { id: existing.id } });
-        }
-      } else {
-        logger.info(`  Already has currentVersionId set - skipping`);
-        results.push({
-          serviceId: promptData.serviceId,
-          action: 'skipped',
+      // Generate new version number
+      const versionMatch = latestVersion?.version.match(/v(\d+)\.(\d+)\.(\d+)/);
+      const newVersion = versionMatch
+        ? `v${versionMatch[1]}.${parseInt(versionMatch[2]) + 1}.0`
+        : 'v1.0.0';
+
+      // Create new version
+      const version = await prisma.promptVersion.create({
+        data: {
           promptId: existing.id,
-        });
-        continue;
-      }
+          version: newVersion,
+          systemPrompt: promptData.systemPrompt,
+          userPromptTemplate: promptData.userPromptTemplate,
+          config: promptData.config,
+          variables: promptData.variables,
+        },
+      });
+
+      logger.info(`  Created new version: ${version.version}`);
+
+      // Deploy the new version
+      await prisma.prompt.update({
+        where: { id: existing.id },
+        data: { currentVersionId: version.id },
+      });
+
+      logger.info(`  Deployed ${version.version} as current version`);
+
+      results.push({
+        serviceId: promptData.serviceId,
+        action: 'updated',
+        promptId: existing.id,
+        versionId: version.id,
+      });
+      continue;
     }
 
     // Create prompt (if it doesn't exist or was deleted)
