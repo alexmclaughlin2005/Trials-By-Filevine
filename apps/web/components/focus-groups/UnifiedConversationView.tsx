@@ -430,8 +430,7 @@ export function UnifiedConversationView({
                         key={statement.id}
                         className={cn(
                           'border rounded-lg p-4 transition-all',
-                          statement.sentiment && sentimentColors[statement.sentiment as keyof typeof sentimentColors],
-                          expandedStatement === statement.id && 'shadow-md'
+                          statement.sentiment && sentimentColors[statement.sentiment as keyof typeof sentimentColors]
                         )}
                       >
                         <div className="flex items-start justify-between mb-2">
