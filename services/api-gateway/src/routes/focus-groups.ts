@@ -1354,6 +1354,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         };
       }
     },
+  });
 
   // Generate persona case insights
   server.post<{
