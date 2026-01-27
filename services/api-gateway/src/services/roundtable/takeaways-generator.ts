@@ -214,38 +214,59 @@ export class TakeawaysGenerator {
    */
   private parseAndValidate(result: any): TakeawaysResult {
     console.log('🔍 Parsing AI response...');
+    console.log('Response type:', typeof result);
+    console.log('Response keys:', result && typeof result === 'object' ? Object.keys(result) : 'N/A');
 
     // Handle different response formats
     let parsed: any;
 
-    if (typeof result === 'string') {
-      // Try to extract JSON from markdown code blocks
-      const jsonMatch = result.match(/```json\n([\s\S]*?)\n```/) || result.match(/```\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[1]);
+    try {
+      if (typeof result === 'string') {
+        console.log('Response is string, length:', result.length);
+        console.log('First 200 chars:', result.substring(0, 200));
+        // Try to extract JSON from markdown code blocks
+        const jsonMatch = result.match(/```json\n([\s\S]*?)\n```/) || result.match(/```\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          console.log('Found JSON in code block');
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          console.log('No code block found, trying direct parse');
+          // Try direct JSON parse
+          parsed = JSON.parse(result);
+        }
+      } else if (result && Array.isArray(result.content) && result.content[0]?.text) {
+        console.log('Response is Anthropic API format');
+        // Anthropic API format
+        const text = result.content[0].text;
+        console.log('Text length:', text.length);
+        console.log('First 200 chars:', text.substring(0, 200));
+        const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          console.log('Found JSON in code block');
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          console.log('No code block found, trying direct parse');
+          parsed = JSON.parse(text);
+        }
+      } else if (typeof result === 'object') {
+        console.log('Response is object, using directly');
+        parsed = result;
       } else {
-        // Try direct JSON parse
-        parsed = JSON.parse(result);
+        throw new Error('Unexpected AI response format');
       }
-    } else if (result && Array.isArray(result.content) && result.content[0]?.text) {
-      // Anthropic API format
-      const text = result.content[0].text;
-      const jsonMatch = text.match(/```json\n([\s\S]*?)\n```/) || text.match(/```\n([\s\S]*?)\n```/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[1]);
-      } else {
-        parsed = JSON.parse(text);
-      }
-    } else if (typeof result === 'object') {
-      parsed = result;
-    } else {
-      throw new Error('Unexpected AI response format');
+
+      console.log('Parsed successfully, validating structure...');
+      // Validate structure
+      this.validateTakeawaysStructure(parsed);
+      console.log('✅ Validation passed');
+
+      return parsed as TakeawaysResult;
+    } catch (error) {
+      console.error('❌ Parse/validation error:', error);
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Error stack:', error instanceof Error ? error.stack : 'N/A');
+      throw error;
     }
-
-    // Validate structure
-    this.validateTakeawaysStructure(parsed);
-
-    return parsed as TakeawaysResult;
   }
 
   /**
