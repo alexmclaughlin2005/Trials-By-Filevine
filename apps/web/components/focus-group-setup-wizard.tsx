@@ -16,7 +16,7 @@ import {
   ConfigurationStep,
 } from '@/types/focus-group';
 import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles, X } from 'lucide-react';
-import { ArgumentCheckboxList, WizardProgressFooter, UnifiedQuestionList } from './focus-group-setup-wizard/index';
+import { ArgumentCheckboxList, EmptyArgumentsState, WizardProgressFooter, UnifiedQuestionList } from './focus-group-setup-wizard/index';
 
 interface FocusGroupSetupWizardProps {
   caseId: string;
@@ -174,6 +174,19 @@ export function FocusGroupSetupWizard({
   const questionsCount = session.session.customQuestions?.length || 0;
 
   const handleNext = async () => {
+    // Validate arguments step: must have at least 1 argument selected
+    if (currentStep === 'arguments') {
+      const hasSelectedArguments =
+        session.session.selectedArguments &&
+        session.session.selectedArguments.length > 0;
+
+      if (!hasSelectedArguments) {
+        // Validation will be shown by ValidationBanner component
+        return; // Block navigation
+      }
+    }
+
+    // Proceed to next step
     if (currentStepIndex < steps.length - 1) {
       const nextStep = steps[currentStepIndex + 1].key;
       await updateConfigMutation.mutateAsync({ configurationStep: nextStep });
@@ -295,7 +308,15 @@ export function FocusGroupSetupWizard({
             <Button
               variant="primary"
               onClick={handleNext}
-              disabled={updateConfigMutation.isPending}
+              disabled={
+                updateConfigMutation.isPending ||
+                (currentStep === 'arguments' && argumentsCount === 0)
+              }
+              title={
+                currentStep === 'arguments' && argumentsCount === 0
+                  ? 'Select at least 1 argument to continue'
+                  : undefined
+              }
             >
               {updateConfigMutation.isPending ? 'Saving...' : 'Next'}
             </Button>
@@ -608,6 +629,11 @@ function ArgumentsSelectionStep({
     onUpdate({ selectedArguments: updated });
   };
 
+  // If no arguments exist, show empty state
+  if (!caseArguments || caseArguments.length === 0) {
+    return <EmptyArgumentsState caseId={caseId} />;
+  }
+
   return (
     <ArgumentCheckboxList
       caseId={caseId}
@@ -641,7 +667,15 @@ function QuestionsStep({
       );
     },
     onSuccess: (data) => {
+      console.log('[QuestionsStep] Question generation SUCCESS');
+      console.log('[QuestionsStep] Received questions:', data.suggestedQuestions?.length);
+      console.log('[QuestionsStep] Full response:', data);
       setSuggestedQuestions(data.suggestedQuestions);
+    },
+    onError: (error) => {
+      console.error('[QuestionsStep] Question generation FAILED:', error);
+      // Show error to user
+      alert(`Failed to generate questions: ${error instanceof Error ? error.message : 'Unknown error'}`);
     },
   });
 
@@ -687,6 +721,8 @@ function QuestionsStep({
   };
 
   const handleRegenerate = () => {
+    console.log('[QuestionsStep] Regenerating questions for session:', sessionId);
+    console.log('[QuestionsStep] Current isPending:', generateQuestionsMutation.isPending);
     generateQuestionsMutation.mutate();
   };
 
