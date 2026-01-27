@@ -19,6 +19,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({}),
       });
 
       if (!response.ok) {
