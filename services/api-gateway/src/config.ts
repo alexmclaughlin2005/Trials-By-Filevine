@@ -17,16 +17,22 @@ const configSchema = z.object({
   blobReadWriteToken: z.string().optional(),
 });
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+
+// Use higher rate limits in development
+const defaultRateLimitMax = nodeEnv === 'development' ? '10000' : '100';
+const defaultRateLimitWindow = nodeEnv === 'development' ? '1m' : '15m';
+
 export const config = configSchema.parse({
   port: parseInt(process.env.PORT || '3001', 10),
   host: process.env.HOST || '0.0.0.0',
-  nodeEnv: process.env.NODE_ENV || 'development',
+  nodeEnv,
   databaseUrl: process.env.DATABASE_URL,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   allowedOrigins: process.env.ALLOWED_ORIGINS || 'http://localhost:3000',
-  rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
-  rateLimitWindow: process.env.RATE_LIMIT_WINDOW || '15m',
+  rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || defaultRateLimitMax, 10),
+  rateLimitWindow: process.env.RATE_LIMIT_WINDOW || defaultRateLimitWindow,
   logLevel: process.env.LOG_LEVEL || 'info',
   blobReadWriteToken: process.env.BLOB_READ_WRITE_TOKEN,
 });
