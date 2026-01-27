@@ -113,15 +113,14 @@ export default function ConversationDetailPage() {
   }
 
   return (
-    <div className="h-full p-8">
+    <div className="h-full px-8 py-6">
       {/* In-Progress Notice */}
       {!conversation.completedAt && (
-        <div className="mb-6 p-3 bg-blue-50 border border-blue-200 rounded-md">
+        <div className="mb-4 p-2.5 bg-blue-50 border border-blue-200 rounded-md">
           <div className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin text-filevine-blue" />
             <p className="text-sm text-blue-900">
-              The roundtable discussion is currently running. New statements will appear
-              automatically as personas respond. This usually takes 2-3 minutes to complete.
+              The roundtable discussion is currently running. New statements will appear automatically as personas respond.
             </p>
           </div>
         </div>
@@ -135,7 +134,7 @@ export default function ConversationDetailPage() {
 
       {/* Detailed Conversation Tabs (By Question, By Persona, Overall Analysis) */}
       {conversation.allStatements.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-6">
           <ConversationTabs
             personaSummaries={conversation.personaSummaries}
             allStatements={conversation.allStatements}

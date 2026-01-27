@@ -120,50 +120,42 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
   const keyDebatePoints = conversation.keyDebatePoints || conversation.overallAnalysis?.keyDebatePoints || [];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-4">
+      {/* Compact Header */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            Roundtable Discussion
-          </CardTitle>
-          <CardDescription>
-            {conversation.argumentTitle}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <div className="text-sm font-medium text-filevine-gray-600">Statements</div>
-              <div className="text-2xl font-bold text-filevine-gray-900">
-                {statements.length}
-              </div>
+        <CardHeader className="pb-3">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <MessageSquare className="h-4 w-4" />
+                Roundtable Discussion
+              </CardTitle>
+              <CardDescription className="mt-1">
+                {conversation.argumentTitle}
+              </CardDescription>
             </div>
-            <div>
-              <div className="text-sm font-medium text-filevine-gray-600">Status</div>
-              <div className="text-sm font-medium mt-1">
-                {conversation.converged ? (
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                    Converged
-                  </Badge>
-                ) : (
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-                    In Progress
-                  </Badge>
-                )}
+            <div className="flex items-center gap-4 text-sm">
+              <div className="text-right">
+                <div className="text-filevine-gray-600">Statements</div>
+                <div className="font-semibold text-filevine-gray-900">{statements.length}</div>
               </div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-filevine-gray-600">Duration</div>
-              <div className="text-sm font-medium mt-1 text-filevine-gray-900">
-                {conversation.completedAt
-                  ? `${Math.round((new Date(conversation.completedAt).getTime() - new Date(conversation.startedAt).getTime()) / 1000)}s`
-                  : 'In progress'}
+              <div className="text-right">
+                <div className="text-filevine-gray-600">Status</div>
+                <div className="mt-0.5">
+                  {conversation.converged ? (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs">
+                      Converged
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs">
+                      In Progress
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </CardContent>
+        </CardHeader>
       </Card>
 
       {/* Tabs */}
@@ -176,7 +168,7 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-3 border-b-2 transition-colors',
+                  'flex items-center gap-2 px-3 py-2 border-b-2 transition-colors text-sm',
                   activeTab === tab.id
                     ? 'border-filevine-blue text-filevine-blue font-medium'
                     : 'border-transparent text-filevine-gray-600 hover:text-filevine-gray-900'
