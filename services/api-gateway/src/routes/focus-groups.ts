@@ -1250,7 +1250,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
             topQuestions: takeawaysRecord.topQuestions,
             recommendedEdits: takeawaysRecord.recommendedEdits,
           },
-          generatedAt: takeawaysRecord.createdAt.toISOString(),
+          generatedAt: takeawaysRecord.generatedAt.toISOString(),
           promptVersion: takeawaysRecord.promptVersion,
         };
       } catch (error) {
