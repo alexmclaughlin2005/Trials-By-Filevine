@@ -65,12 +65,10 @@ export function FocusGroupManager({ caseId, arguments: caseArguments }: FocusGro
     // Setup complete - wizard now navigates directly to conversation
     // Just return to list view in case user comes back
     setCurrentView('list');
-    setActiveSessionId(null);
   };
 
   const handleCancel = () => {
     setCurrentView('list');
-    setActiveSessionId(null);
   };
 
   const handleViewSession = async (sessionId: string) => {
