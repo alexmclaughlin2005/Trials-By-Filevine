@@ -10,7 +10,7 @@ import { Search, Filter } from 'lucide-react';
 interface Persona {
   id: string;
   name: string;
-  archetype: string;
+  archetype?: string;
   instantRead?: string;
   archetypeVerdictLean?: string;
   phrasesYoullHear?: string[];
