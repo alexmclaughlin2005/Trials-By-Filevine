@@ -16,7 +16,6 @@ import {
 import { PDFHeader } from '../components/PDFHeader';
 import { PDFFooter } from '../components/PDFFooter';
 import {
-  formatDate,
   formatDateTime,
   sanitizeText,
 } from '../utils/formatters';
@@ -248,7 +247,6 @@ export function FullTranscriptPDFDocument({ data }: Props) {
       {/* Transcript Pages */}
       {statements.map((statement, idx) => {
         const isNewPage = idx % 5 === 0;
-        const pageNumber = Math.floor(idx / 5) + 2;
 
         if (!isNewPage) return null;
 

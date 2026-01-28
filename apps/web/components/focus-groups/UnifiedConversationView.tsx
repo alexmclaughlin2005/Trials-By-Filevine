@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle, Loader2, Download, Check, RefreshCw } from 'lucide-react';
+import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle, Loader2, Download, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './TakeawaysTab';
 import { PersonaSummaryCard } from './PersonaSummaryCard';

@@ -406,7 +406,6 @@ export function PersonaConversationPDFDocument({ data }: Props) {
       {/* Statements Pages */}
       {statements && statements.length > 0 && statements.map((statement, idx) => {
         const isNewPage = idx % 6 === 0;
-        const pageNumber = Math.floor(idx / 6) + 3;
 
         if (!isNewPage) return null;
 
