@@ -7,6 +7,7 @@ import { PersonaDetailModal } from './PersonaDetailModal';
 import { Users, BarChart3, HelpCircle } from 'lucide-react';
 
 interface ConversationTabsProps {
+  conversationId: string;
   personaSummaries: PersonaSummary[];
   allStatements: ConversationStatement[];
   overallAnalysis: OverallAnalysis;
@@ -15,7 +16,7 @@ interface ConversationTabsProps {
 
 type TabType = 'personas' | 'questions' | 'analysis';
 
-export function ConversationTabs({ personaSummaries, allStatements, overallAnalysis, customQuestions }: ConversationTabsProps) {
+export function ConversationTabs({ conversationId, personaSummaries, allStatements, overallAnalysis, customQuestions }: ConversationTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
 
@@ -208,7 +209,11 @@ export function ConversationTabs({ personaSummaries, allStatements, overallAnaly
             ) : (
               <div className="space-y-4">
                 {personaSummaries.map((summary) => (
-                  <PersonaSummaryCard key={summary.personaId} summary={summary} />
+                  <PersonaSummaryCard
+                    key={summary.personaId}
+                    summary={summary}
+                    conversationId={conversationId}
+                  />
                 ))}
               </div>
             )}
