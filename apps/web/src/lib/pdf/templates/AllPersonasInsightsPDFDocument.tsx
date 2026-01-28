@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
     color: colors.gray[700],
   },
   badge: {
-    display: 'inline-block',
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: 4,
