@@ -378,14 +378,14 @@ function VoirDireTest() {
       // In production, this would be a real case from the database
       const mockCaseId = 'test-case-' + Date.now();
 
-      const response = await apiClient.post(`/cases/${mockCaseId}/generate-questions-v2`, {
+      const response = await apiClient.post<VoirDireResult>(`/cases/${mockCaseId}/generate-questions-v2`, {
         attorneySide,
         plaintiffTheory: 'Defendant negligently caused severe injuries',
         defenseTheory: 'Plaintiff assumed the risk',
         questionCategories: ['opening', 'identification', 'case-specific', 'strike-justification'],
       });
 
-      setResult(response.questionSet);
+      setResult(response);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
