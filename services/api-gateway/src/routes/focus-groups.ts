@@ -1421,8 +1421,8 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         });
         const generator = new PersonaInsightsGenerator(server.prisma, promptClient);
 
-        // Get insights (will be generated if they don't exist, but should already exist from auto-gen)
-        const insights = await generator.generateInsights(conversationId);
+        // Get insights from database (no regeneration)
+        const insights = await generator.generateInsights(conversationId, false);
 
         return {
           conversationId,
@@ -1481,8 +1481,8 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         });
         const generator = new PersonaInsightsGenerator(server.prisma, promptClient);
 
-        // Generate insights
-        const insights = await generator.generateInsights(conversationId);
+        // Force regenerate insights (overwrites existing)
+        const insights = await generator.generateInsights(conversationId, true);
 
         return {
           conversationId,

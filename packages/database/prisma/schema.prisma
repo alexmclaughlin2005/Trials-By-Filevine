@@ -126,9 +126,9 @@ model CaseArgument {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   // Relations
-  case              Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  parent            CaseArgument?      @relation("ArgumentVersions", fields: [parentId], references: [id])
-  children          CaseArgument[]     @relation("ArgumentVersions")
+  case                Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  parent              CaseArgument?      @relation("ArgumentVersions", fields: [parentId], references: [id])
+  children            CaseArgument[]     @relation("ArgumentVersions")
   documentAttachments ArgumentDocument[]
 
   @@index([caseId])
@@ -168,14 +168,14 @@ model JuryPanel {
   version     Int      @default(1)
   totalJurors Int      @default(0) @map("total_jurors")
   status      String   @default("draft") // draft | active | completed
-  
+
   // Jury Box Configuration
-  juryBoxSize Int      @default(12) @map("jury_box_size")
-  juryBoxRows Int      @default(1) @map("jury_box_rows") // 1 or 2
-  juryBoxLayout Json?  @map("jury_box_layout")
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  juryBoxSize   Int   @default(12) @map("jury_box_size")
+  juryBoxRows   Int   @default(1) @map("jury_box_rows") // 1 or 2
+  juryBoxLayout Json? @map("jury_box_layout")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   case         Case          @relation(fields: [caseId], references: [id], onDelete: Cascade)
@@ -213,19 +213,19 @@ model Juror {
   searchCompletedAt DateTime? @map("search_completed_at")
 
   // Status & Priority
-  status         String   @default("available") // available | questioned | struck_for_cause | peremptory_strike | seated | alternate | dismissed
-  strikeReason   String?  @map("strike_reason") @db.Text
-  keepPriority   Int?     @map("keep_priority") // 1-5 scale
-  strikePriority Int?     @map("strike_priority") // 1-5 scale
-  notes          String?  @db.Text
-  
+  status         String  @default("available") // available | questioned | struck_for_cause | peremptory_strike | seated | alternate | dismissed
+  strikeReason   String? @map("strike_reason") @db.Text
+  keepPriority   Int?    @map("keep_priority") // 1-5 scale
+  strikePriority Int?    @map("strike_priority") // 1-5 scale
+  notes          String? @db.Text
+
   // Jury Box Position
-  boxRow         Int?     @map("box_row") // Row number in jury box (1 = front, 2 = back, null = not in box)
-  boxSeat        Int?     @map("box_seat") // Seat number within the row (1-N, null = not in box)
-  boxOrder       Int?     @map("box_order") // Overall order in jury box (for single row or ordering)
-  
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  boxRow   Int? @map("box_row") // Row number in jury box (1 = front, 2 = back, null = not in box)
+  boxSeat  Int? @map("box_seat") // Seat number within the row (1-N, null = not in box)
+  boxOrder Int? @map("box_order") // Overall order in jury box (for single row or ordering)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   panel             JuryPanel             @relation(fields: [panelId], references: [id], onDelete: Cascade)
@@ -280,16 +280,16 @@ model Persona {
   deliberationBehavior  Json? @map("deliberation_behavior") // Predicted role and tactics
 
   // Roundtable conversation behavior
-  leadershipLevel      String? @map("leadership_level") // LEADER | INFLUENCER | FOLLOWER | PASSIVE
-  communicationStyle   String? @map("communication_style") @db.Text // Speaking style description
+  leadershipLevel          String? @map("leadership_level") // LEADER | INFLUENCER | FOLLOWER | PASSIVE
+  communicationStyle       String? @map("communication_style") @db.Text // Speaking style description
   persuasionSusceptibility String? @map("persuasion_susceptibility") @db.Text // What arguments move them
 
   // Voice differentiation attributes (for simulation realism)
-  vocabularyLevel   String? @map("vocabulary_level") // PLAIN | EDUCATED | TECHNICAL | FOLKSY
-  sentenceStyle     String? @map("sentence_style") // SHORT_PUNCHY | MEASURED | VERBOSE | FRAGMENTED
-  speechPatterns    Json?   @map("speech_patterns") // Array of characteristic phrases/verbal tics
-  responseTendency  String? @map("response_tendency") // BRIEF | MODERATE | ELABORATE
-  engagementStyle   String? @map("engagement_style") // DIRECT_CHALLENGE | BUILDS_ON_OTHERS | ASKS_QUESTIONS | DEFLECTS
+  vocabularyLevel  String? @map("vocabulary_level") // PLAIN | EDUCATED | TECHNICAL | FOLKSY
+  sentenceStyle    String? @map("sentence_style") // SHORT_PUNCHY | MEASURED | VERBOSE | FRAGMENTED
+  speechPatterns   Json?   @map("speech_patterns") // Array of characteristic phrases/verbal tics
+  responseTendency String? @map("response_tendency") // BRIEF | MODERATE | ELABORATE
+  engagementStyle  String? @map("engagement_style") // DIRECT_CHALLENGE | BUILDS_ON_OTHERS | ASKS_QUESTIONS | DEFLECTS
 
   // Simulation Parameters
   simulationParams  Json? @map("simulation_params") // Evidence processing, deliberation weights, verdict priors
@@ -495,12 +495,12 @@ model FocusGroupSession {
   simulationMode String  @default("detailed") @map("simulation_mode") // quick | detailed | deliberation
 
   // NEW: Configuration fields for focus group setup
-  archetypeSelectionMode String  @default("random") @map("archetype_selection_mode") // "random" | "configured" | "case_matched"
-  selectedArchetypes     Json?   @map("selected_archetypes") // Array of archetype names/IDs if configured
-  archetypeCount         Int     @default(6) @map("archetype_count") // Number of archetypes to include
-  selectedArguments      Json?   @map("selected_arguments") // Array of {argumentId, order, title, content}
-  customQuestions        Json?   @map("custom_questions") // Array of {id, question, order, targetArchetypes}
-  configurationStep      String  @default("setup") @map("configuration_step") // "setup" | "panel" | "arguments" | "questions" | "review" | "ready"
+  archetypeSelectionMode String @default("random") @map("archetype_selection_mode") // "random" | "configured" | "case_matched"
+  selectedArchetypes     Json?  @map("selected_archetypes") // Array of archetype names/IDs if configured
+  archetypeCount         Int    @default(6) @map("archetype_count") // Number of archetypes to include
+  selectedArguments      Json?  @map("selected_arguments") // Array of {argumentId, order, title, content}
+  customQuestions        Json?  @map("custom_questions") // Array of {id, question, order, targetArchetypes}
+  configurationStep      String @default("setup") @map("configuration_step") // "setup" | "panel" | "arguments" | "questions" | "review" | "ready"
 
   // Archetype-based simulation data
   juryComposition      Json? @map("jury_composition") // Archetype distribution
@@ -518,7 +518,7 @@ model FocusGroupSession {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  case            Case                         @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case            Case                       @relation(fields: [caseId], references: [id], onDelete: Cascade)
   personas        FocusGroupPersona[]
   results         FocusGroupResult[]
   recommendations FocusGroupRecommendation[]
@@ -584,12 +584,12 @@ model FocusGroupRecommendation {
 
 // Roundtable conversation for argument-centric discussions
 model FocusGroupConversation {
-  id          String   @id @default(uuid())
-  sessionId   String   @map("session_id")
-  argumentId  String   @map("argument_id") // Which argument is being discussed
+  id         String @id @default(uuid())
+  sessionId  String @map("session_id")
+  argumentId String @map("argument_id") // Which argument is being discussed
 
   // Conversation metadata
-  startedAt   DateTime @default(now()) @map("started_at")
+  startedAt   DateTime  @default(now()) @map("started_at")
   completedAt DateTime? @map("completed_at")
 
   // Convergence tracking
@@ -597,19 +597,20 @@ model FocusGroupConversation {
   convergenceReason String? @map("convergence_reason") @db.Text // Why conversation ended
 
   // Summary analysis (populated after conversation completes)
-  consensusAreas   Json?   @map("consensus_areas") // Array of agreed-upon points
-  fracturePoints   Json?   @map("fracture_points") // Array of persistent disagreements
-  keyDebatePoints  Json?   @map("key_debate_points") // Main discussion topics
+  consensusAreas      Json? @map("consensus_areas") // Array of agreed-upon points
+  fracturePoints      Json? @map("fracture_points") // Array of persistent disagreements
+  keyDebatePoints     Json? @map("key_debate_points") // Main discussion topics
   influentialPersonas Json? @map("influential_personas") // Who dominated/influenced
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  session          FocusGroupSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session          FocusGroupSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   statements       FocusGroupStatement[]
   personaSummaries FocusGroupPersonaSummary[]
   takeaways        FocusGroupTakeaways?
+  personaInsights  FocusGroupPersonaInsight[]
 
   @@index([sessionId])
   @@index([argumentId])
@@ -618,19 +619,19 @@ model FocusGroupConversation {
 
 // Individual statements in a conversation
 model FocusGroupStatement {
-  id              String   @id @default(uuid())
-  conversationId  String   @map("conversation_id")
-  personaId       String   @map("persona_id")
-  personaName     String   @map("persona_name")
+  id             String @id @default(uuid())
+  conversationId String @map("conversation_id")
+  personaId      String @map("persona_id")
+  personaName    String @map("persona_name")
 
-  sequenceNumber  Int      @map("sequence_number") // Order in conversation (1, 2, 3...)
-  content         String   @db.Text
+  sequenceNumber Int    @map("sequence_number") // Order in conversation (1, 2, 3...)
+  content        String @db.Text
 
   // Question tracking
-  questionId      String?  @map("question_id") // ID of custom question this statement addresses
+  questionId String? @map("question_id") // ID of custom question this statement addresses
 
   // AI-generated analysis
-  sentiment           String?  // plaintiff_leaning | defense_leaning | neutral | conflicted
+  sentiment           String? // plaintiff_leaning | defense_leaning | neutral | conflicted
   emotionalIntensity  Decimal? @map("emotional_intensity") @db.Decimal(3, 2) // 0.00 to 1.00
   keyPoints           Json?    @map("key_points") // Array of extracted arguments
   addressedTo         String[] @map("addressed_to") // Array of persona names mentioned
@@ -638,9 +639,9 @@ model FocusGroupStatement {
   disagreementSignals String[] @map("disagreement_signals") // Who they pushed back on
 
   // Turn tracking
-  speakCount Int      @map("speak_count") // How many times this persona has spoken
+  speakCount Int @map("speak_count") // How many times this persona has spoken
 
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
   conversation FocusGroupConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
@@ -653,37 +654,37 @@ model FocusGroupStatement {
 
 // Per-persona summary of participation in a conversation
 model FocusGroupPersonaSummary {
-  id             String   @id @default(uuid())
-  conversationId String   @map("conversation_id")
-  personaId      String   @map("persona_id")
-  personaName    String   @map("persona_name")
+  id             String @id @default(uuid())
+  conversationId String @map("conversation_id")
+  personaId      String @map("persona_id")
+  personaName    String @map("persona_name")
 
   // Participation stats
-  totalStatements Int     @map("total_statements")
-  firstStatement  String  @db.Text @map("first_statement")
-  lastStatement   String  @db.Text @map("last_statement")
+  totalStatements Int    @map("total_statements")
+  firstStatement  String @map("first_statement") @db.Text
+  lastStatement   String @map("last_statement") @db.Text
 
   // Position tracking
   initialPosition  String  @map("initial_position") // favorable | neutral | unfavorable | mixed
   finalPosition    String  @map("final_position")
   positionShifted  Boolean @map("position_shifted")
-  shiftDescription String? @db.Text @map("shift_description") // AI-generated explanation of change
+  shiftDescription String? @map("shift_description") @db.Text // AI-generated explanation of change
 
   // Content summary
-  mainPoints     Json @map("main_points")      // Array of key points they made
-  concernsRaised Json @map("concerns_raised")  // Array of concerns they voiced
-  questionsAsked Json @map("questions_asked")  // Array of questions they posed
+  mainPoints     Json @map("main_points") // Array of key points they made
+  concernsRaised Json @map("concerns_raised") // Array of concerns they voiced
+  questionsAsked Json @map("questions_asked") // Array of questions they posed
 
   // Social dynamics
-  influenceLevel    String   @map("influence_level")       // high | medium | low
-  agreedWithMost    String[] @map("agreed_with_most")      // Persona names they agreed with
-  disagreedWithMost String[] @map("disagreed_with_most")   // Persona names they disagreed with
-  influencedBy      String[] @map("influenced_by")         // Who changed their mind
+  influenceLevel    String   @map("influence_level") // high | medium | low
+  agreedWithMost    String[] @map("agreed_with_most") // Persona names they agreed with
+  disagreedWithMost String[] @map("disagreed_with_most") // Persona names they disagreed with
+  influencedBy      String[] @map("influenced_by") // Who changed their mind
 
   // Sentiment analysis
   averageSentiment          String  @map("average_sentiment") // Overall lean
   averageEmotionalIntensity Decimal @map("average_emotional_intensity") @db.Decimal(3, 2)
-  mostEmotionalStatement    String? @db.Text @map("most_emotional_statement")
+  mostEmotionalStatement    String? @map("most_emotional_statement") @db.Text
 
   // AI-generated narrative summary
   summary String @db.Text // 2-3 paragraph summary of persona's journey
@@ -701,14 +702,14 @@ model FocusGroupPersonaSummary {
 
 // Strategic takeaways and recommendations from a focus group conversation
 model FocusGroupTakeaways {
-  id             String   @id @default(uuid())
-  conversationId String   @unique @map("conversation_id")
+  id             String @id @default(uuid())
+  conversationId String @unique @map("conversation_id")
 
   // Strategic analysis (AI-generated)
-  whatLanded     Json @map("what_landed")     // Array of { point, personaSupport, evidence }
-  whatConfused   Json @map("what_confused")   // Array of { point, personasConfused, severity, evidence }
-  whatBackfired  Json @map("what_backfired")  // Array of { point, personasCritical, severity, evidence }
-  topQuestions   Json @map("top_questions")   // Array of { question, askedByCount, personaNames, severity, priority }
+  whatLanded       Json @map("what_landed") // Array of { point, personaSupport, evidence }
+  whatConfused     Json @map("what_confused") // Array of { point, personasConfused, severity, evidence }
+  whatBackfired    Json @map("what_backfired") // Array of { point, personasCritical, severity, evidence }
+  topQuestions     Json @map("top_questions") // Array of { question, askedByCount, personaNames, severity, priority }
   recommendedEdits Json @map("recommended_edits") // Array of edit objects with before/after
 
   // Metadata
@@ -720,6 +721,35 @@ model FocusGroupTakeaways {
 
   @@index([conversationId])
   @@map("focus_group_takeaways")
+}
+
+// Strategic persona-specific case insights from roundtable conversations
+model FocusGroupPersonaInsight {
+  id             String @id @default(uuid())
+  conversationId String @map("conversation_id")
+  personaId      String @map("persona_id")
+  personaName    String @map("persona_name")
+  archetype      String
+
+  // Deep case interpretation insights (AI-generated)
+  caseInterpretation String @map("case_interpretation") @db.Text
+  keyBiases          Json   @map("key_biases") // Array of strings
+  decisionDrivers    Json   @map("decision_drivers") // Array of strings
+  persuasionStrategy String @map("persuasion_strategy") @db.Text
+  vulnerabilities    Json   @map("vulnerabilities") // Array of strings
+  strengths          Json   @map("strengths") // Array of strings
+
+  // Metadata
+  promptVersion String   @map("prompt_version") // e.g., "persona-case-insights-v1.0.0"
+  generatedAt   DateTime @default(now()) @map("generated_at")
+
+  // Relations
+  conversation FocusGroupConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, personaId])
+  @@index([conversationId])
+  @@index([personaId])
+  @@map("focus_group_persona_insights")
 }
 
 // ============================================
@@ -1095,33 +1125,33 @@ model FilevineConnection {
 }
 
 model CaseFilevineProject {
-  id                 String   @id @default(uuid())
-  caseId             String   @unique @map("case_id") // One project per case
-  organizationId     String   @map("organization_id")
+  id             String @id @default(uuid())
+  caseId         String @unique @map("case_id") // One project per case
+  organizationId String @map("organization_id")
 
   // Filevine Project Details
-  filevineProjectId  String   @map("filevine_project_id") // Project ID from Filevine
-  projectName        String   @map("project_name")
-  projectTypeName    String?  @map("project_type_name")
-  clientName         String?  @map("client_name")
+  filevineProjectId String  @map("filevine_project_id") // Project ID from Filevine
+  projectName       String  @map("project_name")
+  projectTypeName   String? @map("project_type_name")
+  clientName        String? @map("client_name")
 
   // Sync Metadata
-  linkedBy           String   @map("linked_by") // User ID who linked
-  linkedAt           DateTime @default(now()) @map("linked_at")
-  lastSyncedAt       DateTime? @map("last_synced_at")
-  syncStatus         String   @default("active") // active | error
-  syncErrorMessage   String?  @map("sync_error_message") @db.Text
+  linkedBy         String    @map("linked_by") // User ID who linked
+  linkedAt         DateTime  @default(now()) @map("linked_at")
+  lastSyncedAt     DateTime? @map("last_synced_at")
+  syncStatus       String    @default("active") // active | error
+  syncErrorMessage String?   @map("sync_error_message") @db.Text
 
   // Settings
-  autoSyncDocuments  Boolean  @default(false) @map("auto_sync_documents")
-  syncFolderIds      Json?    @map("sync_folder_ids") // Array of folder IDs to sync
+  autoSyncDocuments Boolean @default(false) @map("auto_sync_documents")
+  syncFolderIds     Json?   @map("sync_folder_ids") // Array of folder IDs to sync
 
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  case               Case     @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  documents          ImportedDocument[]
+  case      Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  documents ImportedDocument[]
 
   @@index([caseId])
   @@index([organizationId])
@@ -1130,48 +1160,48 @@ model CaseFilevineProject {
 }
 
 model ImportedDocument {
-  id                    String   @id @default(uuid())
-  caseFilevineProjectId String   @map("case_filevine_project_id")
+  id                    String @id @default(uuid())
+  caseFilevineProjectId String @map("case_filevine_project_id")
 
   // Filevine Document Details
-  filevineDocumentId    String   @map("filevine_document_id")
-  fivevineFolderId      String   @map("filevine_folder_id")
-  filename              String
-  folderName            String?  @map("folder_name")
-  currentVersion        String?  @map("current_version")
-  uploadDate            DateTime? @map("upload_date")
-  uploaderFullname      String?  @map("uploader_fullname")
-  size                  BigInt?  // File size in bytes
+  filevineDocumentId String    @map("filevine_document_id")
+  fivevineFolderId   String    @map("filevine_folder_id")
+  filename           String
+  folderName         String?   @map("folder_name")
+  currentVersion     String?   @map("current_version")
+  uploadDate         DateTime? @map("upload_date")
+  uploaderFullname   String?   @map("uploader_fullname")
+  size               BigInt? // File size in bytes
 
   // Local Storage
-  localFileUrl          String?  @map("local_file_url") @db.Text // URL to stored file (S3/Vercel Blob)
-  thumbnailUrl          String?  @map("thumbnail_url") @db.Text
+  localFileUrl String? @map("local_file_url") @db.Text // URL to stored file (S3/Vercel Blob)
+  thumbnailUrl String? @map("thumbnail_url") @db.Text
 
   // Import Metadata
-  importedBy            String   @map("imported_by") // User ID
-  importedAt            DateTime @default(now()) @map("imported_at")
-  status                String   @default("pending") // pending | downloading | completed | failed
-  downloadAttempts      Int      @default(0) @map("download_attempts")
-  errorMessage          String?  @map("error_message") @db.Text
+  importedBy       String   @map("imported_by") // User ID
+  importedAt       DateTime @default(now()) @map("imported_at")
+  status           String   @default("pending") // pending | downloading | completed | failed
+  downloadAttempts Int      @default(0) @map("download_attempts")
+  errorMessage     String?  @map("error_message") @db.Text
 
   // Categorization
-  documentCategory      String?  @map("document_category") // evidence | pleading | discovery | expert | other
-  tags                  Json?    @default("[]") // Array of tags
-  notes                 String?  @db.Text
+  documentCategory String? @map("document_category") // evidence | pleading | discovery | expert | other
+  tags             Json?   @default("[]") // Array of tags
+  notes            String? @db.Text
 
   // Text Extraction (for AI use)
-  extractedTextUrl      String?   @map("extracted_text_url") @db.Text // URL to extracted text file in Vercel Blob
-  extractedTextChars    Int?      @map("extracted_text_chars") // Character count of extracted text
-  textExtractionStatus  String    @default("pending") @map("text_extraction_status") // pending | processing | completed | failed | not_needed
-  textExtractedAt       DateTime? @map("text_extracted_at")
-  textExtractionError   String?   @map("text_extraction_error") @db.Text
+  extractedTextUrl     String?   @map("extracted_text_url") @db.Text // URL to extracted text file in Vercel Blob
+  extractedTextChars   Int?      @map("extracted_text_chars") // Character count of extracted text
+  textExtractionStatus String    @default("pending") @map("text_extraction_status") // pending | processing | completed | failed | not_needed
+  textExtractedAt      DateTime? @map("text_extracted_at")
+  textExtractionError  String?   @map("text_extraction_error") @db.Text
 
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  caseFilevineProject   CaseFilevineProject @relation(fields: [caseFilevineProjectId], references: [id], onDelete: Cascade)
-  argumentAttachments   ArgumentDocument[]
+  caseFilevineProject CaseFilevineProject @relation(fields: [caseFilevineProjectId], references: [id], onDelete: Cascade)
+  argumentAttachments ArgumentDocument[]
 
   @@index([caseFilevineProjectId])
   @@index([filevineDocumentId])
@@ -1182,12 +1212,12 @@ model ImportedDocument {
 
 // Junction table for attaching documents to arguments
 model ArgumentDocument {
-  id          String   @id @default(uuid())
-  argumentId  String   @map("argument_id")
-  documentId  String   @map("document_id")
-  attachedBy  String   @map("attached_by") // User ID who attached it
-  attachedAt  DateTime @default(now()) @map("attached_at")
-  notes       String?  @db.Text // Optional notes about why this document supports the argument
+  id         String   @id @default(uuid())
+  argumentId String   @map("argument_id")
+  documentId String   @map("document_id")
+  attachedBy String   @map("attached_by") // User ID who attached it
+  attachedAt DateTime @default(now()) @map("attached_at")
+  notes      String?  @db.Text // Optional notes about why this document supports the argument
 
   // Relations
   argument CaseArgument     @relation(fields: [argumentId], references: [id], onDelete: Cascade)
@@ -1207,7 +1237,7 @@ model ChatConversation {
   id             String   @id @default(uuid())
   userId         String   @map("user_id")
   organizationId String   @map("organization_id")
-  title          String?  // Auto-generated from first message
+  title          String? // Auto-generated from first message
   lastMessageAt  DateTime @default(now()) @map("last_message_at")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
@@ -1222,19 +1252,19 @@ model ChatConversation {
 }
 
 model ChatMessage {
-  id             String   @id @default(uuid())
-  conversationId String   @map("conversation_id")
-  role           String   // user | assistant
-  content        String   @db.Text
+  id             String @id @default(uuid())
+  conversationId String @map("conversation_id")
+  role           String // user | assistant
+  content        String @db.Text
 
   // Tool usage tracking
-  toolsUsed      Boolean  @default(false) @map("tools_used")
-  toolCalls      Json?    @map("tool_calls") // Array of tool calls made
+  toolsUsed Boolean @default(false) @map("tools_used")
+  toolCalls Json?   @map("tool_calls") // Array of tool calls made
 
   // Token usage
-  tokensUsed     Int?     @map("tokens_used")
+  tokensUsed Int? @map("tokens_used")
 
-  createdAt      DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   // Relations
   conversation ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)

@@ -28,9 +28,20 @@ export class PersonaInsightsGenerator {
 
   /**
    * Generate insights for all personas in a conversation
+   * @param conversationId - The conversation ID
+   * @param forceRegenerate - If true, regenerate even if cached insights exist
    */
-  async generateInsights(conversationId: string): Promise<PersonaInsight[]> {
-    console.log(`🧠 Generating persona insights for conversation: ${conversationId}`);
+  async generateInsights(conversationId: string, forceRegenerate: boolean = false): Promise<PersonaInsight[]> {
+    console.log(`🧠 Generating persona insights for conversation: ${conversationId} (force: ${forceRegenerate})`);
+
+    // Check if insights already exist in database (unless forced)
+    if (!forceRegenerate) {
+      const cachedInsights = await this.fetchExistingInsights(conversationId);
+      if (cachedInsights.length > 0) {
+        console.log(`✅ Using ${cachedInsights.length} cached insights from database`);
+        return cachedInsights;
+      }
+    }
 
     // Fetch conversation with all related data
     const conversation = await this.fetchConversation(conversationId);
@@ -93,7 +104,11 @@ export class PersonaInsightsGenerator {
       insights.push(insight);
     }
 
-    console.log(`✅ Generated insights for ${insights.length} personas`);
+    console.log(`✅ Generated ${insights.length} insights`);
+
+    // Save insights to database
+    await this.saveInsights(conversationId, insights);
+
     return insights;
   }
 
@@ -284,6 +299,64 @@ ${summary.concernsRaised.map((c: string) => `- ${c}`).join('\n')}
       if (typeof data[field] !== 'string') {
         throw new Error(`Field ${field} must be a string`);
       }
+    }
+  }
+
+  /**
+   * Fetch existing insights from database
+   */
+  private async fetchExistingInsights(conversationId: string): Promise<PersonaInsight[]> {
+    const dbInsights = await this.prisma.focusGroupPersonaInsight.findMany({
+      where: { conversationId },
+      orderBy: { personaName: 'asc' },
+    });
+
+    return dbInsights.map(insight => ({
+      personaId: insight.personaId,
+      personaName: insight.personaName,
+      archetype: insight.archetype,
+      caseInterpretation: insight.caseInterpretation,
+      keyBiases: insight.keyBiases as string[],
+      decisionDrivers: insight.decisionDrivers as string[],
+      persuasionStrategy: insight.persuasionStrategy,
+      vulnerabilities: insight.vulnerabilities as string[],
+      strengths: insight.strengths as string[],
+    }));
+  }
+
+  /**
+   * Save insights to database
+   */
+  private async saveInsights(conversationId: string, insights: PersonaInsight[]): Promise<void> {
+    console.log(`💾 Saving ${insights.length} persona insights to database...`);
+
+    try {
+      // Delete existing insights if regenerating
+      await this.prisma.focusGroupPersonaInsight.deleteMany({
+        where: { conversationId },
+      });
+
+      // Insert new insights
+      await this.prisma.focusGroupPersonaInsight.createMany({
+        data: insights.map(insight => ({
+          conversationId,
+          personaId: insight.personaId,
+          personaName: insight.personaName,
+          archetype: insight.archetype,
+          caseInterpretation: insight.caseInterpretation,
+          keyBiases: insight.keyBiases,
+          decisionDrivers: insight.decisionDrivers,
+          persuasionStrategy: insight.persuasionStrategy,
+          vulnerabilities: insight.vulnerabilities,
+          strengths: insight.strengths,
+          promptVersion: 'persona-case-insights-v1.0.0', // TODO: Get from prompt client
+        })),
+      });
+
+      console.log(`✅ Saved ${insights.length} persona insights to database`);
+    } catch (error) {
+      console.error('❌ Error saving insights to database:', error);
+      throw new Error(`Failed to save insights: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }
