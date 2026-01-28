@@ -501,25 +501,54 @@ function VoirDireTest() {
   );
 }
 
-// Types for case strategy results
-interface CaseStrategyResult {
-  strikeRecommendations?: Array<{
-    jurorId: string;
-    jurorNumber: string;
-    jurorName: string;
-    action: string;
-    priority: number;
-    reasoning: string;
-  }>;
-  panelComposition?: Record<string, unknown>;
-  overallStrategy?: string;
+// Types for case strategy results - match component interface exactly
+interface StrikeRecommendation {
+  jurorId: string;
+  jurorNumber: string;
+  jurorName: string;
+  action: 'MUST STRIKE' | 'STRIKE IF POSSIBLE' | 'NEUTRAL' | 'CONSIDER KEEPING' | 'KEEP';
+  priority: number;
+  reasoning: string;
+  dangerLevel: 'low' | 'medium' | 'high' | 'critical';
+  archetypeMatch?: string;
+  keyFactors: string[];
+}
+
+interface PanelComposition {
+  totalJurors: number;
+  favorableCount: number;
+  unfavorableCount: number;
+  neutralCount: number;
+  archetypeBreakdown: Record<string, number>;
+  verdictLeanSummary: {
+    strongPlaintiff: number;
+    leanPlaintiff: number;
+    neutral: number;
+    leanDefense: number;
+    strongDefense: number;
+  };
+}
+
+interface CaseStrategyRecommendation {
+  overallAssessment: string;
+  panelComposition: PanelComposition;
+  strikeRecommendations: StrikeRecommendation[];
+  keepRecommendations: StrikeRecommendation[];
+  deliberationForecast: {
+    predictedOutcome: string;
+    confidenceLevel: number;
+    keyInfluencers: string[];
+    potentialLeaders: string[];
+    riskFactors: string[];
+  };
+  strategicPriorities: string[];
 }
 
 // Case Strategy Testing Component
 function CaseStrategyTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<CaseStrategyResult | null>(null);
+  const [result, setResult] = useState<CaseStrategyRecommendation | null>(null);
   const [attorneySide, setAttorneySide] = useState<'plaintiff' | 'defense'>('plaintiff');
   const [availableStrikes, setAvailableStrikes] = useState('6');
 
@@ -533,7 +562,7 @@ function CaseStrategyTest() {
       const mockCaseId = 'test-case-' + Date.now();
       const mockPanelId = 'test-panel-' + Date.now();
 
-      const response = await apiClient.post<{ strategy: CaseStrategyResult }>(`/cases/${mockCaseId}/strategy-v2`, {
+      const response = await apiClient.post<{ strategy: CaseStrategyRecommendation }>(`/cases/${mockCaseId}/strategy-v2`, {
         panelId: mockPanelId,
         attorneySide,
         availableStrikes: parseInt(availableStrikes),
