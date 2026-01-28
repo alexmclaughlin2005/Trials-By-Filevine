@@ -349,19 +349,35 @@ function PersonaSuggesterTest() {
   );
 }
 
-// Types for voir dire results
+// Types for voir dire results - match the component's interface
+interface VoirDireQuestion {
+  question: string;
+  purpose: string;
+  targetArchetypes: string[];
+  expectedResponses?: Array<{
+    archetype: string;
+    likelyResponse: string;
+    redFlags: string[];
+  }>;
+  followUpPrompts?: string[];
+}
+
+interface VoirDireQuestionSet {
+  openingQuestions: VoirDireQuestion[];
+  archetypeIdentification: VoirDireQuestion[];
+  caseSpecific: VoirDireQuestion[];
+  strikeJustification: VoirDireQuestion[];
+}
+
 interface VoirDireResult {
-  openingQuestions?: Array<{ question: string; purpose: string }>;
-  archetypeIdentification?: Array<{ question: string; targetArchetype: string }>;
-  caseSpecific?: Array<{ question: string; purpose: string }>;
-  strikeJustification?: Array<{ question: string; purpose: string }>;
+  questionSet: VoirDireQuestionSet;
 }
 
 // Voir Dire Generator Testing Component
 function VoirDireTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<VoirDireResult | null>(null);
+  const [result, setResult] = useState<VoirDireQuestionSet | null>(null);
   const [caseType, setCaseType] = useState('personal_injury');
   const [attorneySide, setAttorneySide] = useState<'plaintiff' | 'defense'>('plaintiff');
   const [keyIssues, setKeyIssues] = useState(
@@ -385,7 +401,7 @@ function VoirDireTest() {
         questionCategories: ['opening', 'identification', 'case-specific', 'strike-justification'],
       });
 
-      setResult(response);
+      setResult(response.questionSet);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
