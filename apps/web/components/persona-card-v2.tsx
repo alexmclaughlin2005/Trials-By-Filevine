@@ -30,7 +30,7 @@ interface PersonaV2 {
 
   plaintiffDangerLevel?: number;
   defenseDangerLevel?: number;
-  demographics?: any;
+  demographics?: Record<string, unknown>;
 }
 
 interface PersonaCardV2Props {
@@ -101,7 +101,7 @@ export function PersonaCardV2({
             {/* Instant Read */}
             {persona.instantRead && (
               <p className="text-sm text-filevine-gray-700 italic mt-2">
-                "{persona.instantRead}"
+                &ldquo;{persona.instantRead}&rdquo;
               </p>
             )}
 
@@ -196,7 +196,7 @@ export function PersonaCardV2({
             {persona.phrasesYoullHear && persona.phrasesYoullHear.length > 0 && (
               <div>
                 <h4 className="text-sm font-semibold text-filevine-gray-900 mb-2">
-                  💬 Phrases You'll Hear
+                  💬 Phrases You&apos;ll Hear
                 </h4>
                 <ul className="space-y-1">
                   {persona.phrasesYoullHear.map((phrase, index) => (
@@ -204,7 +204,7 @@ export function PersonaCardV2({
                       key={index}
                       className="text-sm text-filevine-gray-700 pl-4 border-l-2 border-filevine-blue-200"
                     >
-                      "{phrase}"
+                      &ldquo;{phrase}&rdquo;
                     </li>
                   ))}
                 </ul>

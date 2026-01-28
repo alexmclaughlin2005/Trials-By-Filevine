@@ -566,12 +566,12 @@ export default function PersonasPage() {
                 {/* Phrases You'll Hear (V2) */}
                 {selectedPersona.phrasesYoullHear && selectedPersona.phrasesYoullHear.length > 0 && (
                   <div>
-                    <h3 className="text-sm font-semibold mb-2">Phrases You'll Hear</h3>
+                    <h3 className="text-sm font-semibold mb-2">Phrases You&apos;ll Hear</h3>
                     <div className="space-y-2">
                       {selectedPersona.phrasesYoullHear.slice(0, 5).map((phrase, idx) => (
                         <div key={idx} className="flex items-start gap-2 text-sm">
                           <span className="text-filevine-gray-400 mt-0.5">💬</span>
-                          <p className="text-filevine-gray-700 italic">"{phrase}"</p>
+                          <p className="text-filevine-gray-700 italic">&ldquo;{phrase}&rdquo;</p>
                         </div>
                       ))}
                     </div>
@@ -953,101 +953,6 @@ export default function PersonasPage() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
-  );
-}
-
-function PersonaCard({
-  persona,
-  onClick,
-}: {
-  persona: Persona;
-  onClick: () => void;
-}) {
-  const displayName = persona.nickname || persona.name;
-  const archetype = persona.archetype
-    ? ARCHETYPE_LABELS[persona.archetype] || persona.archetype
-    : 'Unclassified';
-
-  const description =
-    persona.tagline ||
-    persona.description ||
-    `${archetype} persona`;
-
-  // Extract attributes from various sources
-  const attributes: string[] = [];
-
-  if (persona.signals && Array.isArray(persona.signals)) {
-    attributes.push(...persona.signals.slice(0, 3));
-  }
-
-  if (persona.demographics) {
-    if (persona.demographics.occupation) {
-      attributes.push(persona.demographics.occupation);
-    }
-    if (persona.demographics.age_range) {
-      attributes.push(persona.demographics.age_range);
-    }
-  }
-
-  // Limit to 3 attributes
-  const displayAttributes = attributes.slice(0, 3);
-
-  return (
-    <div className="rounded-lg border bg-card p-6 transition-shadow hover:shadow-lg">
-      <div className="mb-4 flex items-start justify-between">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold">{displayName}</h3>
-          <p className="text-xs text-muted-foreground">{archetype}</p>
-        </div>
-        <span className="rounded-full bg-secondary px-2 py-1 text-xs font-medium">
-          {persona.sourceType}
-        </span>
-      </div>
-
-      <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
-        {description}
-      </p>
-
-      {displayAttributes.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {displayAttributes.map((attr, idx) => (
-            <span
-              key={idx}
-              className="rounded-full bg-primary/10 px-3 py-1 text-xs text-primary"
-            >
-              {attr}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Danger Levels */}
-      {(persona.plaintiffDangerLevel !== undefined ||
-        persona.defenseDangerLevel !== undefined) && (
-        <div className="mb-4 flex items-center gap-4 text-xs">
-          {persona.plaintiffDangerLevel !== undefined && (
-            <div className="flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3 text-orange-500" />
-              <span className="text-muted-foreground">
-                P: {persona.plaintiffDangerLevel}/5
-              </span>
-            </div>
-          )}
-          {persona.defenseDangerLevel !== undefined && (
-            <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3 text-blue-500" />
-              <span className="text-muted-foreground">
-                D: {persona.defenseDangerLevel}/5
-              </span>
-            </div>
-          )}
-        </div>
-      )}
-
-      <Button variant="outline" size="sm" className="w-full" onClick={onClick}>
-        View Details
-      </Button>
     </div>
   );
 }
