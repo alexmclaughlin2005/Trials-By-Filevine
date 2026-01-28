@@ -68,11 +68,39 @@ export default function AITestingPage() {
   );
 }
 
+// Types for persona suggester results
+interface PersonaSuggestion {
+  persona: {
+    id: string;
+    name: string;
+    archetype?: string;
+    instantRead?: string;
+    [key: string]: unknown; // Allow additional properties from API
+  };
+  confidence: number;
+  reasoning?: string;
+  dangerAssessment?: {
+    level: 'low' | 'medium' | 'high' | 'critical';
+    plaintiffDanger: number;
+    defenseDanger: number;
+    recommendation: string;
+  };
+  strikeRecommendation?: {
+    action: string;
+    reasoning: string;
+  };
+  keyMatches?: string[];
+}
+
+interface PersonaSuggesterResult {
+  suggestions: PersonaSuggestion[];
+}
+
 // Persona Suggester Testing Component
 function PersonaSuggesterTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<PersonaSuggesterResult | null>(null);
   const [jurorData, setJurorData] = useState(`{
   "firstName": "John",
   "lastName": "Smith",
@@ -96,7 +124,7 @@ function PersonaSuggesterTest() {
       // Mock juror ID for testing (in real usage, this would come from DB)
       const mockJurorId = 'test-juror-' + Date.now();
 
-      const response = await apiClient.post('/personas/suggest', {
+      const response = await apiClient.post<PersonaSuggesterResult>('/personas/suggest', {
         jurorId: mockJurorId,
         attorneySide,
         // For testing, we'll simulate juror data
@@ -177,7 +205,7 @@ function PersonaSuggesterTest() {
       {/* Results Display */}
       {result && result.suggestions && (
         <div className="space-y-4">
-          {result.suggestions.map((suggestion: any, index: number) => (
+          {result.suggestions.map((suggestion: PersonaSuggestion, index: number) => (
             <Card key={index}>
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -321,11 +349,19 @@ function PersonaSuggesterTest() {
   );
 }
 
+// Types for voir dire results
+interface VoirDireResult {
+  openingQuestions?: Array<{ question: string; purpose: string }>;
+  archetypeIdentification?: Array<{ question: string; targetArchetype: string }>;
+  caseSpecific?: Array<{ question: string; purpose: string }>;
+  strikeJustification?: Array<{ question: string; purpose: string }>;
+}
+
 // Voir Dire Generator Testing Component
 function VoirDireTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<VoirDireResult | null>(null);
   const [caseType, setCaseType] = useState('personal_injury');
   const [attorneySide, setAttorneySide] = useState<'plaintiff' | 'defense'>('plaintiff');
   const [keyIssues, setKeyIssues] = useState(
@@ -363,7 +399,7 @@ function VoirDireTest() {
         <CardHeader>
           <CardTitle>Test Voir Dire Generator V2</CardTitle>
           <CardDescription>
-            Generate strategic voir dire questions using "Phrases You'll Hear" data
+            Generate strategic voir dire questions using &quot;Phrases You&apos;ll Hear&quot; data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -448,11 +484,25 @@ function VoirDireTest() {
   );
 }
 
+// Types for case strategy results
+interface CaseStrategyResult {
+  strikeRecommendations?: Array<{
+    jurorId: string;
+    jurorNumber: string;
+    jurorName: string;
+    action: string;
+    priority: number;
+    reasoning: string;
+  }>;
+  panelComposition?: Record<string, unknown>;
+  overallStrategy?: string;
+}
+
 // Case Strategy Testing Component
 function CaseStrategyTest() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<CaseStrategyResult | null>(null);
   const [attorneySide, setAttorneySide] = useState<'plaintiff' | 'defense'>('plaintiff');
   const [availableStrikes, setAvailableStrikes] = useState('6');
 

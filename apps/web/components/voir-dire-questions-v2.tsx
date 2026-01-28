@@ -109,7 +109,7 @@ export function VoirDireQuestionsV2({
             Voir Dire Questions (V2)
           </h2>
           <p className="text-sm text-filevine-gray-600 mt-1">
-            Strategic questions generated from persona "Phrases You'll Hear" data
+            Strategic questions generated from persona &quot;Phrases You&apos;ll Hear&quot; data
           </p>
           {(caseType || attorneySide) && (
             <div className="flex gap-2 mt-2">

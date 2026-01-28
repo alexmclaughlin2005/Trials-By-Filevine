@@ -1,42 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@juries/database';
 
-const prisma = new PrismaClient();
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { key: string } }
+  { params }: { params: Promise<{ key: string }> }
 ) {
   try {
-    const { key } = params;
+    const { key } = await params;
     const body = await request.json();
     const { enabled } = body;
 
-    // Find existing flag
-    const existing = await prisma.featureFlag.findFirst({
-      where: {
-        key,
-        organizationId: null,
+    const response = await fetch(`${API_URL}/admin/feature-flags/${key}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ enabled }),
     });
 
-    if (!existing) {
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
       return NextResponse.json(
-        { error: 'Feature flag not found' },
-        { status: 404 }
+        { error: errorData.error || 'Failed to update feature flag' },
+        { status: response.status }
       );
     }
 
-    // Update flag
-    const flag = await prisma.featureFlag.update({
-      where: { id: existing.id },
-      data: {
-        enabled,
-        updatedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({ flag });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
     console.error('Error updating feature flag:', error);
     return NextResponse.json(

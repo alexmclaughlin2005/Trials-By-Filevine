@@ -47,7 +47,14 @@ export default function AdminPage() {
   const [personaImportError, setPersonaImportError] = useState<string | null>(null);
 
   // Feature flags state
-  const [featureFlags, setFeatureFlags] = useState<any[]>([]);
+  interface FeatureFlag {
+    id: string;
+    key: string;
+    name: string;
+    description?: string;
+    enabled: boolean;
+  }
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);
   const [isLoadingFlags, setIsLoadingFlags] = useState(false);
   const [isSeedingFlags, setIsSeedingFlags] = useState(false);
 

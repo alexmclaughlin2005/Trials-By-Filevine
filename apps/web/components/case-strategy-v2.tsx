@@ -261,7 +261,7 @@ export function CaseStrategyV2({
             <div className="space-y-3">
               {strategy.strikeRecommendations
                 .sort((a, b) => b.priority - a.priority)
-                .map((rec, index) => (
+                .map((rec) => (
                   <div
                     key={rec.jurorId}
                     className="border border-filevine-gray-200 rounded-lg p-4 space-y-2"
