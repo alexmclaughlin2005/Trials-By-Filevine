@@ -122,9 +122,28 @@ export default function AdminPage() {
   };
 
   const handleSeedFeatureFlags = async () => {
-    // Flags are already seeded via script, just reload them
-    alert('Feature flags are already seeded! Refreshing...');
-    await loadFeatureFlags();
+    try {
+      setIsSeedingFlags(true);
+      // Call the backend seed endpoint via Next.js API route
+      const response = await fetch('/api/admin/seed-feature-flags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to seed feature flags');
+      }
+
+      const data = await response.json();
+      alert(`Success: ${data.message || 'Feature flags seeded successfully!'}`);
+      await loadFeatureFlags();
+    } catch (error) {
+      console.error('Error seeding feature flags:', error);
+      alert(`Failed to seed feature flags: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsSeedingFlags(false);
+    }
   };
 
   const handleToggleFlag = async (key: string, currentlyEnabled: boolean) => {
