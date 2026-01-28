@@ -15,7 +15,6 @@ import {
 import { useAuth } from '@/contexts/auth-context';
 import { ArchetypeBrowser } from '@/components/archetype-browser';
 import { PersonaListV2 } from '@/components/persona-list-v2';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Persona {
   id: string;
