@@ -112,10 +112,21 @@ export default function AdminPage() {
       setIsLoadingFlags(true);
       // Use Next.js API route instead of backend to avoid CORS
       const response = await fetch('/api/admin/feature-flags');
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to load feature flags:', response.status, errorData);
+        // Don't set flags if there's an error - might be migration issue
+        setFeatureFlags([]);
+        return;
+      }
+      
       const data = await response.json();
+      console.log('Loaded feature flags:', data);
       setFeatureFlags(data.flags || []);
     } catch (error) {
       console.error('Error loading feature flags:', error);
+      setFeatureFlags([]);
     } finally {
       setIsLoadingFlags(false);
     }
@@ -132,15 +143,20 @@ export default function AdminPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to seed feature flags');
+        console.error('Seed error response:', response.status, errorData);
+        const errorMessage = errorData.message || errorData.error || `HTTP ${response.status}: Failed to seed feature flags`;
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
+      console.log('Seed success:', data);
       alert(`Success: ${data.message || 'Feature flags seeded successfully!'}`);
+      // Reload flags after seeding
       await loadFeatureFlags();
     } catch (error) {
       console.error('Error seeding feature flags:', error);
-      alert(`Failed to seed feature flags: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to seed feature flags: ${errorMessage}\n\nThis might mean:\n1. Database migration hasn't been run\n2. Prisma client needs regeneration\n3. Check backend logs for details`);
     } finally {
       setIsSeedingFlags(false);
     }
@@ -475,7 +491,7 @@ export default function AdminPage() {
                     onClick={() => handleToggleFlag(flag.key, flag.enabled)}
                     variant={flag.enabled ? 'destructive' : 'default'}
                     size="sm"
-                    className="ml-4"
+                    className="ml-4 flex-shrink-0"
                   >
                     <ToggleLeft className="mr-2 h-4 w-4" />
                     {flag.enabled ? 'Disable' : 'Enable'}
@@ -483,6 +499,25 @@ export default function AdminPage() {
                 </div>
               ))}
             </div>
+          )}
+
+          {/* Empty State - Show if no flags and not loading */}
+          {!isLoadingFlags && featureFlags.length === 0 && (
+            <Alert>
+              <AlertDescription>
+                No feature flags found. Click &quot;Initialize Feature Flags&quot; above to create them.
+                {featureFlags.length === 0 && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    If seeding fails, check that:
+                    <ul className="list-disc list-inside mt-1 ml-2">
+                      <li>Database migration has been run</li>
+                      <li>Prisma client has been regenerated</li>
+                      <li>Backend API is accessible</li>
+                    </ul>
+                  </div>
+                )}
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Refresh Button */}
