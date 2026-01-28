@@ -34,6 +34,22 @@ export function ArgumentCheckboxList({
 }: ArgumentCheckboxListProps) {
   const hasInitialized = useRef(false);
 
+  // Define handlers before they're used in useEffect
+  const handleSelectAll = useCallback(() => {
+    const allSelected = caseArguments.map((arg, index) => ({
+      argumentId: arg.id,
+      order: index + 1,
+      title: arg.title,
+      content: arg.content,
+      argumentType: arg.argumentType,
+    }));
+    onUpdate(allSelected);
+  }, [caseArguments, onUpdate]);
+
+  const handleClearAll = useCallback(() => {
+    onUpdate([]);
+  }, [onUpdate]);
+
   // Keyboard shortcuts: Cmd+A (Select All), Cmd+D (Clear All)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -135,21 +151,6 @@ export function ArgumentCheckboxList({
     const reindexed = updated.map((a, i) => ({ ...a, order: i + 1 }));
     onUpdate(reindexed);
   };
-
-  const handleSelectAll = useCallback(() => {
-    const allSelected = caseArguments.map((arg, index) => ({
-      argumentId: arg.id,
-      order: index + 1,
-      title: arg.title,
-      content: arg.content,
-      argumentType: arg.argumentType,
-    }));
-    onUpdate(allSelected);
-  }, [caseArguments, onUpdate]);
-
-  const handleClearAll = useCallback(() => {
-    onUpdate([]);
-  }, [onUpdate]);
 
   return (
     <div className="space-y-4" role="region" aria-label="Argument selection">
