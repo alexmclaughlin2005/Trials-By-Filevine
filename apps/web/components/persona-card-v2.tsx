@@ -276,25 +276,25 @@ export function PersonaCardV2({
                   {persona.demographics.age && (
                     <div>
                       <span className="text-filevine-gray-600">Age:</span>{' '}
-                      <span className="text-filevine-gray-900">{persona.demographics.age}</span>
+                      <span className="text-filevine-gray-900">{String(persona.demographics.age)}</span>
                     </div>
                   )}
                   {persona.demographics.occupation && (
                     <div>
                       <span className="text-filevine-gray-600">Occupation:</span>{' '}
-                      <span className="text-filevine-gray-900">{persona.demographics.occupation}</span>
+                      <span className="text-filevine-gray-900">{String(persona.demographics.occupation)}</span>
                     </div>
                   )}
                   {persona.demographics.education && (
                     <div>
                       <span className="text-filevine-gray-600">Education:</span>{' '}
-                      <span className="text-filevine-gray-900">{persona.demographics.education}</span>
+                      <span className="text-filevine-gray-900">{String(persona.demographics.education)}</span>
                     </div>
                   )}
                   {persona.demographics.politics && (
                     <div>
                       <span className="text-filevine-gray-600">Politics:</span>{' '}
-                      <span className="text-filevine-gray-900">{persona.demographics.politics}</span>
+                      <span className="text-filevine-gray-900">{String(persona.demographics.politics)}</span>
                     </div>
                   )}
                 </div>
