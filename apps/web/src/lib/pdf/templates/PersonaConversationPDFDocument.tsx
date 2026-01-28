@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
   shiftText: {
     fontSize: fontSize.sm,
-    color: colors.blue[900],
+    color: colors.blue[700],
     lineHeight: 1.5,
   },
 });
@@ -259,7 +259,7 @@ export function PersonaConversationPDFDocument({ data }: Props) {
                     <Text style={styles.coverMetaValue}>
                       {personaSummary.finalPosition.toUpperCase()}
                     </Text>
-                    <Text style={{ fontSize: fontSize.sm, color: colors.blue[600], marginLeft: spacing.sm }}>
+                    <Text style={{ fontSize: fontSize.sm, color: colors.blue[700], marginLeft: spacing.sm }}>
                       (Shifted)
                     </Text>
                   </>
