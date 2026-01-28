@@ -514,7 +514,6 @@ export function UnifiedConversationView({
                         key={summary.personaId}
                         summary={summary}
                         insight={insight}
-                        conversationId={conversationId}
                       />
                     );
                   })}

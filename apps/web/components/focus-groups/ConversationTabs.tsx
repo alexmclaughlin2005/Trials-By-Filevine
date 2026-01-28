@@ -263,7 +263,6 @@ export function ConversationTabs({ conversationId, personaSummaries, allStatemen
                   <PersonaSummaryCard
                     key={summary.personaId}
                     summary={summary}
-                    conversationId={conversationId}
                   />
                 ))}
               </div>
