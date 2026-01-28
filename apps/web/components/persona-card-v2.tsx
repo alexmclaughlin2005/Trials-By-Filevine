@@ -7,7 +7,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
 // Helper function to format archetype names
-function formatArchetypeName(archetype?: string): string {
+function formatArchetypeName(archetype: string | undefined): string {
   if (!archetype) return 'Unclassified';
 
   const nameMap: Record<string, string> = {
