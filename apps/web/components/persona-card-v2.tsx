@@ -23,7 +23,7 @@ function formatArchetypeName(archetype?: string): string {
     maverick: 'The Maverick'
   };
 
-  return nameMap[archetype] || archetype;
+  return nameMap[archetype] || 'Unclassified';
 }
 
 interface PersonaV2 {
