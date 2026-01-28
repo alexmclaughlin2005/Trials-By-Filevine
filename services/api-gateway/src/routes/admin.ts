@@ -215,25 +215,36 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
       fastify.log.info({ key, enabled }, 'Toggling feature flag');
 
-      // Upsert the feature flag
-      const flag = await fastify.prisma.featureFlag.upsert({
+      // For global flags (organizationId: null), we can't use upsert with compound unique key
+      // Instead, find first and then create or update
+      const existingFlag = await fastify.prisma.featureFlag.findFirst({
         where: {
-          key_organizationId: {
-            key,
-            organizationId: null as any, // Global flag - Prisma type issue with nullable compound keys
-          },
-        },
-        update: {
-          enabled,
-          updatedAt: new Date(),
-        },
-        create: {
           key,
-          name: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-          enabled,
           organizationId: null,
         },
       });
+
+      let flag;
+      if (existingFlag) {
+        // Update existing flag
+        flag = await fastify.prisma.featureFlag.update({
+          where: { id: existingFlag.id },
+          data: {
+            enabled,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        // Create new flag (shouldn't happen if seeding worked, but handle gracefully)
+        flag = await fastify.prisma.featureFlag.create({
+          data: {
+            key,
+            name: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+            enabled,
+            organizationId: null,
+          },
+        });
+      }
 
       fastify.log.info({ flag }, 'Feature flag toggled');
 
