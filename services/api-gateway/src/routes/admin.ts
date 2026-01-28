@@ -294,22 +294,35 @@ export async function adminRoutes(fastify: FastifyInstance) {
 
       for (const flagData of defaultFlags) {
         fastify.log.info({ flagData }, 'Upserting feature flag');
-        const flag = await fastify.prisma.featureFlag.upsert({
+        
+        // For global flags (organizationId: null), we can't use upsert with compound unique key
+        // Instead, find first and then create or update
+        const existingFlag = await fastify.prisma.featureFlag.findFirst({
           where: {
-            key_organizationId: {
-              key: flagData.key,
-              organizationId: null as any, // Global flag - Prisma type issue with nullable compound keys
-            },
-          },
-          update: {
-            name: flagData.name,
-            description: flagData.description,
-          },
-          create: {
-            ...flagData,
+            key: flagData.key,
             organizationId: null,
           },
         });
+
+        let flag;
+        if (existingFlag) {
+          // Update existing flag
+          flag = await fastify.prisma.featureFlag.update({
+            where: { id: existingFlag.id },
+            data: {
+              name: flagData.name,
+              description: flagData.description,
+            },
+          });
+        } else {
+          // Create new flag
+          flag = await fastify.prisma.featureFlag.create({
+            data: {
+              ...flagData,
+              organizationId: null,
+            },
+          });
+        }
         results.push(flag);
       }
 
