@@ -1,0 +1,432 @@
+{
+  "archetype": "bootstrapper",
+  "display_name": "The Bootstrapper",
+  "tagline": "Personal responsibility hardliner - blames plaintiffs for their own problems",
+  "verdict_lean": "STRONG DEFENSE",
+  "danger_for_plaintiff": 5,
+  "danger_for_defense": 1,
+  
+  "what_they_believe": "People are responsible for their own outcomes. Injuries happen because people weren't careful. Lawsuits are usually money grabs. Corporations create jobs and shouldn't be punished for every accident.",
+  
+  "how_they_behave_in_deliberation": "Will argue plaintiff contributed to their own injury. Will minimize damages ('that's not worth a million dollars'). Will resist emotional appeals. Often vocal and may try to lead.",
+  
+  "how_to_spot_them": [
+    "Stories about overcoming hardship without help or lawsuits",
+    "Phrases like 'personal responsibility,' 'nobody forced them,' 'common sense'",
+    "Skepticism about lawsuits, insurance costs, 'lottery justice'",
+    "Business owner, sales, management, or self-employed",
+    "Often (not always) conservative, religious, rural/suburban"
+  ],
+  
+  "personas": [
+    {
+      "id": "BOOT_01",
+      "name": "Bootstrap Bob",
+      "tagline": "I built everything I have. Nobody handed me anything.",
+      "instant_read": "Classic self-made man. Will blame plaintiff for not being careful.",
+      
+      "demographics": {
+        "age": 58,
+        "gender": "male",
+        "race": "white",
+        "location": "Plano, TX (suburban)",
+        "education": "Bachelor's - Business",
+        "occupation": "Regional Sales Manager",
+        "income": 145000,
+        "family": "Married 32 years, 3 adult kids",
+        "religion": "Baptist (active)",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Worked way through college selling cars. Built 30-year career in sales through 'hard work and showing up.' Father was a machinist who worked through chronic back pain and never sued anyone. Sister filed bankruptcy from credit card debt - Bob sees this as 'poor choices.' Has never sued anyone and is proud of it.",
+      
+      "phrases_youll_hear": [
+        "Nobody put a gun to their head",
+        "At the end of the day, you're responsible for yourself",
+        "Play stupid games, win stupid prizes",
+        "There's two sides to every story",
+        "I've never sued anyone and never will"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.25,
+        "damages_if_liability": "Will push for minimum. Economic only, heavily reduced.",
+        "role_in_deliberation": "Vocal advocate for defense. May try to lead."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "MUST STRIKE. Textbook defense juror.",
+        "defense_strategy": "KEEP. Dream juror who will do your work for you."
+      }
+    },
+    
+    {
+      "id": "BOOT_02",
+      "name": "Tough-Love Tina",
+      "tagline": "I raised two kids alone working two jobs. Don't tell me about hardship.",
+      "instant_read": "Overcame real adversity. Resents people who 'can't handle' what she handled.",
+      
+      "demographics": {
+        "age": 52,
+        "gender": "female",
+        "race": "white",
+        "location": "Columbus, OH (suburban)",
+        "education": "Associate's - Business",
+        "occupation": "Office Manager",
+        "income": 58000,
+        "family": "Divorced, 2 adult kids",
+        "religion": "Catholic",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Divorced from 'lazy' husband when kids were young. Worked two jobs while getting associate's degree. Raised two kids alone and put them through college. Brother is on disability - she believes he could work if he tried. Sees her success as proof that excuses are just that.",
+      
+      "phrases_youll_hear": [
+        "I raised two kids alone and never asked for a handout",
+        "Excuses are just that - excuses",
+        "If I could do it, anyone can",
+        "Some people just want the easy way out"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.35,
+        "damages_if_liability": "Will reduce significantly. 'Life isn't fair.'",
+        "role_in_deliberation": "Shares personal story as counter to plaintiff sympathy."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "STRIKE. Her story will undercut sympathy for your client.",
+        "defense_strategy": "KEEP. Credible voice for personal responsibility."
+      }
+    },
+    
+    {
+      "id": "BOOT_03",
+      "name": "MAGA Mike",
+      "tagline": "Lawsuits are killing American business. Trial lawyers are parasites.",
+      "instant_read": "Trump voter, Fox News watcher. Sees lawsuits as liberal attack on business.",
+      
+      "demographics": {
+        "age": 61,
+        "gender": "male",
+        "race": "white",
+        "location": "Fort Worth, TX (suburban)",
+        "education": "Some college",
+        "occupation": "Auto Dealership Owner (retired)",
+        "income": 125000,
+        "family": "Married 38 years, 4 kids",
+        "religion": "Non-denominational Christian",
+        "politics": "Republican (strong Trump supporter)"
+      },
+      
+      "backstory": "Built car dealership from single lot to three locations. Been sued twice by employees and customers - considers both frivolous. Active in local Republican politics. Believes tort reform is essential. Gets news from Fox News and conservative talk radio. Sees trial lawyers as Democrats who hurt business.",
+      
+      "phrases_youll_hear": [
+        "Trial lawyers are destroying this country",
+        "Everyone's looking for a payday",
+        "This is lawsuit lottery",
+        "Regulations are strangling business",
+        "In my day, we handled things ourselves"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.20,
+        "damages_if_liability": "Absolute minimum. Will argue for zero.",
+        "role_in_deliberation": "Loud, aggressive defense advocate. May alienate some jurors."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "STRIKE IMMEDIATELY or challenge for cause if possible.",
+        "defense_strategy": "KEEP but be aware he may be too aggressive and turn off moderate jurors."
+      }
+    },
+    
+    {
+      "id": "BOOT_04",
+      "name": "Offer-It-Up Olive",
+      "tagline": "Suffering is part of God's plan. Money doesn't heal anything.",
+      "instant_read": "Deep religious belief that lawsuits reject God's will.",
+      
+      "demographics": {
+        "age": 67,
+        "gender": "female",
+        "race": "white",
+        "location": "Staten Island, NY (suburban)",
+        "education": "High school",
+        "occupation": "Retired Secretary",
+        "income": 38000,
+        "family": "Widowed (husband died of 9/11-related cancer), 4 adult kids",
+        "religion": "Catholic (very devout)",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Husband was first responder who developed cancer from 9/11 exposure. Despite clear causation, she refused to sue or join victim fund - believes suffering should be 'offered up to God.' Raised to never sue. Sees lawsuits as rejecting God's plan and being ungrateful.",
+      
+      "phrases_youll_hear": [
+        "God has a plan for everything",
+        "We don't sue people in my family",
+        "You offer it up to God",
+        "Money doesn't fix anything",
+        "My husband died and I never asked for a dime"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.15,
+        "damages_if_liability": "Will award almost nothing. Believes money for suffering is wrong.",
+        "role_in_deliberation": "Quiet but immovable. May be holdout for defense."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "CHALLENGE FOR CAUSE. Her beliefs prevent her from awarding damages.",
+        "defense_strategy": "KEEP. Unshakeable defense vote."
+      }
+    },
+    
+    {
+      "id": "BOOT_05",
+      "name": "By-The-Book Bill",
+      "tagline": "Follow the rules and you won't get hurt. Simple as that.",
+      "instant_read": "Military/law enforcement. If plaintiff violated any rule, case over.",
+      
+      "demographics": {
+        "age": 52,
+        "gender": "male",
+        "race": "Latino",
+        "location": "El Paso, TX (suburban)",
+        "education": "Some college - Criminal Justice",
+        "occupation": "Retired Army Sergeant / Security Guard",
+        "income": 65000,
+        "family": "Married 25 years, 3 kids",
+        "religion": "Catholic",
+        "politics": "Republican"
+      },
+      
+      "backstory": "20 years Army, retired as Sergeant First Class. Now works security. Values discipline, rules, and following procedures. Believes most injuries happen because someone didn't follow the rules. BUT: If defendant clearly violated rules/regulations, may hold them accountable.",
+      
+      "phrases_youll_hear": [
+        "If you follow the rules, you won't have problems",
+        "In the Army, we had standards for a reason",
+        "Did they follow proper procedure?",
+        "Discipline prevents accidents",
+        "What were they thinking?"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.40,
+        "damages_if_liability": "Moderate. Respects proper compensation if rules were broken.",
+        "role_in_deliberation": "Focuses on whether procedures were followed by BOTH sides."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "MAY KEEP if defendant clearly violated rules/regulations. He respects standards.",
+        "defense_strategy": "KEEP if plaintiff violated any safety rule. CONSIDER STRIKING if your client broke clear rules."
+      }
+    },
+    
+    {
+      "id": "BOOT_06",
+      "name": "Sued-And-Bitter Betty",
+      "tagline": "I was sued for something that wasn't my fault. I know how this game works.",
+      "instant_read": "Was defendant in lawsuit. Traumatized. Sees all plaintiffs as scammers.",
+      
+      "demographics": {
+        "age": 49,
+        "gender": "female",
+        "race": "white",
+        "location": "Boise, ID (suburban)",
+        "education": "Some college",
+        "occupation": "Small Business Owner (gift shop)",
+        "income": 72000,
+        "family": "Married, 2 kids",
+        "religion": "Non-denominational Christian",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Sued twice by customers claiming slip-and-fall injuries. Believes both were fraudulent. First case settled (felt like extortion), second dismissed after $45K in legal fees. Nearly lost her business. Deeply hostile to plaintiffs and their attorneys.",
+      
+      "phrases_youll_hear": [
+        "I've been on the other side of this",
+        "Do you know what it costs to defend yourself?",
+        "People lie to get money",
+        "I know how this game works",
+        "I nearly lost my business over a lying customer"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.20,
+        "damages_if_liability": "Minimum possible. Deep suspicion of all claims.",
+        "role_in_deliberation": "Will share her story. Projects her experience onto case."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "CHALLENGE FOR CAUSE or strike. Her trauma makes her incapable of fairness.",
+        "defense_strategy": "KEEP. She'll fight for you based on personal experience."
+      }
+    },
+    
+    {
+      "id": "BOOT_07",
+      "name": "American-Dream Ivan",
+      "tagline": "I came to America with $50. Built a business. What's your excuse?",
+      "instant_read": "Immigrant success story. Extreme 'no excuses' mentality.",
+      
+      "demographics": {
+        "age": 61,
+        "gender": "male",
+        "race": "white (Eastern European)",
+        "location": "Schaumburg, IL (suburban)",
+        "education": "Bachelor's (foreign, not recognized)",
+        "occupation": "HVAC Business Owner",
+        "income": 180000,
+        "family": "Married 35 years, 2 adult kids (both college-educated)",
+        "religion": "Eastern Orthodox",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Immigrated from Soviet Ukraine in 1985 with almost nothing. Engineering degree wasn't recognized, so started as HVAC technician. Built company from scratch, now employs 25 people. Sees America as land of unlimited opportunity for those willing to work. Views lawsuits as weakness.",
+      
+      "phrases_youll_hear": [
+        "I came here with $50 in my pocket",
+        "In Soviet Union, you had real problems",
+        "Americans don't know how good they have it",
+        "Work hard, don't complain - that's how you succeed",
+        "Everybody wants something for nothing now"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.15,
+        "damages_if_liability": "Absolute minimum. 'This is nothing compared to real suffering.'",
+        "role_in_deliberation": "Compelling storyteller. His success story undercuts sympathy."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "MUST STRIKE. His story will dominate deliberations.",
+        "defense_strategy": "KEEP. Most effective Bootstrapper type."
+      }
+    },
+    
+    {
+      "id": "BOOT_08",
+      "name": "Stoic-Farm-Wife Fran",
+      "tagline": "We don't sue our neighbors. We help them fix the fence.",
+      "instant_read": "Rural values. Lawsuits are shameful. Handle problems yourself.",
+      
+      "demographics": {
+        "age": 55,
+        "gender": "female",
+        "race": "white",
+        "location": "Rural Iowa (farm)",
+        "education": "Associate's - Nursing",
+        "occupation": "Part-time Nurse / Farm Wife",
+        "income": 45000,
+        "family": "Married 32 years, 3 kids",
+        "religion": "Lutheran",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Grew up on farm, married a farmer. Has weathered droughts, floods, cattle disease, and injuries. Husband broke arm in combine accident - never considered suing equipment manufacturer. Views lawsuits as failure of character and community. Deeply distrusts 'city lawyers.'",
+      
+      "phrases_youll_hear": [
+        "We handle things ourselves out here",
+        "A lawsuit would destroy a family's reputation",
+        "City people sue over every little thing",
+        "If you can't tough it out, farming isn't for you",
+        "We don't sue our neighbors"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.25,
+        "damages_if_liability": "Minimal. Views large awards as shameful greed.",
+        "role_in_deliberation": "Quiet but firm. Rural common sense perspective."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "STRIKE. Her worldview opposes lawsuits fundamentally.",
+        "defense_strategy": "KEEP. Solid defense vote."
+      }
+    },
+    
+    {
+      "id": "BOOT_09",
+      "name": "Fox-News Frank",
+      "tagline": "I've seen the stories about ridiculous lawsuits. This system is broken.",
+      "instant_read": "Conservative media consumer. Primed to see all lawsuits as frivolous.",
+      
+      "demographics": {
+        "age": 64,
+        "gender": "male",
+        "race": "white",
+        "location": "Phoenix, AZ (suburban)",
+        "education": "High school",
+        "occupation": "Retired Plumber (union)",
+        "income": 55000,
+        "family": "Married 40 years, 3 kids, 6 grandkids",
+        "religion": "Catholic",
+        "politics": "Republican (watches Fox News daily)"
+      },
+      
+      "backstory": "Union plumber for 35 years, now retired. Despite union background, has become very conservative. Watches Fox News several hours daily. Has absorbed narrative about 'lawsuit abuse' and 'tort reform.' Regularly cites stories about ridiculous lawsuits (some urban legends). Believes trial lawyers are Democrats destroying America.",
+      
+      "phrases_youll_hear": [
+        "Did you see that story about the woman who sued over hot coffee?",
+        "Trial lawyers own the Democrat party",
+        "These lawsuits are why everything costs so much",
+        "Tort reform would fix this country",
+        "Personal responsibility is dead"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.25,
+        "damages_if_liability": "Minimal. Sees any large award as 'lawsuit lottery.'",
+        "role_in_deliberation": "Will cite media stories as evidence of lawsuit abuse."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "STRIKE. He's been programmed to reject your case.",
+        "defense_strategy": "KEEP. Reliable defense vote."
+      }
+    },
+    
+    {
+      "id": "BOOT_10",
+      "name": "Doctors-Are-Heroes Diana",
+      "tagline": "My father saved thousands of lives and still got sued twice.",
+      "instant_read": "Medical family. Will defend doctors/hospitals almost unconditionally.",
+      
+      "demographics": {
+        "age": 44,
+        "gender": "female",
+        "race": "white",
+        "location": "Wellesley, MA (suburban)",
+        "education": "MBA",
+        "occupation": "Pharmaceutical Sales Rep",
+        "income": 165000,
+        "family": "Married, 2 kids",
+        "religion": "Episcopal",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Father was surgeon, mother was nurse. Grew up hearing about the 'heroes' in medicine. Father was sued twice despite 'saving thousands of lives' - both cases dismissed but cost money and stress. Works in pharmaceutical sales, reinforcing medical industry loyalty. Will defend healthcare providers instinctively.",
+      
+      "phrases_youll_hear": [
+        "My father saved thousands of lives and still got sued twice",
+        "Patients don't follow instructions and then blame doctors",
+        "Medicine isn't perfect - bad outcomes aren't always malpractice",
+        "Do you know what malpractice insurance costs?",
+        "Everyone thinks they know better than their doctor because of Google"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.20,
+        "damages_if_liability": "Low. Sympathy is with medical providers.",
+        "role_in_deliberation": "Will educate jury about how 'unfair' medical lawsuits are.",
+        "special_note": "IN MEDICAL MALPRACTICE CASES: Liability probability drops to 10%. MUST STRIKE."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "CHALLENGE FOR CAUSE in med mal. Strike in other cases.",
+        "defense_strategy": "KEEP. Especially valuable in medical cases."
+      }
+    }
+  ]
+}

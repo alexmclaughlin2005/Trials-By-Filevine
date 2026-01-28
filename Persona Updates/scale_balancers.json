@@ -1,0 +1,270 @@
+{
+  "archetype": "scale_balancer",
+  "display_name": "The Scale-Balancer",
+  "tagline": "Genuinely fair evaluator - will follow the evidence wherever it leads",
+  "verdict_lean": "NEUTRAL",
+  "danger_for_plaintiff": 3,
+  "danger_for_defense": 3,
+  
+  "what_they_believe": "Every case should be decided on its own merits. Both plaintiffs and defendants can be right or wrong. I'll wait to hear the evidence before forming an opinion.",
+  
+  "how_they_behave_in_deliberation": "Will ask clarifying questions. Will weigh arguments from both sides. Can be persuaded by strong evidence. Often helps build consensus. Won't give sympathy verdicts but won't dismiss legitimate claims either.",
+  
+  "how_to_spot_them": [
+    "Balanced answers acknowledging both perspectives",
+    "Phrases like 'I'd need to see the evidence' or 'it depends'",
+    "Moderate or Independent politics",
+    "Professions requiring objectivity (HR, auditing, research, mediation)",
+    "Thoughtful, measured speaking style"
+  ],
+  
+  "why_both_sides_want_them": "Scale-Balancers are the ideal swing jurors. They don't have built-in bias for either side. Win them with evidence quality, not emotion or ideology.",
+  
+  "personas": [
+    {
+      "id": "SCALE_01",
+      "name": "Just-The-Facts Fiona",
+      "tagline": "What does the evidence actually show? Let's look at this objectively.",
+      "instant_read": "Data-driven professional. Will analyze, not emote.",
+      
+      "demographics": {
+        "age": 47,
+        "gender": "female",
+        "race": "Asian (Chinese-American)",
+        "location": "San Jose, CA (suburban)",
+        "education": "MS Engineering + MBA",
+        "occupation": "Product Manager, Tech",
+        "income": 185000,
+        "family": "Married, 2 kids",
+        "religion": "Buddhist (cultural)",
+        "politics": "Independent"
+      },
+      
+      "backstory": "Engineering and business background. Career requires data-driven decisions. No strong political ideology. Prides herself on objectivity. Will analyze case like a business problem - systematically and without preconceptions.",
+      
+      "phrases_youll_hear": [
+        "What does the evidence actually show?",
+        "I'd need to see the data for that",
+        "I can see both sides of this",
+        "Let's be systematic about this",
+        "That's an interesting point, but what's the proof?"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.50,
+        "damages_if_liability": "Evidence-based. Will calculate, not guess.",
+        "role_in_deliberation": "Voice of reason. Will push for fact-based discussion."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you have strong evidence. She'll see it.",
+        "defense_strategy": "KEEP if plaintiff's case is weak. She won't give sympathy verdicts."
+      }
+    },
+    
+    {
+      "id": "SCALE_02",
+      "name": "Moderate Mike",
+      "tagline": "I vote for the person, not the party. I'll judge this case on its merits.",
+      "instant_read": "Political centrist. No team loyalty. Truly open-minded.",
+      
+      "demographics": {
+        "age": 52,
+        "gender": "male",
+        "race": "white",
+        "location": "Columbus, OH (suburban)",
+        "education": "Bachelor's - Business",
+        "occupation": "Bank Branch Manager",
+        "income": 85000,
+        "family": "Married, 3 kids",
+        "religion": "Methodist",
+        "politics": "Independent (true swing voter)"
+      },
+      
+      "backstory": "Has voted for both parties over the years. Dislikes political extremes on both sides. Career in banking taught him to evaluate loan applications on their merits. Applies same approach to everything. Genuinely doesn't have preconceptions about lawsuits or corporations.",
+      
+      "phrases_youll_hear": [
+        "I vote for the person, not the party",
+        "I don't like extremes on either side",
+        "Let's look at this case specifically",
+        "Both sides have made some good points",
+        "I'd want to understand both perspectives"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.50,
+        "damages_if_liability": "Fair. Will try to be reasonable.",
+        "role_in_deliberation": "Mediating voice. Can bridge divided factions."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP. No bias to overcome.",
+        "defense_strategy": "KEEP. No bias to overcome."
+      }
+    },
+    
+    {
+      "id": "SCALE_03",
+      "name": "Librarian Linda",
+      "tagline": "What's the source for that claim? Let's verify before we decide.",
+      "instant_read": "Information professional. Values accuracy and source verification.",
+      
+      "demographics": {
+        "age": 62,
+        "gender": "female",
+        "race": "white",
+        "location": "Denver, CO (suburban)",
+        "education": "MLS - Library Science",
+        "occupation": "Retired Public Librarian",
+        "income": 48000,
+        "family": "Widowed, 2 adult kids",
+        "religion": "Unitarian",
+        "politics": "Independent (lean liberal)"
+      },
+      
+      "backstory": "35 years helping people find accurate information. Trained in information literacy and source verification. Naturally skeptical of claims without evidence. No axe to grind. Values fairness and accuracy above all. Has slight liberal lean but genuinely tries to be fair.",
+      
+      "phrases_youll_hear": [
+        "What's the source for that?",
+        "I'd like to look at this more carefully",
+        "Let's consider all the evidence",
+        "Both sides have made some good points",
+        "I want to make sure we're being fair"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.50,
+        "damages_if_liability": "Carefully reasoned. Will research jury award norms if allowed.",
+        "role_in_deliberation": "Fact-checker. Will question unsupported claims from either side."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP. Nearly perfect Scale-Balancer.",
+        "defense_strategy": "KEEP. She won't be swayed by emotion."
+      }
+    },
+    
+    {
+      "id": "SCALE_04",
+      "name": "HR-Director Denise",
+      "tagline": "I've mediated hundreds of disputes. There's usually truth on both sides.",
+      "instant_read": "Professional mediator. Natural consensus builder.",
+      
+      "demographics": {
+        "age": 49,
+        "gender": "female",
+        "race": "Latina",
+        "location": "Albuquerque, NM (suburban)",
+        "education": "Bachelor's - Psychology + HR certifications",
+        "occupation": "HR Director",
+        "income": 95000,
+        "family": "Married, 3 kids",
+        "religion": "Catholic",
+        "politics": "Democrat (moderate)"
+      },
+      
+      "backstory": "20 years mediating workplace disputes. Knows there are usually two sides to every story. Professional training in finding common ground. Naturally empathetic but professionally balanced. Will try to build consensus rather than take sides.",
+      
+      "phrases_youll_hear": [
+        "I've mediated hundreds of disputes",
+        "Usually both sides have legitimate points",
+        "Let's try to understand everyone's perspective",
+        "What would be fair to both parties?",
+        "Let me see if I can summarize where we agree"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.50,
+        "damages_if_liability": "Compromise-oriented. Will seek middle ground.",
+        "role_in_deliberation": "Natural facilitator. May emerge as unofficial leader."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP. Fair and can help build consensus for you.",
+        "defense_strategy": "KEEP. Fair and won't let emotions run away."
+      }
+    },
+    
+    {
+      "id": "SCALE_05",
+      "name": "Auditor Adam",
+      "tagline": "I've seen corporate fraud AND exaggerated claims. The documents tell the truth.",
+      "instant_read": "Financial professional. Trusts documentation, skeptical of everyone.",
+      
+      "demographics": {
+        "age": 38,
+        "gender": "male",
+        "race": "Black",
+        "location": "Minneapolis, MN (suburban)",
+        "education": "Master's - Accounting + CPA",
+        "occupation": "Senior Auditor",
+        "income": 115000,
+        "family": "Married, 2 kids",
+        "religion": "Catholic",
+        "politics": "Independent"
+      },
+      
+      "backstory": "Nigerian immigrant, first generation. Career as auditor requires objective evaluation. Has uncovered corporate fraud AND frivolous claims. Trusts documentation over testimony. Professional training in skepticism applies to both sides equally.",
+      
+      "phrases_youll_hear": [
+        "I need to see the documentation",
+        "In my experience auditing companies...",
+        "The numbers tell a story",
+        "Let's verify that claim",
+        "I've seen misconduct and I've seen exaggeration"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.50,
+        "damages_if_liability": "Based on documented evidence. Skeptical of unsupported numbers.",
+        "role_in_deliberation": "Document analyst. Will focus on paper trail."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you have strong documentation.",
+        "defense_strategy": "KEEP if plaintiff's documents are weak."
+      }
+    },
+    
+    {
+      "id": "SCALE_06",
+      "name": "Root-Cause Roger",
+      "tagline": "Let's trace this back. What actually caused this to happen?",
+      "instant_read": "Engineer mindset. Wants to understand the system, not assign blame emotionally.",
+      
+      "demographics": {
+        "age": 47,
+        "gender": "male",
+        "race": "South Asian",
+        "location": "Houston, TX (suburban)",
+        "education": "MS Chemical Engineering",
+        "occupation": "Process Engineer",
+        "income": 145000,
+        "family": "Married, 3 kids",
+        "religion": "Hindu",
+        "politics": "Independent"
+      },
+      
+      "backstory": "Career in process engineering for petrochemical industry. Trained in root cause analysis - looking for what actually caused a failure, not who to blame. Understands that failures usually have multiple causes. Respects safety standards and procedures.",
+      
+      "phrases_youll_hear": [
+        "Let's trace this back to root cause",
+        "What were the standards that applied?",
+        "Usually there are multiple contributing factors",
+        "Were procedures followed?",
+        "The process should tell us what happened"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.50,
+        "damages_if_liability": "Based on documented harm. Engineering precision.",
+        "role_in_deliberation": "Systems thinker. Will trace causation carefully."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if defendant violated clear procedures.",
+        "defense_strategy": "KEEP if causation is murky or plaintiff contributed."
+      }
+    }
+  ]
+}

@@ -1,0 +1,246 @@
+{
+  "archetype": "scarred",
+  "display_name": "The Scarred",
+  "tagline": "Personal experience dominates - direction depends on what happened to them",
+  "verdict_lean": "DEPENDS ON THEIR EXPERIENCE",
+  "danger_for_plaintiff": "1-5 (varies by experience)",
+  "danger_for_defense": "1-5 (varies by experience)",
+  
+  "what_they_believe": "I've been through something similar. I know what this is really about. My experience tells me everything I need to know.",
+  
+  "how_they_behave_in_deliberation": "Will project their experience onto the case. Will share personal story with high credibility. Nearly impossible to move from their position. Their verdict is set by their life, not the evidence.",
+  
+  "how_to_spot_them": [
+    "Mentions personal injury, lawsuit, or similar experience",
+    "Strong emotional reaction to case facts",
+    "Detailed knowledge of recovery or legal process",
+    "Phrases like 'I've been through this' or 'I know what that's like'"
+  ],
+  
+  "subtypes": {
+    "pro_plaintiff": [
+      "SUED AND WON: Was injured, sued successfully → Strong plaintiff advocate",
+      "WANTED TO SUE BUT COULDN'T: Was injured, couldn't afford lawyer → Vicarious justice seeker",
+      "CLOSE FAMILY MEMBER WAS INJURED: Watched loved one suffer → Empathy plus experience"
+    ],
+    "pro_defense": [
+      "WAS SUED THEMSELVES: Was defendant, believes lawsuit was unfair → Hostile to all plaintiffs",
+      "INJURED BUT DIDN'T SUE: Chose stoic path → Must believe suing is wrong to validate choice",
+      "FAMILY MEMBER WAS DEFENDANT: Watched loved one get sued → Sympathy for defendants"
+    ]
+  },
+  
+  "personas": [
+    {
+      "id": "SCAR_01",
+      "name": "Botched-Surgery Barbara",
+      "tagline": "I know what it's like to have a doctor's mistake change your life. I still live with the pain.",
+      "instant_read": "Medical injury survivor who sued and won. DEVASTATING in med mal cases for defense.",
+      "experience_type": "SUED AND WON",
+      
+      "demographics": {
+        "age": 48,
+        "gender": "female",
+        "race": "Black",
+        "location": "Chicago, IL (urban)",
+        "education": "Bachelor's - Nursing",
+        "occupation": "School Nurse",
+        "income": 62000,
+        "family": "Married, 2 kids",
+        "religion": "Baptist",
+        "politics": "Democrat"
+      },
+      
+      "backstory": "Surgical error 10 years ago caused permanent nerve damage. Sued hospital and surgeon, won modest settlement after 4-year battle. Still has chronic pain. Experience gave her authority on what medical injury victims go through. KNOWS the system can work.",
+      
+      "phrases_youll_hear": [
+        "I know what it's like to have your life changed by someone's mistake",
+        "The system didn't make it easy, but justice was possible",
+        "They'll say anything to avoid responsibility",
+        "I still live with pain every day",
+        "Doctors aren't gods - they make mistakes"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.80,
+        "damages_if_liability": "High. Knows what injuries really cost.",
+        "role_in_deliberation": "Credible advocate. Her experience silences Bootstrappers.",
+        "special_note": "IN MEDICAL MALPRACTICE: Liability probability 90%."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP. Especially in medical cases. She's your star witness.",
+        "defense_strategy": "CHALLENGE FOR CAUSE or STRIKE. Her experience makes fair evaluation impossible."
+      }
+    },
+    
+    {
+      "id": "SCAR_02",
+      "name": "Toughed-It-Out Tom",
+      "tagline": "I was seriously injured too. I didn't sue. I got back to work. That's what real men do.",
+      "instant_read": "Was injured, chose not to sue. MUST believe suing is wrong to validate his choice.",
+      "experience_type": "INJURED BUT DIDN'T SUE",
+      
+      "demographics": {
+        "age": 66,
+        "gender": "male",
+        "race": "white",
+        "location": "Scranton, PA (rural)",
+        "education": "High school",
+        "occupation": "Retired Factory Worker",
+        "income": 38000,
+        "family": "Married 43 years, 3 kids",
+        "religion": "Catholic",
+        "politics": "Democrat"
+      },
+      
+      "backstory": "Seriously injured at work 25 years ago. Refused to sue on principle - 'that's not who I am.' Worked 15 more years through chronic pain. Cognitive dissonance: NEEDS to believe suing is wrong to validate his life choice. If plaintiff deserves money, what does that say about him?",
+      
+      "phrases_youll_hear": [
+        "I was hurt too. I didn't sue.",
+        "I got back to work. That's what you do.",
+        "We didn't sue people in my day",
+        "Money doesn't fix anything",
+        "I lived through it. So can they."
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.25,
+        "damages_if_liability": "Minimal. His identity requires low damages.",
+        "role_in_deliberation": "Powerful defense voice. His suffering gives him authority."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "CHALLENGE FOR CAUSE. His psychology prevents fair evaluation.",
+        "defense_strategy": "KEEP. His story is your closing argument."
+      }
+    },
+    
+    {
+      "id": "SCAR_03",
+      "name": "Falsely-Accused Fred",
+      "tagline": "I was sued for something that wasn't my fault. I know how this game works.",
+      "instant_read": "Was defendant in lawsuit. Traumatized. All plaintiffs are scammers to him.",
+      "experience_type": "WAS SUED",
+      
+      "demographics": {
+        "age": 54,
+        "gender": "male",
+        "race": "white",
+        "location": "Dallas, TX (suburban)",
+        "education": "Some college",
+        "occupation": "General Contractor",
+        "income": 110000,
+        "family": "Married, 2 kids",
+        "religion": "Baptist",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Sued by homeowner for alleged defective work. Believes homeowner caused damage himself. Case dismissed but cost $45K in legal fees and months of stress. Deeply hostile to plaintiffs. Projects his experience onto all cases.",
+      
+      "phrases_youll_hear": [
+        "I was sued once - completely frivolous",
+        "Do you know what it's like to be falsely accused?",
+        "Plaintiffs and their lawyers are vultures",
+        "I nearly lost my business over a lying customer",
+        "I know how this game works"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.15,
+        "damages_if_liability": "Absolute minimum.",
+        "role_in_deliberation": "Passionate defense advocate. Projects his experience."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "CHALLENGE FOR CAUSE. His trauma makes objectivity impossible.",
+        "defense_strategy": "KEEP. He'll fight for you from personal experience."
+      }
+    },
+    
+    {
+      "id": "SCAR_04",
+      "name": "Wish-I-Had-Sued Wendy",
+      "tagline": "I was hurt badly and couldn't afford a lawyer. I want to give them the justice I never got.",
+      "instant_read": "Was injured, couldn't sue. Vicarious justice seeker.",
+      "experience_type": "WANTED TO SUE BUT COULDN'T",
+      
+      "demographics": {
+        "age": 39,
+        "gender": "female",
+        "race": "white",
+        "location": "Nashville, TN (suburban)",
+        "education": "Bachelor's - Marketing",
+        "occupation": "Marketing Coordinator",
+        "income": 58000,
+        "family": "Divorced, 1 child",
+        "religion": "Baptist",
+        "politics": "Independent"
+      },
+      
+      "backstory": "Seriously injured in car accident 5 years ago. Couldn't afford a lawyer, didn't understand her rights. Now regrets not suing - still has medical bills. Projects her situation onto plaintiffs. Wants to give them the justice she missed.",
+      
+      "phrases_youll_hear": [
+        "I wish I had known I could sue",
+        "I don't want this person to go through what I went through",
+        "I never got justice. Maybe they can.",
+        "The system didn't help me. We can help them.",
+        "I know how hard it is"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.75,
+        "damages_if_liability": "High. Vicarious justice.",
+        "role_in_deliberation": "Empathetic advocate. Will identify with plaintiff."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP. She wants to give plaintiff what she couldn't get.",
+        "defense_strategy": "STRIKE. She's already emotionally invested in plaintiff winning."
+      }
+    },
+    
+    {
+      "id": "SCAR_05",
+      "name": "Widowed-And-Won Wanda",
+      "tagline": "My husband died because a company cut corners. I sued and won. Justice is possible.",
+      "instant_read": "Lost spouse to corporate negligence, sued successfully. Maximum credibility.",
+      "experience_type": "SUED AND WON (wrongful death)",
+      
+      "demographics": {
+        "age": 61,
+        "gender": "female",
+        "race": "white",
+        "location": "Jacksonville, FL (suburban)",
+        "education": "Bachelor's - Education",
+        "occupation": "Retired Teacher",
+        "income": 42000,
+        "family": "Widowed, 2 adult kids",
+        "religion": "Methodist",
+        "politics": "Democrat"
+      },
+      
+      "backstory": "Husband killed when scaffolding collapsed due to defective equipment. Sued company and won substantial verdict after 4-year fight. Experience made her believer in corporate accountability. Money didn't bring him back, but forced company to change.",
+      
+      "phrases_youll_hear": [
+        "My husband died because someone wanted to save money",
+        "No amount of money brings them back, but it forces companies to change",
+        "I know what it's like to fight a big corporation",
+        "These families deserve justice",
+        "It took four years, but it was worth it"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.90,
+        "damages_if_liability": "Maximum. Justice requires it.",
+        "role_in_deliberation": "Unassailable moral authority. Who argues with a widow?",
+        "special_note": "IN WRONGFUL DEATH CASES: Her experience dominates deliberations."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP. Especially in wrongful death - she's your most powerful voice.",
+        "defense_strategy": "CHALLENGE FOR CAUSE or STRIKE. You cannot overcome her story."
+      }
+    }
+  ]
+}

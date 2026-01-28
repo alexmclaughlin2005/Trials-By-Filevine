@@ -7,3 +7,4 @@ export * from './case';
 export * from './juror';
 export * from './persona';
 export * from './auth';
+export * from './archetype-v2';

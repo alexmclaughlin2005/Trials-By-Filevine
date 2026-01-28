@@ -17,12 +17,49 @@ export async function personasRoutes(server: FastifyInstance) {
     onRequest: [server.authenticate],
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
+      const { version, archetype } = request.query as any;
 
       const personas = await server.prisma.persona.findMany({
         where: {
           OR: [{ organizationId }, { sourceType: 'system' }],
+          ...(version && { version: parseInt(version) }),
+          ...(archetype && { archetype }),
+          isActive: true,
         },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+          description: true,
+          tagline: true,
+          archetype: true,
+          secondaryArchetype: true,
+          archetypeStrength: true,
+          sourceType: true,
+
+          // NEW V2 Fields - Archetype-level
+          archetypeVerdictLean: true,
+          archetypeWhatTheyBelieve: true,
+          archetypeDeliberationBehavior: true,
+          archetypeHowToSpot: true,
+
+          // NEW V2 Fields - Persona-specific
+          instantRead: true,
+          phrasesYoullHear: true,
+          verdictPrediction: true,
+          strikeOrKeep: true,
+
+          // Demographics and existing fields
+          demographics: true,
+          dimensions: true,
+          plaintiffDangerLevel: true,
+          defenseDangerLevel: true,
+
+          // Metadata
+          version: true,
+          isActive: true,
+          createdAt: true,
+
           _count: {
             select: {
               jurorMappings: true,
@@ -30,7 +67,7 @@ export async function personasRoutes(server: FastifyInstance) {
             },
           },
         },
-        orderBy: [{ sourceType: 'asc' }, { createdAt: 'desc' }],
+        orderBy: [{ sourceType: 'asc' }, { archetype: 'asc' }, { createdAt: 'desc' }],
       });
 
       return { personas };
@@ -49,7 +86,54 @@ export async function personasRoutes(server: FastifyInstance) {
           id,
           OR: [{ organizationId }, { sourceType: 'system' }],
         },
-        include: {
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+          description: true,
+          tagline: true,
+          archetype: true,
+          secondaryArchetype: true,
+          archetypeStrength: true,
+          sourceType: true,
+          variant: true,
+
+          // NEW V2 Fields - Archetype-level
+          archetypeVerdictLean: true,
+          archetypeWhatTheyBelieve: true,
+          archetypeDeliberationBehavior: true,
+          archetypeHowToSpot: true,
+
+          // NEW V2 Fields - Persona-specific
+          instantRead: true,
+          phrasesYoullHear: true,
+          verdictPrediction: true,
+          strikeOrKeep: true,
+
+          // Demographics and attributes
+          demographics: true,
+          dimensions: true,
+          lifeExperiences: true,
+          characteristicPhrases: true,
+          voirDireResponses: true,
+          deliberationBehavior: true,
+
+          // Strategic guidance
+          plaintiffDangerLevel: true,
+          defenseDangerLevel: true,
+          causeChallenge: true,
+          strategyGuidance: true,
+
+          // Simulation parameters
+          simulationParams: true,
+          caseTypeModifiers: true,
+
+          // Metadata
+          version: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true,
+
           jurorMappings: {
             include: {
               juror: {
@@ -247,4 +331,151 @@ export async function personasRoutes(server: FastifyInstance) {
       }
     },
   });
+
+  // NEW: Get all archetypes with metadata
+  server.get('/archetypes', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+
+      // Get one persona per archetype to extract archetype-level data
+      const archetypePersonas = await server.prisma.persona.findMany({
+        where: {
+          version: 2,
+          isActive: true,
+          sourceType: 'system',
+        },
+        select: {
+          archetype: true,
+          archetypeVerdictLean: true,
+          archetypeWhatTheyBelieve: true,
+          archetypeDeliberationBehavior: true,
+          archetypeHowToSpot: true,
+        },
+        distinct: ['archetype'],
+        orderBy: {
+          archetype: 'asc',
+        },
+      });
+
+      // Count personas per archetype
+      const archetypeCounts = await server.prisma.persona.groupBy({
+        by: ['archetype'],
+        where: {
+          version: 2,
+          isActive: true,
+          sourceType: 'system',
+        },
+        _count: {
+          archetype: true,
+        },
+      });
+
+      const countMap = Object.fromEntries(
+        archetypeCounts.map(c => [c.archetype, c._count.archetype])
+      );
+
+      // Combine data
+      const archetypes = archetypePersonas
+        .filter(p => p.archetype) // Filter out null archetypes
+        .map(persona => ({
+          id: persona.archetype,
+          display_name: formatArchetypeName(persona.archetype!),
+          verdict_lean: persona.archetypeVerdictLean,
+          what_they_believe: persona.archetypeWhatTheyBelieve,
+          how_they_behave_in_deliberation: persona.archetypeDeliberationBehavior,
+          how_to_spot_them: persona.archetypeHowToSpot,
+          persona_count: countMap[persona.archetype!] || 0,
+        }));
+
+      return { archetypes };
+    },
+  });
+
+  // NEW: Get all personas for a specific archetype
+  server.get('/archetypes/:archetype/personas', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { archetype } = request.params as any;
+
+      // Get archetype metadata from one persona
+      const archetypeData = await server.prisma.persona.findFirst({
+        where: {
+          archetype,
+          version: 2,
+          isActive: true,
+          sourceType: 'system',
+        },
+        select: {
+          archetype: true,
+          archetypeVerdictLean: true,
+          archetypeWhatTheyBelieve: true,
+          archetypeDeliberationBehavior: true,
+          archetypeHowToSpot: true,
+        },
+      });
+
+      if (!archetypeData) {
+        reply.code(404);
+        return { error: 'Archetype not found' };
+      }
+
+      // Get all personas for this archetype
+      const personas = await server.prisma.persona.findMany({
+        where: {
+          archetype,
+          version: 2,
+          isActive: true,
+          sourceType: 'system',
+        },
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+          tagline: true,
+          instantRead: true,
+          demographics: true,
+          phrasesYoullHear: true,
+          verdictPrediction: true,
+          strikeOrKeep: true,
+          plaintiffDangerLevel: true,
+          defenseDangerLevel: true,
+          secondaryArchetype: true,
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return {
+        archetype: {
+          id: archetypeData.archetype,
+          display_name: formatArchetypeName(archetypeData.archetype!),
+          verdict_lean: archetypeData.archetypeVerdictLean,
+          what_they_believe: archetypeData.archetypeWhatTheyBelieve,
+          how_they_behave_in_deliberation: archetypeData.archetypeDeliberationBehavior,
+          how_to_spot_them: archetypeData.archetypeHowToSpot,
+        },
+        personas,
+      };
+    },
+  });
+}
+
+// Helper function to format archetype names
+function formatArchetypeName(archetype: string): string {
+  const nameMap: Record<string, string> = {
+    bootstrapper: 'The Bootstrapper',
+    crusader: 'The Crusader',
+    scale_balancer: 'The Scale-Balancer',
+    captain: 'The Captain',
+    chameleon: 'The Chameleon',
+    heart: 'The Heart',
+    calculator: 'The Calculator',
+    scarred: 'The Scarred',
+    trojan_horse: 'The Trojan Horse',
+    maverick: 'The Maverick',
+  };
+  return nameMap[archetype] || archetype;
 }

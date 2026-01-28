@@ -1,0 +1,252 @@
+{
+  "meta": {
+    "version": "2.0",
+    "description": "Juror Archetype System - Clear definitions and memorable personas",
+    "last_updated": "2025-01"
+  },
+  
+  "archetypes": [
+    {
+      "id": "bootstrapper",
+      "display_name": "The Bootstrapper",
+      "one_liner": "Personal responsibility hardliner - blames plaintiffs for their own problems",
+      "verdict_lean": "STRONG DEFENSE",
+      "danger_rating": {
+        "for_plaintiff": 5,
+        "for_defense": 1
+      },
+      "core_belief": "People are responsible for their own outcomes. Bad things happen because of bad choices, not bad systems or bad corporations.",
+      "in_deliberation": "Will argue plaintiff caused their own injury, minimize damages, and resist emotional appeals. Often vocal and influential.",
+      "recognize_by": [
+        "Stories about overcoming hardship without help",
+        "Skepticism about lawsuits or 'lottery justice'",
+        "Phrases like 'personal responsibility' or 'nobody forced them'",
+        "Business owner, sales, or self-employed background",
+        "Conservative politics (though not always)"
+      ],
+      "plaintiff_strategy": "Must strike. If stuck with one, emphasize defendant's clear rule violations - frame as 'defendant didn't take responsibility.'",
+      "defense_strategy": "Keep as many as possible. They'll do your work for you."
+    },
+    
+    {
+      "id": "crusader",
+      "display_name": "The Crusader",
+      "one_liner": "Anti-corporate warrior - sees case as David vs Goliath",
+      "verdict_lean": "STRONG PLAINTIFF",
+      "danger_rating": {
+        "for_plaintiff": 1,
+        "for_defense": 5
+      },
+      "core_belief": "Corporations and institutions have too much power and harm regular people. The legal system is one of the few ways to hold them accountable.",
+      "in_deliberation": "Will advocate for plaintiff, push for maximum damages including punitives, and frame case as justice issue. May clash with Bootstrappers.",
+      "recognize_by": [
+        "Skepticism of corporations or 'the system'",
+        "Union membership or labor movement connection",
+        "Social work, nonprofit, education, or advocacy background",
+        "Progressive politics, NPR listener, college educated",
+        "References to 'power imbalance' or 'accountability'"
+      ],
+      "plaintiff_strategy": "Keep as many as possible. They'll fight for you.",
+      "defense_strategy": "Must strike. They've already decided corporations are guilty."
+    },
+    
+    {
+      "id": "scale_balancer",
+      "display_name": "The Scale-Balancer",
+      "one_liner": "Genuinely fair evaluator - will follow the evidence wherever it leads",
+      "verdict_lean": "NEUTRAL",
+      "danger_rating": {
+        "for_plaintiff": 3,
+        "for_defense": 3
+      },
+      "core_belief": "Every case should be decided on its own merits. Both plaintiffs and defendants can be right or wrong depending on the facts.",
+      "in_deliberation": "Will ask clarifying questions, weigh evidence carefully, and may help build consensus. Can be persuaded by strong evidence from either side.",
+      "recognize_by": [
+        "Balanced answers that acknowledge both perspectives",
+        "Phrases like 'I'd need to see the evidence'",
+        "Moderate or Independent politics",
+        "Professional backgrounds requiring objectivity (HR, research, auditing)",
+        "Thoughtful, measured speaking style"
+      ],
+      "plaintiff_strategy": "Keep if you have strong evidence. Win through facts, not emotion.",
+      "defense_strategy": "Keep if plaintiff's case is weak. They won't give sympathy verdicts."
+    },
+    
+    {
+      "id": "captain",
+      "display_name": "The Captain",
+      "one_liner": "Dominant leader who will control deliberations - direction depends on their views",
+      "verdict_lean": "DEPENDS ON SECONDARY TYPE",
+      "danger_rating": {
+        "for_plaintiff": "Varies (1-5)",
+        "for_defense": "Varies (1-5)"
+      },
+      "core_belief": "I have expertise/authority that qualifies me to lead this group to the right decision.",
+      "in_deliberation": "Will speak first and most, likely become foreperson, and drive the jury toward their preferred outcome. Other jurors defer to them.",
+      "recognize_by": [
+        "Executive, military, clergy, or leadership background",
+        "Speaks confidently and makes eye contact",
+        "Suggests procedures or organization",
+        "Others look to them before answering",
+        "Sits in prominent position"
+      ],
+      "key_insight": "A Captain's SECONDARY archetype determines if they're dangerous. CEO Carl (Captain + Bootstrapper) = defense weapon. Reverend Ruth (Captain + Crusader) = plaintiff weapon.",
+      "plaintiff_strategy": "Strike Captains with Bootstrapper tendencies. Keep Captains with Crusader or Heart tendencies.",
+      "defense_strategy": "Strike Captains with Crusader tendencies. Keep Captains with Bootstrapper or Calculator tendencies."
+    },
+    
+    {
+      "id": "chameleon",
+      "display_name": "The Chameleon",
+      "one_liner": "Follower who votes with the majority - essentially a blank ballot",
+      "verdict_lean": "FOLLOWS THE ROOM",
+      "danger_rating": {
+        "for_plaintiff": "Depends on jury composition",
+        "for_defense": "Depends on jury composition"
+      },
+      "core_belief": "I don't have strong opinions. I'll defer to people who seem more confident or knowledgeable.",
+      "in_deliberation": "Will speak rarely, agree quickly with confident voices, and vote with the majority. Won't resist social pressure.",
+      "recognize_by": [
+        "Vague or noncommittal answers in voir dire",
+        "Looks to others before answering",
+        "Service industry or subordinate job role",
+        "Anxious body language",
+        "Phrases like 'I guess' or 'whatever you think'"
+      ],
+      "key_insight": "Chameleons amplify whatever majority exists. If you have strong advocates, Chameleons become extra votes for you.",
+      "plaintiff_strategy": "Keep if you have strong Crusaders or Hearts. Strike if defense has strong Captains or Bootstrappers.",
+      "defense_strategy": "Keep if you have strong Bootstrappers or Captains. Strike if plaintiff has strong Crusaders."
+    },
+    
+    {
+      "id": "scarred",
+      "display_name": "The Scarred",
+      "one_liner": "Personal experience dominates their thinking - direction depends on what happened to them",
+      "verdict_lean": "DEPENDS ON THEIR EXPERIENCE",
+      "danger_rating": {
+        "for_plaintiff": "Varies (1-5)",
+        "for_defense": "Varies (1-5)"
+      },
+      "core_belief": "I've been through something similar. I know what this is really about.",
+      "in_deliberation": "Will project their experience onto the case. Has credibility from 'I've been there.' Nearly impossible to move from their position.",
+      "subtypes": [
+        "SUED AND WON → Strong plaintiff advocate ('Justice is possible')",
+        "WANTED TO SUE BUT COULDN'T → Strong plaintiff advocate ('Give them what I never got')",
+        "WAS INJURED BUT DIDN'T SUE → Strong defense advocate ('I toughed it out, so should they')",
+        "WAS SUED THEMSELVES → Strong defense advocate ('Plaintiffs are liars seeking money')"
+      ],
+      "recognize_by": [
+        "Mentions personal injury, lawsuit, or similar experience",
+        "Strong emotional reaction to case facts",
+        "Detailed knowledge of recovery or legal process",
+        "Phrases like 'I've been through this' or 'I know what that's like'"
+      ],
+      "plaintiff_strategy": "Keep Scarred jurors who sued successfully. Strike those who were defendants or chose not to sue.",
+      "defense_strategy": "Keep Scarred jurors who were defendants or stoically didn't sue. Strike those who sued and won."
+    },
+    
+    {
+      "id": "calculator",
+      "display_name": "The Calculator",
+      "one_liner": "Numbers-focused analyst - skeptical of anything that can't be measured",
+      "verdict_lean": "SLIGHT DEFENSE",
+      "danger_rating": {
+        "for_plaintiff": 4,
+        "for_defense": 2
+      },
+      "core_belief": "Decisions should be based on data and methodology, not emotion or sympathy. Show me the numbers.",
+      "in_deliberation": "Will question damage calculations, discount emotional testimony, and push for 'reasonable' (lower) numbers. May create spreadsheets.",
+      "recognize_by": [
+        "STEM, finance, or accounting background",
+        "Questions like 'What's the basis for that number?'",
+        "Discomfort with subjective claims",
+        "Higher education in quantitative field",
+        "Precision in language"
+      ],
+      "plaintiff_strategy": "Can be won with strong expert methodology. Emphasize economic damages over non-economic. Strike if case relies on pain/suffering.",
+      "defense_strategy": "Keep. They'll reduce damages even if they find liability."
+    },
+    
+    {
+      "id": "heart",
+      "display_name": "The Heart",
+      "one_liner": "Empathy-driven - feels the plaintiff's pain and wants to help",
+      "verdict_lean": "STRONG PLAINTIFF",
+      "danger_rating": {
+        "for_plaintiff": 1,
+        "for_defense": 4
+      },
+      "core_belief": "This person has suffered. They deserve compassion and compensation. Money can help them heal.",
+      "in_deliberation": "Will advocate for plaintiff, push for high non-economic damages, and may become emotional. Will humanize the plaintiff's story.",
+      "recognize_by": [
+        "Helping profession (nursing, counseling, teaching, ministry)",
+        "Emotional language and visible reactions",
+        "References to family, children, suffering",
+        "Strong religious faith emphasizing compassion",
+        "Phrases like 'I can only imagine' or 'think about their family'"
+      ],
+      "plaintiff_strategy": "Keep as many as possible. They'll fight for high damages.",
+      "defense_strategy": "Strike if possible. They've already connected emotionally with plaintiff."
+    },
+    
+    {
+      "id": "trojan_horse",
+      "display_name": "The Trojan Horse",
+      "one_liner": "Hidden agenda - presents as neutral but has strong secret bias",
+      "verdict_lean": "HIDDEN (varies)",
+      "danger_rating": {
+        "for_plaintiff": "Unknown until revealed",
+        "for_defense": "Unknown until revealed"
+      },
+      "core_belief": "I have strong feelings I'm not sharing because I want to be on this jury.",
+      "in_deliberation": "Will seem reasonable initially, then reveal true position. May be impossible to move once revealed.",
+      "subtypes": [
+        "STEALTH PLAINTIFF → Presents as moderate, actually hates corporations (hidden grudge, family harmed)",
+        "STEALTH DEFENSE → Presents as moderate, actually hates lawsuits (tort reform believer, industry ties)"
+      ],
+      "recognize_by": [
+        "Answers that seem 'too perfect' or rehearsed",
+        "Evasive about relevant personal experiences",
+        "Inconsistencies between background and stated views",
+        "Seems eager to be on jury despite inconvenience"
+      ],
+      "key_insight": "Hard to detect in voir dire. Look for mismatches between occupation/background and stated neutrality.",
+      "strategy": "Dig deeper in voir dire. Ask about family experiences, not just personal. Watch for evasion."
+    },
+    
+    {
+      "id": "maverick",
+      "display_name": "The Maverick",
+      "one_liner": "Wildcard who may ignore the law entirely - follows conscience over instructions",
+      "verdict_lean": "UNPREDICTABLE",
+      "danger_rating": {
+        "for_plaintiff": "Unpredictable",
+        "for_defense": "Unpredictable"
+      },
+      "core_belief": "I answer to a higher authority than the judge. My conscience/God/principles come first.",
+      "in_deliberation": "May refuse to follow jury instructions. Can cause hung jury. Nearly impossible to persuade once position is set.",
+      "subtypes": [
+        "MORAL NULLIFIER → Decides based on personal sense of justice, may ignore law",
+        "ANTI-GOVERNMENT → Rejects regulations as illegitimate, won't enforce them",
+        "ANTI-LAWSUIT ABSOLUTIST → Believes all lawsuits are wrong, won't award anything regardless of evidence"
+      ],
+      "recognize_by": [
+        "Statements about conscience or principles over law",
+        "Questions legitimacy of legal system or instructions",
+        "History of civil disobedience or extreme activism",
+        "Extreme positions on either political end",
+        "Hesitation when asked if they can follow judge's instructions"
+      ],
+      "key_insight": "Often challengeable for cause based on their own statements. Ask directly: 'Could you follow an instruction you disagreed with?'",
+      "strategy": "Identify and challenge for cause. Too unpredictable for either side."
+    }
+  ],
+  
+  "quick_reference": {
+    "must_strike_for_plaintiff": ["Bootstrapper", "Calculator (if case is emotional)", "Captain-Bootstrapper", "Scarred-Defendant", "Maverick-Anti-Lawsuit"],
+    "must_strike_for_defense": ["Crusader", "Heart", "Captain-Crusader", "Scarred-Won-Lawsuit"],
+    "both_sides_want": ["Scale-Balancer"],
+    "depends_on_composition": ["Chameleon", "Captain (depends on secondary)", "Scarred (depends on experience)"],
+    "challenge_for_cause": ["Maverick", "Extreme Scarred", "Trojan Horse (if detected)"]
+  }
+}

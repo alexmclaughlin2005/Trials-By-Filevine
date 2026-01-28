@@ -1,0 +1,229 @@
+{
+  "archetype": "chameleon",
+  "display_name": "The Chameleon",
+  "tagline": "Follower who votes with the majority - essentially a blank ballot",
+  "verdict_lean": "FOLLOWS THE ROOM",
+  "danger_for_plaintiff": "Depends on jury composition",
+  "danger_for_defense": "Depends on jury composition",
+  
+  "what_they_believe": "I don't have strong opinions about this. Other people seem more confident. I'll go along with what they decide.",
+  
+  "how_they_behave_in_deliberation": "Will speak rarely or not at all. Will agree quickly with confident voices. Will vote with majority. Won't resist social pressure. Just wants to go home.",
+  
+  "how_to_spot_them": [
+    "Vague or noncommittal answers in voir dire",
+    "Looks to others before answering",
+    "Service industry, clerical, or subordinate job role",
+    "Anxious body language",
+    "Phrases like 'I guess,' 'I don't know,' 'whatever you think'"
+  ],
+  
+  "key_insight": "Chameleons are blank votes that amplify whoever dominates deliberation. If you have strong advocates, Chameleons become extra votes for your side. If the other side has strong advocates, Chameleons become their votes.",
+  
+  "personas": [
+    {
+      "id": "CHAM_01",
+      "name": "Pushover Patty",
+      "tagline": "I don't want to cause any trouble. Whatever everyone else thinks is fine.",
+      "instant_read": "Classic follower. Will agree with whoever speaks loudest.",
+      
+      "demographics": {
+        "age": 71,
+        "gender": "female",
+        "race": "white",
+        "location": "Tampa, FL (suburban)",
+        "education": "High school",
+        "occupation": "Retired Secretary",
+        "income": 32000,
+        "family": "Widowed, 3 adult kids",
+        "religion": "Methodist",
+        "politics": "Republican (but doesn't follow closely)"
+      },
+      
+      "backstory": "40 years as secretary, trained to defer to bosses. Husband made major decisions until he passed. Never been comfortable with confrontation. Values harmony. Will agree with confident people to avoid conflict.",
+      
+      "phrases_youll_hear": [
+        "I think you're right",
+        "Whatever the group decides is fine",
+        "I don't want to cause any trouble",
+        "That makes sense, I guess",
+        "[Mostly nods silently]"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": "Follows majority",
+        "damages_if_liability": "Follows majority",
+        "role_in_deliberation": "Silent. Votes with whoever dominates."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you have strong Crusaders/Hearts. STRIKE if defense has strong Captains/Bootstrappers.",
+        "defense_strategy": "KEEP if you have strong Bootstrappers/Captains. STRIKE if plaintiff has strong Crusaders."
+      }
+    },
+    
+    {
+      "id": "CHAM_02",
+      "name": "Silent Sam",
+      "tagline": "[Barely speaks. Nods along. Just wants this to be over.]",
+      "instant_read": "Extreme introvert or cultural deference. Won't contribute, just agree.",
+      
+      "demographics": {
+        "age": 25,
+        "gender": "male",
+        "race": "Asian (Vietnamese-American)",
+        "location": "Houston, TX (suburban)",
+        "education": "High school",
+        "occupation": "Warehouse Worker",
+        "income": 34000,
+        "family": "Single, lives with parents",
+        "religion": "Buddhist (cultural)",
+        "politics": "None / Doesn't vote"
+      },
+      
+      "backstory": "First-generation Vietnamese-American. Cultural background emphasizes deference to elders. Socially anxious, avoids any conflict. First time on jury duty, completely intimidated by process. Will agree with anyone to avoid being noticed.",
+      
+      "phrases_youll_hear": [
+        "[Long silence]",
+        "Yes",
+        "[Nods]",
+        "I agree",
+        "Whatever you think"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": "Follows majority",
+        "damages_if_liability": "Follows majority",
+        "role_in_deliberation": "Nearly invisible. <2% of speaking time."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you have strong advocates. He's an extra vote for you.",
+        "defense_strategy": "KEEP if you have strong advocates. He's an extra vote for you."
+      }
+    },
+    
+    {
+      "id": "CHAM_03",
+      "name": "Anxious Annie",
+      "tagline": "I really just want this to be over. Can we decide quickly?",
+      "instant_read": "Anxiety-driven. Will vote with majority to end deliberations faster.",
+      
+      "demographics": {
+        "age": 45,
+        "gender": "female",
+        "race": "white",
+        "location": "Phoenix, AZ (suburban)",
+        "education": "High school",
+        "occupation": "Part-time Retail",
+        "income": 24000,
+        "family": "Divorced, no kids",
+        "religion": "Non-denominational",
+        "politics": "Doesn't vote"
+      },
+      
+      "backstory": "Struggles with anxiety. Finds jury duty terrifying. Just wants to be done and go home. Will agree with anyone who seems confident so deliberations end faster. No strong views on anything related to the case.",
+      
+      "phrases_youll_hear": [
+        "Can we just decide?",
+        "I agree with whatever gets us out of here",
+        "This is really stressful",
+        "I don't know... what do you all think?",
+        "[Fidgets, looks at clock]"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": "Follows majority",
+        "damages_if_liability": "Will agree to anything to end faster",
+        "role_in_deliberation": "Will push for quick resolution, which favors whoever has early majority."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you expect to have early majority. She'll want to end quickly.",
+        "defense_strategy": "KEEP if you expect to have early majority. She'll want to end quickly."
+      }
+    },
+    
+    {
+      "id": "CHAM_04",
+      "name": "Newbie Nick",
+      "tagline": "I've never done this before. I'll follow your lead.",
+      "instant_read": "First-time juror, intimidated by process. Defers to 'experience.'",
+      
+      "demographics": {
+        "age": 32,
+        "gender": "male",
+        "race": "Latino",
+        "location": "Denver, CO (urban)",
+        "education": "High school",
+        "occupation": "Construction Worker",
+        "income": 45000,
+        "family": "Married, 2 young kids",
+        "religion": "Catholic",
+        "politics": "Democrat"
+      },
+      
+      "backstory": "First time on jury duty. Intimidated by the legal process and formal setting. No formed opinions about lawsuits. Will defer to jurors who seem more experienced or educated. Could develop views during trial but more likely to follow leaders.",
+      
+      "phrases_youll_hear": [
+        "I've never done this before",
+        "I'll follow your lead",
+        "That seems right to me",
+        "I'm not sure, what do you think?",
+        "You all know better than me"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": "Follows perceived experts",
+        "damages_if_liability": "Follows perceived experts",
+        "role_in_deliberation": "Deferent. Will follow whoever seems authoritative."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you have authoritative advocates (Captain-Crusader types).",
+        "defense_strategy": "KEEP if you have authoritative advocates (Captain-Bootstrapper types)."
+      }
+    },
+    
+    {
+      "id": "CHAM_05",
+      "name": "Just-Wants-Out Jim",
+      "tagline": "Look, I've got work piling up. Can we just decide and move on?",
+      "instant_read": "Too busy for this. Mild defense lean but won't fight. Wants quick resolution.",
+      
+      "demographics": {
+        "age": 50,
+        "gender": "male",
+        "race": "white",
+        "location": "Indianapolis, IN (suburban)",
+        "education": "Bachelor's - Business",
+        "occupation": "Sales Representative",
+        "income": 85000,
+        "family": "Married, 3 kids",
+        "religion": "Protestant",
+        "politics": "Republican"
+      },
+      
+      "backstory": "Busy sales job, losing money every day on jury duty. Has mild defense lean from business background but absolutely won't fight for it. Just wants to vote and leave. Will join majority to end deliberations faster.",
+      
+      "phrases_youll_hear": [
+        "Can we wrap this up?",
+        "I've got a lot going on at work",
+        "Let's just decide and move on",
+        "I can go either way, whatever gets us done",
+        "Sounds good to me"
+      ],
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.45,
+        "damages_if_liability": "Will agree to anything reasonable to end faster.",
+        "role_in_deliberation": "Impatient. Pushes for quick consensus."
+      },
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "NEUTRAL. Slight defense lean but won't fight for it.",
+        "defense_strategy": "KEEP. Mild ally who won't cause problems."
+      }
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Filter, AlertTriangle, Shield, Copy, Edit, FileText } from 'lucide-react';
+import { Plus, Filter, AlertTriangle, Shield, Copy, Edit, FileText, Grid, List } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Select } from '@/components/ui/select';
@@ -13,6 +13,9 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/auth-context';
+import { ArchetypeBrowser } from '@/components/archetype-browser';
+import { PersonaListV2 } from '@/components/persona-list-v2';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Persona {
   id: string;
@@ -36,6 +39,20 @@ interface Persona {
     income?: string;
     [key: string]: unknown;
   };
+  // V2 Fields
+  instantRead?: string;
+  archetypeVerdictLean?: string;
+  phrasesYoullHear?: string[];
+  verdictPrediction?: {
+    liability_finding_probability: number;
+    damages_if_liability: string;
+    role_in_deliberation: string;
+  };
+  strikeOrKeep?: {
+    plaintiff_strategy: string;
+    defense_strategy: string;
+  };
+  backstory?: string;
 }
 
 const ARCHETYPE_LABELS: Record<string, string> = {
@@ -77,12 +94,14 @@ export default function PersonasPage() {
   const [notesPersona, setNotesPersona] = useState<Persona | null>(null);
   const [notesForm, setNotesForm] = useState('');
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [viewMode, setViewMode] = useState<'archetypes' | 'personas'>('archetypes');
 
   useEffect(() => {
     async function fetchPersonas() {
       try {
         setLoading(true);
-        const data = await apiClient.get<{ personas: Persona[] }>('/personas');
+        // Fetch V2 personas with all new fields
+        const data = await apiClient.get<{ personas: Persona[] }>('/personas?version=2');
 
         // Load notes from localStorage for system personas
         const personasWithNotes = data.personas.map((persona) => {
@@ -347,43 +366,66 @@ export default function PersonasPage() {
           <div>
             <h1 className="text-3xl font-bold">Persona Library</h1>
             <p className="text-muted-foreground">
-              {personas.length} behavioral personas for juror classification
+              {personas.length} behavioral personas across 10 archetypes
             </p>
           </div>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Create Persona
-          </Button>
+          <div className="flex items-center gap-3">
+            {/* View Toggle */}
+            <div className="flex items-center gap-1 border rounded-lg p-1">
+              <Button
+                variant={viewMode === 'archetypes' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('archetypes')}
+              >
+                <Grid className="mr-2 h-4 w-4" />
+                Archetypes
+              </Button>
+              <Button
+                variant={viewMode === 'personas' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setViewMode('personas')}
+              >
+                <List className="mr-2 h-4 w-4" />
+                Personas
+              </Button>
+            </div>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Persona
+            </Button>
+          </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">Filter by:</span>
-          </div>
-          <Select
-            value={selectedArchetype}
-            onChange={(e) => setSelectedArchetype(e.target.value)}
-            className="w-[240px]"
-          >
-            <option value="all">All Archetypes ({personas.length})</option>
-            {Object.entries(ARCHETYPE_LABELS).map(([key, label]) => {
-              const count = archetypeCounts[key] || 0;
-              if (count === 0) return null;
-              return (
-                <option key={key} value={key}>
-                  {label} ({count})
+        {/* Filters - Only show in personas view */}
+        {viewMode === 'personas' && (
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Filter by:</span>
+            </div>
+            <Select
+              value={selectedArchetype}
+              onChange={(e) => setSelectedArchetype(e.target.value)}
+              className="w-[240px]"
+            >
+              <option value="all">All Archetypes ({personas.length})</option>
+              {Object.entries(ARCHETYPE_LABELS).map(([key, label]) => {
+                const count = archetypeCounts[key] || 0;
+                if (count === 0) return null;
+                return (
+                  <option key={key} value={key}>
+                    {label} ({count})
+                  </option>
+                );
+              })}
+              {archetypeCounts['unclassified'] && (
+                <option value="unclassified">
+                  Unclassified ({archetypeCounts['unclassified']})
                 </option>
-              );
-            })}
-            {archetypeCounts['unclassified'] && (
-              <option value="unclassified">
-                Unclassified ({archetypeCounts['unclassified']})
-              </option>
-            )}
-          </Select>
-        </div>
+              )}
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Loading State */}
@@ -403,36 +445,49 @@ export default function PersonasPage() {
         </div>
       )}
 
-      {/* Personas Grid */}
-      {!loading && !error && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredPersonas.map((persona) => (
-            <PersonaCard
-              key={persona.id}
-              persona={persona}
-              onClick={() => setSelectedPersona(persona)}
-            />
-          ))}
-
-          {/* Add new persona card */}
-          <div className="flex items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
-            <div>
-              <Plus className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                Create a custom persona
-              </p>
-            </div>
-          </div>
-        </div>
+      {/* Content - Archetype View */}
+      {!loading && !error && viewMode === 'archetypes' && (
+        <ArchetypeBrowser
+          onArchetypeSelect={(archetypeId) => {
+            setSelectedArchetype(archetypeId);
+            setViewMode('personas');
+          }}
+        />
       )}
 
-      {/* Empty State */}
-      {!loading && !error && filteredPersonas.length === 0 && (
-        <div className="py-12 text-center">
-          <p className="text-muted-foreground">
-            No personas found for this archetype.
-          </p>
-        </div>
+      {/* Content - Persona List View */}
+      {!loading && !error && viewMode === 'personas' && (
+        <>
+          <PersonaListV2
+            personas={filteredPersonas}
+            onPersonaSelect={(personaId) => {
+              const persona = personas.find(p => p.id === personaId);
+              if (persona) setSelectedPersona(persona);
+            }}
+            allowFilters={false}
+          />
+
+          {/* Add new persona card */}
+          {filteredPersonas.length > 0 && (
+            <div className="mt-6 flex items-center justify-center rounded-lg border-2 border-dashed p-8 text-center">
+              <div>
+                <Plus className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Create a custom persona
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {filteredPersonas.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">
+                No personas found for this archetype.
+              </p>
+            </div>
+          )}
+        </>
       )}
 
       {/* Persona Detail Modal */}
@@ -460,8 +515,16 @@ export default function PersonasPage() {
               </DialogHeader>
 
               <div className="space-y-6 mt-4">
+                {/* Instant Read (V2) */}
+                {selectedPersona.instantRead && (
+                  <div className="bg-filevine-blue-50 border border-filevine-blue-200 rounded-lg p-4">
+                    <h3 className="text-sm font-semibold mb-2 text-filevine-blue-900">Instant Read</h3>
+                    <p className="text-sm text-filevine-blue-800">{selectedPersona.instantRead}</p>
+                  </div>
+                )}
+
                 {/* Tagline */}
-                {selectedPersona.tagline && (
+                {selectedPersona.tagline && !selectedPersona.instantRead && (
                   <div>
                     <p className="text-lg italic text-muted-foreground">{selectedPersona.tagline}</p>
                   </div>
@@ -489,6 +552,85 @@ export default function PersonasPage() {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {/* Verdict Lean (V2) */}
+                {selectedPersona.archetypeVerdictLean && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Verdict Lean</h3>
+                    <p className="text-sm font-medium text-filevine-gray-700">{selectedPersona.archetypeVerdictLean}</p>
+                  </div>
+                )}
+
+                {/* Phrases You'll Hear (V2) */}
+                {selectedPersona.phrasesYoullHear && selectedPersona.phrasesYoullHear.length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-semibold mb-2">Phrases You'll Hear</h3>
+                    <div className="space-y-2">
+                      {selectedPersona.phrasesYoullHear.slice(0, 5).map((phrase, idx) => (
+                        <div key={idx} className="flex items-start gap-2 text-sm">
+                          <span className="text-filevine-gray-400 mt-0.5">💬</span>
+                          <p className="text-filevine-gray-700 italic">"{phrase}"</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Verdict Prediction (V2) */}
+                {selectedPersona.verdictPrediction && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold mb-3">Verdict Prediction</h3>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1">Liability Finding Probability</p>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 bg-filevine-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-filevine-blue-600 h-2 rounded-full"
+                              style={{ width: `${(selectedPersona.verdictPrediction.liability_finding_probability || 0) * 100}%` }}
+                            />
+                          </div>
+                          <p className="text-sm font-semibold w-12 text-right">
+                            {Math.round((selectedPersona.verdictPrediction.liability_finding_probability || 0) * 100)}%
+                          </p>
+                        </div>
+                      </div>
+                      {selectedPersona.verdictPrediction.damages_if_liability && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Damages if Liability</p>
+                          <p className="text-sm text-filevine-gray-700">{selectedPersona.verdictPrediction.damages_if_liability}</p>
+                        </div>
+                      )}
+                      {selectedPersona.verdictPrediction.role_in_deliberation && (
+                        <div>
+                          <p className="text-xs text-muted-foreground mb-1">Role in Deliberation</p>
+                          <p className="text-sm text-filevine-gray-700">{selectedPersona.verdictPrediction.role_in_deliberation}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Strike or Keep (V2) */}
+                {selectedPersona.strikeOrKeep && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold mb-3">Strike or Keep Strategy</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedPersona.strikeOrKeep.plaintiff_strategy && (
+                        <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-orange-900 mb-1">Plaintiff Strategy</p>
+                          <p className="text-sm text-orange-800">{selectedPersona.strikeOrKeep.plaintiff_strategy}</p>
+                        </div>
+                      )}
+                      {selectedPersona.strikeOrKeep.defense_strategy && (
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                          <p className="text-xs font-semibold text-blue-900 mb-1">Defense Strategy</p>
+                          <p className="text-sm text-blue-800">{selectedPersona.strikeOrKeep.defense_strategy}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 )}
 

@@ -302,6 +302,18 @@ model Persona {
   causeChallenge       Json? @map("cause_challenge") // Vulnerability and scripts
   strategyGuidance     Json? @map("strategy_guidance") // Recommended questions and approach
 
+  // NEW: Archetype-level guidance (v2.0 persona system)
+  archetypeVerdictLean          String? @map("archetype_verdict_lean") @db.Text // "STRONG DEFENSE" | "STRONG PLAINTIFF" | "NEUTRAL" | etc
+  archetypeWhatTheyBelieve      String? @map("archetype_what_they_believe") @db.Text // Core belief system
+  archetypeDeliberationBehavior String? @map("archetype_deliberation_behavior") @db.Text // How they behave in deliberation
+  archetypeHowToSpot            Json?   @map("archetype_how_to_spot") // Array of recognition indicators
+
+  // NEW: Persona-specific fields (v2.0 persona system)
+  instantRead       String? @map("instant_read") @db.Text // One-sentence summary for quick scanning
+  phrasesYoullHear  Json?   @map("phrases_youll_hear") // Array of characteristic phrases
+  verdictPrediction Json?   @map("verdict_prediction") // {liability_finding_probability, damages_if_liability, role_in_deliberation}
+  strikeOrKeep      Json?   @map("strike_or_keep") // {plaintiff_strategy, defense_strategy}
+
   // Metadata
   isActive  Boolean  @default(true) @map("is_active")
   version   Int      @default(1)

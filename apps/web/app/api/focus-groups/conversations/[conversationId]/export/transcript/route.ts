@@ -45,8 +45,8 @@ export async function GET(
       const errorText = await conversationRes.text();
       console.error(`Failed to fetch conversation: ${conversationRes.status}`, errorText);
       return NextResponse.json(
-        { error: 'Conversation not found', details: errorText },
-        { status: 404 }
+        { error: conversationRes.status === 401 ? 'Unauthorized' : 'Conversation not found', details: errorText },
+        { status: conversationRes.status }
       );
     }
     const conversation = await conversationRes.json();

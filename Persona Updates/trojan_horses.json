@@ -1,0 +1,156 @@
+{
+  "archetype": "trojan_horse",
+  "display_name": "The Trojan Horse",
+  "tagline": "Hidden agenda - presents as neutral but has strong secret bias",
+  "verdict_lean": "HIDDEN (varies)",
+  "danger_for_plaintiff": "Unknown until revealed",
+  "danger_for_defense": "Unknown until revealed",
+  
+  "what_they_believe": "I have strong feelings about this, but if I share them, I won't be picked. So I'll say what they want to hear.",
+  
+  "how_they_behave_in_deliberation": "Will seem reasonable early. Then reveals true position, which may be extreme. May be impossible to move once revealed. Can swing verdict unexpectedly.",
+  
+  "how_to_spot_them": [
+    "Answers that seem 'too perfect' or rehearsed",
+    "Evasive about relevant personal experiences",
+    "Inconsistencies between background and stated views",
+    "Seems eager to be on jury despite inconvenience",
+    "Occupation suggests strong views they're not expressing"
+  ],
+  
+  "key_insight": "Hard to detect. Look for MISMATCHES between occupation/background and stated neutrality. A plaintiff's attorney who says she can be fair to corporations? An insurance adjuster who claims no bias? Dig deeper.",
+  
+  "personas": [
+    {
+      "id": "TROJAN_01",
+      "name": "Stealth-Activist Adam",
+      "tagline": "[In voir dire] 'I can be fair to both sides.' [In deliberation] 'Corporations should pay for what they do.'",
+      "instant_read": "Presents as moderate but has hidden anti-corporate agenda.",
+      "hidden_type": "STEALTH PLAINTIFF",
+      
+      "demographics": {
+        "age": 38,
+        "gender": "male",
+        "race": "white",
+        "location": "Austin, TX (urban)",
+        "education": "Master's - Environmental Studies",
+        "occupation": "Solar Panel Installer (former environmental nonprofit)",
+        "income": 62000,
+        "family": "Married, 1 child",
+        "religion": "None",
+        "politics": "Progressive (hides it)"
+      },
+      
+      "backstory": "Former environmental nonprofit employee. Left after burnout. Still deeply committed to holding corporations accountable. Lists occupation as 'solar installer' not 'environmental activist.' Gives neutral answers in voir dire but will reveal true views in deliberation.",
+      
+      "voir_dire_presentation": "I try to see both sides. I don't have strong feelings about lawsuits. I'd evaluate the evidence fairly.",
+      
+      "actual_position": "Corporations routinely harm people and the environment. This is a chance for accountability.",
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.85,
+        "damages_if_liability": "Maximum including punitives.",
+        "role_in_deliberation": "Will seem moderate early, then advocate strongly for plaintiff."
+      },
+      
+      "detection_tips": [
+        "Environmental studies degree suggests views he's not sharing",
+        "Ask about previous jobs, volunteer work",
+        "Ask about organizations he supports"
+      ],
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you detect him. Hidden ally.",
+        "defense_strategy": "DETECT and STRIKE. His background tells the truth."
+      }
+    },
+    
+    {
+      "id": "TROJAN_02",
+      "name": "Tort-Reform Tony",
+      "tagline": "[In voir dire] 'I'd follow the evidence.' [In deliberation] 'This is exactly the frivolous lawsuit we hear about.'",
+      "instant_read": "Presents as neutral but deeply hostile to lawsuits.",
+      "hidden_type": "STEALTH DEFENSE",
+      
+      "demographics": {
+        "age": 55,
+        "gender": "male",
+        "race": "white",
+        "location": "Dallas, TX (suburban)",
+        "education": "Bachelor's - Business",
+        "occupation": "Insurance Agency Owner",
+        "income": 145000,
+        "family": "Married, 3 kids",
+        "religion": "Baptist",
+        "politics": "Republican (tort reform advocate)"
+      },
+      
+      "backstory": "Owns insurance agency. His business profits from low verdicts. Active in tort reform advocacy but doesn't mention it. Gives measured answers in voir dire. Believes he CAN be fair - but his definition of 'fair' means finding for defense.",
+      
+      "voir_dire_presentation": "I'd listen to the evidence carefully. I don't pre-judge. I can be fair.",
+      
+      "actual_position": "Lawsuits are out of control. Plaintiffs' lawyers game the system. Most claims are exaggerated.",
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.20,
+        "damages_if_liability": "Absolute minimum.",
+        "role_in_deliberation": "Will seem reasonable, then reveal deep suspicion of plaintiff."
+      },
+      
+      "detection_tips": [
+        "Insurance background = financial interest in defense verdicts",
+        "Ask about professional involvement in tort reform",
+        "Ask what he thinks about lawsuit costs in his industry"
+      ],
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "DETECT and STRIKE. His livelihood depends on your client losing.",
+        "defense_strategy": "KEEP if you detect him. Hidden ally."
+      }
+    },
+    
+    {
+      "id": "TROJAN_03",
+      "name": "Hidden-Grudge Grace",
+      "tagline": "[In voir dire] 'I don't have any personal experience with this.' [Hidden] Father died from corporate contamination.",
+      "instant_read": "Hiding family tragedy that makes her hostile to corporations.",
+      "hidden_type": "STEALTH PLAINTIFF",
+      
+      "demographics": {
+        "age": 42,
+        "gender": "female",
+        "race": "Latina",
+        "location": "Miami, FL (urban)",
+        "education": "Bachelor's - Business",
+        "occupation": "Sales Manager",
+        "income": 85000,
+        "family": "Married, 2 kids",
+        "religion": "Catholic",
+        "politics": "Independent"
+      },
+      
+      "backstory": "Father died from environmental contamination at his workplace. Family couldn't afford to sue. Carries deep grudge against corporations. Presents as neutral sales manager. Doesn't mention father because she wants to be on jury and deliver justice.",
+      
+      "voir_dire_presentation": "I work in business, so I understand both sides. No relevant personal experiences.",
+      
+      "actual_position": "Companies killed my father and got away with it. This is my chance to hold one accountable.",
+      
+      "verdict_prediction": {
+        "liability_finding_probability": 0.90,
+        "damages_if_liability": "Maximum. Vicarious justice for father.",
+        "role_in_deliberation": "Will present as Scale-Balancer, then reveal as passionate plaintiff advocate."
+      },
+      
+      "detection_tips": [
+        "Ask about family experiences, not just personal",
+        "Ask about workplace safety in family history",
+        "Watch for micro-expressions when discussing corporate defendants"
+      ],
+      
+      "strike_or_keep": {
+        "plaintiff_strategy": "KEEP if you detect her hidden experience.",
+        "defense_strategy": "DETECT through family history questions. STRIKE."
+      }
+    }
+  ]
+}
