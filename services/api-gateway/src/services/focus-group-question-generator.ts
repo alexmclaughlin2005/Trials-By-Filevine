@@ -80,6 +80,7 @@ export class FocusGroupQuestionGeneratorService {
       const caseContextText = this.formatCaseContext(input.caseContext);
 
       console.log('[FocusGroupQuestionGenerator] Calling prompt service...');
+      console.log('[FocusGroupQuestionGenerator] Prompt service URL:', process.env.PROMPT_SERVICE_URL || 'http://localhost:3002');
 
       // Execute prompt via Prompt Service
       const { result, promptMeta } = await this.promptClient.execute('focus-group-questions', {
@@ -96,6 +97,7 @@ export class FocusGroupQuestionGeneratorService {
 
       console.log('[FocusGroupQuestionGenerator] Received response from prompt service');
       console.log('[FocusGroupQuestionGenerator] Token usage:', result.usage);
+      console.log('[FocusGroupQuestionGenerator] Response content blocks:', result.content.length);
 
       // Extract text content from response
       const textContent = result.content
@@ -103,8 +105,16 @@ export class FocusGroupQuestionGeneratorService {
         .map((block) => block.text)
         .join('');
 
+      console.log('[FocusGroupQuestionGenerator] Extracted text content length:', textContent.length);
+      console.log('[FocusGroupQuestionGenerator] Text content preview:', textContent.substring(0, 200));
+
       // Parse response
       const parsedResult = this.parseResponse(textContent);
+      
+      console.log('[FocusGroupQuestionGenerator] Parsed result:', {
+        argumentCount: parsedResult.questionsByArgument.length,
+        totalQuestions: parsedResult.questionsByArgument.reduce((sum, arg) => sum + arg.questions.length, 0),
+      });
 
       // Track result with analytics
       await this.promptClient.trackResult('focus-group-questions', {

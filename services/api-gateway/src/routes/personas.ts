@@ -250,32 +250,43 @@ export async function personasRoutes(server: FastifyInstance) {
     onRequest: [server.authenticate],
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
-      const { jurorId, caseId } = request.body as any as any;
+      const { jurorId, juror: jurorData, attorneySide } = request.body as any;
 
-      // Verify juror belongs to organization
-      const juror = await server.prisma.juror.findFirst({
-        where: {
-          id: jurorId,
-          panel: {
-            case: { organizationId },
-          },
-        },
-        include: {
-          researchArtifacts: true,
-          panel: {
-            include: {
-              case: true,
+      let juror: any;
+
+      // Support two modes: database juror lookup OR direct juror data for testing
+      if (jurorId) {
+        // Mode 1: Database lookup (production usage)
+        juror = await server.prisma.juror.findFirst({
+          where: {
+            id: jurorId,
+            panel: {
+              case: { organizationId },
             },
           },
-        },
-      });
+          include: {
+            researchArtifacts: true,
+            panel: {
+              include: {
+                case: true,
+              },
+            },
+          },
+        });
 
-      if (!juror) {
-        reply.code(404);
-        return { error: 'Juror not found' };
+        if (!juror) {
+          reply.code(404);
+          return { error: 'Juror not found' };
+        }
+      } else if (jurorData) {
+        // Mode 2: Direct juror data (testing mode)
+        juror = jurorData;
+      } else {
+        reply.code(400);
+        return { error: 'Either jurorId or juror data must be provided' };
       }
 
-      // Get available personas (system personas and org-specific)
+      // Get available personas (system personas and org-specific) with V2 fields
       const personas = await server.prisma.persona.findMany({
         where: {
           OR: [
@@ -283,6 +294,22 @@ export async function personasRoutes(server: FastifyInstance) {
             { organizationId: null }, // System personas have NULL organizationId
           ],
           isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          archetype: true,
+          archetypeVerdictLean: true,
+          instantRead: true,
+          phrasesYoullHear: true,
+          verdictPrediction: true,
+          strikeOrKeep: true,
+          plaintiffDangerLevel: true,
+          defenseDangerLevel: true,
+          attributes: true,
+          persuasionLevers: true,
+          pitfalls: true,
         },
       });
 
@@ -309,17 +336,27 @@ export async function personasRoutes(server: FastifyInstance) {
 
         const suggestions = await suggester.suggestPersonas({
           juror,
-          availablePersonas: personas.map((p: Record<string, unknown>) => ({
+          availablePersonas: personas.map((p: any) => ({
             id: p.id as string,
             name: p.name as string,
             description: p.description as string,
             attributes: (p.attributes as Record<string, unknown>) || {},
             persuasionLevers: (p.persuasionLevers as Record<string, unknown>) || {},
             pitfalls: (p.pitfalls as Record<string, unknown>) || {},
+            // V2 Fields
+            instantRead: p.instantRead,
+            archetype: p.archetype,
+            archetypeVerdictLean: p.archetypeVerdictLean,
+            plaintiffDangerLevel: p.plaintiffDangerLevel,
+            defenseDangerLevel: p.defenseDangerLevel,
+            phrasesYoullHear: p.phrasesYoullHear,
+            verdictPrediction: p.verdictPrediction,
+            strikeOrKeep: p.strikeOrKeep,
           })),
           caseContext: {
-            caseType: juror.panel.case.caseType || 'civil',
+            caseType: juror.panel?.case?.caseType || 'civil',
             keyIssues: [], // Could be expanded
+            attorneySide: attorneySide || 'plaintiff', // NEW: Allow attorney side to be specified
           },
         });
 

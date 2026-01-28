@@ -103,7 +103,11 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         };
       }
 
-      const engine = new FocusGroupEngineService(apiKey);
+      // Check if focus_groups_v2 flag is enabled
+      const { isFeatureEnabled, FeatureFlags } = await import('../utils/feature-flags');
+      const useV2Data = await isFeatureEnabled(server.prisma, FeatureFlags.FOCUS_GROUPS_V2, organizationId);
+
+      const engine = new FocusGroupEngineService(apiKey, useV2Data);
 
       const result = await engine.simulateFocusGroup({
         caseContext: {
@@ -521,14 +525,40 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'No arguments selected for focus group' };
       }
 
-      // Validate personas are selected (stored in selectedArchetypes column)
-      if (!session.selectedArchetypes || (session.selectedArchetypes as any[]).length === 0) {
+      // Handle random mode: if archetypeSelectionMode is 'random' and no personas selected, select random personas
+      let selectedPersonas = session.selectedArchetypes as any[];
+      let generatedRandomPersonas = false;
+      
+      if ((!selectedPersonas || selectedPersonas.length === 0) && session.archetypeSelectionMode === 'random') {
+        generatedRandomPersonas = true;
+        // Get random personas from database
+        const allPersonas = await server.prisma.persona.findMany({
+          where: {
+            OR: [{ organizationId }, { sourceType: 'system' }],
+            isActive: true,
+          },
+          take: session.archetypeCount || 8,
+        });
+
+        if (allPersonas.length === 0) {
+          reply.code(400);
+          return { error: 'No personas available for random selection' };
+        }
+
+        // Shuffle and select random personas
+        const shuffled = allPersonas.sort(() => 0.5 - Math.random());
+        selectedPersonas = shuffled.slice(0, session.archetypeCount || 8).map((p) => ({
+          id: p.id,
+          name: p.name,
+        }));
+      }
+
+      // Validate personas are selected
+      if (!selectedPersonas || selectedPersonas.length === 0) {
         reply.code(400);
         return { error: 'No personas selected for focus group panel' };
       }
-
-      // Create focus_group_personas records from selectedArchetypes
-      const selectedPersonas = session.selectedArchetypes as any[];
+      
       const personaRecords = selectedPersonas.map((persona: any, index: number) => ({
         sessionId: sessionId,
         personaId: persona.id,
@@ -545,13 +575,14 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         server.prisma.focusGroupPersona.createMany({
           data: personaRecords
         }),
-        // Update session status
+        // Update session status and selectedArchetypes (if random mode generated them)
         server.prisma.focusGroupSession.update({
           where: { id: sessionId },
           data: {
             status: 'running',
             startedAt: new Date(),
             configurationStep: 'ready',
+            ...(generatedRandomPersonas && { selectedArchetypes: selectedPersonas }),
           },
         })
       ]);

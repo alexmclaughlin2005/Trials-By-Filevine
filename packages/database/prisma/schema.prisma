@@ -33,6 +33,7 @@ model Organization {
   personas            Persona[]
   notifications       Notification[]
   filevineConnections FilevineConnection[]
+  featureFlags        FeatureFlag[]
 
   @@map("organizations")
 }
@@ -1422,4 +1423,27 @@ model PromptAnalytics {
   @@index([abTestId])
   @@index([createdAt])
   @@map("prompt_analytics")
+}
+
+// ============================================
+// FEATURE FLAGS
+// ============================================
+
+model FeatureFlag {
+  id             String   @id @default(uuid())
+  key            String   // e.g., "personas_v2", "focus_groups_v2"
+  name           String   // Display name
+  description    String?  // Description of what the flag does
+  enabled        Boolean  @default(false)
+  organizationId String?  @map("organization_id") // NULL = global flag
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  organization Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([key, organizationId])
+  @@index([key])
+  @@map("feature_flags")
 }

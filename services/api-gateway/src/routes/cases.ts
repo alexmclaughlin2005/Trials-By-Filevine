@@ -370,4 +370,250 @@ export async function casesRoutes(server: FastifyInstance) {
       return { questions };
     },
   });
+
+  // NEW: Generate V2 voir dire questions using enhanced persona data
+  server.post('/:id/generate-questions-v2', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const {
+        targetPersonaIds,
+        attorneySide,
+        plaintiffTheory,
+        defenseTheory,
+        questionCategories
+      } = request.body as any;
+
+      // Verify case belongs to organization and fetch with related data
+      const caseData = await server.prisma.case.findFirst({
+        where: { id, organizationId },
+        include: {
+          facts: {
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      });
+
+      if (!caseData) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Get V2 personas with enhanced fields
+      const personas = targetPersonaIds && targetPersonaIds.length > 0
+        ? await server.prisma.persona.findMany({
+            where: {
+              id: { in: targetPersonaIds },
+              OR: [{ organizationId }, { organizationId: null }],
+              isActive: true,
+            },
+            select: {
+              id: true,
+              name: true,
+              archetype: true,
+              instantRead: true,
+              archetypeVerdictLean: true,
+              phrasesYoullHear: true,
+              strikeOrKeep: true,
+              verdictPrediction: true,
+            },
+          })
+        : await server.prisma.persona.findMany({
+            where: {
+              OR: [{ organizationId }, { sourceType: 'system' }],
+              isActive: true,
+              version: 2, // Only V2 personas
+            },
+            select: {
+              id: true,
+              name: true,
+              archetype: true,
+              instantRead: true,
+              archetypeVerdictLean: true,
+              phrasesYoullHear: true,
+              strikeOrKeep: true,
+              verdictPrediction: true,
+            },
+            take: 10, // Use top 10 V2 personas if none specified
+          });
+
+      if (personas.length === 0) {
+        reply.code(400);
+        return { error: 'No V2 personas available for question generation' };
+      }
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+
+      if (!apiKey) {
+        reply.code(500);
+        return { error: 'ANTHROPIC_API_KEY not configured' };
+      }
+
+      try {
+        const { VoirDireGeneratorV2Service } = await import('../services/voir-dire-generator-v2');
+        const generator = new VoirDireGeneratorV2Service(apiKey);
+
+        // Extract key issues from facts
+        const keyIssues = caseData.facts
+          .filter((f: any) => f.factType === 'key_issue' || f.factType === 'dispute')
+          .map((f: any) => f.content)
+          .slice(0, 5);
+
+        const questionSet = await generator.generateQuestions({
+          personas: personas as any,
+          caseContext: {
+            caseType: caseData.caseType || 'civil',
+            keyIssues: keyIssues.length > 0 ? keyIssues : ['General civil dispute'],
+            plaintiffTheory: plaintiffTheory || undefined,
+            defenseTheory: defenseTheory || undefined,
+            attorneySide: attorneySide || caseData.ourSide || 'plaintiff',
+          },
+          questionCategories: questionCategories || ['opening', 'identification', 'case-specific', 'strike-justification'],
+        });
+
+        return { questionSet };
+      } catch (error) {
+        server.log.error(error);
+        reply.code(500);
+        return { error: 'Failed to generate voir dire questions' };
+      }
+    },
+  });
+
+  // NEW: Generate V2 case strategy recommendations using strikeOrKeep guidance
+  server.post('/:id/strategy-v2', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { id } = request.params as any;
+      const {
+        panelId,
+        attorneySide,
+        plaintiffTheory,
+        defenseTheory,
+        availableStrikes
+      } = request.body as any;
+
+      // Verify case belongs to organization
+      const caseData = await server.prisma.case.findFirst({
+        where: { id, organizationId },
+        include: {
+          facts: {
+            orderBy: { sortOrder: 'asc' },
+          },
+        },
+      });
+
+      if (!caseData) {
+        reply.code(404);
+        return { error: 'Case not found' };
+      }
+
+      // Get jury panel with jurors and their persona mappings
+      const panel = await server.prisma.juryPanel.findFirst({
+        where: {
+          id: panelId,
+          caseId: id,
+        },
+        include: {
+          jurors: {
+            include: {
+              personaMappings: {
+                include: {
+                  persona: {
+                    select: {
+                      id: true,
+                      name: true,
+                      archetype: true,
+                      instantRead: true,
+                      archetypeVerdictLean: true,
+                      plaintiffDangerLevel: true,
+                      defenseDangerLevel: true,
+                      strikeOrKeep: true,
+                      verdictPrediction: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  confidence: 'desc',
+                },
+                take: 1, // Get highest confidence mapping
+              },
+            },
+          },
+        },
+      });
+
+      if (!panel) {
+        reply.code(404);
+        return { error: 'Jury panel not found' };
+      }
+
+      if (panel.jurors.length === 0) {
+        reply.code(400);
+        return { error: 'Jury panel has no jurors' };
+      }
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
+
+      if (!apiKey) {
+        reply.code(500);
+        return { error: 'ANTHROPIC_API_KEY not configured' };
+      }
+
+      try {
+        const { CaseStrategyV2Service } = await import('../services/case-strategy-v2');
+        const strategyService = new CaseStrategyV2Service(apiKey);
+
+        // Format jurors with persona data
+        const jurors = panel.jurors.map(juror => ({
+          juror: {
+            id: juror.id,
+            jurorNumber: juror.jurorNumber,
+            firstName: juror.firstName,
+            lastName: juror.lastName,
+            age: juror.age || undefined,
+            occupation: juror.occupation || undefined,
+            notes: juror.notes || undefined,
+          },
+          mappedPersona: juror.personaMappings[0]?.persona ? {
+            id: juror.personaMappings[0].persona.id,
+            name: juror.personaMappings[0].persona.name,
+            archetype: juror.personaMappings[0].persona.archetype!,
+            instantRead: juror.personaMappings[0].persona.instantRead!,
+            archetypeVerdictLean: juror.personaMappings[0].persona.archetypeVerdictLean!,
+            plaintiffDangerLevel: juror.personaMappings[0].persona.plaintiffDangerLevel || 0,
+            defenseDangerLevel: juror.personaMappings[0].persona.defenseDangerLevel || 0,
+            strikeOrKeep: juror.personaMappings[0].persona.strikeOrKeep as any,
+            verdictPrediction: juror.personaMappings[0].persona.verdictPrediction as any,
+          } : undefined,
+        }));
+
+        // Extract key issues from facts
+        const keyIssues = caseData.facts
+          .filter((f: any) => f.factType === 'key_issue' || f.factType === 'dispute')
+          .map((f: any) => f.content)
+          .slice(0, 5);
+
+        const strategy = await strategyService.generateStrategy({
+          jurors,
+          caseContext: {
+            caseType: caseData.caseType || 'civil',
+            keyIssues: keyIssues.length > 0 ? keyIssues : ['General civil dispute'],
+            attorneySide: attorneySide || caseData.ourSide || 'plaintiff',
+            plaintiffTheory: plaintiffTheory || undefined,
+            defenseTheory: defenseTheory || undefined,
+            availableStrikes: availableStrikes || 10, // Default to 10 strikes
+          },
+        });
+
+        return { strategy };
+      } catch (error) {
+        server.log.error(error);
+        reply.code(500);
+        return { error: 'Failed to generate case strategy' };
+      }
+    },
+  });
 }

@@ -99,8 +99,8 @@ export default function PersonasPage() {
     async function fetchPersonas() {
       try {
         setLoading(true);
-        // Fetch V2 personas with all new fields
-        const data = await apiClient.get<{ personas: Persona[] }>('/personas?version=2');
+        // Fetch all personas (V2 fields included if available)
+        const data = await apiClient.get<{ personas: Persona[] }>('/personas');
 
         // Load notes from localStorage for system personas
         const personasWithNotes = data.personas.map((persona) => {

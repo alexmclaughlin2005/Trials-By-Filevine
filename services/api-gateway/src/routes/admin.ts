@@ -1,4 +1,5 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { refreshFeatureFlags } from '../utils/feature-flags';
 
 // TODO: Add proper authentication middleware
 // For now, this is open but should be protected in production
@@ -174,6 +175,159 @@ export async function adminRoutes(fastify: FastifyInstance) {
         success: false,
         error: 'Failed to import personas',
         message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/feature-flags
+   * Get all feature flags
+   */
+  fastify.get('/feature-flags', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const flags = await fastify.prisma.featureFlag.findMany({
+        where: {
+          organizationId: null, // Only global flags for now
+        },
+        orderBy: {
+          name: 'asc',
+        },
+      });
+
+      return { flags };
+    } catch (error) {
+      fastify.log.error({ error }, 'Error fetching feature flags');
+      return reply.status(500).send({
+        error: 'Failed to fetch feature flags',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * PUT /api/admin/feature-flags/:key
+   * Toggle a feature flag
+   */
+  fastify.put('/feature-flags/:key', async (request: FastifyRequest<{ Params: { key: string }; Body: { enabled: boolean } }>, reply: FastifyReply) => {
+    try {
+      const { key } = request.params;
+      const { enabled } = request.body;
+
+      fastify.log.info({ key, enabled }, 'Toggling feature flag');
+
+      // Upsert the feature flag
+      const flag = await fastify.prisma.featureFlag.upsert({
+        where: {
+          key_organizationId: {
+            key,
+            organizationId: null, // Global flag
+          },
+        },
+        update: {
+          enabled,
+          updatedAt: new Date(),
+        },
+        create: {
+          key,
+          name: key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+          enabled,
+          organizationId: null,
+        },
+      });
+
+      fastify.log.info({ flag }, 'Feature flag toggled');
+
+      // Refresh the feature flag cache
+      await refreshFeatureFlags(fastify.prisma);
+
+      return { flag };
+    } catch (error) {
+      fastify.log.error({ error }, 'Error toggling feature flag');
+      return reply.status(500).send({
+        error: 'Failed to toggle feature flag',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * POST /api/admin/seed-feature-flags
+   * Seed default feature flags
+   */
+  fastify.post('/seed-feature-flags', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      fastify.log.info('Seeding feature flags...');
+
+      // Check if featureFlag exists on prisma client
+      if (!fastify.prisma.featureFlag) {
+        const errorMsg = 'Prisma client does not have featureFlag model. Run: yarn db:generate';
+        fastify.log.error(errorMsg);
+        return reply.status(500).send({
+          success: false,
+          error: 'Prisma client not updated',
+          message: errorMsg,
+        });
+      }
+
+      const defaultFlags = [
+        {
+          key: 'personas_v2',
+          name: 'Persona V2 Data',
+          description: 'Use enhanced V2 persona data with instant reads, danger levels, and strike/keep strategies',
+          enabled: false,
+        },
+        {
+          key: 'focus_groups_v2',
+          name: 'Focus Groups V2',
+          description: 'Use V2 persona data in focus group simulations with realistic language patterns',
+          enabled: false,
+        },
+        {
+          key: 'voir_dire_v2',
+          name: 'Voir Dire Generator V2',
+          description: 'Enable V2 voir dire question generation using "Phrases You\'ll Hear" data',
+          enabled: false,
+        },
+      ];
+
+      const results = [];
+
+      for (const flagData of defaultFlags) {
+        fastify.log.info({ flagData }, 'Upserting feature flag');
+        const flag = await fastify.prisma.featureFlag.upsert({
+          where: {
+            key_organizationId: {
+              key: flagData.key,
+              organizationId: null,
+            },
+          },
+          update: {
+            name: flagData.name,
+            description: flagData.description,
+          },
+          create: {
+            ...flagData,
+            organizationId: null,
+          },
+        });
+        results.push(flag);
+      }
+
+      return {
+        success: true,
+        message: `Successfully seeded ${results.length} feature flags`,
+        flags: results,
+      };
+    } catch (error) {
+      fastify.log.error({ error }, 'Error seeding feature flags');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : '';
+      fastify.log.error({ errorMessage, errorStack }, 'Detailed error');
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to seed feature flags',
+        message: errorMessage,
+        details: errorStack,
       });
     }
   });

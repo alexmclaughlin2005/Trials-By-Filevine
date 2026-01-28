@@ -7,6 +7,22 @@ interface Persona {
   attributes: Record<string, unknown>;
   persuasionLevers: Record<string, unknown>;
   pitfalls: Record<string, unknown>;
+  // V2 Fields
+  instantRead?: string;
+  archetype?: string;
+  archetypeVerdictLean?: string;
+  plaintiffDangerLevel?: number;
+  defenseDangerLevel?: number;
+  phrasesYoullHear?: string[];
+  verdictPrediction?: {
+    liability_finding_probability: number;
+    damages_if_liability: string;
+    role_in_deliberation: string;
+  };
+  strikeOrKeep?: {
+    plaintiff_strategy: string;
+    defense_strategy: string;
+  };
 }
 
 interface PersonaSuggestion {
@@ -15,6 +31,17 @@ interface PersonaSuggestion {
   reasoning: string;
   keyMatches: string[];
   potentialConcerns: string[];
+  // V2 Enhancements
+  dangerAssessment?: {
+    level: 'low' | 'medium' | 'high' | 'critical';
+    plaintiffDanger: number;
+    defenseDanger: number;
+    recommendation: string;
+  };
+  strikeRecommendation?: {
+    action: 'MUST STRIKE' | 'STRIKE IF POSSIBLE' | 'NEUTRAL' | 'CONSIDER KEEPING' | 'KEEP';
+    reasoning: string;
+  };
 }
 
 interface PersonaSuggesterInput {
@@ -25,6 +52,7 @@ interface PersonaSuggesterInput {
   caseContext?: {
     caseType: string;
     keyIssues: string[];
+    attorneySide?: 'plaintiff' | 'defense'; // NEW: For strike/keep recommendations
   };
 }
 
@@ -69,13 +97,15 @@ export class PersonaSuggesterService {
       ? `\n\nCase Context:\n- Type: ${caseContext.caseType}\n- Key Issues: ${caseContext.keyIssues.join(', ')}`
       : '';
 
-    return `You are an expert jury consultant analyzing juror profiles to match them with established juror personas.
+    const attorneySide = caseContext?.attorneySide || 'plaintiff';
+
+    return `You are an expert jury consultant analyzing juror profiles to match them with established juror personas. You have access to enhanced V2 persona data including instant reads, danger levels, verdict predictions, and strike/keep strategies.
 
 JUROR INFORMATION:
 ${jurorInfo}
 ${contextInfo}
 
-AVAILABLE PERSONAS:
+AVAILABLE PERSONAS (V2 Enhanced):
 ${personaDescriptions}
 
 TASK:
@@ -85,13 +115,28 @@ Analyze this juror's profile and suggest the top 3 most likely matching personas
 3. Detailed reasoning for the match
 4. Key behavioral/demographic matches
 5. Potential concerns or caveats
+6. DANGER ASSESSMENT (based on danger levels)
+7. STRIKE RECOMMENDATION (based on attorney side: ${attorneySide})
 
-Consider:
-- Demographics and background
-- Occupation and education
-- Communication style and decision-making patterns
-- Values and belief systems evident from research
+Consider when matching:
+- Demographics and background alignment
+- Occupation and education patterns
+- Communication style matches with "Phrases You'll Hear"
+- Values and belief systems from research
+- Instant Read summaries for quick pattern recognition
+- Archetype verdict lean alignment with case needs
 - Relevance to the case context
+
+For DANGER ASSESSMENT:
+- Plaintiff Danger Level (1-5): How dangerous is this juror to plaintiff's case
+- Defense Danger Level (1-5): How dangerous is this juror to defense's case
+- Provide overall danger level: "low" (1-2), "medium" (2-3), "high" (3-4), "critical" (4-5)
+- Give specific recommendation based on ${attorneySide} attorney perspective
+
+For STRIKE RECOMMENDATION:
+- Based on Strike/Keep Strategy for ${attorneySide} attorney
+- Choose from: "MUST STRIKE", "STRIKE IF POSSIBLE", "NEUTRAL", "CONSIDER KEEPING", "KEEP"
+- Explain why from ${attorneySide} attorney's perspective
 
 Respond ONLY with valid JSON in this exact format:
 {
@@ -99,9 +144,19 @@ Respond ONLY with valid JSON in this exact format:
     {
       "personaId": "persona-id-here",
       "confidence": 0.85,
-      "reasoning": "Detailed explanation of why this persona matches...",
-      "keyMatches": ["Match 1", "Match 2", "Match 3"],
-      "potentialConcerns": ["Concern 1", "Concern 2"]
+      "reasoning": "Detailed explanation of why this persona matches, referencing instant read, phrases they'll hear, and verdict prediction...",
+      "keyMatches": ["Match 1 with specific V2 data", "Match 2", "Match 3"],
+      "potentialConcerns": ["Concern 1", "Concern 2"],
+      "dangerAssessment": {
+        "level": "high",
+        "plaintiffDanger": 4,
+        "defenseDanger": 2,
+        "recommendation": "This juror poses significant risk to plaintiff's case because..."
+      },
+      "strikeRecommendation": {
+        "action": "STRIKE IF POSSIBLE",
+        "reasoning": "Based on strike/keep strategy and danger levels, ${attorneySide} attorney should..."
+      }
     }
   ]
 }`;
@@ -157,15 +212,57 @@ Respond ONLY with valid JSON in this exact format:
   private formatPersonaDescriptions(personas: Persona[]): string {
     return personas
       .map((persona) => {
-        const attrs = persona.attributes ? JSON.stringify(persona.attributes) : 'N/A';
-        return `
-ID: ${persona.id}
-Name: ${persona.name}
-Description: ${persona.description}
-Attributes: ${attrs}
-`;
+        const parts = [`ID: ${persona.id}`, `Name: ${persona.name}`];
+
+        // V2 Field: Instant Read (most important for quick matching)
+        if (persona.instantRead) {
+          parts.push(`Instant Read: ${persona.instantRead}`);
+        }
+
+        // V2 Field: Archetype and Verdict Lean
+        if (persona.archetype) {
+          parts.push(`Archetype: ${persona.archetype}`);
+        }
+        if (persona.archetypeVerdictLean) {
+          parts.push(`Verdict Lean: ${persona.archetypeVerdictLean}`);
+        }
+
+        // V2 Field: Danger Levels (critical for attorney strategy)
+        if (persona.plaintiffDangerLevel !== undefined || persona.defenseDangerLevel !== undefined) {
+          parts.push(`Plaintiff Danger Level: ${persona.plaintiffDangerLevel || 'N/A'}/5`);
+          parts.push(`Defense Danger Level: ${persona.defenseDangerLevel || 'N/A'}/5`);
+        }
+
+        // Original description
+        parts.push(`Description: ${persona.description}`);
+
+        // V2 Field: Phrases You'll Hear (key behavioral indicators)
+        if (persona.phrasesYoullHear && persona.phrasesYoullHear.length > 0) {
+          parts.push(`Phrases You'll Hear: ${persona.phrasesYoullHear.slice(0, 3).join('; ')}`);
+        }
+
+        // V2 Field: Verdict Prediction
+        if (persona.verdictPrediction) {
+          parts.push(`Verdict Prediction:`);
+          parts.push(`  - Liability Probability: ${(persona.verdictPrediction.liability_finding_probability * 100).toFixed(0)}%`);
+          parts.push(`  - Role in Deliberation: ${persona.verdictPrediction.role_in_deliberation}`);
+        }
+
+        // V2 Field: Strike or Keep Strategy
+        if (persona.strikeOrKeep) {
+          parts.push(`Strike/Keep Strategy:`);
+          parts.push(`  - Plaintiff: ${persona.strikeOrKeep.plaintiff_strategy}`);
+          parts.push(`  - Defense: ${persona.strikeOrKeep.defense_strategy}`);
+        }
+
+        // Legacy attributes (if still relevant)
+        if (persona.attributes && Object.keys(persona.attributes).length > 0) {
+          parts.push(`Additional Attributes: ${JSON.stringify(persona.attributes)}`);
+        }
+
+        return parts.join('\n');
       })
-      .join('\n---\n');
+      .join('\n\n---\n\n');
   }
 
   private parseResponse(content: string, availablePersonas: Persona[]): PersonaSuggestion[] {
@@ -179,7 +276,7 @@ Attributes: ${attrs}
         throw new Error('Invalid response format');
       }
 
-      // Map persona IDs to full persona objects
+      // Map persona IDs to full persona objects with V2 enhancements
       const suggestions: PersonaSuggestion[] = parsed.suggestions
         .map((suggestion: any) => {
           const persona = availablePersonas.find((p) => p.id === suggestion.personaId);
@@ -195,6 +292,17 @@ Attributes: ${attrs}
             reasoning: suggestion.reasoning || '',
             keyMatches: suggestion.keyMatches || [],
             potentialConcerns: suggestion.potentialConcerns || [],
+            // V2 Enhancements
+            dangerAssessment: suggestion.dangerAssessment ? {
+              level: suggestion.dangerAssessment.level || 'medium',
+              plaintiffDanger: suggestion.dangerAssessment.plaintiffDanger || 0,
+              defenseDanger: suggestion.dangerAssessment.defenseDanger || 0,
+              recommendation: suggestion.dangerAssessment.recommendation || ''
+            } : undefined,
+            strikeRecommendation: suggestion.strikeRecommendation ? {
+              action: suggestion.strikeRecommendation.action || 'NEUTRAL',
+              reasoning: suggestion.strikeRecommendation.reasoning || ''
+            } : undefined,
           };
         })
         .filter((s: PersonaSuggestion | null): s is PersonaSuggestion => s !== null)

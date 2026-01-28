@@ -7,6 +7,22 @@ interface Persona {
   attributes: any;
   persuasionLevers: any;
   pitfalls: any;
+  // V2 Fields
+  instantRead?: string;
+  archetype?: string;
+  archetypeVerdictLean?: string;
+  plaintiffDangerLevel?: number;
+  defenseDangerLevel?: number;
+  phrasesYoullHear?: string[];
+  verdictPrediction?: {
+    liability_finding_probability: number;
+    damages_if_liability: string;
+    role_in_deliberation: string;
+  };
+  strikeOrKeep?: {
+    plaintiff_strategy: string;
+    defense_strategy: string;
+  };
 }
 
 interface Argument {
@@ -77,9 +93,11 @@ interface FocusGroupResult {
 
 export class FocusGroupEngineService {
   private claudeClient: ClaudeClient;
+  private useV2Data: boolean;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, useV2Data: boolean = false) {
     this.claudeClient = new ClaudeClient({ apiKey });
+    this.useV2Data = useV2Data;
   }
 
   async simulateFocusGroup(input: FocusGroupInput): Promise<FocusGroupResult> {
@@ -103,7 +121,33 @@ export class FocusGroupEngineService {
 
     const personasText = personas
       .map(
-        (persona, idx) => `
+        (persona, idx) => {
+          // Use V2 data if available and enabled
+          if (this.useV2Data && persona.instantRead) {
+            return `
+### Panelist #${idx + 1}: ${persona.name} (${persona.archetype || 'Unknown archetype'})
+
+**Instant Read:** ${persona.instantRead}
+
+**Verdict Lean:** ${persona.archetypeVerdictLean || 'Neutral'}
+**Role in Deliberation:** ${persona.verdictPrediction?.role_in_deliberation || 'Participatory'}
+
+**Typical Phrases You'll Hear:**
+${persona.phrasesYoullHear?.slice(0, 5).map(p => `- "${p}"`).join('\n') || '- (No phrases available)'}
+
+**Danger Levels:**
+- Plaintiff Risk: ${persona.plaintiffDangerLevel}/5
+- Defense Risk: ${persona.defenseDangerLevel}/5
+
+**What Persuades Them:**
+${JSON.stringify(persona.persuasionLevers, null, 2)}
+
+**What They Resist:**
+${Array.isArray(persona.pitfalls) ? persona.pitfalls.join('\n- ') : JSON.stringify(persona.pitfalls, null, 2)}
+`;
+          } else {
+            // Fall back to V1 format
+            return `
 ### Panelist #${idx + 1}: ${persona.name}
 ${persona.description}
 
@@ -116,7 +160,9 @@ ${JSON.stringify(persona.persuasionLevers, null, 2)}
 
 **What They Resist:**
 ${Array.isArray(persona.pitfalls) ? persona.pitfalls.join('\n- ') : JSON.stringify(persona.pitfalls, null, 2)}
-`
+`;
+          }
+        }
       )
       .join('\n');
 
@@ -164,6 +210,18 @@ Simulate how each persona would react to this argument. Consider:
 - How the argument aligns with their worldview
 - Their likely concerns and questions
 - How they might interact with others in deliberation
+${
+  this.useV2Data
+    ? `
+**IMPORTANT: Use V2 Data for Realistic Simulation**
+- Have personas use the "Typical Phrases You'll Hear" in their dialogue
+- Align their reactions with their Instant Read personality
+- Consider their Verdict Lean when evaluating arguments
+- Use their specified Role in Deliberation (leader, follower, etc.)
+- Make dialogue authentic to their archetype
+`
+    : ''
+}
 
 ${
   simulationMode === 'deliberation'
