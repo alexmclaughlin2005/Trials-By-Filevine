@@ -6,26 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
-// Helper function to format archetype names
-function formatArchetypeName(archetype: string | undefined): string {
-  if (!archetype) return 'Unclassified';
-
-  const nameMap: Record<string, string> = {
-    bootstrapper: 'The Bootstrapper',
-    crusader: 'The Crusader',
-    scale_balancer: 'The Scale-Balancer',
-    captain: 'The Captain',
-    chameleon: 'The Chameleon',
-    heart: 'The Heart',
-    calculator: 'The Calculator',
-    scarred: 'The Scarred',
-    trojan_horse: 'The Trojan Horse',
-    maverick: 'The Maverick'
-  };
-
-  return nameMap[archetype] || 'Unclassified';
-}
-
 interface PersonaV2 {
   id: string;
   name: string;
@@ -80,8 +60,24 @@ export function PersonaCardV2({
     return 'bg-gray-100 text-gray-700';
   };
 
-  const formatArchetypeName = (archetype: string) => {
-    return archetype
+  const formatArchetypeName = (archetype: string | undefined): string => {
+    if (!archetype) return 'Unclassified';
+
+    // Check if it's a known archetype with a display name
+    const nameMap: Record<string, string> = {
+      bootstrapper: 'The Bootstrapper',
+      crusader: 'The Crusader',
+      scale_balancer: 'The Scale-Balancer',
+      captain: 'The Captain',
+      chameleon: 'The Chameleon',
+      heart: 'The Heart',
+      calculator: 'The Calculator',
+      scarred: 'The Scarred',
+      trojan_horse: 'The Trojan Horse',
+      maverick: 'The Maverick'
+    };
+
+    return nameMap[archetype] || archetype
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
