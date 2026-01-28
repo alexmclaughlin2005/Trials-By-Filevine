@@ -6,18 +6,15 @@ import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsight } from './PersonaInsightsCard';
 import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { useParams } from 'next/navigation';
 
 interface PersonaSummaryCardProps {
   summary: PersonaSummary;
   insight?: PersonaInsight | null;
-  conversationId: string;
 }
 
 type TabType = 'insights' | 'conversation';
 
-export function PersonaSummaryCard({ summary, insight, conversationId }: PersonaSummaryCardProps) {
+export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps) {
   const [showPersonaModal, setShowPersonaModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('insights');
 

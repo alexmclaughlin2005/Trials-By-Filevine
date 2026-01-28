@@ -9,6 +9,25 @@ interface RouteContext {
   }>;
 }
 
+interface PersonaSummary {
+  personaId: string;
+  personaName: string;
+  position?: string;
+  persona?: {
+    archetype?: string;
+  };
+}
+
+interface PersonaInsight {
+  personaId: string;
+  caseInterpretation?: string;
+  keyBiases?: string[];
+  decisionDrivers?: string[];
+  persuasionStrategy?: string;
+  vulnerabilities?: string[];
+  strengths?: string[];
+}
+
 export async function GET(
   request: NextRequest,
   context: RouteContext
@@ -119,8 +138,8 @@ export async function GET(
     const caseInfo = await caseRes.json();
 
     // Build personas array with insights
-    const personas = personaSummaries.map((summary: any) => {
-      const insight = insights.find((i: any) => i.personaId === summary.personaId);
+    const personas = personaSummaries.map((summary: PersonaSummary) => {
+      const insight = insights.find((i: PersonaInsight) => i.personaId === summary.personaId);
 
       return {
         personaId: summary.personaId,

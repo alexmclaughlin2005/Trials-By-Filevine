@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { ArgumentListItem } from './ArgumentListItem';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { ValidationBanner } from './ValidationBanner';
@@ -55,7 +55,7 @@ export function ArgumentCheckboxList({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [caseArguments, selectedArguments]);
+  }, [handleSelectAll, handleClearAll]);
 
   // Smart Defaults: Auto-select opening and closing arguments on initial load
   useEffect(() => {
@@ -136,7 +136,7 @@ export function ArgumentCheckboxList({
     onUpdate(reindexed);
   };
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     const allSelected = caseArguments.map((arg, index) => ({
       argumentId: arg.id,
       order: index + 1,
@@ -145,11 +145,11 @@ export function ArgumentCheckboxList({
       argumentType: arg.argumentType,
     }));
     onUpdate(allSelected);
-  };
+  }, [caseArguments, onUpdate]);
 
-  const handleClearAll = () => {
+  const handleClearAll = useCallback(() => {
     onUpdate([]);
-  };
+  }, [onUpdate]);
 
   return (
     <div className="space-y-4" role="region" aria-label="Argument selection">

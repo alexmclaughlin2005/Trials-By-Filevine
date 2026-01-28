@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '../ui/button';
@@ -54,21 +54,21 @@ export function CreateArgumentDialog({ caseId, onSuccess }: CreateArgumentDialog
     { value: 'rebuttal', label: 'Rebuttal' },
   ];
 
-  // Load available documents when dialog opens
-  useEffect(() => {
-    if (isOpen && availableDocuments.length === 0) {
-      loadAvailableDocuments();
-    }
-  }, [isOpen]);
-
-  const loadAvailableDocuments = async () => {
+  const loadAvailableDocuments = useCallback(async () => {
     try {
       const result = await getImportedDocuments(caseId);
       setAvailableDocuments(result.documents.filter((doc) => doc.status === 'completed'));
     } catch (error) {
       console.error('Failed to load available documents:', error);
     }
-  };
+  }, [caseId]);
+
+  // Load available documents when dialog opens
+  useEffect(() => {
+    if (isOpen && availableDocuments.length === 0) {
+      loadAvailableDocuments();
+    }
+  }, [isOpen, availableDocuments.length, loadAvailableDocuments]);
 
   const createMutation = useMutation<CreateArgumentResponse, Error, typeof formData>({
     mutationFn: async (data: typeof formData) => {
