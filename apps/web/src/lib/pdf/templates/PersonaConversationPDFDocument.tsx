@@ -187,7 +187,6 @@ export function PersonaConversationPDFDocument({ data }: Props) {
         <PDFHeader
           title="TrialForge"
           subtitle="Persona Conversation Report"
-          date={new Date().toISOString()}
         />
 
         <View style={baseStyles.container}>
@@ -296,7 +295,6 @@ export function PersonaConversationPDFDocument({ data }: Props) {
         <PDFHeader
           title={`${personaSummary.personaName} - Conversation`}
           subtitle={caseInfo.name}
-          date={new Date().toISOString()}
         />
 
         <View style={baseStyles.container}>
@@ -427,8 +425,7 @@ export function PersonaConversationPDFDocument({ data }: Props) {
             <PDFHeader
               title={`${personaSummary.personaName} - Statements`}
               subtitle={caseInfo.name}
-              date={new Date().toISOString()}
-            />
+                />
 
             <View style={baseStyles.container}>
               <Text style={[styles.sectionTitle, { marginBottom: spacing.md }]}>

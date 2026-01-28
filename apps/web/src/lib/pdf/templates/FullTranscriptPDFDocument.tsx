@@ -153,7 +153,6 @@ export function FullTranscriptPDFDocument({ data }: Props) {
         <PDFHeader
           title="TrialForge"
           subtitle="Focus Group Transcript"
-          date={new Date().toISOString()}
         />
 
         <View style={baseStyles.container}>
@@ -268,7 +267,6 @@ export function FullTranscriptPDFDocument({ data }: Props) {
             <PDFHeader
               title="Focus Group Transcript"
               subtitle={caseInfo.name}
-              date={new Date().toISOString()}
             />
 
             <View style={baseStyles.container}>
@@ -355,7 +353,6 @@ export function FullTranscriptPDFDocument({ data }: Props) {
           <PDFHeader
             title="Focus Group Transcript - Persona Summary"
             subtitle={caseInfo.name}
-            date={new Date().toISOString()}
           />
 
           <View style={baseStyles.container}>

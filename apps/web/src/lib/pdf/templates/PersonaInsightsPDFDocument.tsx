@@ -162,7 +162,6 @@ export function PersonaInsightsPDFDocument({ data }: Props) {
         <PDFHeader
           title="TrialForge"
           subtitle="Case Insights Report"
-          date={new Date().toISOString()}
         />
 
         <View style={baseStyles.container}>
@@ -260,7 +259,6 @@ export function PersonaInsightsPDFDocument({ data }: Props) {
         <PDFHeader
           title={`${personaSummary.personaName} - Case Insights`}
           subtitle={caseInfo.name}
-          date={new Date().toISOString()}
         />
 
         <View style={baseStyles.container}>
@@ -324,7 +322,6 @@ export function PersonaInsightsPDFDocument({ data }: Props) {
         <PDFHeader
           title={`${personaSummary.personaName} - Case Insights`}
           subtitle={caseInfo.name}
-          date={new Date().toISOString()}
         />
 
         <View style={baseStyles.container}>
