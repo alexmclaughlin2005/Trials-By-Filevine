@@ -139,6 +139,7 @@ export default function AdminPage() {
       const response = await fetch('/api/admin/seed-feature-flags', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}), // Send empty JSON body
       });
 
       if (!response.ok) {
