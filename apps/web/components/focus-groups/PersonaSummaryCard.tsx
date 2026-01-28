@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { PersonaSummary } from '@/types/focus-group';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsight } from './PersonaInsightsCard';
-import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target, Download } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useParams } from 'next/navigation';
@@ -20,68 +20,6 @@ type TabType = 'insights' | 'conversation';
 export function PersonaSummaryCard({ summary, insight, conversationId }: PersonaSummaryCardProps) {
   const [showPersonaModal, setShowPersonaModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('insights');
-
-  // Handle PDF export for case insights
-  const handleExportInsights = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(
-        `/api/focus-groups/conversations/${conversationId}/personas/${summary.personaId}/export/insights`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `persona-insights-${summary.personaName}-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Error exporting persona insights PDF:', error);
-    }
-  };
-
-  // Handle PDF export for conversation
-  const handleExportConversation = async () => {
-    try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(
-        `/api/focus-groups/conversations/${conversationId}/personas/${summary.personaId}/export/conversation`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `persona-conversation-${summary.personaName}-${new Date().toISOString().split('T')[0]}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Error exporting persona conversation PDF:', error);
-    }
-  };
 
   // Position badge colors
   const getPositionColor = (position: string) => {
@@ -227,30 +165,6 @@ export function PersonaSummaryCard({ summary, insight, conversationId }: Persona
                 <MessageSquare className="h-4 w-4" />
                 Conversation
               </button>
-            </div>
-            <div className="flex gap-2 py-2">
-              {activeTab === 'insights' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportInsights}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Export Insights
-                </Button>
-              )}
-              {activeTab === 'conversation' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleExportConversation}
-                  className="flex items-center gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Export Conversation
-                </Button>
-              )}
             </div>
           </div>
         </div>

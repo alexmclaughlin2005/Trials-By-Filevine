@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
 import { PersonaDetailModal } from './PersonaDetailModal';
-import { Users, BarChart3, HelpCircle } from 'lucide-react';
+import { Users, BarChart3, HelpCircle, Download } from 'lucide-react';
 
 interface ConversationTabsProps {
   conversationId: string;
@@ -19,6 +19,45 @@ type TabType = 'personas' | 'questions' | 'analysis';
 export function ConversationTabs({ conversationId, personaSummaries, allStatements, overallAnalysis, customQuestions }: ConversationTabsProps) {
   const [activeTab, setActiveTab] = useState<TabType>('questions');
   const [selectedPersona, setSelectedPersona] = useState<{ name: string; details: PersonaDetails } | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Export all persona insights
+  const handleExportAllPersonas = async () => {
+    setIsExporting(true);
+    try {
+      const token = localStorage.getItem('auth_token');
+
+      for (const summary of personaSummaries) {
+        const response = await fetch(
+          `/api/focus-groups/conversations/${conversationId}/personas/${summary.personaId}/export/insights`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `persona-insights-${summary.personaName}.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+
+          // Small delay between downloads to avoid browser blocking
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+    } catch (error) {
+      console.error('Error exporting personas:', error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const tabs = [
     ...(customQuestions && customQuestions.length > 0
@@ -192,12 +231,24 @@ export function ConversationTabs({ conversationId, personaSummaries, allStatemen
         {activeTab === 'personas' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Persona Journeys
-              </h2>
-              <p className="text-sm text-gray-500">
-                {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
-              </p>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Persona Journeys
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {personaSummaries.length} participant{personaSummaries.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              {personaSummaries.length > 0 && (
+                <button
+                  onClick={handleExportAllPersonas}
+                  disabled={isExporting}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 border border-blue-300 rounded-md hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Download className="h-4 w-4" />
+                  {isExporting ? 'Exporting...' : 'Export All Personas'}
+                </button>
+              )}
             </div>
 
             {personaSummaries.length === 0 ? (

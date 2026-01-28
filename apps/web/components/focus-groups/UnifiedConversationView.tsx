@@ -120,12 +120,16 @@ export function UnifiedConversationView({
     }
   };
 
-  // Handle PDF export for full transcript
-  const handleExportTranscript = async () => {
+  // Export all persona insights
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportAllPersonas = async () => {
+    setIsExporting(true);
     try {
       const token = localStorage.getItem('auth_token');
+
       const response = await fetch(
-        `/api/focus-groups/conversations/${conversationId}/export/transcript`,
+        `/api/focus-groups/conversations/${conversationId}/export/all-personas`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -141,15 +145,18 @@ export function UnifiedConversationView({
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `focus-group-transcript-${new Date().toISOString().split('T')[0]}.pdf`;
+      a.download = `all-personas-insights-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error exporting transcript PDF:', error);
+      console.error('Error exporting all personas PDF:', error);
+    } finally {
+      setIsExporting(false);
     }
   };
+
 
   const tabs = [
     ...(customQuestions && customQuestions.length > 0
@@ -433,24 +440,32 @@ export function UnifiedConversationView({
                       Loading case insights...
                     </p>
                   )}
-                  {isComplete && personaInsights && !isLoadingInsights && (
-                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                      <Check className="h-3 w-3" />
-                      Case insights loaded from database
-                    </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isComplete && !isLoadingInsights && personaInsights && personaSummaries.length > 0 && (
+                    <Button
+                      onClick={handleExportAllPersonas}
+                      variant="outline"
+                      size="sm"
+                      disabled={isExporting}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      {isExporting ? 'Exporting...' : 'Export All Personas'}
+                    </Button>
+                  )}
+                  {isComplete && !isLoadingInsights && personaInsights && (
+                    <Button
+                      onClick={handleGenerateInsights}
+                      variant="outline"
+                      size="sm"
+                      className="flex items-center gap-2"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                      Regenerate Insights
+                    </Button>
                   )}
                 </div>
-                {isComplete && !isLoadingInsights && personaInsights && (
-                  <Button
-                    onClick={handleGenerateInsights}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Regenerate Insights
-                  </Button>
-                )}
               </div>
 
               {/* Error state */}
@@ -616,15 +631,6 @@ export function UnifiedConversationView({
                         Full roundtable discussion in chronological order
                       </CardDescription>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleExportTranscript}
-                      className="flex items-center gap-2"
-                    >
-                      <Download className="h-4 w-4" />
-                      Export PDF
-                    </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
