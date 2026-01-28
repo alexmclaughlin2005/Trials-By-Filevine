@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle, Loader2 } from 'lucide-react';
+import { MessageSquare, Sparkles, FileText, Users, BarChart3, TrendingUp, TrendingDown, Minus, AlertCircle, HelpCircle, Loader2, Download, Check, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './TakeawaysTab';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
@@ -117,6 +117,37 @@ export function UnifiedConversationView({
       setInsightsError(error instanceof Error ? error.message : 'Failed to generate insights');
     } finally {
       setIsLoadingInsights(false);
+    }
+  };
+
+  // Handle PDF export for full transcript
+  const handleExportTranscript = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(
+        `/api/focus-groups/conversations/${conversationId}/export/transcript`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `focus-group-transcript-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting transcript PDF:', error);
     }
   };
 
@@ -402,7 +433,24 @@ export function UnifiedConversationView({
                       Loading case insights...
                     </p>
                   )}
+                  {isComplete && personaInsights && !isLoadingInsights && (
+                    <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                      <Check className="h-3 w-3" />
+                      Case insights loaded from database
+                    </p>
+                  )}
                 </div>
+                {isComplete && !isLoadingInsights && personaInsights && (
+                  <Button
+                    onClick={handleGenerateInsights}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Regenerate Insights
+                  </Button>
+                )}
               </div>
 
               {/* Error state */}
@@ -451,6 +499,7 @@ export function UnifiedConversationView({
                         key={summary.personaId}
                         summary={summary}
                         insight={insight}
+                        conversationId={conversationId}
                       />
                     );
                   })}
@@ -560,10 +609,23 @@ export function UnifiedConversationView({
             <div className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Conversation Transcript</CardTitle>
-                  <CardDescription>
-                    Full roundtable discussion in chronological order
-                  </CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Conversation Transcript</CardTitle>
+                      <CardDescription>
+                        Full roundtable discussion in chronological order
+                      </CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportTranscript}
+                      className="flex items-center gap-2"
+                    >
+                      <Download className="h-4 w-4" />
+                      Export PDF
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">

@@ -123,7 +123,8 @@ export const formatPriority = (priority: string): string => {
 /**
  * Sanitize text for PDF rendering (remove special characters that might cause issues)
  */
-export const sanitizeText = (text: string): string => {
+export const sanitizeText = (text: string | null | undefined): string => {
+  if (!text) return '';
   return text
     .replace(/[\u0000-\u0008\u000B-\u000C\u000E-\u001F\u007F-\u009F]/g, '')
     .trim();

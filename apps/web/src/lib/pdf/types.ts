@@ -145,3 +145,22 @@ export interface TranscriptPDFData {
   caseInfo: CaseInfo;
   personaSummaries?: PersonaSummaryData[];
 }
+
+// Persona insights data structure
+export interface PersonaInsightData {
+  personaId: string;
+  personaName: string;
+  caseInterpretation: string;
+  keyBiases: string[];
+  decisionDrivers: string[];
+  persuasionStrategy: string;
+  vulnerabilities: string[];
+  strengths: string[];
+}
+
+export interface PersonaInsightsPDFData {
+  conversation: ConversationData;
+  personaSummary: PersonaSummaryData;
+  personaInsight: PersonaInsightData;
+  caseInfo: CaseInfo;
+}

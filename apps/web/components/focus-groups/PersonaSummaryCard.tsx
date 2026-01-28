@@ -4,19 +4,84 @@ import { useState } from 'react';
 import { PersonaSummary } from '@/types/focus-group';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsight } from './PersonaInsightsCard';
-import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { useParams } from 'next/navigation';
 
 interface PersonaSummaryCardProps {
   summary: PersonaSummary;
   insight?: PersonaInsight | null;
+  conversationId: string;
 }
 
 type TabType = 'insights' | 'conversation';
 
-export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps) {
+export function PersonaSummaryCard({ summary, insight, conversationId }: PersonaSummaryCardProps) {
   const [showPersonaModal, setShowPersonaModal] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>('insights');
+
+  // Handle PDF export for case insights
+  const handleExportInsights = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(
+        `/api/focus-groups/conversations/${conversationId}/personas/${summary.personaId}/export/insights`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `persona-insights-${summary.personaName}-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting persona insights PDF:', error);
+    }
+  };
+
+  // Handle PDF export for conversation
+  const handleExportConversation = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const response = await fetch(
+        `/api/focus-groups/conversations/${conversationId}/personas/${summary.personaId}/export/conversation`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `persona-conversation-${summary.personaName}-${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Error exporting persona conversation PDF:', error);
+    }
+  };
 
   // Position badge colors
   const getPositionColor = (position: string) => {
@@ -136,31 +201,57 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
       {/* Tabs (only show if insights are available) */}
       {insight && (
         <div className="border-b bg-gray-50">
-          <div className="flex px-6">
-            <button
-              onClick={() => setActiveTab('insights')}
-              className={cn(
-                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'insights'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          <div className="flex items-center justify-between px-6">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('insights')}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                  activeTab === 'insights'
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                )}
+              >
+                <Brain className="h-4 w-4" />
+                Case Insights
+              </button>
+              <button
+                onClick={() => setActiveTab('conversation')}
+                className={cn(
+                  'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                  activeTab === 'conversation'
+                    ? 'border-indigo-600 text-indigo-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                )}
+              >
+                <MessageSquare className="h-4 w-4" />
+                Conversation
+              </button>
+            </div>
+            <div className="flex gap-2 py-2">
+              {activeTab === 'insights' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportInsights}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Insights
+                </Button>
               )}
-            >
-              <Brain className="h-4 w-4" />
-              Case Insights
-            </button>
-            <button
-              onClick={() => setActiveTab('conversation')}
-              className={cn(
-                'flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
-                activeTab === 'conversation'
-                  ? 'border-indigo-600 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              {activeTab === 'conversation' && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportConversation}
+                  className="flex items-center gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  Export Conversation
+                </Button>
               )}
-            >
-              <MessageSquare className="h-4 w-4" />
-              Conversation
-            </button>
+            </div>
           </div>
         </div>
       )}
