@@ -104,13 +104,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
   },
   positionBadge: {
-    backgroundColor: colors.blue[100],
+    backgroundColor: colors.blue[50],
   },
   positionBadgeText: {
     color: colors.blue[700],
   },
   influenceBadge: {
-    backgroundColor: colors.purple[100],
+    backgroundColor: colors.purple[50],
   },
   influenceBadgeText: {
     color: colors.purple[700],

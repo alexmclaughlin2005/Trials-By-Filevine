@@ -306,8 +306,8 @@ export function FullTranscriptPDFDocument({ data }: Props) {
                             styles.sentimentBadge,
                             {
                               backgroundColor:
-                                stmt.sentiment === 'plaintiff_leaning' ? colors.green[100] :
-                                stmt.sentiment === 'defense_leaning' ? colors.red[100] :
+                                stmt.sentiment === 'plaintiff_leaning' ? colors.green[50] :
+                                stmt.sentiment === 'defense_leaning' ? colors.red[50] :
                                 colors.gray[100],
                             },
                           ]}>
