@@ -6,6 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
+// Helper function to format archetype names
+function formatArchetypeName(archetype?: string): string {
+  if (!archetype) return 'Unclassified';
+
+  const nameMap: Record<string, string> = {
+    bootstrapper: 'The Bootstrapper',
+    crusader: 'The Crusader',
+    scale_balancer: 'The Scale-Balancer',
+    captain: 'The Captain',
+    chameleon: 'The Chameleon',
+    heart: 'The Heart',
+    calculator: 'The Calculator',
+    scarred: 'The Scarred',
+    trojan_horse: 'The Trojan Horse',
+    maverick: 'The Maverick'
+  };
+
+  return nameMap[archetype] || archetype;
+}
+
 interface PersonaV2 {
   id: string;
   name: string;
@@ -350,24 +370,4 @@ function DangerMeter({
       </div>
     </div>
   );
-}
-
-// Helper function to format archetype names
-function formatArchetypeName(archetype?: string): string {
-  if (!archetype) return 'Unclassified';
-
-  const nameMap: Record<string, string> = {
-    bootstrapper: 'The Bootstrapper',
-    crusader: 'The Crusader',
-    scale_balancer: 'The Scale-Balancer',
-    captain: 'The Captain',
-    chameleon: 'The Chameleon',
-    heart: 'The Heart',
-    calculator: 'The Calculator',
-    scarred: 'The Scarred',
-    trojan_horse: 'The Trojan Horse',
-    maverick: 'The Maverick'
-  };
-
-  return nameMap[archetype] || archetype;
 }
