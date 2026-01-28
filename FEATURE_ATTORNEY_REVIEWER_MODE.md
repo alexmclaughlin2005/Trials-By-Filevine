@@ -9,7 +9,54 @@
 
 ## Overview
 
-Add an "attorney reviewer" mode that analyzes completed roundtable conversations from a legal strategy perspective. After jurors complete their deliberation, attorneys can request a professional legal analysis of what the conversation revealed and how to improve their case strategy.
+Add an "attorney reviewer" observer that analyzes roundtable conversations from a legal strategy perspective. The attorney reviewer watches the focus group deliberation (like observing through one-way glass) and provides professional legal analysis of what the juror conversation revealed and how to improve case strategy.
+
+**Key Design Principle:** The attorney reviewer is an **OBSERVER, NOT A PARTICIPANT**. It does not speak or interact with the juror personas. It watches the conversation and provides post-deliberation analysis.
+
+---
+
+## Observer Model
+
+The attorney reviewer uses a **one-way glass observation model**:
+
+### **During Deliberation:**
+```
+┌─────────────────────────────────────────┐
+│  JURY DELIBERATION ROOM                 │
+│                                         │
+│  👤 Juror 1: "I'm confused about..."   │
+│  👤 Juror 2: "This makes me angry..."  │
+│  👤 Juror 3: "What were his injuries?" │
+│  👤 Juror 4: "I agree with Sarah..."   │
+│  👤 Juror 5: "But wait, the timeline..." │
+│  👤 Juror 6: "That's a good point..."  │
+│                                         │
+└─────────────────────────────────────────┘
+               ║ (one-way glass)
+               ║
+┌──────────────▼──────────────────────────┐
+│  OBSERVATION ROOM                       │
+│                                         │
+│  👨‍⚖️ Attorney Observer                  │
+│  📝 Taking notes silently               │
+│  🤔 Analyzing reactions                 │
+│  📊 Identifying patterns                │
+│                                         │
+└─────────────────────────────────────────┘
+```
+
+### **After Deliberation:**
+The attorney observer provides a strategic debrief document analyzing:
+- What they observed jurors struggling with
+- Which arguments resonated vs. fell flat
+- Evidence gaps revealed by juror questions
+- Strategic recommendations for trial prep
+
+### **Why This Model?**
+1. **Maintains Authentic Juror Behavior:** Jurors deliberate naturally without attorney presence affecting their candor
+2. **Provides Professional Analysis:** Attorney lens interprets what juror reactions mean for trial strategy
+3. **Mirrors Real Focus Groups:** This is how actual jury consultants run focus groups (lawyers watch behind glass)
+4. **Clean Separation of Concerns:** Jurors react emotionally, attorneys analyze strategically
 
 ---
 
@@ -23,8 +70,10 @@ Currently, the roundtable system simulates juror deliberations authentically (v5
 5. **Witness preparation** insights from what jurors wanted to know
 
 **Example Scenario:**
-- Jurors say: "I'm confused about the timeline - when exactly did he see the defendant?"
-- Attorney needs to know: "This reveals a credibility gap. Recommend: (1) Timeline exhibit, (2) Prep witness on specific times, (3) Address in opening/closing."
+- **What Jurors Say** (during deliberation): "I'm confused about the timeline - when exactly did he see the defendant?"
+- **What Attorney Observer Sees** (post-deliberation analysis): "This reveals a credibility gap. Recommend: (1) Timeline exhibit, (2) Prep witness on specific times, (3) Address in opening/closing."
+
+**Think of it as:** The attorney reviewer sits behind one-way glass during the focus group, takes notes on juror reactions, and then provides a strategic debrief after the session ends.
 
 ---
 
@@ -88,10 +137,10 @@ The Attorney Review provides:
 
 ### **1. Executive Summary**
 ```
-ATTORNEY REVIEW: Opening Statement Analysis
-Verdict Prediction: 4-2 Plaintiff Lean
+ATTORNEY OBSERVER DEBRIEF: Opening Statement Analysis
+Verdict Prediction: 4-2 Plaintiff Lean (based on observed reactions)
 
-KEY FINDINGS:
+KEY OBSERVATIONS FROM THE DELIBERATION:
 • Timeline confusion is your biggest vulnerability
 • Strong emotional response to drunk driving (use this)
 • 17 children claim undermining credibility
@@ -323,28 +372,35 @@ model FocusGroupAttorneyReview {
   name: 'Attorney Reviewer Analysis',
   description: 'Legal strategy analysis of roundtable conversation',
   version: 'v1.0.0',
-  systemPrompt: `You are an experienced trial attorney reviewing a jury focus group.
+  systemPrompt: `You are an experienced trial attorney observing a jury focus group through one-way glass.
 
-Your role is to provide LEGAL STRATEGY ANALYSIS, not emotional reactions.
+CRITICAL: You are an OBSERVER watching the deliberation, NOT a participant in the conversation.
+You did NOT speak during the focus group. You were silently watching and taking notes.
+
+Your role is to provide LEGAL STRATEGY ANALYSIS based on what you observed, not emotional reactions.
 You are analyzing what the simulated juror conversation revealed about:
 - Case strengths and weaknesses
 - Evidence gaps
 - Credibility issues
 - Strategic opportunities
+- What resonated with jurors vs. what failed
+
+Think of yourself as the attorney who brought the client to the focus group facility, watched through the glass, and now provides a strategic debrief.
 
 DO provide:
-- Legal interpretation of juror concerns
-- Strategic recommendations for trial preparation
-- Evidence that should be added or emphasized
-- Argument adjustments based on juror reactions
-- Witness preparation guidance
-- Voir dire implications
+- Legal interpretation of juror concerns you observed
+- Strategic recommendations for trial preparation based on juror reactions
+- Evidence that should be added or emphasized based on gaps you noticed
+- Argument adjustments based on what worked/didn't work with this jury
+- Witness preparation guidance based on juror questions and skepticism
+- Voir dire implications based on the types of jurors who leaned which way
 
 DO NOT:
-- Simply summarize what jurors said (that's in the transcript)
-- Make moral judgments
-- Guarantee outcomes
-- Provide generic advice`,
+- Simply summarize what jurors said (that's already in the transcript)
+- Speak as if you participated in the deliberation
+- Make moral judgments about the case
+- Guarantee trial outcomes
+- Provide generic advice that could apply to any case`,
 
   userPromptTemplate: `
 CASE CONTEXT:
@@ -364,7 +420,7 @@ CONVERSATION METADATA:
 - Fracture points: {{fracturePoints}}
 
 YOUR TASK:
-As an experienced trial attorney, analyze this jury deliberation and provide:
+As an experienced trial attorney who just watched this jury deliberation through one-way glass, provide your strategic debrief:
 
 1. EXECUTIVE SUMMARY (3-4 sentences)
    - Verdict prediction with confidence
@@ -652,10 +708,10 @@ Response: { reviewId, status: 'generating' }
 
 ## Related Features
 
-- **Juror Mode (v5.0.0):** Personas act as jurors ← Current
-- **Attorney Mode:** Personas review as attorneys ← This feature
-- **Expert Mode (Future):** Analyze as expert witnesses
-- **Judge Mode (Future):** Evaluate from bench perspective
+- **Juror Deliberation (v5.0.0):** Personas act as jurors in focus group ← Current
+- **Attorney Observer:** Silent observer providing strategic analysis ← This feature
+- **Expert Observer (Future):** Medical/technical expert watches and provides domain analysis
+- **Judge Observer (Future):** Judicial perspective on evidentiary issues
 
 ---
 
