@@ -242,11 +242,7 @@ export function FullTranscriptPDFDocument({ data }: Props) {
           </View>
         </View>
 
-        <PDFFooter
-          pageNumber={1}
-          caseName={caseInfo.name}
-          confidential
-        />
+        <PDFFooter />
       </Page>
 
       {/* Transcript Pages */}
@@ -338,11 +334,7 @@ export function FullTranscriptPDFDocument({ data }: Props) {
               })}
             </View>
 
-            <PDFFooter
-              pageNumber={pageNumber}
-              caseName={caseInfo.name}
-              confidential
-            />
+            <PDFFooter />
           </Page>
         );
       })}
@@ -380,11 +372,7 @@ export function FullTranscriptPDFDocument({ data }: Props) {
             ))}
           </View>
 
-          <PDFFooter
-            pageNumber={Math.ceil(statements.length / 5) + 2}
-            caseName={caseInfo.name}
-            confidential
-          />
+          <PDFFooter />
         </Page>
       )}
     </Document>

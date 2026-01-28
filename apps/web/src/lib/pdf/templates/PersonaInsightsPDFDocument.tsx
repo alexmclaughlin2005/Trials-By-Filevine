@@ -247,11 +247,7 @@ export function PersonaInsightsPDFDocument({ data }: Props) {
           </View>
         </View>
 
-        <PDFFooter
-          pageNumber={1}
-          caseName={caseInfo.name}
-          confidential
-        />
+        <PDFFooter />
       </Page>
 
       {/* Case Interpretation Page */}
@@ -310,11 +306,7 @@ export function PersonaInsightsPDFDocument({ data }: Props) {
           )}
         </View>
 
-        <PDFFooter
-          pageNumber={2}
-          caseName={caseInfo.name}
-          confidential
-        />
+        <PDFFooter />
       </Page>
 
       {/* Persuasion Strategy Page */}
@@ -371,11 +363,7 @@ export function PersonaInsightsPDFDocument({ data }: Props) {
           </View>
         </View>
 
-        <PDFFooter
-          pageNumber={3}
-          caseName={caseInfo.name}
-          confidential
-        />
+        <PDFFooter />
       </Page>
     </Document>
   );

@@ -283,11 +283,7 @@ export function PersonaConversationPDFDocument({ data }: Props) {
           </View>
         </View>
 
-        <PDFFooter
-          pageNumber={1}
-          caseName={caseInfo.name}
-          confidential
-        />
+        <PDFFooter />
       </Page>
 
       {/* Summary Page */}
@@ -404,11 +400,7 @@ export function PersonaConversationPDFDocument({ data }: Props) {
           </View>
         </View>
 
-        <PDFFooter
-          pageNumber={2}
-          caseName={caseInfo.name}
-          confidential
-        />
+        <PDFFooter />
       </Page>
 
       {/* Statements Pages */}
@@ -467,11 +459,7 @@ export function PersonaConversationPDFDocument({ data }: Props) {
               ))}
             </View>
 
-            <PDFFooter
-              pageNumber={pageNumber}
-              caseName={caseInfo.name}
-              confidential
-            />
+            <PDFFooter />
           </Page>
         );
       })}
