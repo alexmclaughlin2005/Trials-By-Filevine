@@ -223,7 +223,9 @@ export function PersonaListV2({
 }
 
 // Helper function to format archetype names
-function formatArchetypeName(archetype: string): string {
+function formatArchetypeName(archetype?: string): string {
+  if (!archetype) return 'Unclassified';
+
   const nameMap: Record<string, string> = {
     bootstrapper: 'The Bootstrapper',
     crusader: 'The Crusader',
