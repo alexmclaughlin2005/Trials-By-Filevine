@@ -11,6 +11,7 @@ export async function POST() {
       headers: {
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({}), // Send empty JSON object to satisfy Fastify body parser
     });
 
     console.log('[seed-feature-flags] Response status:', response.status);
