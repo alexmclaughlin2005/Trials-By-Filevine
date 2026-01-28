@@ -22,6 +22,26 @@ import { apiClient } from '@/lib/api-client';
 import { VoirDireQuestionsV2 } from '@/components/voir-dire-questions-v2';
 import { CaseStrategyV2 } from '@/components/case-strategy-v2';
 
+// Import types from components - match exactly
+interface VoirDireQuestion {
+  question: string;
+  purpose: string;
+  targetArchetypes: string[];
+  expectedResponses: {
+    archetype: string;
+    likelyResponse: string;
+    redFlags: string[];
+  }[];
+  followUpPrompts: string[];
+}
+
+interface VoirDireQuestionSet {
+  openingQuestions: VoirDireQuestion[];
+  archetypeIdentification: VoirDireQuestion[];
+  caseSpecific: VoirDireQuestion[];
+  strikeJustification: VoirDireQuestion[];
+}
+
 export default function AITestingPage() {
   const [activeTab, setActiveTab] = useState('persona-suggester');
 
@@ -349,26 +369,7 @@ function PersonaSuggesterTest() {
   );
 }
 
-// Types for voir dire results - match the component's interface
-interface VoirDireQuestion {
-  question: string;
-  purpose: string;
-  targetArchetypes: string[];
-  expectedResponses?: Array<{
-    archetype: string;
-    likelyResponse: string;
-    redFlags: string[];
-  }>;
-  followUpPrompts?: string[];
-}
-
-interface VoirDireQuestionSet {
-  openingQuestions: VoirDireQuestion[];
-  archetypeIdentification: VoirDireQuestion[];
-  caseSpecific: VoirDireQuestion[];
-  strikeJustification: VoirDireQuestion[];
-}
-
+// API response wrapper
 interface VoirDireResult {
   questionSet: VoirDireQuestionSet;
 }
@@ -532,7 +533,7 @@ function CaseStrategyTest() {
       const mockCaseId = 'test-case-' + Date.now();
       const mockPanelId = 'test-panel-' + Date.now();
 
-      const response = await apiClient.post(`/cases/${mockCaseId}/strategy-v2`, {
+      const response = await apiClient.post<{ strategy: CaseStrategyResult }>(`/cases/${mockCaseId}/strategy-v2`, {
         panelId: mockPanelId,
         attorneySide,
         availableStrikes: parseInt(availableStrikes),
