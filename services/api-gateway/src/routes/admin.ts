@@ -220,7 +220,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
         where: {
           key_organizationId: {
             key,
-            organizationId: null, // Global flag
+            organizationId: null as any, // Global flag - Prisma type issue with nullable compound keys
           },
         },
         update: {
@@ -298,7 +298,7 @@ export async function adminRoutes(fastify: FastifyInstance) {
           where: {
             key_organizationId: {
               key: flagData.key,
-              organizationId: null,
+              organizationId: null as any, // Global flag - Prisma type issue with nullable compound keys
             },
           },
           update: {

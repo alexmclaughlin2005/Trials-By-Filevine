@@ -570,7 +570,7 @@ export async function casesRoutes(server: FastifyInstance) {
         const jurors = panel.jurors.map(juror => ({
           juror: {
             id: juror.id,
-            jurorNumber: juror.jurorNumber,
+            jurorNumber: juror.jurorNumber || '', // Handle null case
             firstName: juror.firstName,
             lastName: juror.lastName,
             age: juror.age || undefined,
