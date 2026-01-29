@@ -112,8 +112,12 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
       
       if (query.state.error) {
         const apiError = query.state.error as APIClientError | Error;
-        const statusCode = apiError instanceof APIClientError ? apiError.statusCode : 0;
         const errorMessage = apiError instanceof Error ? apiError.message : '';
+        // Suppress browser extension errors (harmless, caused by extensions trying to interact with page)
+        if (errorMessage.includes('message channel')) {
+          return false;
+        }
+        const statusCode = apiError instanceof APIClientError ? apiError.statusCode : 0;
         // Keep polling on 404 (not found) - they might still be generating
         // But only if we haven't exceeded max attempts
         if ((statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found')) && pollingAttempts < MAX_POLLING_ATTEMPTS) {

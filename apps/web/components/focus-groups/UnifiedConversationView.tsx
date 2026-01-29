@@ -68,10 +68,15 @@ export function UnifiedConversationView({
   const hasFetchedInsightsRef = useRef(false);
 
   // Auto-switch to takeaways when conversation completes (only once)
+  // Add a small delay to prevent rapid state changes that can trigger browser extension errors
   useEffect(() => {
     if (isComplete && !hasAutoSwitchedRef.current) {
       hasAutoSwitchedRef.current = true;
-      setActiveTab('takeaways');
+      // Small delay to prevent race conditions with polling cleanup
+      const timeoutId = setTimeout(() => {
+        setActiveTab('takeaways');
+      }, 200);
+      return () => clearTimeout(timeoutId);
     }
   }, [isComplete]);
 

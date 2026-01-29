@@ -20,6 +20,7 @@ export default function ConversationDetailPage() {
   useEffect(() => {
     let pollInterval: NodeJS.Timeout | null = null;
     let mounted = true;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     async function fetchData() {
       try {
@@ -46,16 +47,32 @@ export default function ConversationDetailPage() {
               setConversation(updatedData);
 
               // Stop polling when conversation is complete
+              // Add a small delay to prevent rapid state changes that can trigger browser extension errors
               if (updatedData.completedAt && pollInterval) {
                 clearInterval(pollInterval);
+                pollInterval = null;
+                // Small delay before final state update to prevent race conditions
+                timeoutId = setTimeout(() => {
+                  if (mounted) {
+                    setConversation(updatedData);
+                  }
+                }, 100);
               }
             } catch (err) {
               console.error('Error polling conversation:', err);
+              // Suppress browser extension errors
+              if (err instanceof Error && err.message.includes('message channel')) {
+                return;
+              }
             }
           }, 5000); // Poll every 5 seconds
         }
       } catch (err) {
         if (!mounted) return;
+        // Suppress browser extension errors
+        if (err instanceof Error && err.message.includes('message channel')) {
+          return;
+        }
         setError(err instanceof Error ? err.message : 'An error occurred');
         setLoading(false);
       }
@@ -70,6 +87,9 @@ export default function ConversationDetailPage() {
       mounted = false;
       if (pollInterval) {
         clearInterval(pollInterval);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
     };
   }, [conversationId]);
