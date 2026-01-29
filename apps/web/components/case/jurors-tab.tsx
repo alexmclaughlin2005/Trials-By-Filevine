@@ -215,6 +215,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         skinTone: '',
         race: '',
         physicalDescription: '',
+        shirtColor: '',
       });
     },
   });
@@ -853,6 +854,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                     skinTone: '',
                     race: '',
                     physicalDescription: '',
+                    shirtColor: '',
                   });
                 }}
                 disabled={createJurorMutation.isPending}
