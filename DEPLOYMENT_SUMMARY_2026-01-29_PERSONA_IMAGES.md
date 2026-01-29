@@ -36,9 +36,20 @@
    - Images replace or supplement numbered badges
 
 5. **`apps/web/components/focus-groups/UnifiedConversationView.tsx`**
-   - Added persona images in conversation statements (24x24px)
+   - Added persona images in conversation statements (32x32px, updated from 24x24px)
    - Images replace sequence numbers when available
    - Falls back to sequence number if no image
+
+6. **`apps/web/components/focus-groups/ConversationTabs.tsx`**
+   - Added persona images to "By Question" tab responses (32x32px)
+   - Images display next to persona names in question responses
+   - Falls back to sequence number badge when no image available
+
+7. **`apps/web/components/roundtable-conversation-viewer.tsx`**
+   - Added persona images to Full Transcript tab (32x32px)
+   - Images replace sequence number badges when available
+   - Added `imageUrl` field to Statement interface
+   - Falls back to sequence number badge when no image available
 
 ## Deployment Instructions
 
@@ -59,7 +70,9 @@ Vercel will automatically deploy when changes are pushed to `main` branch. The N
 - [ ] Verify persona images appear in focus group setup wizard persona selection
 - [ ] Verify persona images appear in focus group review step
 - [ ] Verify persona images appear in PersonaSummaryCard components
-- [ ] Verify persona images appear in conversation statements
+- [ ] Verify persona images appear in conversation statements (UnifiedConversationView)
+- [ ] Verify persona images appear in "By Question" tab responses (ConversationTabs)
+- [ ] Verify persona images appear in Full Transcript tab (roundtable-conversation-viewer)
 - [ ] Verify images load correctly (no 404 errors)
 - [ ] Verify cache busting works (regenerated images appear immediately)
 - [ ] Verify fallback behavior (no image = shows number/initials)
@@ -76,3 +89,11 @@ If issues occur:
 - `SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md` - Original image generation fix
 - `apps/web/components/persona-card-v2.tsx` - Reference implementation for image display
 - `services/api-gateway/src/routes/personas.ts` - Personas endpoint with imageUrl support
+- `apps/web/lib/persona-image-utils.ts` - Reusable image URL utility with cache busting
+
+## Commit History
+
+- **Commit:** `82edf86` - "Add persona images to roundtable conversation views"
+  - Added images to ConversationTabs (By Question tab)
+  - Updated UnifiedConversationView image sizes (24x24 → 32x32)
+  - Added images to roundtable-conversation-viewer (Full Transcript tab)

@@ -1,6 +1,6 @@
 # Juries by Filevine - Project Structure & AI Instructions
 
-**Last Updated:** 2026-01-29
+**Last Updated:** 2026-01-29 (Roundtable Image Integration)
 **Version:** 1.0.0
 
 ## Project Overview
@@ -258,6 +258,8 @@ Trials by Filevine/
 - Simulation session configuration
 - Persona panel selection
 - Result and recommendation storage
+- Roundtable conversation orchestration
+- Persona image integration in all conversation views
 
 **`services/auth-service/`** - Authentication
 - JWT token management (Auth0/Clerk integration)
@@ -617,6 +619,20 @@ CASE_SERVICE_URL=...
    - Comprehensive logging for debugging
    - Falls back to fuzzy matching only if direct lookup fails
    - See: [SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md](./SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md) for complete details
+
+### ✅ Persona Images in Roundtable Conversations (Jan 29, 2026)
+1. **Roundtable Conversation Views** - Added persona images throughout all roundtable conversation displays
+   - **By Question Tab** (`ConversationTabs.tsx`): Images next to persona responses (32x32px)
+   - **Unified Conversation View** (`UnifiedConversationView.tsx`): Updated image sizes to 32x32px for consistency
+   - **Full Transcript Tab** (`roundtable-conversation-viewer.tsx`): Images replace sequence badges (32x32px)
+2. **Consistent Image Display** - All roundtable views use the same `getPersonaImageUrl` utility
+   - Cache busting with timestamps for fresh image loading
+   - Graceful fallback to sequence numbers when images unavailable
+   - Consistent sizing and styling across all views
+3. **Backend Support** - API already includes `imageUrl` in conversation statements
+   - `/focus-groups/conversations/:conversationId` endpoint includes imageUrl in statements
+   - Persona summaries and statements both include imageUrl from persona lookup
+   - See: [DEPLOYMENT_SUMMARY_2026-01-29_PERSONA_IMAGES.md](./DEPLOYMENT_SUMMARY_2026-01-29_PERSONA_IMAGES.md) for complete details
 
 ### 🚧 In Progress / Next Steps
 
