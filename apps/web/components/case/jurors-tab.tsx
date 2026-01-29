@@ -106,12 +106,22 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateAllMutation = useMutation({
+  interface GenerateAllResponse {
+    success: boolean;
+    message: string;
+    processed: number;
+    skipped: number;
+    failed: number;
+    errors?: Array<{ jurorId: string; error: string }>;
+  }
+
+  const generateAllMutation = useMutation<GenerateAllResponse, Error, 'realistic' | 'avatar'>({
     mutationFn: async (style: 'realistic' | 'avatar') => {
-      return await apiClient.post(`/jurors/panel/${panelId}/generate-all-images`, {
+      const response = await apiClient.post<GenerateAllResponse>(`/jurors/panel/${panelId}/generate-all-images`, {
         imageStyle: style,
         regenerate: false, // Only generate for jurors without images
       });
+      return response;
     },
     onSuccess: (data) => {
       // Invalidate queries to refresh juror data
@@ -128,7 +138,7 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
         alert('No images were generated. All jurors may already have images, or they may be missing required fields (first name, last name).');
       }
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       setIsGenerating(false);
       alert(`Failed to generate images: ${error.message || 'Unknown error'}`);
     },
