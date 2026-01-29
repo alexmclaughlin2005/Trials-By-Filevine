@@ -76,67 +76,49 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Track polling attempts to prevent infinite polling
-  const [pollingAttempts, setPollingAttempts] = useState(0);
-  const MAX_POLLING_ATTEMPTS = 40; // Stop after ~2 minutes (40 * 5 seconds = 200 seconds)
+  // Track when we started waiting for takeaways
+  const [waitStartTime] = useState(() => Date.now());
+  const MAX_WAIT_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-  // Check if takeaways exist - with polling
+  // Check if takeaways exist - with slower polling
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
     queryFn: async () => {
-      try {
-        const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
-        // Reset polling attempts on success
-        setPollingAttempts(0);
-        return result;
-      } catch (err) {
-        // Track polling attempts on error
-        if (err instanceof APIClientError && err.statusCode === 404) {
-          setPollingAttempts(prev => {
-            const newAttempts = prev + 1;
-            // Stop polling after max attempts
-            if (newAttempts >= MAX_POLLING_ATTEMPTS) {
-              return MAX_POLLING_ATTEMPTS;
-            }
-            return newAttempts;
-          });
-        }
-        throw err;
-      }
+      const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
+      return result;
     },
     retry: false,
-    enabled: pollingAttempts < MAX_POLLING_ATTEMPTS, // Disable query when max attempts reached
-    // Poll every 5 seconds if takeaways don't exist yet (they're being generated in background)
+    // Poll every 10 seconds if takeaways don't exist yet (they're being generated in background)
     refetchInterval: (query) => {
       // Stop polling if we have data
       if (query.state.data) return false;
       
-      // Stop polling if we've exceeded max attempts (double-check)
-      if (pollingAttempts >= MAX_POLLING_ATTEMPTS) {
+      // Stop polling if we've waited too long (5 minutes)
+      const waitTime = Date.now() - waitStartTime;
+      if (waitTime >= MAX_WAIT_TIME) {
         return false;
       }
       
       if (query.state.error) {
         const apiError = query.state.error as APIClientError | Error;
         const errorMessage = apiError instanceof Error ? apiError.message : '';
-        // Suppress browser extension errors (harmless, caused by extensions trying to interact with page)
+        // Suppress browser extension errors
         if (errorMessage.includes('message channel')) {
           return false;
         }
         const statusCode = apiError instanceof APIClientError ? apiError.statusCode : 0;
         // Keep polling on 404 (not found) - they might still be generating
-        // But only if we haven't exceeded max attempts
-        if (statusCode === 404 && pollingAttempts < MAX_POLLING_ATTEMPTS) {
-          return 5000; // Poll every 5 seconds
+        // But only if we haven't waited too long
+        if (statusCode === 404) {
+          const waitTime = Date.now() - waitStartTime;
+          return waitTime < MAX_WAIT_TIME ? 10000 : false; // Poll every 10 seconds
         }
-        return false; // Stop polling on other errors or after max attempts
+        return false; // Stop polling on other errors
       }
       
-      // Only poll if we haven't exceeded max attempts
-      if (pollingAttempts < MAX_POLLING_ATTEMPTS) {
-        return 5000; // Poll every 5 seconds while loading
-      }
-      return false;
+      // Continue polling while loading (but check wait time)
+      const waitTime = Date.now() - waitStartTime;
+      return waitTime < MAX_WAIT_TIME ? 10000 : false; // Poll every 10 seconds
     },
     refetchIntervalInBackground: false,
   });
@@ -149,21 +131,14 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     },
   });
 
-  // Show loading state only on initial load, not during polling
-  if (isLoading && !error && pollingAttempts === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center p-12">
-        <Loader2 className="h-12 w-12 animate-spin text-filevine-blue mb-4" />
-        <p className="text-lg font-medium text-filevine-gray-900">Checking for takeaways...</p>
-      </div>
-    );
-  }
-
   // Show generate button if no takeaways exist
   if (error || !data) {
     const statusCode = error instanceof APIClientError ? error.statusCode : 0;
     const errorMessage = error instanceof Error ? error.message : '';
     const isIncomplete = errorMessage.includes('incomplete');
+    const isNotFound = statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found');
+    const waitTime = Date.now() - waitStartTime;
+    const hasWaitedTooLong = waitTime >= MAX_WAIT_TIME;
 
     if (generateMutation.isPending) {
       return (
@@ -216,34 +191,28 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
       );
     }
 
-    // No takeaways found - check if they might be generating
-    const isNotFound = statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found');
+    // Show stable "Generating" spinner for 404 errors (takeaways being generated)
+    // Only show "Generate" button after waiting 5 minutes
+    if (isNotFound && !hasWaitedTooLong) {
+      return (
+        <div className="flex flex-col items-center justify-center p-12">
+          <Loader2 className="h-12 w-12 animate-spin text-filevine-blue mb-4" />
+          <p className="text-lg font-medium text-filevine-gray-900">Generating Strategic Takeaways</p>
+          <p className="text-sm text-filevine-gray-600 mt-2 text-center max-w-md">
+            Analyzing the focus group conversation to extract key insights, identify what landed well, what confused the panel, and generate concrete recommendations for improving your argument.
+          </p>
+          <p className="text-xs text-filevine-gray-500 mt-4">
+            This process typically takes 30-60 seconds...
+          </p>
+          <p className="text-xs text-filevine-gray-400 mt-2">
+            Checking every few seconds for completion
+          </p>
+        </div>
+      );
+    }
 
-    if (isNotFound) {
-      // Stop showing "generating" message after max polling attempts or if query is disabled
-      if (pollingAttempts >= MAX_POLLING_ATTEMPTS) {
-        return (
-          <div className="p-12 text-center max-w-2xl mx-auto">
-            <div className="bg-gradient-to-br from-filevine-blue/10 to-purple-100/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
-              <Sparkles className="h-10 w-10 text-filevine-blue" />
-            </div>
-            <h3 className="text-2xl font-semibold text-filevine-gray-900 mb-3">
-              Takeaways Not Available
-            </h3>
-            <p className="text-base text-filevine-gray-600 mb-6">
-              Takeaways were not automatically generated for this conversation. You can generate them manually below.
-            </p>
-            <Button
-              onClick={() => generateMutation.mutate()}
-              size="lg"
-              className="bg-filevine-blue hover:bg-filevine-blue/90"
-            >
-              <Sparkles className="mr-2 h-5 w-5" />
-              Generate Takeaways
-            </Button>
-          </div>
-        );
-      }
+    // After 5 minutes, show the generate button
+    if (isNotFound && hasWaitedTooLong) {
 
       // Takeaways don't exist yet - might be generating in background
       return (
