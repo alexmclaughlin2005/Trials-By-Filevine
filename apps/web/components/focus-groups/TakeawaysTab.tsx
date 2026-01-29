@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiClient } from '@/lib/api-client';
+import { apiClient, APIClientError } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -90,11 +90,11 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
         setPollingAttempts(0);
         return result;
       } catch (err) {
-        const apiError = err as any;
-        const statusCode = apiError?.statusCode || 0;
-        // Increment polling attempts on 404
-        if (statusCode === 404) {
-          setPollingAttempts(prev => prev + 1);
+        if (err instanceof APIClientError) {
+          // Increment polling attempts on 404
+          if (err.statusCode === 404) {
+            setPollingAttempts(prev => prev + 1);
+          }
         }
         throw err;
       }
@@ -111,9 +111,9 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
       }
       
       if (query.state.error) {
-        const apiError = query.state.error as any;
-        const statusCode = apiError?.statusCode || 0;
-        const errorMessage = (query.state.error as Error).message || '';
+        const apiError = query.state.error as APIClientError | Error;
+        const statusCode = apiError instanceof APIClientError ? apiError.statusCode : 0;
+        const errorMessage = apiError instanceof Error ? apiError.message : '';
         // Keep polling on 404 (not found) - they might still be generating
         // But only if we haven't exceeded max attempts
         if ((statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found')) && pollingAttempts < MAX_POLLING_ATTEMPTS) {
@@ -146,8 +146,7 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
 
   // Show generate button if no takeaways exist
   if (error || !data) {
-    const apiError = error as any;
-    const statusCode = apiError?.statusCode || 0;
+    const statusCode = error instanceof APIClientError ? error.statusCode : 0;
     const errorMessage = error instanceof Error ? error.message : '';
     const isIncomplete = errorMessage.includes('incomplete');
 

@@ -9,7 +9,6 @@ import {
   CheckCircle,
   TrendingUp,
   Target,
-  Shield,
   Scale,
 } from 'lucide-react';
 
