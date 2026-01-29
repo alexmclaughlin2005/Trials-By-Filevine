@@ -337,9 +337,9 @@ export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic'
     prompt += ` Neutral background. Natural lighting, authentic candid portrait style, not a corporate headshot. The person should look like a real, everyday juror - authentic, diverse, and representative of their actual physical characteristics. Avoid overly polished or corporate appearance.`;
   }
   
-  if (initials) {
-    prompt += ` In the bottom right corner of the image, add a small, subtle watermark with the initials "${initials}" in a clean, professional font.`;
-  }
+  // IMPORTANT: Do NOT include any text, names, initials, or watermarks in the image
+  // Text overlays will be added programmatically after generation
+  prompt += ` CRITICAL: Do NOT include any text, names, initials, letters, or watermarks in the image. The image should be a clean portrait with no text elements whatsoever.`;
   
   // Final reinforcement to prevent multiple instances
   prompt += ` IMPORTANT: The entire image must show only ONE single portrait. No multiple people, no duplicates, no variations, no layout with multiple images. Just one portrait.`;
