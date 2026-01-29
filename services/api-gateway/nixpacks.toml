@@ -8,7 +8,7 @@ nixPkgs = ["nodejs_20", "npm"]
 
 [phases.install]
 cmds = [
-  "yarn install --frozen-lockfile"
+  "npm ci"
 ]
 
 [phases.build]
