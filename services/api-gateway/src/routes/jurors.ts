@@ -1068,13 +1068,41 @@ export async function jurorsRoutes(server: FastifyInstance) {
           });
         }
 
+        if (!result.imageUrl) {
+          server.log.error({ jurorId }, 'Image generation succeeded but no imageUrl returned');
+          return reply.status(500).send({
+            error: 'Image generation failed',
+            message: 'Image was generated but no URL was returned',
+          });
+        }
+
         // Update juror with image URL
-        await server.prisma.juror.update({
-          where: { id: jurorId },
-          data: {
-            imageUrl: result.imageUrl,
-          },
-        });
+        // The imageUrl should be a relative path like "/api/jurors/images/{jurorId}"
+        const imageUrlToSave = result.imageUrl || `/api/jurors/images/${jurorId}`;
+        
+        try {
+          await server.prisma.juror.update({
+            where: { id: jurorId },
+            data: {
+              imageUrl: imageUrlToSave,
+            },
+          });
+          
+          server.log.info({
+            jurorId,
+            imageUrl: imageUrlToSave,
+          }, 'Successfully updated juror with image URL');
+        } catch (prismaError: any) {
+          server.log.error({
+            jurorId,
+            imageUrl: imageUrlToSave,
+            prismaError: prismaError.message,
+            prismaCode: prismaError.code,
+            prismaMeta: prismaError.meta,
+            prismaStack: prismaError.stack,
+          }, 'Failed to update juror with image URL');
+          throw prismaError; // Re-throw to be caught by outer catch
+        }
 
         server.log.info({
           jurorId,
@@ -1087,10 +1115,17 @@ export async function jurorsRoutes(server: FastifyInstance) {
           message: 'Image generated successfully',
         });
       } catch (error: any) {
-        server.log.error({ error }, 'Error generating juror image');
+        server.log.error({ 
+          error: error.message,
+          errorName: error.name,
+          errorCode: error.code,
+          errorStack: error.stack,
+          jurorId,
+        }, 'Error generating juror image');
         return reply.status(500).send({
           error: 'Failed to generate image',
           message: error.message || 'An error occurred while generating the image',
+          details: error.code || error.name,
         });
       }
     },
