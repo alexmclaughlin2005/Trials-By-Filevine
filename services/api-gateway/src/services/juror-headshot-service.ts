@@ -541,3 +541,30 @@ export async function getJurorImagePath(jurorId: string): Promise<string | null>
     return null;
   }
 }
+
+/**
+ * Delete a juror's image file
+ */
+export async function deleteJurorImage(jurorId: string): Promise<boolean> {
+  try {
+    const imageFileName = `${jurorId}.png`;
+    const imagePath = path.join(JUROR_IMAGES_DIR, imageFileName);
+    
+    // Check if file exists and delete it
+    try {
+      await fs.access(imagePath);
+      await fs.unlink(imagePath);
+      console.log(`[deleteJurorImage] Deleted image for juror ${jurorId}`);
+      return true;
+    } catch (error: any) {
+      // File doesn't exist, which is fine
+      if (error.code === 'ENOENT') {
+        return true; // Already deleted
+      }
+      throw error;
+    }
+  } catch (error) {
+    console.error(`[deleteJurorImage] Error deleting image:`, error);
+    return false;
+  }
+}

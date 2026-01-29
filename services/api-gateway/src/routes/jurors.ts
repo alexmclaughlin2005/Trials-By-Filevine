@@ -10,7 +10,7 @@ import { FECAPIAdapter } from '../adapters/fec-api-adapter';
 import { PeopleSearchAdapter } from '../adapters/people-search-adapter';
 import { DataSourceAdapter } from '../adapters/data-source-adapter';
 import { PrismaClient } from '@juries/database';
-import { generateJurorHeadshot, getJurorImagePath } from '../services/juror-headshot-service';
+import { generateJurorHeadshot, getJurorImagePath, deleteJurorImage } from '../services/juror-headshot-service';
 
 // Initialize data source adapters
 const prisma = new PrismaClient();
@@ -1284,6 +1284,16 @@ export async function jurorsRoutes(server: FastifyInstance) {
           if (!regenerate && juror.imageUrl) {
             results.skipped++;
             continue;
+          }
+
+          // If regenerating, delete existing image file and clear imageUrl from database
+          if (regenerate && juror.imageUrl) {
+            await deleteJurorImage(juror.id);
+            // Clear imageUrl from database
+            await server.prisma.juror.update({
+              where: { id: juror.id },
+              data: { imageUrl: null },
+            });
           }
 
           // Generate image

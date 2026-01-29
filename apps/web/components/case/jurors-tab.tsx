@@ -105,6 +105,7 @@ interface GenerateAllImagesButtonProps {
 function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: GenerateAllImagesButtonProps) {
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [regenerate, setRegenerate] = useState(false);
 
   interface GenerateAllResponse {
     success: boolean;
@@ -115,11 +116,11 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
     errors?: Array<{ jurorId: string; error: string }>;
   }
 
-  const generateAllMutation = useMutation<GenerateAllResponse, Error, 'realistic' | 'avatar'>({
-    mutationFn: async (style: 'realistic' | 'avatar') => {
+  const generateAllMutation = useMutation<GenerateAllResponse, Error, { style: 'realistic' | 'avatar'; regenerate: boolean }>({
+    mutationFn: async ({ style, regenerate }) => {
       const response = await apiClient.post<GenerateAllResponse>(`/jurors/panel/${panelId}/generate-all-images`, {
         imageStyle: style,
-        regenerate: false, // Only generate for jurors without images
+        regenerate,
       });
       return response;
     },
@@ -147,7 +148,7 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
   const handleGenerate = () => {
     if (isGenerating) return;
     setIsGenerating(true);
-    generateAllMutation.mutate(imageStyle);
+    generateAllMutation.mutate({ style: imageStyle, regenerate });
   };
 
   return (
@@ -161,6 +162,16 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
         <option value="realistic">Realistic</option>
         <option value="avatar">Avatar</option>
       </Select>
+      <label className="flex items-center gap-2 text-sm cursor-pointer">
+        <input
+          type="checkbox"
+          checked={regenerate}
+          onChange={(e) => setRegenerate(e.target.checked)}
+          disabled={isGenerating}
+          className="w-4 h-4"
+        />
+        <span className="text-muted-foreground">Regenerate</span>
+      </label>
       <Button
         onClick={handleGenerate}
         disabled={isGenerating}
@@ -170,12 +181,12 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
         {isGenerating ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
+            {regenerate ? 'Regenerating...' : 'Generating...'}
           </>
         ) : (
           <>
             <Sparkles className="mr-2 h-4 w-4" />
-            Generate All Images
+            {regenerate ? 'Regenerate All Images' : 'Generate All Images'}
           </>
         )}
       </Button>
