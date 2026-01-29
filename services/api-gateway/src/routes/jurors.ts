@@ -1,5 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import * as path from 'path';
+import * as fs from 'fs/promises';
 import { SearchOrchestrator } from '../services/search-orchestrator';
 import { MockDataSourceAdapter } from '../adapters/mock-data-source';
 import { VoterRecordAdapter } from '../adapters/voter-record-adapter';
@@ -8,6 +10,7 @@ import { FECAPIAdapter } from '../adapters/fec-api-adapter';
 import { PeopleSearchAdapter } from '../adapters/people-search-adapter';
 import { DataSourceAdapter } from '../adapters/data-source-adapter';
 import { PrismaClient } from '@juries/database';
+import { generateJurorHeadshot, getJurorImagePath } from '../services/juror-headshot-service';
 
 // Initialize data source adapters
 const prisma = new PrismaClient();
@@ -78,6 +81,7 @@ const createJurorSchema = z.object({
   skinTone: z.string().optional(),
   race: z.string().optional(),
   physicalDescription: z.string().optional(),
+  shirtColor: z.string().optional(),
 });
 
 const updateJurorSchema = createJurorSchema.partial().omit({ panelId: true });
@@ -643,12 +647,37 @@ export async function jurorsRoutes(server: FastifyInstance) {
       }
 
       // Separate jurors into box positions and pool
-      const jurorsInBox = panel.jurors.filter(
-        (j) => j.boxRow !== null && j.boxSeat !== null
-      );
-      const jurorsInPool = panel.jurors.filter(
-        (j) => j.boxRow === null || j.boxSeat === null
-      );
+      const jurorsInBox = panel.jurors
+        .filter((j) => j.boxRow !== null && j.boxSeat !== null)
+        .map((j) => ({
+          id: j.id,
+          jurorNumber: j.jurorNumber,
+          firstName: j.firstName,
+          lastName: j.lastName,
+          age: j.age,
+          occupation: j.occupation,
+          status: j.status,
+          classifiedArchetype: j.classifiedArchetype,
+          boxRow: j.boxRow,
+          boxSeat: j.boxSeat,
+          imageUrl: j.imageUrl,
+        }));
+      const jurorsInPool = panel.jurors
+        .filter((j) => j.boxRow === null || j.boxSeat === null)
+        .map((j) => ({
+          id: j.id,
+          jurorNumber: j.jurorNumber,
+          firstName: j.firstName,
+          lastName: j.lastName,
+          age: j.age,
+          occupation: j.occupation,
+          status: j.status,
+          classifiedArchetype: j.classifiedArchetype,
+          boxRow: j.boxRow,
+          boxSeat: j.boxSeat,
+          imageUrl: j.imageUrl,
+          createdAt: j.createdAt,
+        }));
 
       // Sort pool by juror number or creation date
       jurorsInPool.sort((a, b) => {
@@ -942,6 +971,195 @@ export async function jurorsRoutes(server: FastifyInstance) {
           errorResponse.stack = errorStack;
         }
         return errorResponse;
+      }
+    },
+  });
+
+  /**
+   * POST /api/jurors/:jurorId/generate-image
+   * Generate headshot image for a juror based on physical description
+   */
+  server.post('/:jurorId/generate-image', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      try {
+        const { jurorId } = request.params as { jurorId: string };
+        const { regenerate = false } = (request.body as { regenerate?: boolean }) || {};
+        const { organizationId } = request.user as any;
+
+        // Get juror from database
+        const juror = await server.prisma.juror.findFirst({
+          where: {
+            id: jurorId,
+            panel: {
+              case: { organizationId },
+            },
+          },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            age: true,
+            gender: true,
+            hairColor: true,
+            height: true,
+            weight: true,
+            skinTone: true,
+            race: true,
+            physicalDescription: true,
+            shirtColor: true,
+            occupation: true,
+            imageUrl: true,
+          },
+        });
+
+        if (!juror) {
+          return reply.status(404).send({
+            error: 'Juror not found',
+            message: `Juror with ID ${jurorId} not found`,
+          });
+        }
+
+        // Check if minimum required fields are present
+        if (!juror.firstName || !juror.lastName) {
+          return reply.status(400).send({
+            error: 'Missing required fields',
+            message: 'First name and last name are required to generate an image',
+          });
+        }
+
+        server.log.info({
+          jurorId,
+          name: `${juror.firstName} ${juror.lastName}`,
+          regenerate,
+        }, 'Generating image for juror');
+
+        // Generate image
+        const result = await generateJurorHeadshot(
+          {
+            id: juror.id,
+            firstName: juror.firstName,
+            lastName: juror.lastName,
+            age: juror.age,
+            gender: juror.gender,
+            hairColor: juror.hairColor,
+            height: juror.height,
+            weight: juror.weight,
+            skinTone: juror.skinTone,
+            race: juror.race,
+            physicalDescription: juror.physicalDescription,
+            shirtColor: juror.shirtColor,
+            occupation: juror.occupation,
+          },
+          { regenerate }
+        );
+
+        if (!result.success) {
+          server.log.error({
+            jurorId,
+            error: result.error,
+          }, 'Image generation failed');
+          return reply.status(500).send({
+            error: 'Image generation failed',
+            message: result.error || 'Failed to generate image',
+          });
+        }
+
+        // Update juror with image URL
+        await server.prisma.juror.update({
+          where: { id: jurorId },
+          data: {
+            imageUrl: result.imageUrl,
+          },
+        });
+
+        server.log.info({
+          jurorId,
+          imageUrl: result.imageUrl,
+        }, 'Image generation completed');
+
+        return reply.send({
+          success: true,
+          imageUrl: result.imageUrl,
+          message: 'Image generated successfully',
+        });
+      } catch (error: any) {
+        server.log.error({ error }, 'Error generating juror image');
+        return reply.status(500).send({
+          error: 'Failed to generate image',
+          message: error.message || 'An error occurred while generating the image',
+        });
+      }
+    },
+  });
+
+  /**
+   * GET /api/jurors/images/:jurorId
+   * Serve juror headshot image
+   * Public endpoint - images are not sensitive data
+   */
+  server.get('/images/:jurorId', {
+    config: {
+      rateLimit: false, // Exempt from rate limiting (images are cached)
+    },
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      try {
+        const { jurorId } = request.params as { jurorId: string };
+        const { t } = request.query as { t?: string }; // Cache busting timestamp
+
+        server.log.info({ jurorId }, 'Image request received');
+
+        // Verify juror exists (public - images are not sensitive)
+        const juror = await server.prisma.juror.findFirst({
+          where: {
+            id: jurorId,
+          },
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        });
+
+        if (!juror) {
+          server.log.warn({ jurorId }, 'Juror not found for image request');
+          return reply.status(404).send({
+            error: 'Juror not found',
+          });
+        }
+
+        // Get image path
+        const imagePath = await getJurorImagePath(jurorId);
+
+        if (!imagePath) {
+          server.log.warn({ jurorId }, 'Image not found for juror');
+          return reply.status(404).send({
+            error: 'Image not found',
+            message: 'No image has been generated for this juror yet',
+          });
+        }
+
+        // Check if file exists
+        try {
+          await fs.access(imagePath);
+        } catch {
+          server.log.warn({ jurorId, imagePath }, 'Image file does not exist');
+          return reply.status(404).send({
+            error: 'Image file not found',
+          });
+        }
+
+        // Read and serve image
+        const imageBuffer = await fs.readFile(imagePath);
+        
+        reply.type('image/png');
+        reply.send(imageBuffer);
+      } catch (error: any) {
+        server.log.error({ error }, 'Error serving juror image');
+        return reply.status(500).send({
+          error: 'Failed to serve image',
+          message: error.message || 'An error occurred while serving the image',
+        });
       }
     },
   });

@@ -208,6 +208,8 @@ model Juror {
   skinTone          String? @map("skin_tone")
   race              String?
   physicalDescription String? @map("physical_description") @db.Text
+  shirtColor        String? @map("shirt_color") // Shirt color or clothing description
+  imageUrl          String? @map("image_url") // URL to generated headshot image
 
   // Archetype Classification
   classifiedArchetype String?   @map("classified_archetype") // Primary archetype classification

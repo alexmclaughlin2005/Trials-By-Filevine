@@ -4,13 +4,15 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
-import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List } from 'lucide-react';
+import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image as ImageIcon } from 'lucide-react';
+import Image from 'next/image';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
 import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { ResearchSummarizer } from '@/components/research-summarizer';
 import { JuryBoxView } from './jury-box-view';
 import { JuryBoxConfig } from './jury-box-config';
+import { JurorEditSidebar } from './juror-edit-sidebar';
 
 interface ScoreFactors {
   nameScore: number;
@@ -40,6 +42,7 @@ interface Juror {
   boxRow?: number | null;
   boxSeat?: number | null;
   boxOrder?: number | null;
+  imageUrl?: string | null;
   researchArtifacts?: Array<{
     id: string;
     sourceType: string;
@@ -96,6 +99,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const [showJurorDialog, setShowJurorDialog] = useState(false);
   const [expandedJurors, setExpandedJurors] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'list' | 'jury-box'>('jury-box');
+  const [selectedJurorId, setSelectedJurorId] = useState<string | null>(null);
 
   // Fetch jury panels with full juror data including research
   const { data, isLoading, error, refetch } = useQuery({
@@ -150,6 +154,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     skinTone: '',
     race: '',
     physicalDescription: '',
+    shirtColor: '',
   });
 
   const createJurorMutation = useMutation({
@@ -172,6 +177,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         skinTone: jurorForm.skinTone || undefined,
         race: jurorForm.race || undefined,
         physicalDescription: jurorForm.physicalDescription || undefined,
+        shirtColor: jurorForm.shirtColor || undefined,
       });
     },
     onSuccess: async () => {
@@ -222,6 +228,23 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     }
     setExpandedJurors(newExpanded);
   };
+
+  // Generate juror image mutation
+  const generateImageMutation = useMutation({
+    mutationFn: async (jurorId: string) => {
+      return await apiClient.post(`/jurors/${jurorId}/generate-image`, {
+        regenerate: false,
+      });
+    },
+    onSuccess: async () => {
+      // Invalidate queries to refresh juror data with new image
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['case', caseId, 'panels'] }),
+        queryClient.invalidateQueries({ queryKey: ['panel', panel?.id, 'jury-box'] }),
+      ]);
+      await refetch();
+    },
+  });
 
   if (isLoading || createPanelMutation.isPending) {
     return (
@@ -321,15 +344,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
           {/* Jury Box View (includes pool inside DndContext) */}
           <JuryBoxView
             panelId={panel.id}
-            onJurorClick={(jurorId) => {
-              const newExpanded = new Set(expandedJurors);
-              if (newExpanded.has(jurorId)) {
-                newExpanded.delete(jurorId);
-              } else {
-                newExpanded.add(jurorId);
-              }
-              setExpandedJurors(newExpanded);
-            }}
+            onJurorClick={(jurorId) => setSelectedJurorId(jurorId)}
           />
         </div>
       ) : (
@@ -354,14 +369,51 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                             onClick={() => toggleJuror(juror.id)}
                           >
                             <div className="flex items-center gap-4 flex-1">
-                              <div className="flex items-center gap-3">
+                              {/* Juror Image - Clickable */}
+                              {juror.imageUrl ? (
+                                <div 
+                                  className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0 cursor-pointer hover:border-primary transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedJurorId(juror.id);
+                                  }}
+                                >
+                                  <Image
+                                    src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+                                    alt={`${juror.firstName} ${juror.lastName}`}
+                                    fill
+                                    className="object-cover"
+                                    sizes="48px"
+                                    unoptimized
+                                  />
+                                </div>
+                              ) : (
+                                <div 
+                                  className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-gray-300 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedJurorId(juror.id);
+                                  }}
+                                >
+                                  <span className="text-xs font-semibold text-gray-500">
+                                    {juror.firstName?.[0]}{juror.lastName?.[0]}
+                                  </span>
+                                </div>
+                              )}
+                              <div className="flex items-center gap-3 flex-1">
                                 <div className="rounded-full bg-primary/10 px-3 py-1">
                                   <span className="text-sm font-semibold text-primary">
                                     #{juror.jurorNumber}
                                   </span>
                                 </div>
-                                <div>
-                                  <h4 className="font-semibold text-base">
+                                <div 
+                                  className="flex-1 cursor-pointer"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedJurorId(juror.id);
+                                  }}
+                                >
+                                  <h4 className="font-semibold text-base hover:text-primary transition-colors">
                                     {juror.firstName} {juror.lastName}
                                   </h4>
                                   <div className="flex items-center gap-3 text-sm text-muted-foreground">
@@ -403,6 +455,72 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                           {/* Expanded Research Section */}
                           {expandedJurors.has(juror.id) && (
                             <div className="border-t p-6 space-y-6 bg-muted/20">
+                              {/* Juror Image Section */}
+                              <div className="rounded-lg border border-gray-200 bg-white p-4">
+                                <div className="flex items-center justify-between mb-3">
+                                  <h3 className="text-sm font-semibold text-gray-900">
+                                    Juror Photo
+                                  </h3>
+                                  <Button
+                                    size="sm"
+                                    variant={juror.imageUrl ? "outline" : "default"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      generateImageMutation.mutate(juror.id);
+                                    }}
+                                    disabled={generateImageMutation.isPending}
+                                  >
+                                    <ImageIcon className={`h-4 w-4 ${juror.imageUrl ? 'mr-2' : 'mr-2'}`} />
+                                    {generateImageMutation.isPending 
+                                      ? 'Generating...' 
+                                      : juror.imageUrl 
+                                        ? 'Regenerate Image' 
+                                        : 'Generate Image'}
+                                  </Button>
+                                </div>
+                                {juror.imageUrl ? (
+                                  <div className="flex flex-col items-center gap-3">
+                                    <div 
+                                      className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 cursor-pointer hover:border-primary transition-colors"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedJurorId(juror.id);
+                                      }}
+                                    >
+                                      <Image
+                                        src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+                                        alt={`${juror.firstName} ${juror.lastName}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="128px"
+                                        unoptimized
+                                      />
+                                    </div>
+                                    <p className="text-xs text-gray-500">
+                                      AI-generated based on physical description
+                                    </p>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedJurorId(juror.id);
+                                      }}
+                                    >
+                                      View Full Profile
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="text-center py-8 text-gray-500">
+                                    <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                                    <p className="text-sm font-medium mb-1">No image generated yet</p>
+                                    <p className="text-xs text-gray-400">
+                                      Fill in physical description fields above, then click "Generate Image" to create an AI portrait
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+
                               {/* Juror Basic Info */}
                               <div className="rounded-lg border border-gray-200 bg-white p-4">
                                 <h3 className="text-sm font-semibold text-gray-900 mb-3">
@@ -658,6 +776,19 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                       placeholder="e.g., White, Black, Asian, Hispanic"
                     />
                   </div>
+                  <div>
+                    <label htmlFor="shirtColor" className="mb-2 block text-sm font-medium">
+                      Shirt Color / Clothing
+                    </label>
+                    <input
+                      id="shirtColor"
+                      type="text"
+                      value={jurorForm.shirtColor}
+                      onChange={(e) => setJurorForm({ ...jurorForm, shirtColor: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., Blue, White, Red, Navy, Striped"
+                    />
+                  </div>
                 </div>
                 <div className="mt-4">
                   <label htmlFor="physicalDescription" className="mb-2 block text-sm font-medium">
@@ -743,6 +874,13 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
           </div>
         </div>
       )}
+
+      {/* Juror Edit Sidebar */}
+      <JurorEditSidebar
+        jurorId={selectedJurorId}
+        isOpen={!!selectedJurorId}
+        onClose={() => setSelectedJurorId(null)}
+      />
     </div>
   );
 }

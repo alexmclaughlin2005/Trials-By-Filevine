@@ -3,6 +3,7 @@
 import { GripVertical } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
+import Image from 'next/image';
 
 interface JurorCardProps {
   juror: {
@@ -16,6 +17,7 @@ interface JurorCardProps {
     classifiedArchetype?: string | null;
     boxRow?: number | null;
     boxSeat?: number | null;
+    imageUrl?: string | null;
   };
   isDragging?: boolean;
   onClick?: () => void;
@@ -35,6 +37,20 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       juror,
     },
   });
+
+  const handleImageClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick?.();
+  };
+
+  const handleNameClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onClick?.();
+  };
+
+  const handleCardClick = () => {
+    onClick?.();
+  };
 
   const style = transform
     ? {
@@ -63,24 +79,64 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       ref={setNodeRef}
       style={style}
       {...attributes}
-      {...listeners}
       className={`
-        relative rounded-lg border-2 p-3 bg-white shadow-sm cursor-grab active:cursor-grabbing
+        relative rounded-lg border-2 p-3 bg-white shadow-sm
         hover:shadow-md transition-all select-none
+        ${isDraggingState ? 'opacity-50 cursor-grabbing' : 'cursor-pointer'}
         ${getStatusColor(juror.status)}
-        ${isDraggingState ? 'opacity-50' : ''}
       `}
-      onClick={() => {
-        // Only trigger onClick if not dragging
-        if (!isDraggingState && onClick) {
-          onClick();
+      onClick={(e) => {
+        // Only navigate if not dragging and click wasn't on drag handle
+        if (!isDraggingState && !(e.target as HTMLElement).closest('[data-drag-handle]')) {
+          handleCardClick();
         }
       }}
     >
-      {/* Drag Handle Indicator */}
-      <div className="absolute top-1 right-1 text-gray-400">
+      {/* Drag Handle - Only this area is draggable */}
+      <div 
+        {...listeners}
+        data-drag-handle
+        className="absolute top-1 right-1 text-gray-400 cursor-grab active:cursor-grabbing hover:text-gray-600 z-10 p-1"
+        onClick={(e) => e.stopPropagation()}
+      >
         <GripVertical className="h-4 w-4" />
       </div>
+
+      {/* Juror Image - Clickable */}
+      {juror.imageUrl ? (
+        <div className="mb-2 flex justify-center">
+          <div 
+            className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer hover:border-primary transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleImageClick(e);
+            }}
+          >
+            <Image
+              src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+              alt={`${juror.firstName} ${juror.lastName}`}
+              fill
+              className="object-cover"
+              sizes="64px"
+              unoptimized
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="mb-2 flex justify-center">
+          <div 
+            className="w-16 h-16 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleImageClick(e);
+            }}
+          >
+            <span className="text-xs font-semibold text-gray-400">
+              {juror.firstName?.[0]}{juror.lastName?.[0]}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Juror Number */}
       {juror.jurorNumber && (
@@ -91,8 +147,14 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
         </div>
       )}
 
-      {/* Name */}
-      <div className="font-semibold text-sm mb-1">
+      {/* Name - Clickable */}
+      <div 
+        className="font-semibold text-sm mb-1 cursor-pointer hover:text-primary transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          handleNameClick(e);
+        }}
+      >
         {juror.firstName} {juror.lastName}
       </div>
 

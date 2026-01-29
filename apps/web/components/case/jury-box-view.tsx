@@ -29,6 +29,7 @@ interface SeatProps {
     classifiedArchetype?: string | null;
     boxRow?: number | null;
     boxSeat?: number | null;
+    imageUrl?: string | null;
   } | null;
   nextJuror?: {
     id: string;
@@ -38,7 +39,7 @@ interface SeatProps {
   isDragging?: boolean;
 }
 
-function Seat({ row, seat, juror, nextJuror, isDragging }: SeatProps) {
+function Seat({ row, seat, juror, nextJuror, isDragging, onJurorClick }: SeatProps & { onJurorClick?: (jurorId: string) => void }) {
   const { setNodeRef, isOver } = useDroppable({
     id: `seat-${row}-${seat}`,
     data: {
@@ -62,7 +63,7 @@ function Seat({ row, seat, juror, nextJuror, isDragging }: SeatProps) {
       {juror ? (
         <JurorCard
           juror={juror}
-          onClick={() => {}}
+          onClick={() => onJurorClick?.(juror.id)}
         />
       ) : (
         <div className="flex flex-col items-center justify-center h-full text-center p-2">
@@ -93,6 +94,7 @@ type JuryBoxData = {
     classifiedArchetype?: string | null;
     boxRow?: number | null;
     boxSeat?: number | null;
+    imageUrl?: string | null;
   }>;
   jurorsInPool: Array<{
     id: string;
@@ -105,12 +107,18 @@ type JuryBoxData = {
     classifiedArchetype?: string | null;
     boxRow?: number | null;
     boxSeat?: number | null;
+    imageUrl?: string | null;
   }>;
 };
 
 export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // Use provided callback or default to no-op
+  const handleJurorClick = (jurorId: string) => {
+    onJurorClick?.(jurorId);
+  };
 
   // Fetch jury box state
   const { data, isLoading } = useQuery<JuryBoxData>({
@@ -298,6 +306,7 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
                     juror={juror}
                     nextJuror={nextJuror}
                     isDragging={!!activeId}
+                    onJurorClick={handleJurorClick}
                   />
                 ))}
               </div>
@@ -309,7 +318,7 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
         <div className="mt-8">
           <JurorPool
             jurors={jurorsInPool}
-            onJurorClick={onJurorClick}
+            onJurorClick={handleJurorClick}
           />
         </div>
 

@@ -77,6 +77,7 @@ export interface CreateJurorInput {
   skinTone?: string;
   race?: string;
   physicalDescription?: string;
+  shirtColor?: string;
 }
 
 export interface UpdateJurorInput {
@@ -105,6 +106,7 @@ export interface UpdateJurorInput {
   skinTone?: string;
   race?: string;
   physicalDescription?: string;
+  shirtColor?: string;
 }
 
 export interface BulkImportJurorInput {
