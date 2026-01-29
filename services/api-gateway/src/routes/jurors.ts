@@ -984,7 +984,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       try {
         const { jurorId } = request.params as { jurorId: string };
-        const { regenerate = false } = (request.body as { regenerate?: boolean }) || {};
+        const { regenerate = false, imageStyle = 'realistic' } = (request.body as { regenerate?: boolean; imageStyle?: 'realistic' | 'avatar' }) || {};
         const { organizationId } = request.user as any;
 
         // Get juror from database
@@ -1032,6 +1032,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
           jurorId,
           name: `${juror.firstName} ${juror.lastName}`,
           regenerate,
+          imageStyle,
         }, 'Generating image for juror');
 
         // Generate image
@@ -1051,7 +1052,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
             shirtColor: juror.shirtColor,
             occupation: juror.occupation,
           },
-          { regenerate }
+          { regenerate, imageStyle }
         );
 
         if (!result.success) {

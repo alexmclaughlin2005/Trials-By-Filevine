@@ -87,7 +87,7 @@ export interface JurorImageData {
 /**
  * Create a descriptive prompt for DALL-E based on juror physical description
  */
-export function createJurorImagePrompt(juror: JurorImageData): string {
+export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic' | 'avatar' = 'realistic'): string {
   // Build age description
   let ageDesc = '';
   if (juror.age) {
@@ -328,7 +328,14 @@ export function createJurorImagePrompt(juror: JurorImageData): string {
     prompt += ` ${juror.physicalDescription}.`;
   }
   
-  prompt += ` The person should be centered in the frame, facing forward with their head and shoulders visible. Neutral background. Natural lighting, authentic candid portrait style, not a corporate headshot. The person should look like a real, everyday juror - authentic, diverse, and representative of their actual physical characteristics. Avoid overly polished or corporate appearance.`;
+  prompt += ` The person should be centered in the frame, facing forward with their head and shoulders visible.`;
+  
+  // Add style-specific instructions
+  if (style === 'avatar') {
+    prompt += ` Create a clean, professional avatar-style portrait. Simple, minimalist design with a neutral or solid color background. The image should be more generic and stylized, like a professional avatar or icon, rather than a realistic photograph. Use a modern, clean aesthetic with soft lighting.`;
+  } else {
+    prompt += ` Neutral background. Natural lighting, authentic candid portrait style, not a corporate headshot. The person should look like a real, everyday juror - authentic, diverse, and representative of their actual physical characteristics. Avoid overly polished or corporate appearance.`;
+  }
   
   if (initials) {
     prompt += ` In the bottom right corner of the image, add a small, subtle watermark with the initials "${initials}" in a clean, professional font.`;
@@ -340,7 +347,7 @@ export function createJurorImagePrompt(juror: JurorImageData): string {
 /**
  * Generate image using DALL-E
  */
-async function generateImage(prompt: string, jurorId: string): Promise<string> {
+async function generateImage(prompt: string, jurorId: string, style: 'realistic' | 'avatar' = 'realistic'): Promise<string> {
   const client = getOpenAIClient();
   const response = await client.images.generate({
     model: 'dall-e-3',
@@ -348,7 +355,7 @@ async function generateImage(prompt: string, jurorId: string): Promise<string> {
     n: 1,
     size: '1024x1024',
     quality: 'standard',
-    style: 'natural',
+    style: style === 'avatar' ? 'vivid' : 'natural', // Use vivid for avatar style, natural for realistic
   });
   
   const imageUrl = response.data[0]?.url;
@@ -417,9 +424,10 @@ export async function generateJurorHeadshot(
   juror: JurorImageData,
   options: {
     regenerate?: boolean;
+    imageStyle?: 'realistic' | 'avatar';
   } = {}
 ): Promise<{ success: boolean; imageUrl?: string; error?: string }> {
-  const { regenerate = false } = options;
+  const { regenerate = false, imageStyle = 'realistic' } = options;
 
   try {
     // Create images directory if it doesn't exist
@@ -453,7 +461,7 @@ export async function generateJurorHeadshot(
     }
 
     // Create prompt
-    const prompt = createJurorImagePrompt(juror);
+    const prompt = createJurorImagePrompt(juror, imageStyle);
     
     console.log(`[generateJurorHeadshot] Generating image with prompt:`, {
       jurorId: juror.id,
@@ -465,7 +473,7 @@ export async function generateJurorHeadshot(
     });
 
     // Generate image
-    const imageUrl = await generateImage(prompt, juror.id);
+    const imageUrl = await generateImage(prompt, juror.id, imageStyle);
 
     // Get initials for overlay
     const getInitials = (firstName: string, lastName: string): string => {

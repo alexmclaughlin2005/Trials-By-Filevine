@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select } from '@/components/ui/select';
 import { Loader2, Edit2, Save, X, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
@@ -105,6 +106,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Juror>>({});
+  const [imageStyle, setImageStyle] = useState<'realistic' | 'avatar'>('realistic');
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['juror', jurorId],
@@ -167,6 +169,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
       if (!jurorId) throw new Error('No juror ID');
       return await apiClient.post(`/jurors/${jurorId}/generate-image`, {
         regenerate,
+        imageStyle,
       });
     },
     onSuccess: () => {
@@ -310,21 +313,37 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
             <div className="space-y-6 max-w-4xl">
               {/* Juror Photo Section */}
               <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between mb-4">
                   <h3 className="text-lg font-semibold text-filevine-gray-900">Juror Photo</h3>
-                  <Button
-                    onClick={() => generateImageMutation.mutate(!!data.imageUrl)}
-                    disabled={generateImageMutation.isPending}
-                    variant="outline"
-                    size="sm"
-                  >
-                    {generateImageMutation.isPending ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <ImageIcon className="mr-2 h-4 w-4" />
-                    )}
-                    {data.imageUrl ? 'Regenerate Image' : 'Generate Image'}
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="imageStyle" className="text-sm text-filevine-gray-700">
+                        Style:
+                      </Label>
+                      <Select
+                        id="imageStyle"
+                        value={imageStyle}
+                        onChange={(e) => setImageStyle(e.target.value as 'realistic' | 'avatar')}
+                        className="w-32"
+                      >
+                        <option value="realistic">Realistic</option>
+                        <option value="avatar">Avatar</option>
+                      </Select>
+                    </div>
+                    <Button
+                      onClick={() => generateImageMutation.mutate(!!data.imageUrl)}
+                      disabled={generateImageMutation.isPending}
+                      variant="outline"
+                      size="sm"
+                    >
+                      {generateImageMutation.isPending ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <ImageIcon className="mr-2 h-4 w-4" />
+                      )}
+                      {data.imageUrl ? 'Regenerate Image' : 'Generate Image'}
+                    </Button>
+                  </div>
                 </div>
                 <div className="mt-4 flex items-center gap-6">
                   {data.imageUrl ? (

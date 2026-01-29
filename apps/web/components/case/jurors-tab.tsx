@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image as ImageIcon } from 'lucide-react';
 import Image from 'next/image';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
@@ -100,6 +102,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const [expandedJurors, setExpandedJurors] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<'list' | 'jury-box'>('jury-box');
   const [selectedJurorId, setSelectedJurorId] = useState<string | null>(null);
+  const [imageStyle, setImageStyle] = useState<'realistic' | 'avatar'>('realistic');
 
   // Fetch jury panels with full juror data including research
   const { data, isLoading, error, refetch } = useQuery({
@@ -235,6 +238,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     mutationFn: async (jurorId: string) => {
       return await apiClient.post(`/jurors/${jurorId}/generate-image`, {
         regenerate: false,
+        imageStyle,
       });
     },
     onSuccess: async () => {
@@ -462,22 +466,39 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                                   <h3 className="text-sm font-semibold text-gray-900">
                                     Juror Photo
                                   </h3>
-                                  <Button
-                                    size="sm"
-                                    variant={juror.imageUrl ? "outline" : "default"}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      generateImageMutation.mutate(juror.id);
-                                    }}
-                                    disabled={generateImageMutation.isPending}
-                                  >
-                                    <ImageIcon className={`h-4 w-4 ${juror.imageUrl ? 'mr-2' : 'mr-2'}`} />
-                                    {generateImageMutation.isPending 
-                                      ? 'Generating...' 
-                                      : juror.imageUrl 
-                                        ? 'Regenerate Image' 
-                                        : 'Generate Image'}
-                                  </Button>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2">
+                                      <Label htmlFor={`imageStyle-${juror.id}`} className="text-xs text-gray-700">
+                                        Style:
+                                      </Label>
+                                      <Select
+                                        id={`imageStyle-${juror.id}`}
+                                        value={imageStyle}
+                                        onChange={(e) => setImageStyle(e.target.value as 'realistic' | 'avatar')}
+                                        className="w-28 h-8 text-xs"
+                                        onClick={(e) => e.stopPropagation()}
+                                      >
+                                        <option value="realistic">Realistic</option>
+                                        <option value="avatar">Avatar</option>
+                                      </Select>
+                                    </div>
+                                    <Button
+                                      size="sm"
+                                      variant={juror.imageUrl ? "outline" : "default"}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        generateImageMutation.mutate(juror.id);
+                                      }}
+                                      disabled={generateImageMutation.isPending}
+                                    >
+                                      <ImageIcon className={`h-4 w-4 ${juror.imageUrl ? 'mr-2' : 'mr-2'}`} />
+                                      {generateImageMutation.isPending 
+                                        ? 'Generating...' 
+                                        : juror.imageUrl 
+                                          ? 'Regenerate Image' 
+                                          : 'Generate Image'}
+                                    </Button>
+                                  </div>
                                 </div>
                                 {juror.imageUrl ? (
                                   <div className="flex flex-col items-center gap-3">
