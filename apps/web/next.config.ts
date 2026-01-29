@@ -16,12 +16,19 @@ const nextConfig: NextConfig = {
       },
     ],
     // Allow query strings for local API routes (used for cache busting)
+    // Also allow static files from public folder (like filevine-logo.jpeg)
     localPatterns: [
       {
         pathname: '/api/**',
         searchparams: {
           t: '*',
         },
+      },
+      {
+        pathname: '/filevine-logo.jpeg',
+      },
+      {
+        pathname: '/**/*.{jpeg,jpg,png,gif,webp,svg}',
       },
     ],
   },
