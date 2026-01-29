@@ -349,13 +349,18 @@ export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic'
  */
 async function generateImage(prompt: string, jurorId: string, style: 'realistic' | 'avatar' = 'realistic'): Promise<string> {
   const client = getOpenAIClient();
+  
+  // Map our style to DALL-E 3 style parameter
+  // DALL-E 3 supports 'vivid' (more dramatic) and 'natural' (more realistic)
+  const dalleStyle: 'vivid' | 'natural' = style === 'avatar' ? 'vivid' : 'natural';
+  
   const response = await client.images.generate({
     model: 'dall-e-3',
     prompt: prompt,
     n: 1,
     size: '1024x1024',
     quality: 'standard',
-    style: style === 'avatar' ? 'vivid' : 'natural', // Use vivid for avatar style, natural for realistic
+    style: dalleStyle,
   });
   
   const imageUrl = response.data[0]?.url;

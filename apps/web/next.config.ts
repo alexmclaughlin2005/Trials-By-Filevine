@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
         pathname: '/api/**',
       },
     ],
+    // Allow query strings for local API routes (used for cache busting)
+    localPatterns: [
+      {
+        pathname: '/api/**',
+        searchparams: {
+          t: '*',
+        },
+      },
+    ],
   },
   eslint: {
     // Ignore ESLint during builds - these are false positives (vars used in conditional JSX)
