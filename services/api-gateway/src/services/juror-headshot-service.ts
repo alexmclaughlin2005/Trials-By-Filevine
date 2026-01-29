@@ -432,7 +432,8 @@ export async function generateJurorHeadshot(
     imageStyle?: 'realistic' | 'avatar';
   } = {}
 ): Promise<{ success: boolean; imageUrl?: string; error?: string }> {
-  const { regenerate = false, imageStyle = 'realistic' } = options;
+  const regenerate = options.regenerate ?? false;
+  const imageStyle = (options.imageStyle === 'avatar' ? 'avatar' : 'realistic') as 'realistic' | 'avatar';
 
   try {
     // Create images directory if it doesn't exist
@@ -474,6 +475,7 @@ export async function generateJurorHeadshot(
       age: juror.age,
       gender: juror.gender,
       hairColor: juror.hairColor,
+      imageStyle,
       promptPreview: prompt.substring(0, 200) + '...',
     });
 
@@ -503,7 +505,12 @@ export async function generateJurorHeadshot(
       imageUrl: `/api/jurors/images/${juror.id}`,
     };
   } catch (error: any) {
-    console.error(`[generateJurorHeadshot] Error generating image:`, error);
+    console.error(`[generateJurorHeadshot] Error generating image:`, {
+      error: error.message,
+      stack: error.stack,
+      jurorId: juror.id,
+      imageStyle,
+    });
     return {
       success: false,
       error: error.message || 'Failed to generate image',

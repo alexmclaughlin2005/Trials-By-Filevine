@@ -984,7 +984,9 @@ export async function jurorsRoutes(server: FastifyInstance) {
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       try {
         const { jurorId } = request.params as { jurorId: string };
-        const { regenerate = false, imageStyle = 'realistic' } = (request.body as { regenerate?: boolean; imageStyle?: 'realistic' | 'avatar' }) || {};
+        const body = (request.body as { regenerate?: boolean; imageStyle?: 'realistic' | 'avatar' }) || {};
+        const regenerate = body.regenerate ?? false;
+        const imageStyle = (body.imageStyle === 'avatar' ? 'avatar' : 'realistic') as 'realistic' | 'avatar';
         const { organizationId } = request.user as any;
 
         // Get juror from database
