@@ -76,51 +76,15 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Track when we started waiting for takeaways
-  const [waitStartTime] = useState(() => Date.now());
-  const MAX_WAIT_TIME = 5 * 60 * 1000; // 5 minutes in milliseconds
-
-  // Check if takeaways exist - with slower polling
-  const { data, isLoading, error } = useQuery<TakeawaysResponse>({
+  // Check if takeaways exist - no automatic polling, user-controlled refresh
+  const { data, isLoading, error, refetch, isRefetching } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
     queryFn: async () => {
       const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
       return result;
     },
     retry: false,
-    // Poll every 10 seconds if takeaways don't exist yet (they're being generated in background)
-    refetchInterval: (query) => {
-      // Stop polling if we have data
-      if (query.state.data) return false;
-      
-      // Stop polling if we've waited too long (5 minutes)
-      const waitTime = Date.now() - waitStartTime;
-      if (waitTime >= MAX_WAIT_TIME) {
-        return false;
-      }
-      
-      if (query.state.error) {
-        const apiError = query.state.error as APIClientError | Error;
-        const errorMessage = apiError instanceof Error ? apiError.message : '';
-        // Suppress browser extension errors
-        if (errorMessage.includes('message channel')) {
-          return false;
-        }
-        const statusCode = apiError instanceof APIClientError ? apiError.statusCode : 0;
-        // Keep polling on 404 (not found) - they might still be generating
-        // But only if we haven't waited too long
-        if (statusCode === 404) {
-          const waitTime = Date.now() - waitStartTime;
-          return waitTime < MAX_WAIT_TIME ? 10000 : false; // Poll every 10 seconds
-        }
-        return false; // Stop polling on other errors
-      }
-      
-      // Continue polling while loading (but check wait time)
-      const waitTime = Date.now() - waitStartTime;
-      return waitTime < MAX_WAIT_TIME ? 10000 : false; // Poll every 10 seconds
-    },
-    refetchIntervalInBackground: false,
+    refetchInterval: false, // No automatic polling - user controls when to check
   });
 
   // Generate takeaways mutation
