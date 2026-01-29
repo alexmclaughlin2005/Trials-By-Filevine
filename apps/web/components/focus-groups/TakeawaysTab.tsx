@@ -84,6 +84,8 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     },
     retry: false,
     refetchInterval: false, // No automatic polling - user controls when to check
+    refetchOnWindowFocus: false, // Don't refetch when window regains focus - user controls when to check
+    refetchOnMount: false, // Only fetch on initial mount, then user controls
   });
 
   // Generate takeaways mutation
