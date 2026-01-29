@@ -129,11 +129,10 @@ export function PersonaCardV2({
       
       // Log full error details including debug info
       // APIClientError stores the full response in apiError property
-      const errorData = (error as { apiError?: unknown; data?: unknown })?.apiError || 
-                        (error as { data?: unknown })?.data || 
-                        error;
+      const errorObj = error as { apiError?: { debug?: unknown; [key: string]: unknown }; data?: { debug?: unknown; [key: string]: unknown }; debug?: unknown; [key: string]: unknown };
+      const errorData = errorObj?.apiError || errorObj?.data || errorObj;
       
-      if (errorData?.debug) {
+      if (errorData && typeof errorData === 'object' && 'debug' in errorData) {
         console.error('=== DEBUG INFO FROM SERVER ===');
         console.error('Searched for:', errorData.debug.searchedFor);
         console.error('Available personas (matching archetype):', errorData.debug.availablePersonasCount);
