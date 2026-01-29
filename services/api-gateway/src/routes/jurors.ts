@@ -982,8 +982,8 @@ export async function jurorsRoutes(server: FastifyInstance) {
   server.post('/:jurorId/generate-image', {
     onRequest: [server.authenticate],
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      const { jurorId } = request.params as { jurorId: string };
       try {
-        const { jurorId } = request.params as { jurorId: string };
         const body = (request.body as { regenerate?: boolean; imageStyle?: 'realistic' | 'avatar' }) || {};
         const regenerate = body.regenerate ?? false;
         const imageStyle = (body.imageStyle === 'avatar' ? 'avatar' : 'realistic') as 'realistic' | 'avatar';

@@ -328,11 +328,11 @@ export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic'
     prompt += ` ${juror.physicalDescription}.`;
   }
   
-  prompt += ` This must be a portrait of exactly ONE person only - a single individual, not multiple people. The person should be centered in the frame, facing forward with their head and shoulders visible.`;
+  prompt += ` This must be a portrait of exactly ONE person only - a single individual, not multiple people. CRITICAL: Show only ONE single portrait image. Do NOT show multiple copies, variations, or instances of the same person. Do NOT create a layout with multiple images or avatars. The entire image must contain only one single portrait of this person. The person should be centered in the frame, facing forward with their head and shoulders visible.`;
   
   // Add style-specific instructions
   if (style === 'avatar') {
-    prompt += ` Create a stylized, semi-realistic avatar portrait with simplified features. The image should have a slightly cartoonish, illustrated quality - softer edges, simplified facial features, and a more artistic rendering style. Think of it as a professional illustration or digital art portrait, not a photograph. Use a neutral or solid color background. The style should be modern and clean, with simplified shadows and highlights that give it a more artistic, less photorealistic appearance.`;
+    prompt += ` Create a stylized, semi-realistic avatar portrait with simplified features. The image should have a slightly cartoonish, illustrated quality - softer edges, simplified facial features, and a more artistic rendering style. Think of it as a professional illustration or digital art portrait, not a photograph. Use a neutral or solid color background. The style should be modern and clean, with simplified shadows and highlights that give it a more artistic, less photorealistic appearance. Remember: only ONE single portrait, no duplicates or multiple instances.`;
   } else {
     prompt += ` Neutral background. Natural lighting, authentic candid portrait style, not a corporate headshot. The person should look like a real, everyday juror - authentic, diverse, and representative of their actual physical characteristics. Avoid overly polished or corporate appearance.`;
   }
@@ -340,6 +340,9 @@ export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic'
   if (initials) {
     prompt += ` In the bottom right corner of the image, add a small, subtle watermark with the initials "${initials}" in a clean, professional font.`;
   }
+  
+  // Final reinforcement to prevent multiple instances
+  prompt += ` IMPORTANT: The entire image must show only ONE single portrait. No multiple people, no duplicates, no variations, no layout with multiple images. Just one portrait.`;
   
   return prompt;
 }
