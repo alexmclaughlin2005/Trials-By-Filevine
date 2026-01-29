@@ -124,12 +124,14 @@ export function PersonaCardV2({
       } else {
         setImageGenerationError('Failed to generate image');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error generating image:', error);
       
       // Log full error details including debug info
       // APIClientError stores the full response in apiError property
-      const errorData = error?.apiError || error?.data || error;
+      const errorData = (error as { apiError?: unknown; data?: unknown })?.apiError || 
+                        (error as { data?: unknown })?.data || 
+                        error;
       
       if (errorData?.debug) {
         console.error('=== DEBUG INFO FROM SERVER ===');
