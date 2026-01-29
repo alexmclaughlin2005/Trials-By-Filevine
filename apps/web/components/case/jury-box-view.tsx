@@ -303,10 +303,10 @@ export function JuryBoxView({ panelId, onJurorClick, showAutoFill = true }: Jury
                   </div>
                 )}
                 {/* Use flexbox without wrapping - cards will shrink to fit available space */}
-                <div className="flex justify-evenly items-start gap-4 w-full">
+                <div className="flex items-start gap-2 w-full">
                   {rowSeats.map(({ row, seat, juror }) => {
-                    // Cards will flex to fit available space, with min-width of 200px and preferred width of 280px
-                    const baseWidth = 'flex-1 min-w-[200px] max-w-[280px]';
+                    // Cards grow equally to fill space, with flexible sizing
+                    const baseWidth = 'flex-1';
                     return (
                       <Seat
                         key={`${row}-${seat}`}
