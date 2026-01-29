@@ -349,7 +349,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                   {data.imageUrl ? (
                     <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-filevine-gray-200">
                       <Image
-                        src={`/api/jurors/images/${data.id}?t=${Date.now()}`}
+                        src={`/api/jurors/images/${data.id}?v=${encodeURIComponent(data.imageUrl.split('/').pop() || '')}`}
                         alt={`${data.firstName} ${data.lastName}`}
                         fill
                         className="object-cover"

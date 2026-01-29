@@ -38,6 +38,9 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
     },
   });
 
+  // Use imageUrl as cache buster instead of Date.now() to prevent re-fetching on every render
+  const imageSrc = juror.imageUrl ? `/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}` : '';
+
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onClick?.();
@@ -113,7 +116,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
             }}
           >
             <Image
-              src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+              src={imageSrc}
               alt={`${juror.firstName} ${juror.lastName}`}
               fill
               className="object-cover"

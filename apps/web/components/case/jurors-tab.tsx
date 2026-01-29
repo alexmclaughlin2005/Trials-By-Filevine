@@ -563,7 +563,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                     <div className="flex items-center gap-4 flex-1">
                       {/* Juror Image - Clickable */}
                       {juror.imageUrl ? (
-                        <div 
+                        <div
                           className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0 cursor-pointer hover:border-primary transition-colors"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -571,7 +571,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                           }}
                         >
                           <Image
-                            src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+                            src={`/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`}
                             alt={`${juror.firstName} ${juror.lastName}`}
                             fill
                             className="object-cover"
@@ -689,7 +689,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                         </div>
                         {juror.imageUrl ? (
                           <div className="flex flex-col items-center gap-3">
-                            <div 
+                            <div
                               className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 cursor-pointer hover:border-primary transition-colors"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -697,7 +697,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                               }}
                             >
                               <Image
-                                src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+                                src={`/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`}
                                 alt={`${juror.firstName} ${juror.lastName}`}
                                 fill
                                 className="object-cover"
