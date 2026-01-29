@@ -95,14 +95,22 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     },
   });
 
+  // Show loading state on initial load
+  if (isLoading && !error) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12">
+        <Loader2 className="h-12 w-12 animate-spin text-filevine-blue mb-4" />
+        <p className="text-lg font-medium text-filevine-gray-900">Checking for takeaways...</p>
+      </div>
+    );
+  }
+
   // Show generate button if no takeaways exist
   if (error || !data) {
     const statusCode = error instanceof APIClientError ? error.statusCode : 0;
     const errorMessage = error instanceof Error ? error.message : '';
     const isIncomplete = errorMessage.includes('incomplete');
     const isNotFound = statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found');
-    const waitTime = Date.now() - waitStartTime;
-    const hasWaitedTooLong = waitTime >= MAX_WAIT_TIME;
 
     if (generateMutation.isPending) {
       return (
@@ -155,22 +163,42 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
       );
     }
 
-    // Show stable "Generating" spinner for 404 errors (takeaways being generated)
-    // Only show "Generate" button after waiting 5 minutes
-    if (isNotFound && !hasWaitedTooLong) {
+    // Show "Check for Takeaways" button for 404 errors (takeaways might be generating)
+    if (isNotFound) {
       return (
-        <div className="flex flex-col items-center justify-center p-12">
-          <Loader2 className="h-12 w-12 animate-spin text-filevine-blue mb-4" />
-          <p className="text-lg font-medium text-filevine-gray-900">Generating Strategic Takeaways</p>
-          <p className="text-sm text-filevine-gray-600 mt-2 text-center max-w-md">
-            Analyzing the focus group conversation to extract key insights, identify what landed well, what confused the panel, and generate concrete recommendations for improving your argument.
+        <div className="p-12 text-center max-w-2xl mx-auto">
+          <div className="bg-gradient-to-br from-filevine-blue/10 to-purple-100/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="h-10 w-10 text-filevine-blue" />
+          </div>
+          <h3 className="text-2xl font-semibold text-filevine-gray-900 mb-3">
+            Strategic Takeaways
+          </h3>
+          <p className="text-base text-filevine-gray-600 mb-6">
+            Takeaways are being generated automatically. Click below to check if they're ready.
           </p>
-          <p className="text-xs text-filevine-gray-500 mt-4">
-            This process typically takes 30-60 seconds...
-          </p>
-          <p className="text-xs text-filevine-gray-400 mt-2">
-            Checking every few seconds for completion
-          </p>
+          <Button
+            onClick={() => refetch()}
+            size="lg"
+            className="bg-filevine-blue hover:bg-filevine-blue/90"
+            disabled={isRefetching}
+          >
+            {isRefetching ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                Checking...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-5 w-5" />
+                Check for Takeaways
+              </>
+            )}
+          </Button>
+          {isRefetching && (
+            <p className="text-sm text-filevine-gray-500 mt-4">
+              Checking if takeaways are ready...
+            </p>
+          )}
         </div>
       );
     }
