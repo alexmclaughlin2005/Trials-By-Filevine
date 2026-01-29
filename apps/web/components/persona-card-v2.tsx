@@ -2,8 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ChevronDown, ChevronUp, AlertCircle, Shield, Scale, User, ImageIcon, Loader2 } from 'lucide-react';
+import { 
+  ChevronDown, 
+  ChevronUp, // Used in expand/collapse button (line 362)
+  AlertCircle, // Used in DangerMeter icon (line 315)
+  Shield, // Used in DangerMeter icon (line 320)
+  Scale, // Used in verdict prediction (line 329)
+  User, 
+  ImageIcon, 
+  Loader2 
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -49,13 +57,10 @@ export function PersonaCardV2({
   persona,
   expanded: defaultExpanded = false,
   onSelect,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  showStrategy = true,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  side = 'both'
+  showStrategy = true, // Used in conditional rendering (line 407)
+  side = 'both' // Used in conditional rendering (lines 409, 420)
 }: PersonaCardV2Props) {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded); // Used in conditional rendering (lines 360, 373, 358)
   const [imageError, setImageError] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
