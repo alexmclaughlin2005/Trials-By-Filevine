@@ -83,6 +83,9 @@ uploads/
 # Generated persona images (can be regenerated)
 Juror Personas/images/
 
+# Generated juror headshot images (can be regenerated)
+services/api-gateway/juror-images/
+
 # OS
 Thumbs.db
 .DS_Store
