@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, ArrowUp, ArrowDown, FileText } from 'lucide-react';
+import type { ArgumentDocument } from '@/lib/arguments-client';
 
 interface ArgumentListItemProps {
   argument: {
@@ -13,6 +14,7 @@ interface ArgumentListItemProps {
     isCurrent: boolean;
     parentId?: string;
   };
+  attachedDocuments?: ArgumentDocument[];
   isSelected: boolean;
   order?: number;
   isFirst: boolean;
@@ -24,6 +26,7 @@ interface ArgumentListItemProps {
 
 export function ArgumentListItem({
   argument,
+  attachedDocuments = [],
   isSelected,
   order,
   isFirst,
@@ -66,9 +69,59 @@ export function ArgumentListItem({
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-600 mt-1">
-            {argument.argumentType} • {argument.content.length} characters
-          </p>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            <p className="text-xs text-gray-600">
+              {argument.argumentType} • {argument.content.length} characters
+            </p>
+            {attachedDocuments.length > 0 && (
+              <div className="flex items-center gap-1 text-xs text-gray-500">
+                <FileText className="h-3 w-3" />
+                <span>{attachedDocuments.length} document{attachedDocuments.length !== 1 ? 's' : ''}</span>
+              </div>
+            )}
+          </div>
+          
+          {/* Show document list - compact when collapsed, full when expanded */}
+          {attachedDocuments.length > 0 && (
+            <div className={`mt-2 ${isExpanded ? 'pl-4 border-l-2 border-gray-200' : ''}`}>
+              {isExpanded ? (
+                <>
+                  <p className="text-xs font-medium text-gray-700 mb-2">Attached Documents:</p>
+                  <ul className="space-y-1">
+                    {attachedDocuments.map((attachment) => (
+                      <li key={attachment.id} className="flex items-center gap-2 text-xs text-gray-600">
+                        <FileText className="h-3 w-3 text-gray-400 flex-shrink-0" />
+                        <span className="truncate">{attachment.document.filename}</span>
+                        {attachment.document.textExtractionStatus === 'completed' && (
+                          <span className="inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-700">
+                            Extracted
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {attachedDocuments.slice(0, 3).map((attachment) => (
+                    <span
+                      key={attachment.id}
+                      className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600"
+                      title={attachment.document.filename}
+                    >
+                      <FileText className="h-3 w-3 text-gray-400" />
+                      <span className="truncate max-w-[120px]">{attachment.document.filename}</span>
+                    </span>
+                  ))}
+                  {attachedDocuments.length > 3 && (
+                    <span className="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                      +{attachedDocuments.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Expandable content */}
           {isExpanded && (

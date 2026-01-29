@@ -380,7 +380,7 @@ export function UnifiedConversationView({
                                       <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
                                         {statement.sequenceNumber}
                                       </span>
-                                      <div className="flex-1 min-w-0">
+                                      <div className="flex-1 min-w-0 w-full">
                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                                           <span className="font-medium text-gray-900 text-sm">{statement.personaName}</span>
                                           {!isExplicitResponse && (
@@ -407,7 +407,7 @@ export function UnifiedConversationView({
                                             </span>
                                           )}
                                         </div>
-                                        <p className="text-gray-700 text-sm leading-relaxed">{statement.content}</p>
+                                        <p className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words overflow-visible">{statement.content}</p>
                                       </div>
                                     </div>
                                   </div>

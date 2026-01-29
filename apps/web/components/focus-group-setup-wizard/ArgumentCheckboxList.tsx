@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo } from 'react';
+import { useQueries } from '@tanstack/react-query';
 import { ArgumentListItem } from './ArgumentListItem';
 import { BulkActionToolbar } from './BulkActionToolbar';
 import { ValidationBanner } from './ValidationBanner';
 import { CreateArgumentDialog } from './CreateArgumentDialog';
+import { getArgumentDocuments, type ArgumentDocument } from '@/lib/arguments-client';
 
 interface SelectedArgument {
   argumentId: string;
@@ -36,6 +38,27 @@ export function ArgumentCheckboxList({
   onUpdate,
 }: ArgumentCheckboxListProps) {
   const hasInitialized = useRef(false);
+
+  // Fetch documents for all arguments in parallel
+  const documentQueries = useQueries({
+    queries: caseArguments.map((arg) => ({
+      queryKey: ['argument-documents', caseId, arg.id],
+      queryFn: () => getArgumentDocuments(caseId, arg.id),
+      staleTime: 30000, // Cache for 30 seconds
+      retry: false,
+    })),
+  });
+
+  // Create a map of argumentId -> documents for easy lookup
+  const documentsByArgument = useMemo(() => {
+    const map: Record<string, ArgumentDocument[]> = {};
+    documentQueries.forEach((query, index) => {
+      if (query.data?.attachments) {
+        map[caseArguments[index].id] = query.data.attachments;
+      }
+    });
+    return map;
+  }, [documentQueries, caseArguments]);
 
   // Define handlers before they're used in useEffect
   const handleSelectAll = useCallback(() => {
@@ -188,11 +211,13 @@ export function ArgumentCheckboxList({
           const isSelected = selectedArguments.some((a) => a.argumentId === arg.id);
           const selectedArg = selectedArguments.find((a) => a.argumentId === arg.id);
           const selectedIndex = selectedArguments.findIndex((a) => a.argumentId === arg.id);
+          const attachedDocuments = documentsByArgument[arg.id] || [];
 
           return (
             <ArgumentListItem
               key={arg.id}
               argument={arg}
+              attachedDocuments={attachedDocuments}
               isSelected={isSelected}
               order={selectedArg?.order}
               isFirst={selectedIndex === 0}
