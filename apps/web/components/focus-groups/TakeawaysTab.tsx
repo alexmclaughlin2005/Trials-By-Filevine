@@ -78,34 +78,38 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
 
   // Track polling attempts to prevent infinite polling
   const [pollingAttempts, setPollingAttempts] = useState(0);
-  const MAX_POLLING_ATTEMPTS = 40; // Stop after ~2 minutes (40 * 3 seconds)
+  const MAX_POLLING_ATTEMPTS = 40; // Stop after ~2 minutes (40 * 5 seconds = 200 seconds)
 
   // Check if takeaways exist - with polling
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
     queryFn: async () => {
-      try {
-        const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
-        // Reset polling attempts on success
-        setPollingAttempts(0);
-        return result;
-      } catch (err) {
-        if (err instanceof APIClientError) {
-          // Increment polling attempts on 404
-          if (err.statusCode === 404) {
-            setPollingAttempts(prev => prev + 1);
-          }
-        }
-        throw err;
-      }
+      const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
+      // Reset polling attempts on success
+      setPollingAttempts(0);
+      return result;
     },
     retry: false,
+    enabled: pollingAttempts < MAX_POLLING_ATTEMPTS, // Disable query when max attempts reached
+    onError: (err) => {
+      // Track polling attempts on error
+      if (err instanceof APIClientError && err.statusCode === 404) {
+        setPollingAttempts(prev => {
+          const newAttempts = prev + 1;
+          // Stop polling after max attempts
+          if (newAttempts >= MAX_POLLING_ATTEMPTS) {
+            return MAX_POLLING_ATTEMPTS;
+          }
+          return newAttempts;
+        });
+      }
+    },
     // Poll every 5 seconds if takeaways don't exist yet (they're being generated in background)
     refetchInterval: (query) => {
       // Stop polling if we have data
       if (query.state.data) return false;
       
-      // Stop polling if we've exceeded max attempts
+      // Stop polling if we've exceeded max attempts (double-check)
       if (pollingAttempts >= MAX_POLLING_ATTEMPTS) {
         return false;
       }
@@ -120,12 +124,17 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
         const statusCode = apiError instanceof APIClientError ? apiError.statusCode : 0;
         // Keep polling on 404 (not found) - they might still be generating
         // But only if we haven't exceeded max attempts
-        if ((statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found')) && pollingAttempts < MAX_POLLING_ATTEMPTS) {
-          return 5000; // Poll every 5 seconds (reduced frequency)
+        if (statusCode === 404 && pollingAttempts < MAX_POLLING_ATTEMPTS) {
+          return 5000; // Poll every 5 seconds
         }
         return false; // Stop polling on other errors or after max attempts
       }
-      return 5000; // Poll every 5 seconds while loading (reduced frequency)
+      
+      // Only poll if we haven't exceeded max attempts
+      if (pollingAttempts < MAX_POLLING_ATTEMPTS) {
+        return 5000; // Poll every 5 seconds while loading
+      }
+      return false;
     },
     refetchIntervalInBackground: false,
   });
@@ -209,7 +218,7 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
     const isNotFound = statusCode === 404 || errorMessage.includes('404') || errorMessage.includes('not found');
 
     if (isNotFound) {
-      // Stop showing "generating" message after max polling attempts
+      // Stop showing "generating" message after max polling attempts or if query is disabled
       if (pollingAttempts >= MAX_POLLING_ATTEMPTS) {
         return (
           <div className="p-12 text-center max-w-2xl mx-auto">
