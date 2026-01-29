@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image as ImageIcon, Sparkles, ChevronRight, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
@@ -194,6 +194,51 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
   );
 }
 
+interface AutoFillButtonProps {
+  panelId: string;
+}
+
+function AutoFillButton({ panelId }: AutoFillButtonProps) {
+  const queryClient = useQueryClient();
+
+  const autoFillMutation = useMutation({
+    mutationFn: async () => {
+      try {
+        return await apiClient.put(`/jurors/panel/${panelId}/jury-box/auto-fill`, {});
+      } catch (error: unknown) {
+        const err = error as { response?: unknown; data?: unknown; message?: string };
+        console.error('[Auto-fill] Request error:', error);
+        console.error('[Auto-fill] Error response:', err?.response || err?.data || error);
+        console.error('[Auto-fill] Full error object:', JSON.stringify(error, null, 2));
+        throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['panel', panelId, 'jury-box'] });
+      queryClient.invalidateQueries({ queryKey: ['case', panelId, 'panels'] });
+    },
+    onError: (error: unknown) => {
+      const err = error as { message?: string; status?: number; data?: unknown; response?: { data?: unknown } };
+      console.error('[Auto-fill] Frontend error:', error);
+      console.error('[Auto-fill] Error message:', err?.message);
+      console.error('[Auto-fill] Error status:', err?.status);
+      console.error('[Auto-fill] Error data:', err?.data || err?.response?.data);
+    },
+  });
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={() => autoFillMutation.mutate()}
+      disabled={autoFillMutation.isPending}
+    >
+      <RefreshCw className={`h-4 w-4 mr-2 ${autoFillMutation.isPending ? 'animate-spin' : ''}`} />
+      Auto-Fill Jury Box
+    </Button>
+  );
+}
+
 export function JurorsTab({ caseId }: JurorsTabProps) {
   const queryClient = useQueryClient();
   const [showJurorDialog, setShowJurorDialog] = useState(false);
@@ -201,6 +246,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const [viewMode, setViewMode] = useState<'list' | 'jury-box'>('jury-box');
   const [selectedJurorId, setSelectedJurorId] = useState<string | null>(null);
   const [imageStyle, setImageStyle] = useState<'realistic' | 'avatar'>('realistic');
+  const [showControlsPanel, setShowControlsPanel] = useState(false);
 
   // Fetch jury panels with full juror data including research
   const { data, isLoading, error, refetch } = useQuery({
@@ -426,304 +472,337 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
               <LayoutGrid className="h-4 w-4" />
               Jury Box
             </button>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Generate All Images Button */}
-          {panel && (
-            <GenerateAllImagesButton 
-              panelId={panel.id}
-              imageStyle={imageStyle}
-              onStyleChange={setImageStyle}
-            />
-          )}
+          </div>
           <Button onClick={() => setShowJurorDialog(true)}>
             <Plus className="mr-2 h-4 w-4" />
             Add Juror
           </Button>
         </div>
       </div>
-      </div>
+
+      {/* Collapsible Controls Panel */}
+      {panel && (
+        <div className="border rounded-lg bg-white">
+          <button
+            type="button"
+            onClick={() => setShowControlsPanel(!showControlsPanel)}
+            className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+          >
+            <span className="text-sm font-medium text-gray-700">Jury Box Controls</span>
+            {showControlsPanel ? (
+              <ChevronDown className="h-4 w-4 text-gray-500" />
+            ) : (
+              <ChevronRight className="h-4 w-4 text-gray-500" />
+            )}
+          </button>
+          {showControlsPanel && (
+            <div className="border-t p-4 space-y-4">
+              {/* Jury Box Configuration */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Jury Box Configuration</h4>
+                <JuryBoxConfig
+                  panelId={panel.id}
+                  currentSize={panel.juryBoxSize ?? 12}
+                  currentRows={panel.juryBoxRows ?? 1}
+                />
+              </div>
+
+              {/* Bulk Image Generation */}
+              <div>
+                <h4 className="text-sm font-semibold mb-3">Bulk Image Generation</h4>
+                <GenerateAllImagesButton 
+                  panelId={panel.id}
+                  imageStyle={imageStyle}
+                  onStyleChange={setImageStyle}
+                />
+              </div>
+
+              {/* Auto-Fill */}
+              {viewMode === 'jury-box' && (
+                <div>
+                  <h4 className="text-sm font-semibold mb-3">Jury Box Actions</h4>
+                  <AutoFillButton panelId={panel.id} />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* View Mode Content */}
       {viewMode === 'jury-box' ? (
         <div className="space-y-6">
-          {/* Jury Box Configuration */}
-          <JuryBoxConfig
-            panelId={panel.id}
-            currentSize={panel.juryBoxSize ?? 12}
-            currentRows={panel.juryBoxRows ?? 1}
-          />
-
           {/* Jury Box View (includes pool inside DndContext) */}
           <JuryBoxView
             panelId={panel.id}
             onJurorClick={(jurorId) => setSelectedJurorId(jurorId)}
+            showAutoFill={false}
           />
         </div>
       ) : (
         <>
-      {/* Jurors List */}
-      {jurors.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-          <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-          <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
-          <Button onClick={() => setShowJurorDialog(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Juror
-          </Button>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {jurors.map((juror) => (
-            <div key={juror.id} className="border rounded-lg bg-background">
-                          {/* Juror Summary Header */}
-                          <div
-                            className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50"
-                            onClick={() => toggleJuror(juror.id)}
-                          >
-                            <div className="flex items-center gap-4 flex-1">
-                              {/* Juror Image - Clickable */}
-                              {juror.imageUrl ? (
-                                <div 
-                                  className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0 cursor-pointer hover:border-primary transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedJurorId(juror.id);
-                                  }}
-                                >
-                                  <Image
-                                    src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
-                                    alt={`${juror.firstName} ${juror.lastName}`}
-                                    fill
-                                    className="object-cover"
-                                    sizes="48px"
-                                    unoptimized
-                                  />
-                                </div>
-                              ) : (
-                                <div 
-                                  className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-gray-300 transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedJurorId(juror.id);
-                                  }}
-                                >
-                                  <span className="text-xs font-semibold text-gray-500">
-                                    {juror.firstName?.[0]}{juror.lastName?.[0]}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="flex items-center gap-3 flex-1">
-                                <div className="rounded-full bg-primary/10 px-3 py-1">
-                                  <span className="text-sm font-semibold text-primary">
-                                    #{juror.jurorNumber}
-                                  </span>
-                                </div>
-                                <div 
-                                  className="flex-1 cursor-pointer"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedJurorId(juror.id);
-                                  }}
-                                >
-                                  <h4 className="font-semibold text-base hover:text-primary transition-colors">
-                                    {juror.firstName} {juror.lastName}
-                                  </h4>
-                                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                    {juror.age && <span>Age {juror.age}</span>}
-                                    {juror.occupation && (
-                                      <>
-                                        <span>•</span>
-                                        <span>{juror.occupation}</span>
-                                      </>
-                                    )}
-                                    {juror.city && (
-                                      <>
-                                        <span>•</span>
-                                        <span>{juror.city}{juror.zipCode ? `, ${juror.zipCode}` : ''}</span>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <span className={`ml-auto rounded-full px-3 py-1 text-xs font-semibold ${
-                                juror.status === 'available'
-                                  ? 'bg-green-100 text-green-700'
-                                  : juror.status === 'selected'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-gray-100 text-gray-700'
-                              }`}>
-                                {juror.status}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              {expandedJurors.has(juror.id) ? (
-                                <ChevronUp className="h-5 w-5 text-muted-foreground" />
-                              ) : (
-                                <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Expanded Research Section */}
-                          {expandedJurors.has(juror.id) && (
-                            <div className="border-t p-6 space-y-6 bg-muted/20">
-                              {/* Juror Image Section */}
-                              <div className="rounded-lg border border-gray-200 bg-white p-4">
-                                <div className="flex items-center justify-between mb-3">
-                                  <h3 className="text-sm font-semibold text-gray-900">
-                                    Juror Photo
-                                  </h3>
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-2">
-                                      <Label htmlFor={`imageStyle-${juror.id}`} className="text-xs text-gray-700">
-                                        Style:
-                                      </Label>
-                                      <Select
-                                        id={`imageStyle-${juror.id}`}
-                                        value={imageStyle}
-                                        onChange={(e) => setImageStyle(e.target.value as 'realistic' | 'avatar')}
-                                        className="w-28 h-8 text-xs"
-                                        onClick={(e) => e.stopPropagation()}
-                                      >
-                                        <option value="realistic">Realistic</option>
-                                        <option value="avatar">Avatar</option>
-                                      </Select>
-                                    </div>
-                                    <Button
-                                      size="sm"
-                                      variant={juror.imageUrl ? "outline" : "default"}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        generateImageMutation.mutate(juror.id);
-                                      }}
-                                      disabled={generateImageMutation.isPending}
-                                    >
-                                      <ImageIcon className={`h-4 w-4 ${juror.imageUrl ? 'mr-2' : 'mr-2'}`} />
-                                      {generateImageMutation.isPending 
-                                        ? 'Generating...' 
-                                        : juror.imageUrl 
-                                          ? 'Regenerate Image' 
-                                          : 'Generate Image'}
-                                    </Button>
-                                  </div>
-                                </div>
-                                {juror.imageUrl ? (
-                                  <div className="flex flex-col items-center gap-3">
-                                    <div 
-                                      className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 cursor-pointer hover:border-primary transition-colors"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedJurorId(juror.id);
-                                      }}
-                                    >
-                                      <Image
-                                        src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
-                                        alt={`${juror.firstName} ${juror.lastName}`}
-                                        fill
-                                        className="object-cover"
-                                        sizes="128px"
-                                        unoptimized
-                                      />
-                                    </div>
-                                    <p className="text-xs text-gray-500">
-                                      AI-generated based on physical description
-                                    </p>
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedJurorId(juror.id);
-                                      }}
-                                    >
-                                      View Full Profile
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <div className="text-center py-8 text-gray-500">
-                                    <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                                    <p className="text-sm font-medium mb-1">No image generated yet</p>
-                                    <p className="text-xs text-gray-400">
-                                      Fill in physical description fields above, then click "Generate Image" to create an AI portrait
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Juror Basic Info */}
-                              <div className="rounded-lg border border-gray-200 bg-white p-4">
-                                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                                  Juror Information
-                                </h3>
-                                <div className="grid grid-cols-3 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">Age:</span>{' '}
-                                    <span className="font-medium">{juror.age || 'Not provided'}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">Occupation:</span>{' '}
-                                    <span className="font-medium">{juror.occupation || 'Not provided'}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">Employer:</span>{' '}
-                                    <span className="font-medium">{juror.employer || 'Not provided'}</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* Research Summarizer */}
-                              {juror.researchArtifacts && juror.researchArtifacts.length > 0 && (
-                                <div className="rounded-lg border border-gray-200 bg-white p-4">
-                                  <ResearchSummarizer
-                                    jurorId={juror.id}
-                                    artifacts={juror.researchArtifacts}
-                                  />
-                                </div>
-                              )}
-
-                              {/* Identity Research Panel */}
-                              <JurorResearchPanel
-                                jurorId={juror.id}
-                                jurorName={`${juror.firstName} ${juror.lastName}`}
-                                jurorInfo={{
-                                  firstName: juror.firstName,
-                                  lastName: juror.lastName,
-                                  age: juror.age || undefined,
-                                  city: juror.city || undefined,
-                                  zipCode: juror.zipCode || undefined,
-                                  occupation: juror.occupation || undefined,
-                                }}
-                                initialCandidates={juror.candidates || []}
-                                onCandidateConfirmed={refetch}
-                              />
-
-                              {/* Deep Research */}
-                              <DeepResearch
-                                candidateId={juror.candidates?.find((c) => c.isConfirmed)?.id}
-                                candidateName={juror.candidates?.find((c) => c.isConfirmed)?.fullName}
-                                caseType={panel.case?.caseType || 'general civil'}
-                                caseIssues={[]}
-                                clientPosition={(panel.case?.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
-                              />
-
-                              {/* Archetype Classifier */}
-                              <div className="rounded-lg border border-gray-200 bg-white p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                                  Archetype Classification
-                                </h3>
-                                <ArchetypeClassifier
-                                  jurorId={juror.id}
-                                  caseType={panel.case?.caseType || undefined}
-                                  jurisdiction={panel.case?.jurisdiction || undefined}
-                                  ourSide={panel.case?.ourSide as 'plaintiff' | 'defense' | undefined}
-                                />
-                              </div>
-                            </div>
-                          )}
+          {/* Jurors List */}
+          {jurors.length === 0 ? (
+            <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+              <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
+              <Button onClick={() => setShowJurorDialog(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Juror
+              </Button>
             </div>
-          ))}
-        </div>
+          ) : (
+            <div className="space-y-3">
+              {jurors.map((juror) => (
+                <div key={juror.id} className="border rounded-lg bg-background">
+                  {/* Juror Summary Header */}
+                  <div
+                    className="flex items-center justify-between p-4 cursor-pointer hover:bg-muted/50"
+                    onClick={() => toggleJuror(juror.id)}
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      {/* Juror Image - Clickable */}
+                      {juror.imageUrl ? (
+                        <div 
+                          className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-gray-300 flex-shrink-0 cursor-pointer hover:border-primary transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedJurorId(juror.id);
+                          }}
+                        >
+                          <Image
+                            src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+                            alt={`${juror.firstName} ${juror.lastName}`}
+                            fill
+                            className="object-cover"
+                            sizes="48px"
+                            unoptimized
+                          />
+                        </div>
+                      ) : (
+                        <div 
+                          className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0 cursor-pointer hover:bg-gray-300 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedJurorId(juror.id);
+                          }}
+                        >
+                          <span className="text-xs font-semibold text-gray-500">
+                            {juror.firstName?.[0]}{juror.lastName?.[0]}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="rounded-full bg-primary/10 px-3 py-1">
+                          <span className="text-sm font-semibold text-primary">
+                            #{juror.jurorNumber}
+                          </span>
+                        </div>
+                        <div 
+                          className="flex-1 cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedJurorId(juror.id);
+                          }}
+                        >
+                          <h4 className="font-semibold text-base hover:text-primary transition-colors">
+                            {juror.firstName} {juror.lastName}
+                          </h4>
+                          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                            {juror.age && <span>Age {juror.age}</span>}
+                            {juror.occupation && (
+                              <>
+                                <span>•</span>
+                                <span>{juror.occupation}</span>
+                              </>
+                            )}
+                            {juror.city && (
+                              <>
+                                <span>•</span>
+                                <span>{juror.city}{juror.zipCode ? `, ${juror.zipCode}` : ''}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <span className={`ml-auto rounded-full px-3 py-1 text-xs font-semibold ${
+                        juror.status === 'available'
+                          ? 'bg-green-100 text-green-700'
+                          : juror.status === 'selected'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}>
+                        {juror.status}
+                      </span>
+                    </div>
+                    <div className="ml-4">
+                      {expandedJurors.has(juror.id) ? (
+                        <ChevronUp className="h-5 w-5 text-muted-foreground" />
+                      ) : (
+                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Expanded Research Section */}
+                  {expandedJurors.has(juror.id) && (
+                    <div className="border-t p-6 space-y-6 bg-muted/20">
+                      {/* Juror Image Section */}
+                      <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="text-sm font-semibold text-gray-900">
+                            Juror Photo
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <Label htmlFor={`imageStyle-${juror.id}`} className="text-xs text-gray-700">
+                                Style:
+                              </Label>
+                              <Select
+                                id={`imageStyle-${juror.id}`}
+                                value={imageStyle}
+                                onChange={(e) => setImageStyle(e.target.value as 'realistic' | 'avatar')}
+                                className="w-28 h-8 text-xs"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <option value="realistic">Realistic</option>
+                                <option value="avatar">Avatar</option>
+                              </Select>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant={juror.imageUrl ? "outline" : "default"}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                generateImageMutation.mutate(juror.id);
+                              }}
+                              disabled={generateImageMutation.isPending}
+                            >
+                              <ImageIcon className={`h-4 w-4 ${juror.imageUrl ? 'mr-2' : 'mr-2'}`} />
+                              {generateImageMutation.isPending 
+                                ? 'Generating...' 
+                                : juror.imageUrl 
+                                  ? 'Regenerate Image' 
+                                  : 'Generate Image'}
+                            </Button>
+                          </div>
+                        </div>
+                        {juror.imageUrl ? (
+                          <div className="flex flex-col items-center gap-3">
+                            <div 
+                              className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300 cursor-pointer hover:border-primary transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedJurorId(juror.id);
+                              }}
+                            >
+                              <Image
+                                src={`/api/jurors/images/${juror.id}?t=${Date.now()}`}
+                                alt={`${juror.firstName} ${juror.lastName}`}
+                                fill
+                                className="object-cover"
+                                sizes="128px"
+                                unoptimized
+                              />
+                            </div>
+                            <p className="text-xs text-gray-500">
+                              AI-generated based on physical description
+                            </p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedJurorId(juror.id);
+                              }}
+                            >
+                              View Full Profile
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-gray-500">
+                            <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                            <p className="text-sm font-medium mb-1">No image generated yet</p>
+                            <p className="text-xs text-gray-400">
+                              Fill in physical description fields above, then click "Generate Image" to create an AI portrait
+                            </p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Juror Basic Info */}
+                      <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                          Juror Information
+                        </h3>
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Age:</span>{' '}
+                            <span className="font-medium">{juror.age || 'Not provided'}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Occupation:</span>{' '}
+                            <span className="font-medium">{juror.occupation || 'Not provided'}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Employer:</span>{' '}
+                            <span className="font-medium">{juror.employer || 'Not provided'}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Research Summarizer */}
+                      {juror.researchArtifacts && juror.researchArtifacts.length > 0 && (
+                        <div className="rounded-lg border border-gray-200 bg-white p-4">
+                          <ResearchSummarizer
+                            jurorId={juror.id}
+                            artifacts={juror.researchArtifacts}
+                          />
+                        </div>
+                      )}
+
+                      {/* Identity Research Panel */}
+                      <JurorResearchPanel
+                        jurorId={juror.id}
+                        jurorName={`${juror.firstName} ${juror.lastName}`}
+                        jurorInfo={{
+                          firstName: juror.firstName,
+                          lastName: juror.lastName,
+                          age: juror.age || undefined,
+                          city: juror.city || undefined,
+                          zipCode: juror.zipCode || undefined,
+                          occupation: juror.occupation || undefined,
+                        }}
+                        initialCandidates={juror.candidates || []}
+                        onCandidateConfirmed={refetch}
+                      />
+
+                      {/* Deep Research */}
+                      <DeepResearch
+                        candidateId={juror.candidates?.find((c) => c.isConfirmed)?.id}
+                        candidateName={juror.candidates?.find((c) => c.isConfirmed)?.fullName}
+                        caseType={panel.case?.caseType || 'general civil'}
+                        caseIssues={[]}
+                        clientPosition={(panel.case?.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
+                      />
+
+                      {/* Archetype Classifier */}
+                      <div className="rounded-lg border border-gray-200 bg-white p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                          Archetype Classification
+                        </h3>
+                        <ArchetypeClassifier
+                          jurorId={juror.id}
+                          caseType={panel.case?.caseType || undefined}
+                          jurisdiction={panel.case?.jurisdiction || undefined}
+                          ourSide={panel.case?.ourSide as 'plaintiff' | 'defense' | undefined}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           )}
         </>
       )}
@@ -737,20 +816,20 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
             </div>
             <div className="flex-1 overflow-y-auto p-6 pt-4">
               <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label htmlFor="jurorNumber" className="mb-2 block text-sm font-medium">
-                    Juror Number *
-                  </label>
-                  <input
-                    id="jurorNumber"
-                    type="text"
-                    required
-                    value={jurorForm.jurorNumber}
-                    onChange={(e) => setJurorForm({ ...jurorForm, jurorNumber: e.target.value })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
-                    placeholder="e.g., J001"
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="jurorNumber" className="mb-2 block text-sm font-medium">
+                      Juror Number *
+                    </label>
+                    <input
+                      id="jurorNumber"
+                      type="text"
+                      required
+                      value={jurorForm.jurorNumber}
+                      onChange={(e) => setJurorForm({ ...jurorForm, jurorNumber: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., J001"
+                    />
                 </div>
                 <div>
                   <label htmlFor="age" className="mb-2 block text-sm font-medium">
@@ -793,53 +872,53 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                     className="w-full rounded-md border border-input bg-background px-3 py-2"
                   />
                 </div>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label htmlFor="occupation" className="mb-2 block text-sm font-medium">
-                    Job Title
-                  </label>
-                  <input
-                    id="occupation"
-                    type="text"
-                    value={jurorForm.occupation}
-                    onChange={(e) => setJurorForm({ ...jurorForm, occupation: e.target.value })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
-                    placeholder="e.g., VP of Product"
-                  />
                 </div>
-                <div>
-                  <label htmlFor="employer" className="mb-2 block text-sm font-medium">
-                    Employer
-                  </label>
-                  <input
-                    id="employer"
-                    type="text"
-                    value={jurorForm.employer}
-                    onChange={(e) => setJurorForm({ ...jurorForm, employer: e.target.value })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="occupation" className="mb-2 block text-sm font-medium">
+                      Job Title
+                    </label>
+                    <input
+                      id="occupation"
+                      type="text"
+                      value={jurorForm.occupation}
+                      onChange={(e) => setJurorForm({ ...jurorForm, occupation: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., VP of Product"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="employer" className="mb-2 block text-sm font-medium">
+                      Employer
+                    </label>
+                    <input
+                      id="employer"
+                      type="text"
+                      value={jurorForm.employer}
+                      onChange={(e) => setJurorForm({ ...jurorForm, employer: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
                     placeholder="e.g., TechCorp Industries"
                   />
                 </div>
-              </div>
+                </div>
 
-              {/* Physical Description Section */}
-              <div className="border-t pt-4 mt-4">
-                <h4 className="text-sm font-semibold mb-4">Physical Description</h4>
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label htmlFor="hairColor" className="mb-2 block text-sm font-medium">
-                      Hair Color
-                    </label>
-                    <input
-                      id="hairColor"
-                      type="text"
-                      value={jurorForm.hairColor}
-                      onChange={(e) => setJurorForm({ ...jurorForm, hairColor: e.target.value })}
-                      className="w-full rounded-md border border-input bg-background px-3 py-2"
-                      placeholder="e.g., Brown, Black, Blonde"
-                    />
+                {/* Physical Description Section */}
+                <div className="border-t pt-4 mt-4">
+                  <h4 className="text-sm font-semibold mb-4">Physical Description</h4>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label htmlFor="hairColor" className="mb-2 block text-sm font-medium">
+                        Hair Color
+                      </label>
+                      <input
+                        id="hairColor"
+                        type="text"
+                        value={jurorForm.hairColor}
+                        onChange={(e) => setJurorForm({ ...jurorForm, hairColor: e.target.value })}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2"
+                        placeholder="e.g., Brown, Black, Blonde"
+                      />
                   </div>
                   <div>
                     <label htmlFor="height" className="mb-2 block text-sm font-medium">
@@ -932,37 +1011,37 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                     placeholder="Additional physical characteristics, distinguishing features, etc."
                   />
                 </div>
-              </div>
+                </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label htmlFor="city" className="mb-2 block text-sm font-medium">
-                    City
-                  </label>
-                  <input
-                    id="city"
-                    type="text"
-                    value={jurorForm.city}
-                    onChange={(e) => setJurorForm({ ...jurorForm, city: e.target.value })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
-                  />
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="city" className="mb-2 block text-sm font-medium">
+                      City
+                    </label>
+                    <input
+                      id="city"
+                      type="text"
+                      value={jurorForm.city}
+                      onChange={(e) => setJurorForm({ ...jurorForm, city: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="zipCode" className="mb-2 block text-sm font-medium">
+                      Zip Code
+                    </label>
+                    <input
+                      id="zipCode"
+                      type="text"
+                      value={jurorForm.zipCode}
+                      onChange={(e) => setJurorForm({ ...jurorForm, zipCode: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label htmlFor="zipCode" className="mb-2 block text-sm font-medium">
-                    Zip Code
-                  </label>
-                  <input
-                    id="zipCode"
-                    type="text"
-                    value={jurorForm.zipCode}
-                    onChange={(e) => setJurorForm({ ...jurorForm, zipCode: e.target.value })}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2"
-                  />
-                </div>
-              </div>
               </div>
             </div>
-            <div className="p-6 pt-4 border-t bg-background flex justify-end gap-2 sticky bottom-0">
+            <div className="p-6 pt-4 border-t bg-background flex justify-end gap-2">
               <Button
                 variant="outline"
                 onClick={() => {

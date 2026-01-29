@@ -8,11 +8,11 @@ import { apiClient } from '@/lib/api-client';
 import { JurorCard } from './juror-card';
 import { JurorPool } from './juror-pool';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
 
 interface JuryBoxViewProps {
   panelId: string;
   onJurorClick?: (jurorId: string) => void;
+  showAutoFill?: boolean;
 }
 
 interface SeatProps {
@@ -114,7 +114,7 @@ type JuryBoxData = {
   }>;
 };
 
-export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
+export function JuryBoxView({ panelId, onJurorClick, showAutoFill = true }: JuryBoxViewProps) {
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -165,30 +165,6 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
     },
   });
 
-  const autoFillMutation = useMutation({
-    mutationFn: async () => {
-      try {
-        return await apiClient.put(`/jurors/panel/${panelId}/jury-box/auto-fill`, {});
-      } catch (error: unknown) {
-        const err = error as { response?: unknown; data?: unknown; message?: string };
-        console.error('[Auto-fill] Request error:', error);
-        console.error('[Auto-fill] Error response:', err?.response || err?.data || error);
-        console.error('[Auto-fill] Full error object:', JSON.stringify(error, null, 2));
-        throw error;
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['panel', panelId, 'jury-box'] });
-      queryClient.invalidateQueries({ queryKey: ['case', panelId, 'panels'] });
-    },
-    onError: (error: unknown) => {
-      const err = error as { message?: string; status?: number; data?: unknown; response?: { data?: unknown } };
-      console.error('[Auto-fill] Frontend error:', error);
-      console.error('[Auto-fill] Error message:', err?.message);
-      console.error('[Auto-fill] Error status:', err?.status);
-      console.error('[Auto-fill] Error data:', err?.data || err?.response?.data);
-    },
-  });
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -304,15 +280,6 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
               {juryBoxSize} seats, {juryBoxRows === 1 ? 'Single' : 'Double'} row layout
             </p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => autoFillMutation.mutate()}
-            disabled={autoFillMutation.isPending}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${autoFillMutation.isPending ? 'animate-spin' : ''}`} />
-            Auto-Fill
-          </Button>
         </div>
 
         {/* Jury Box Grid */}
