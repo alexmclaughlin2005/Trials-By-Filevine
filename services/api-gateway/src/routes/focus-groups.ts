@@ -47,6 +47,46 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'Argument not found' };
       }
 
+      // Fetch attached documents with their text content
+      const documentAttachments = await server.prisma.argumentDocument.findMany({
+        where: { argumentId: argument.id },
+        include: {
+          document: true
+        }
+      });
+
+      // Fetch text content for each document that has extracted text
+      const documentsWithContent = await Promise.all(
+        documentAttachments.map(async (attachment) => {
+          const doc = attachment.document;
+          let textContent: string | null = null;
+
+          // If document has extracted text, fetch it
+          if (doc.extractedTextUrl && doc.textExtractionStatus === 'completed') {
+            try {
+              const response = await fetch(doc.extractedTextUrl);
+              if (response.ok) {
+                textContent = await response.text();
+              } else {
+                console.warn(`Failed to fetch text for document ${doc.id}: ${response.statusText}`);
+              }
+            } catch (error) {
+              console.error(`Error fetching text for document ${doc.id}:`, error);
+            }
+          }
+
+          return {
+            id: doc.id,
+            filename: doc.filename,
+            documentType: doc.documentType || undefined,
+            textContent: textContent,
+            notes: attachment.notes || undefined,
+            textExtractionStatus: doc.textExtractionStatus,
+            extractedTextChars: doc.extractedTextChars || undefined
+          };
+        })
+      );
+
       // Get personas (specified or all active ones)
       const personas = personaIds
         ? await server.prisma.persona.findMany({
@@ -124,6 +164,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           title: argument.title,
           content: argument.content,
           argumentType: argument.argumentType,
+          documents: documentsWithContent.filter(doc => doc.textContent !== null) // Only include documents with extracted text
         },
         personas: personas.map((p: Record<string, unknown>) => ({
           id: p.id as string,
@@ -839,6 +880,88 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         return { error: 'Argument not found' };
       }
 
+      // Fetch attached documents with their text content
+      console.log(`📄 [ROUNDTABLE] Fetching documents for argument: ${argument.id} (${argument.title})`);
+      const documentAttachments = await server.prisma.argumentDocument.findMany({
+        where: { argumentId: argument.id },
+        include: {
+          document: true
+        }
+      });
+
+      console.log(`📄 [ROUNDTABLE] Found ${documentAttachments.length} document attachment(s)`);
+
+      // Fetch text content for each document that has extracted text
+      const documentsWithContent = await Promise.all(
+        documentAttachments.map(async (attachment) => {
+          const doc = attachment.document;
+          let textContent: string | null = null;
+
+          console.log(`📄 [ROUNDTABLE] Processing document: ${doc.filename} (ID: ${doc.id})`);
+          console.log(`   Status: ${doc.textExtractionStatus}`);
+          console.log(`   Text URL: ${doc.extractedTextUrl || 'none'}`);
+
+          // If document has extracted text, fetch it
+          if (doc.extractedTextUrl && doc.textExtractionStatus === 'completed') {
+            try {
+              console.log(`   Fetching text content from: ${doc.extractedTextUrl}`);
+              
+              // Handle file:// URLs for local testing
+              if (doc.extractedTextUrl.startsWith('file://')) {
+                const { readFileSync, existsSync } = require('fs');
+                const filePath = doc.extractedTextUrl.replace('file://', '');
+                console.log(`   Checking file exists: ${filePath}`);
+                
+                if (!existsSync(filePath)) {
+                  console.warn(`   ⚠️ File does not exist: ${filePath}`);
+                } else {
+                  try {
+                    textContent = readFileSync(filePath, 'utf-8');
+                    const charCount = textContent.length;
+                    console.log(`   ✅ Successfully read ${charCount.toLocaleString()} characters from local file`);
+                  } catch (readError) {
+                    console.error(`   ❌ Error reading file:`, readError);
+                  }
+                }
+              } else {
+                // Regular HTTP/HTTPS URL
+                const response = await fetch(doc.extractedTextUrl);
+                if (response.ok) {
+                  textContent = await response.text();
+                  const charCount = textContent.length;
+                  console.log(`   ✅ Successfully fetched ${charCount.toLocaleString()} characters`);
+                } else {
+                  console.warn(`   ⚠️ Failed to fetch text: ${response.status} ${response.statusText}`);
+                }
+              }
+            } catch (error) {
+              console.error(`   ❌ Error fetching text:`, error);
+            }
+          } else {
+            console.log(`   ⏭️ Skipping - no extracted text available (status: ${doc.textExtractionStatus})`);
+          }
+
+          return {
+            id: doc.id,
+            filename: doc.filename,
+            documentType: doc.documentType || undefined,
+            textContent: textContent,
+            notes: attachment.notes || undefined,
+            textExtractionStatus: doc.textExtractionStatus,
+            extractedTextChars: doc.extractedTextChars || undefined
+          };
+        })
+      );
+
+      const documentsWithText = documentsWithContent.filter(doc => doc.textContent !== null);
+      console.log(`📄 [ROUNDTABLE] Summary: ${documentsWithText.length} of ${documentsWithContent.length} documents have text content`);
+      if (documentsWithText.length > 0) {
+        console.log(`📄 [ROUNDTABLE] Documents with text:`);
+        documentsWithText.forEach((doc, idx) => {
+          console.log(`   ${idx + 1}. ${doc.filename} (${(doc.textContent?.length || 0).toLocaleString()} chars)`);
+        });
+      }
+
       // Check if conversation already exists for this argument
       const existingConversation = await server.prisma.focusGroupConversation.findFirst({
         where: {
@@ -883,7 +1006,9 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         argument: {
           id: argument.id,
           title: argument.title,
-          content: argument.content
+          content: argument.content,
+          argumentType: argument.argumentType,
+          documents: documentsWithContent.filter(doc => doc.textContent !== null) // Only include documents with extracted text
         },
         caseContext: {
           caseName: session.case.name,

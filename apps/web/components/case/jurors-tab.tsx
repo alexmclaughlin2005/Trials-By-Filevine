@@ -244,12 +244,12 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
               <LayoutGrid className="h-4 w-4" />
               Jury Box
             </button>
-          </div>
-          <Button onClick={() => setShowJurorDialog(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Juror
-          </Button>
         </div>
+        <Button onClick={() => setShowJurorDialog(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Juror
+        </Button>
+      </div>
       </div>
 
       {/* View Mode Content */}
@@ -278,17 +278,17 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         </div>
       ) : (
         <>
-          {/* Jurors List */}
-          {jurors.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-              <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
-              <Button onClick={() => setShowJurorDialog(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Juror
-              </Button>
-            </div>
-          ) : (
+      {/* Jurors List */}
+      {jurors.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
+          <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+          <p className="mb-4">No jurors yet. Add your first juror to get started.</p>
+          <Button onClick={() => setShowJurorDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Juror
+          </Button>
+        </div>
+      ) : (
         <div className="space-y-3">
           {jurors.map((juror) => (
             <div key={juror.id} className="border rounded-lg bg-background">

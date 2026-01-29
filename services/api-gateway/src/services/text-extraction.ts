@@ -120,6 +120,32 @@ export class TextExtractionService {
   }
 
   /**
+   * Extract text directly from a buffer (for local testing)
+   * @param buffer - File buffer
+   * @param filename - Filename to determine file type
+   * @returns Extracted text content
+   */
+  async extractTextFromBuffer(buffer: Buffer, filename: string): Promise<{ text: string } | null> {
+    if (this.isPdfFile(filename)) {
+      const pdfParse = require('pdf-parse');
+      const data = await pdfParse(buffer);
+      return { text: data.text };
+    } else if (this.isWordFile(filename)) {
+      if (filename.toLowerCase().endsWith('.docx')) {
+        const mammoth = require('mammoth');
+        const result = await mammoth.extractRawText({ buffer });
+        return { text: result.value };
+      } else if (filename.toLowerCase().endsWith('.doc')) {
+        const WordExtractor = require('word-extractor');
+        const extractor = new WordExtractor();
+        const extracted = await extractor.extract(buffer);
+        return { text: extracted.getBody() };
+      }
+    }
+    return null;
+  }
+
+  /**
    * Determine if a file is a PDF based on filename
    */
   isPdfFile(filename: string): boolean {

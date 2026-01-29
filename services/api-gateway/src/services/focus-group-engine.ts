@@ -25,11 +25,22 @@ interface Persona {
   };
 }
 
+interface DocumentInfo {
+  id: string;
+  filename: string;
+  documentType?: string;
+  textContent: string | null;
+  notes?: string;
+  textExtractionStatus: string;
+  extractedTextChars?: number;
+}
+
 interface Argument {
   id: string;
   title: string;
   content: string;
   argumentType: string;
+  documents?: DocumentInfo[]; // Attached documents with their text content
 }
 
 interface CaseFact {
@@ -193,6 +204,36 @@ ${factsText}
 
 **Content:**
 ${argument.content}
+${argument.documents && argument.documents.length > 0 ? (() => {
+  const documentsWithText = argument.documents.filter(doc => doc.textContent);
+  console.log(`📄 [FOCUS_GROUP_ENGINE] Including ${documentsWithText.length} document(s) in prompt`);
+  documentsWithText.forEach((doc, idx) => {
+    console.log(`   ${idx + 1}. ${doc.filename} (${(doc.textContent?.length || 0).toLocaleString()} chars)`);
+  });
+  
+  if (documentsWithText.length === 0) {
+    return '';
+  }
+  
+  return `
+
+## Supporting Documents
+
+The following documents are attached to this argument and provide additional context:
+
+${documentsWithText.map((doc, idx) => {
+  return `
+### Document ${idx + 1}: ${doc.filename}${doc.documentType ? ` (${doc.documentType})` : ''}${doc.notes ? `\n**Notes:** ${doc.notes}` : ''}
+
+**Full Document Text:**
+${doc.textContent}
+
+---`;
+}).join('\n')}`;
+})() : (() => {
+  console.log(`📄 [FOCUS_GROUP_ENGINE] No documents attached to argument`);
+  return '';
+})()}
 
 # Focus Group Panelists
 

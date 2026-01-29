@@ -33,10 +33,22 @@ export interface PersonaInfo {
   engagementStyle?: string;
 }
 
+export interface DocumentInfo {
+  id: string;
+  filename: string;
+  documentType?: string;
+  textContent: string | null;
+  notes?: string;
+  textExtractionStatus: string;
+  extractedTextChars?: number;
+}
+
 export interface ArgumentInfo {
   id: string;
   title: string;
   content: string;
+  argumentType?: string;
+  documents?: DocumentInfo[]; // Attached documents with their text content
 }
 
 export interface CaseContextInfo {
@@ -114,6 +126,61 @@ export class ConversationOrchestrator {
     this.promptClient = promptClient;
     this.personaSummarizer = new PersonaSummarizer(prisma, promptClient);
     this.relevanceScorer = new RelevanceScorer();
+  }
+
+  /**
+   * Format document content for inclusion in prompts
+   */
+  private formatDocumentContent(documents?: DocumentInfo[]): string {
+    if (!documents || documents.length === 0) {
+      console.log('📄 [ORCHESTRATOR] No documents provided');
+      return '';
+    }
+
+    const documentsWithText = documents.filter(doc => doc.textContent);
+    if (documentsWithText.length === 0) {
+      console.log(`📄 [ORCHESTRATOR] ${documents.length} document(s) provided but none have text content`);
+      return '';
+    }
+
+    console.log(`📄 [ORCHESTRATOR] Formatting ${documentsWithText.length} document(s) with text content:`);
+    documentsWithText.forEach((doc, idx) => {
+      console.log(`   ${idx + 1}. ${doc.filename} (${(doc.textContent?.length || 0).toLocaleString()} chars)`);
+    });
+
+    const formattedContent = `
+
+## Supporting Documents
+
+The following documents are attached to this argument and provide additional context:
+
+${documentsWithText.map((doc, idx) => {
+  return `
+### Document ${idx + 1}: ${doc.filename}${doc.documentType ? ` (${doc.documentType})` : ''}${doc.notes ? `\n**Notes:** ${doc.notes}` : ''}
+
+**Full Document Text:**
+${doc.textContent}
+
+---`;
+}).join('\n')}`;
+
+    console.log(`📄 [ORCHESTRATOR] Formatted document content: ${formattedContent.length.toLocaleString()} characters total`);
+    return formattedContent;
+  }
+
+  /**
+   * Get argument content with document context appended
+   */
+  private getArgumentContentWithDocuments(argument: ArgumentInfo): string {
+    const baseContent = argument.content;
+    const documentContent = this.formatDocumentContent(argument.documents);
+    const combinedContent = baseContent + documentContent;
+    
+    console.log(`📄 [ORCHESTRATOR] Argument content: ${baseContent.length.toLocaleString()} chars`);
+    console.log(`📄 [ORCHESTRATOR] Document content: ${documentContent.length.toLocaleString()} chars`);
+    console.log(`📄 [ORCHESTRATOR] Combined content: ${combinedContent.length.toLocaleString()} chars`);
+    
+    return combinedContent;
   }
 
   /**
@@ -390,7 +457,7 @@ export class ConversationOrchestrator {
       const { result } = await this.promptClient.execute('roundtable-initial-reaction', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
-          argumentContent: input.argument.content,
+          argumentContent: this.getArgumentContentWithDocuments(input.argument),
           previousSpeakers: priorResponses,
           lengthGuidance,
           customQuestions: question.question, // Single question
@@ -441,7 +508,7 @@ export class ConversationOrchestrator {
       const { result } = await this.promptClient.execute('roundtable-initial-reaction', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
-          argumentContent: input.argument.content,
+          argumentContent: this.getArgumentContentWithDocuments(input.argument),
           previousSpeakers,
           lengthGuidance,
           customQuestions: null, // No longer passing all questions here
@@ -498,7 +565,7 @@ export class ConversationOrchestrator {
       const { result } = await this.promptClient.execute('roundtable-conversation-turn', {
         variables: {
           caseContext: this.formatCaseContext(input.caseContext),
-          argumentContent: input.argument.content,
+          argumentContent: this.getArgumentContentWithDocuments(input.argument),
           conversationTranscript: this.formatConversationTranscript(history),
           lastSpeaker: lastStatement ? {
             name: lastStatement.personaName,

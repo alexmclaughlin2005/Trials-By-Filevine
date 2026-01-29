@@ -195,8 +195,13 @@ Trials by Filevine/
     - Includes follow-ups, listening guidance, red flags, ideal answers
   - `FocusGroupEngineService` - Simulates jury focus groups
     - POST `/api/focus-groups/simulate`
+    - POST `/api/focus-groups/sessions/:sessionId/roundtable` - Roundtable conversations
     - 3 modes: quick, detailed, deliberation
     - Generates persona reactions, deliberation discussions, recommendations
+    - **Document Context Support** - Automatically includes attached document text in prompts
+      - Documents attached to arguments are fetched and included in focus group discussions
+      - Full document text is included for personas to reference during deliberations
+      - Supports local file:// URLs for development testing
   - `JurorSynthesisService` - Deep research synthesis with web search ✅ **TESTED**
     - POST `/api/candidates/:candidateId/synthesize` - Start synthesis
     - GET `/api/candidates/:candidateId/synthesis` - Poll status
