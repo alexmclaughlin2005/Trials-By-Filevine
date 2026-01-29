@@ -71,6 +71,9 @@ tmp/
 temp/
 *.tmp
 
+# Test files
+*.pdf
+
 # Audio/media files (large)
 *.mp3
 *.wav
