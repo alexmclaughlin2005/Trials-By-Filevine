@@ -143,20 +143,63 @@ export function PersonaCardV2({
       
       // Log full error details including debug info
       // APIClientError stores the full response in apiError property
-      const errorObj = error as { apiError?: { debug?: unknown; [key: string]: unknown }; data?: { debug?: unknown; [key: string]: unknown }; debug?: unknown; [key: string]: unknown };
+      const errorObj = error as { 
+        apiError?: { 
+          debug?: { 
+            searchedFor?: unknown; 
+            availablePersonasCount?: unknown; 
+            allPersonasCount?: unknown; 
+            samplePersonas?: unknown; 
+            [key: string]: unknown 
+          }; 
+          message?: string;
+          [key: string]: unknown 
+        }; 
+        data?: { 
+          debug?: { 
+            searchedFor?: unknown; 
+            availablePersonasCount?: unknown; 
+            allPersonasCount?: unknown; 
+            samplePersonas?: unknown; 
+            [key: string]: unknown 
+          }; 
+          message?: string;
+          [key: string]: unknown 
+        }; 
+        debug?: { 
+          searchedFor?: unknown; 
+          availablePersonasCount?: unknown; 
+          allPersonasCount?: unknown; 
+          samplePersonas?: unknown; 
+          [key: string]: unknown 
+        }; 
+        message?: string;
+        [key: string]: unknown 
+      };
       const errorData = errorObj?.apiError || errorObj?.data || errorObj;
       
-      if (errorData && typeof errorData === 'object' && 'debug' in errorData) {
+      if (errorData && typeof errorData === 'object' && 'debug' in errorData && errorData.debug && typeof errorData.debug === 'object') {
+        const debug = errorData.debug as {
+          searchedFor?: unknown;
+          availablePersonasCount?: unknown;
+          allPersonasCount?: unknown;
+          samplePersonas?: unknown;
+          [key: string]: unknown;
+        };
         console.error('=== DEBUG INFO FROM SERVER ===');
-        console.error('Searched for:', errorData.debug.searchedFor);
-        console.error('Available personas (matching archetype):', errorData.debug.availablePersonasCount);
-        console.error('All available personas:', errorData.debug.allPersonasCount);
-        console.error('Sample personas from matching archetype:', errorData.debug.samplePersonas);
+        console.error('Searched for:', debug.searchedFor);
+        console.error('Available personas (matching archetype):', debug.availablePersonasCount);
+        console.error('All available personas:', debug.allPersonasCount);
+        console.error('Sample personas from matching archetype:', debug.samplePersonas);
         console.error('================================');
       }
       
       // Show more detailed error message if available
-      const errorMessage = errorData?.message || error?.message || 'Failed to generate image';
+      const errorMessage = (errorData && typeof errorData === 'object' && 'message' in errorData && typeof errorData.message === 'string') 
+        ? errorData.message 
+        : (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string')
+          ? error.message
+          : 'Failed to generate image';
       setImageGenerationError(errorMessage);
       
       // Also log the full error object for debugging
