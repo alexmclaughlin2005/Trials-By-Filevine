@@ -721,17 +721,16 @@ export async function jurorsRoutes(server: FastifyInstance) {
         return { error: 'Jury panel not found' };
       }
 
-      // If box size is reduced, remove jurors from positions that exceed the new size
-      if (body.juryBoxSize && body.juryBoxSize < panel.juryBoxSize) {
-        const seatsPerRow = Math.ceil(body.juryBoxSize / (body.juryBoxRows || panel.juryBoxRows));
-        
+      // Check if configuration is actually changing
+      const sizeChanged = body.juryBoxSize !== undefined && body.juryBoxSize !== panel.juryBoxSize;
+      const rowsChanged = body.juryBoxRows !== undefined && body.juryBoxRows !== panel.juryBoxRows;
+
+      // If configuration changed (size or rows), clear all jurors from the box
+      if (sizeChanged || rowsChanged) {
         await server.prisma.juror.updateMany({
           where: {
             panelId,
-            OR: [
-              { boxSeat: { gt: seatsPerRow } },
-              { boxRow: { gt: (body.juryBoxRows || panel.juryBoxRows) } },
-            ],
+            boxRow: { not: null }, // Only update jurors that are currently in the box
           },
           data: {
             boxRow: null,

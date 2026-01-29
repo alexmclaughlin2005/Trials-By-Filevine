@@ -37,9 +37,11 @@ interface SeatProps {
     lastName: string;
   } | null;
   isDragging?: boolean;
+  onJurorClick?: (jurorId: string) => void;
+  className?: string;
 }
 
-function Seat({ row, seat, juror, nextJuror, isDragging, onJurorClick }: SeatProps & { onJurorClick?: (jurorId: string) => void }) {
+function Seat({ row, seat, juror, nextJuror, isDragging, onJurorClick, className }: SeatProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: `seat-${row}-${seat}`,
     data: {
@@ -58,6 +60,7 @@ function Seat({ row, seat, juror, nextJuror, isDragging, onJurorClick }: SeatPro
         ${isOver ? 'border-primary bg-primary/5' : 'border-gray-300 bg-gray-50'}
         ${juror ? 'border-solid border-gray-400 bg-white' : ''}
         ${isDragging ? 'opacity-50' : ''}
+        ${className || ''}
       `}
     >
       {juror ? (
@@ -206,8 +209,20 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
       const { row, seat } = overData;
 
       // Calculate box order
-      const seatsPerRow = Math.ceil(juryBoxSize / juryBoxRows);
-      const boxOrder = (row - 1) * seatsPerRow + seat;
+      // For 2 rows with even split: when even, both rows get exactly half
+      let boxOrder: number;
+      if (juryBoxRows === 2) {
+        const row1Seats = Math.floor(juryBoxSize / 2);
+        if (row === 1) {
+          boxOrder = seat; // Row 1: seats 1 to row1Seats
+        } else {
+          boxOrder = row1Seats + seat; // Row 2: continues from row 1
+        }
+      } else {
+        // Single row: sequential order
+        const seatsPerRow = Math.ceil(juryBoxSize / juryBoxRows);
+        boxOrder = (row - 1) * seatsPerRow + seat;
+      }
 
       updatePositionMutation.mutate({
         jurorId: juror.id,
@@ -228,13 +243,30 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
   };
 
   // Create seat grid
-  const seatsPerRow = Math.ceil(juryBoxSize / juryBoxRows);
+  // For 2 rows, split evenly: when even, both get half; when odd, split as evenly as possible
   type JurorType = typeof jurorsInBox[0];
   const seatGrid = useMemo(() => {
+    const getSeatsPerRow = (row: number): number => {
+      if (juryBoxRows === 2) {
+        // Even split: when total is even, both rows get exactly half
+        // When odd, first row gets floor(half), second row gets ceil(half)
+        const half = juryBoxSize / 2;
+        if (row === 1) {
+          return Math.floor(half);
+        } else {
+          // Row 2 gets the remainder to ensure total equals juryBoxSize
+          return juryBoxSize - Math.floor(half);
+        }
+      }
+      // For single row, use all seats
+      return Math.ceil(juryBoxSize / juryBoxRows);
+    };
+    
     const grid: Array<Array<{ row: number; seat: number; juror: JurorType | null }>> = [];
     
     for (let row = 1; row <= juryBoxRows; row++) {
       const rowSeats: Array<{ row: number; seat: number; juror: JurorType | null }> = [];
+      const seatsPerRow = getSeatsPerRow(row);
       for (let seat = 1; seat <= seatsPerRow; seat++) {
         const juror = jurorsInBox.find(
           (j) => j.boxRow === row && j.boxSeat === seat
@@ -245,7 +277,7 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
     }
     
     return grid;
-  }, [juryBoxRows, seatsPerRow, jurorsInBox]);
+  }, [juryBoxRows, juryBoxSize, jurorsInBox]);
 
   const nextJuror = jurorsInPool?.[0] || null;
 
@@ -285,33 +317,50 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
 
         {/* Jury Box Grid */}
         <div className="space-y-4">
-          {seatGrid.map((rowSeats, rowIndex) => (
-            <div key={rowIndex}>
-              {rowIndex === 0 && juryBoxRows === 2 && (
-                <div className="text-xs font-medium text-gray-600 mb-2">
-                  Front Row
+          {seatGrid.map((rowSeats, rowIndex) => {
+            // Count filled seats (jurors) in this row
+            const filledSeats = rowSeats.filter(s => s.juror !== null).length;
+            const totalSeats = rowSeats.length;
+            const hasEmptySeats = filledSeats < totalSeats;
+            
+            return (
+              <div key={rowIndex}>
+                {rowIndex === 0 && juryBoxRows === 2 && (
+                  <div className="text-xs font-medium text-gray-600 mb-2">
+                    Front Row
+                  </div>
+                )}
+                {rowIndex === 1 && juryBoxRows === 2 && (
+                  <div className="text-xs font-medium text-gray-600 mb-2 mt-4">
+                    Back Row
+                  </div>
+                )}
+                {/* Use flexbox with even distribution when there are empty seats and filled cards, otherwise use grid */}
+                <div className={
+                  hasEmptySeats && filledSeats > 0
+                    ? `flex flex-wrap justify-evenly items-start gap-3`
+                    : `grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3`
+                }>
+                  {rowSeats.map(({ row, seat, juror }) => {
+                    // Ensure all seats have the same width for consistent spacing
+                    const baseWidth = 'min-w-[200px] max-w-[200px] flex-shrink-0';
+                    return (
+                      <Seat
+                        key={`${row}-${seat}`}
+                        row={row}
+                        seat={seat}
+                        juror={juror}
+                        nextJuror={nextJuror}
+                        isDragging={!!activeId}
+                        onJurorClick={handleJurorClick}
+                        className={hasEmptySeats && filledSeats > 0 ? baseWidth : ''}
+                      />
+                    );
+                  })}
                 </div>
-              )}
-              {rowIndex === 1 && juryBoxRows === 2 && (
-                <div className="text-xs font-medium text-gray-600 mb-2 mt-4">
-                  Back Row
-                </div>
-              )}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {rowSeats.map(({ row, seat, juror }) => (
-                  <Seat
-                    key={`${row}-${seat}`}
-                    row={row}
-                    seat={seat}
-                    juror={juror}
-                    nextJuror={nextJuror}
-                    isDragging={!!activeId}
-                    onJurorClick={handleJurorClick}
-                  />
-                ))}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Juror Pool */}
