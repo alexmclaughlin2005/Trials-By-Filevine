@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -95,7 +95,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
   const queryClient = useQueryClient();
   const [showJurorDialog, setShowJurorDialog] = useState(false);
   const [expandedJurors, setExpandedJurors] = useState<Set<string>>(new Set());
-  const [viewMode, setViewMode] = useState<'list' | 'jury-box'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'jury-box'>('jury-box');
 
   // Fetch jury panels with full juror data including research
   const { data, isLoading, error, refetch } = useQuery({
@@ -106,8 +106,31 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     },
   });
 
+  // Auto-create panel if none exists
+  const createPanelMutation = useMutation({
+    mutationFn: async () => {
+      return await apiClient.post(`/cases/${caseId}/panels`, {
+        panelDate: new Date().toISOString(),
+        source: 'manual',
+        version: 1,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['case', caseId, 'panels'] });
+      refetch();
+    },
+  });
+
   // Get the first (and typically only) panel
   const panel = data?.[0];
+
+  // Auto-create panel if none exists
+  useEffect(() => {
+    if (!isLoading && !error && !panel && !createPanelMutation.isPending && data && data.length === 0) {
+      createPanelMutation.mutate();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, error, panel, data]);
 
   // Create juror mutation
   const [jurorForm, setJurorForm] = useState({
@@ -116,8 +139,17 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     lastName: '',
     age: '',
     occupation: '',
+    employer: '',
     city: '',
     zipCode: '',
+    // Physical Description
+    hairColor: '',
+    height: '',
+    weight: '',
+    gender: '',
+    skinTone: '',
+    race: '',
+    physicalDescription: '',
   });
 
   const createJurorMutation = useMutation({
@@ -129,8 +161,17 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         lastName: jurorForm.lastName,
         age: jurorForm.age ? parseInt(jurorForm.age) : undefined,
         occupation: jurorForm.occupation || undefined,
+        employer: jurorForm.employer || undefined,
         city: jurorForm.city || undefined,
         zipCode: jurorForm.zipCode || undefined,
+        // Physical Description
+        hairColor: jurorForm.hairColor || undefined,
+        height: jurorForm.height || undefined,
+        weight: jurorForm.weight || undefined,
+        gender: jurorForm.gender || undefined,
+        skinTone: jurorForm.skinTone || undefined,
+        race: jurorForm.race || undefined,
+        physicalDescription: jurorForm.physicalDescription || undefined,
       });
     },
     onSuccess: async () => {
@@ -158,8 +199,16 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         lastName: '',
         age: '',
         occupation: '',
+        employer: '',
         city: '',
         zipCode: '',
+        hairColor: '',
+        height: '',
+        weight: '',
+        gender: '',
+        skinTone: '',
+        race: '',
+        physicalDescription: '',
       });
     },
   });
@@ -174,10 +223,13 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     setExpandedJurors(newExpanded);
   };
 
-  if (isLoading) {
+  if (isLoading || createPanelMutation.isPending) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="ml-3 text-muted-foreground">
+          {createPanelMutation.isPending ? 'Creating jury panel...' : 'Loading...'}
+        </span>
       </div>
     );
   }
@@ -190,11 +242,15 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     );
   }
 
+  // If no panel exists after loading, show fallback (shouldn't happen due to auto-creation)
   if (!panel) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center text-muted-foreground">
         <Users className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
         <p className="mb-4">No jury panel found for this case.</p>
+        <Button onClick={() => createPanelMutation.mutate()}>
+          Create Jury Panel
+        </Button>
       </div>
     );
   }
@@ -427,9 +483,12 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
       {/* Create Juror Dialog */}
       {showJurorDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-2xl rounded-lg bg-background p-6 shadow-lg max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">Add Juror</h3>
-            <div className="space-y-4">
+          <div className="w-full max-w-2xl rounded-lg bg-background shadow-lg max-h-[90vh] flex flex-col">
+            <div className="p-6 pb-4 border-b">
+              <h3 className="text-lg font-semibold">Add Juror</h3>
+            </div>
+            <div className="flex-1 overflow-y-auto p-6 pt-4">
+              <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label htmlFor="jurorNumber" className="mb-2 block text-sm font-medium">
@@ -488,17 +547,130 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                 </div>
               </div>
 
-              <div>
-                <label htmlFor="occupation" className="mb-2 block text-sm font-medium">
-                  Occupation
-                </label>
-                <input
-                  id="occupation"
-                  type="text"
-                  value={jurorForm.occupation}
-                  onChange={(e) => setJurorForm({ ...jurorForm, occupation: e.target.value })}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2"
-                />
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <label htmlFor="occupation" className="mb-2 block text-sm font-medium">
+                    Job Title
+                  </label>
+                  <input
+                    id="occupation"
+                    type="text"
+                    value={jurorForm.occupation}
+                    onChange={(e) => setJurorForm({ ...jurorForm, occupation: e.target.value })}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2"
+                    placeholder="e.g., VP of Product"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="employer" className="mb-2 block text-sm font-medium">
+                    Employer
+                  </label>
+                  <input
+                    id="employer"
+                    type="text"
+                    value={jurorForm.employer}
+                    onChange={(e) => setJurorForm({ ...jurorForm, employer: e.target.value })}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2"
+                    placeholder="e.g., TechCorp Industries"
+                  />
+                </div>
+              </div>
+
+              {/* Physical Description Section */}
+              <div className="border-t pt-4 mt-4">
+                <h4 className="text-sm font-semibold mb-4">Physical Description</h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label htmlFor="hairColor" className="mb-2 block text-sm font-medium">
+                      Hair Color
+                    </label>
+                    <input
+                      id="hairColor"
+                      type="text"
+                      value={jurorForm.hairColor}
+                      onChange={(e) => setJurorForm({ ...jurorForm, hairColor: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., Brown, Black, Blonde"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="height" className="mb-2 block text-sm font-medium">
+                      Height
+                    </label>
+                    <input
+                      id="height"
+                      type="text"
+                      value={jurorForm.height}
+                      onChange={(e) => setJurorForm({ ...jurorForm, height: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., 5 feet 10 inches or 178cm"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="weight" className="mb-2 block text-sm font-medium">
+                      Weight
+                    </label>
+                    <input
+                      id="weight"
+                      type="text"
+                      value={jurorForm.weight}
+                      onChange={(e) => setJurorForm({ ...jurorForm, weight: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., 180 lbs or 82 kg"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="gender" className="mb-2 block text-sm font-medium">
+                      Gender
+                    </label>
+                    <input
+                      id="gender"
+                      type="text"
+                      value={jurorForm.gender}
+                      onChange={(e) => setJurorForm({ ...jurorForm, gender: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., Male, Female, Non-binary"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="skinTone" className="mb-2 block text-sm font-medium">
+                      Skin Tone
+                    </label>
+                    <input
+                      id="skinTone"
+                      type="text"
+                      value={jurorForm.skinTone}
+                      onChange={(e) => setJurorForm({ ...jurorForm, skinTone: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., Light, Medium, Dark"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="race" className="mb-2 block text-sm font-medium">
+                      Race
+                    </label>
+                    <input
+                      id="race"
+                      type="text"
+                      value={jurorForm.race}
+                      onChange={(e) => setJurorForm({ ...jurorForm, race: e.target.value })}
+                      className="w-full rounded-md border border-input bg-background px-3 py-2"
+                      placeholder="e.g., White, Black, Asian, Hispanic"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label htmlFor="physicalDescription" className="mb-2 block text-sm font-medium">
+                    Other Identifying Details / Description
+                  </label>
+                  <textarea
+                    id="physicalDescription"
+                    value={jurorForm.physicalDescription}
+                    onChange={(e) => setJurorForm({ ...jurorForm, physicalDescription: e.target.value })}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 min-h-[80px]"
+                    placeholder="Additional physical characteristics, distinguishing features, etc."
+                  />
+                </div>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -527,38 +699,46 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                   />
                 </div>
               </div>
-
-              <div className="flex justify-end gap-2 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowJurorDialog(false);
-                    setJurorForm({
-                      jurorNumber: '',
-                      firstName: '',
-                      lastName: '',
-                      age: '',
-                      occupation: '',
-                      city: '',
-                      zipCode: '',
-                    });
-                  }}
-                  disabled={createJurorMutation.isPending}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => createJurorMutation.mutate()}
-                  disabled={
-                    createJurorMutation.isPending ||
-                    !jurorForm.jurorNumber ||
-                    !jurorForm.firstName ||
-                    !jurorForm.lastName
-                  }
-                >
-                  {createJurorMutation.isPending ? 'Adding...' : 'Add Juror'}
-                </Button>
               </div>
+            </div>
+            <div className="p-6 pt-4 border-t bg-background flex justify-end gap-2 sticky bottom-0">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowJurorDialog(false);
+                  setJurorForm({
+                    jurorNumber: '',
+                    firstName: '',
+                    lastName: '',
+                    age: '',
+                    occupation: '',
+                    employer: '',
+                    city: '',
+                    zipCode: '',
+                    hairColor: '',
+                    height: '',
+                    weight: '',
+                    gender: '',
+                    skinTone: '',
+                    race: '',
+                    physicalDescription: '',
+                  });
+                }}
+                disabled={createJurorMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => createJurorMutation.mutate()}
+                disabled={
+                  createJurorMutation.isPending ||
+                  !jurorForm.jurorNumber ||
+                  !jurorForm.firstName ||
+                  !jurorForm.lastName
+                }
+              >
+                {createJurorMutation.isPending ? 'Adding...' : 'Add Juror'}
+              </Button>
             </div>
           </div>
         </div>

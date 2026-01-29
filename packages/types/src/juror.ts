@@ -39,6 +39,14 @@ export interface Juror {
   boxRow?: number;
   boxSeat?: number;
   boxOrder?: number;
+  // Physical Description
+  hairColor?: string;
+  height?: string;
+  weight?: string;
+  gender?: string;
+  skinTone?: string;
+  race?: string;
+  physicalDescription?: string;
 }
 
 export type JurorStatus =
@@ -61,6 +69,14 @@ export interface CreateJurorInput {
   city?: string;
   zipCode?: string;
   questionnaireData?: Record<string, unknown>;
+  // Physical Description
+  hairColor?: string;
+  height?: string;
+  weight?: string;
+  gender?: string;
+  skinTone?: string;
+  race?: string;
+  physicalDescription?: string;
 }
 
 export interface UpdateJurorInput {
@@ -81,6 +97,14 @@ export interface UpdateJurorInput {
   boxRow?: number;
   boxSeat?: number;
   boxOrder?: number;
+  // Physical Description
+  hairColor?: string;
+  height?: string;
+  weight?: string;
+  gender?: string;
+  skinTone?: string;
+  race?: string;
+  physicalDescription?: string;
 }
 
 export interface BulkImportJurorInput {

@@ -70,6 +70,14 @@ const createJurorSchema = z.object({
   boxRow: z.number().int().positive().nullable().optional(),
   boxSeat: z.number().int().positive().nullable().optional(),
   boxOrder: z.number().int().positive().nullable().optional(),
+  // Physical Description
+  hairColor: z.string().optional(),
+  height: z.string().optional(),
+  weight: z.string().optional(),
+  gender: z.string().optional(),
+  skinTone: z.string().optional(),
+  race: z.string().optional(),
+  physicalDescription: z.string().optional(),
 });
 
 const updateJurorSchema = createJurorSchema.partial().omit({ panelId: true });

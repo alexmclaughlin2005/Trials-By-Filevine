@@ -200,6 +200,15 @@ model Juror {
   zipCode           String? @map("zip_code")
   questionnaireData Json?   @map("questionnaire_data")
 
+  // Physical Description
+  hairColor         String? @map("hair_color")
+  height            String? // e.g., "5'10\"", "178cm"
+  weight            String? // e.g., "180 lbs", "82 kg"
+  gender            String?
+  skinTone          String? @map("skin_tone")
+  race              String?
+  physicalDescription String? @map("physical_description") @db.Text
+
   // Archetype Classification
   classifiedArchetype String?   @map("classified_archetype") // Primary archetype classification
   archetypeConfidence Decimal?  @map("archetype_confidence") @db.Decimal(3, 2) // Classification confidence

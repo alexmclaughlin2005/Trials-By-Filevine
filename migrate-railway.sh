@@ -30,8 +30,10 @@ echo ""
 echo "Running migrations..."
 echo ""
 
-# Run migrations
+# Run migrations (specify schema path for monorepo)
+cd packages/database
 npx prisma migrate deploy
+cd ../..
 
 echo ""
 echo "✅ Migrations completed successfully!"
