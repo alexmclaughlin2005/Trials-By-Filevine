@@ -84,26 +84,28 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
   const { data, isLoading, error } = useQuery<TakeawaysResponse>({
     queryKey: ['conversation-takeaways', conversationId],
     queryFn: async () => {
-      const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
-      // Reset polling attempts on success
-      setPollingAttempts(0);
-      return result;
+      try {
+        const result = await apiClient.get<TakeawaysResponse>(`/focus-groups/conversations/${conversationId}/takeaways`);
+        // Reset polling attempts on success
+        setPollingAttempts(0);
+        return result;
+      } catch (err) {
+        // Track polling attempts on error
+        if (err instanceof APIClientError && err.statusCode === 404) {
+          setPollingAttempts(prev => {
+            const newAttempts = prev + 1;
+            // Stop polling after max attempts
+            if (newAttempts >= MAX_POLLING_ATTEMPTS) {
+              return MAX_POLLING_ATTEMPTS;
+            }
+            return newAttempts;
+          });
+        }
+        throw err;
+      }
     },
     retry: false,
     enabled: pollingAttempts < MAX_POLLING_ATTEMPTS, // Disable query when max attempts reached
-    onError: (err) => {
-      // Track polling attempts on error
-      if (err instanceof APIClientError && err.statusCode === 404) {
-        setPollingAttempts(prev => {
-          const newAttempts = prev + 1;
-          // Stop polling after max attempts
-          if (newAttempts >= MAX_POLLING_ATTEMPTS) {
-            return MAX_POLLING_ATTEMPTS;
-          }
-          return newAttempts;
-        });
-      }
-    },
     // Poll every 5 seconds if takeaways don't exist yet (they're being generated in background)
     refetchInterval: (query) => {
       // Stop polling if we have data
