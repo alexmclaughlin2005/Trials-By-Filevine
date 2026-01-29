@@ -80,6 +80,9 @@ temp/
 *.m4a
 uploads/
 
+# Generated persona images (can be regenerated)
+Juror Personas/images/
+
 # OS
 Thumbs.db
 .DS_Store

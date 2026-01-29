@@ -5,11 +5,8 @@
   "verdict_lean": "UNPREDICTABLE",
   "danger_for_plaintiff": "Unpredictable",
   "danger_for_defense": "Unpredictable",
-  
   "what_they_believe": "I answer to a higher authority than the judge. My conscience / God / principles come first. If the law is unjust, I won't enforce it.",
-  
   "how_they_behave_in_deliberation": "May refuse to follow jury instructions. Will decide based on personal moral framework, not evidence or law. Can cause hung jury. Nearly impossible to persuade. May announce they won't participate in 'unjust' verdict.",
-  
   "how_to_spot_them": [
     "Hesitation when asked if they can follow judge's instructions",
     "Statements about conscience, God, or principles over law",
@@ -17,15 +14,12 @@
     "Extreme positions on either political end",
     "References to 'jury nullification' or 'citizen's duty'"
   ],
-  
   "key_voir_dire_questions": [
     "If the judge instructs you to apply a rule you disagree with, could you follow it?",
     "Are there any laws or principles you feel so strongly about you couldn't set them aside?",
     "Have you ever heard of jury nullification? What do you think about it?"
   ],
-  
   "key_insight": "Mavericks are often challengeable for cause based on their own statements. They tend to be honest about their principles. Ask directly and they'll tell you they can't follow instructions.",
-  
   "personas": [
     {
       "id": "MAVE_01",
@@ -33,7 +27,6 @@
       "tagline": "There's a higher law than what's written in statute books. I've seen unjust laws before.",
       "instant_read": "Civil rights background. Will follow conscience over instructions if they conflict.",
       "nullification_direction": "Usually pro-plaintiff (justice for the harmed)",
-      
       "demographics": {
         "age": 67,
         "gender": "male",
@@ -46,9 +39,7 @@
         "religion": "Baptist (clergy)",
         "politics": "Democrat"
       },
-      
       "backstory": "Grew up during Jim Crow, participated in civil rights movement. Has seen unjust laws and defied them. 40 years as pastor. Explicitly endorses jury nullification. Believes jurors should follow conscience, not just law. Taught that law isn't always right.",
-      
       "phrases_youll_hear": [
         "The law isn't always just",
         "There's a higher law than what's written in books",
@@ -56,32 +47,28 @@
         "I answer to God before any judge",
         "Justice requires more than following instructions"
       ],
-      
       "voir_dire_red_flags": {
         "instruction_question": "I would listen respectfully to the judge. But ultimately, I answer to God and my conscience.",
         "nullification_question": "I believe jury nullification is one of the most important powers citizens have.",
         "red_flag_level": "CRITICAL - Challenge for cause"
       },
-      
       "verdict_prediction": {
         "follows_evidence": "No - follows conscience",
-        "hung_jury_risk": 0.50,
+        "hung_jury_risk": 0.5,
         "role_in_deliberation": "May announce he'll vote his conscience regardless of law."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "RISKY. May help, may cause hung jury. His statements likely support cause challenge anyway.",
         "defense_strategy": "CHALLENGE FOR CAUSE. His statements admit inability to follow instructions."
-      }
+      },
+      "image_url": "images/MAVE_01.png"
     },
-    
     {
       "id": "MAVE_02",
       "name": "Don't-Tread-On-Me Dan",
       "tagline": "The government has no right to tell me how to judge. Regulations are tyranny.",
       "instant_read": "Anti-government libertarian. May refuse to enforce regulations he views as illegitimate.",
       "nullification_direction": "Pro-defense if case involves regulations; unpredictable otherwise",
-      
       "demographics": {
         "age": 52,
         "gender": "male",
@@ -94,9 +81,7 @@
         "religion": "Non-denominational",
         "politics": "Libertarian"
       },
-      
       "backstory": "Third-generation Montana rancher. Deeply distrusts government. Has fought with federal agencies over land use and regulations. Libertarian political philosophy. May refuse to apply laws he views as unconstitutional overreach. Unpredictable.",
-      
       "phrases_youll_hear": [
         "The government has no right to tell people how to run their business",
         "Where does it say in the Constitution...",
@@ -104,32 +89,27 @@
         "Another government regulation that doesn't make sense",
         "I don't trust the government to tell me what's right"
       ],
-      
       "voir_dire_red_flags": {
         "regulation_question": "I think there are way too many regulations. Government has no business...",
         "instruction_question": "Depends on the instruction. If it's about some regulation I think is unconstitutional...",
         "red_flag_level": "HIGH - Consider cause challenge"
       },
-      
       "verdict_prediction": {
         "follows_evidence": "Partially - filtered through libertarian lens",
-        "hung_jury_risk": 0.40,
+        "hung_jury_risk": 0.4,
         "role_in_deliberation": "May refuse to enforce regulations. Unpredictable."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "STRIKE if case involves regulatory violations. Unpredictable otherwise.",
         "defense_strategy": "MAYBE KEEP if plaintiff's case relies on regulation violations. STRIKE if unpredictable."
       }
     },
-    
     {
       "id": "MAVE_03",
       "name": "System-Is-Rigged Rhonda",
       "tagline": "The legal system has never been fair to people like me. I won't help perpetuate injustice.",
       "instant_read": "Racial justice activist. May nullify to achieve what she sees as justice.",
       "nullification_direction": "Pro-plaintiff against institutions; may refuse to convict minorities",
-      
       "demographics": {
         "age": 34,
         "gender": "female",
@@ -142,9 +122,7 @@
         "religion": "Spiritual",
         "politics": "Democrat (activist)"
       },
-      
       "backstory": "Sociology degree focused on systemic racism. Community organizer for 10 years. Active in BLM movement. Views legal system as fundamentally racist. Believes in using any tool to achieve racial justice. May prioritize justice over legal technicalities.",
-      
       "phrases_youll_hear": [
         "The system has never been fair to people who look like me",
         "We need to talk about the racial dynamics here",
@@ -152,32 +130,27 @@
         "I'm not going to participate in an unjust system",
         "Justice means something different when you've been oppressed"
       ],
-      
       "voir_dire_red_flags": {
         "fairness_question": "That question assumes the system is fair. It's not.",
         "instruction_question": "If the instructions are just, yes. If they perpetuate injustice, I'd have to think about that.",
         "red_flag_level": "MODERATE-HIGH"
       },
-      
       "verdict_prediction": {
         "follows_evidence": "Partially - filtered through justice framework",
         "hung_jury_risk": 0.35,
         "role_in_deliberation": "Will introduce systemic justice framing. May refuse 'unjust' verdict."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "RISKY. Pro-plaintiff but unpredictable. May cause hung jury.",
         "defense_strategy": "STRIKE. Will view corporate defendant through systemic racism lens."
       }
     },
-    
     {
       "id": "MAVE_04",
       "name": "Won't-Award-A-Dime Walt",
       "tagline": "Lawsuits are destroying this country. I won't give a penny to a plaintiff, period.",
       "instant_read": "Anti-lawsuit absolutist. Will refuse to find for any plaintiff on principle.",
       "nullification_direction": "Pro-defense in all cases, regardless of evidence",
-      
       "demographics": {
         "age": 70,
         "gender": "male",
@@ -190,9 +163,7 @@
         "religion": "Catholic",
         "politics": "Republican (tort reform activist)"
       },
-      
       "backstory": "Owned manufacturing business for 35 years. Sued multiple times, considers all frivolous. Active in tort reform advocacy. Believes lawsuits are fundamentally illegitimate form of legalized extortion. May refuse to find for ANY plaintiff on principle.",
-      
       "phrases_youll_hear": [
         "Lawsuits are destroying this country",
         "I won't be part of this lawsuit lottery",
@@ -200,20 +171,17 @@
         "No matter what the evidence shows, I can't support this",
         "These cases shouldn't even go to trial"
       ],
-      
       "voir_dire_red_flags": {
         "lawsuit_views": "They're out of control. Legalized extortion.",
         "fairness_question": "I don't know. I look at these cases and I just see money grabs.",
         "damages_question": "I'd have a hard time. Even if someone was negligent, lawsuits do more harm than good.",
         "red_flag_level": "CRITICAL - Clear cause challenge"
       },
-      
       "verdict_prediction": {
         "follows_evidence": "No - decided against plaintiff before trial",
-        "hung_jury_risk": 0.60,
+        "hung_jury_risk": 0.6,
         "role_in_deliberation": "Will announce refusal to vote for plaintiff. Will cause hung jury."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "CHALLENGE FOR CAUSE. His statements explicitly admit he cannot be fair.",
         "defense_strategy": "His statements make him challengeable. Don't expect to keep him."

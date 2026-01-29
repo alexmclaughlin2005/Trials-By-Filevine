@@ -129,7 +129,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCAR_6.1_SandraMitchell.png"
     },
     {
       "persona_id": "SCAR_6.2_HaroldJennings",
@@ -228,7 +229,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCAR_6.2_HaroldJennings.png"
     },
     {
       "persona_id": "SCAR_6.3_AndreaSimmons",
@@ -316,7 +318,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCAR_6.3_AndreaSimmons.png"
     },
     {
       "persona_id": "SCAR_6.1_DefendantDan",
@@ -363,7 +366,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCAR_6.1_DefendantDan.png"
     },
     {
       "persona_id": "SCAR_6.2_WidowedWanda",
@@ -411,7 +415,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCAR_6.2_WidowedWanda.png"
     }
   ]
 }

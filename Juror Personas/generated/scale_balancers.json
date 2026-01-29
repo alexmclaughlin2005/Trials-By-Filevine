@@ -143,7 +143,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCALE_3.1_KarenChen.png"
     },
     {
       "persona_id": "SCALE_3.2_JamesOkonkwo",
@@ -237,7 +238,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCALE_3.2_JamesOkonkwo.png"
     },
     {
       "persona_id": "SCALE_3.3_MariaSantos",
@@ -338,7 +340,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/SCALE_3.3_MariaSantos.png"
     }
   ]
 }

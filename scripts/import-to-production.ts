@@ -109,6 +109,9 @@ async function importPersonaFile(fileName: string): Promise<{ imported: number; 
         tagline: persona.tagline,
         description: persona.backstory, // backstory goes in description field
         archetype: fileData.archetype,
+        
+        // Store JSON persona_id for 1:1 mapping (PersonaV2 uses 'id' field)
+        jsonPersonaId: persona.id,
 
         // Archetype-level guidance (from file top-level)
         archetypeVerdictLean: fileData.verdict_lean,

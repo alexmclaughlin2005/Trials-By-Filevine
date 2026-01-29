@@ -88,6 +88,9 @@ async function importPersonasFromFile(filePath: string) {
           nickname: persona.nickname,
           description: persona.tagline || `${archetypeData.archetype_display_name} persona`,
           tagline: persona.tagline,
+          
+          // Store JSON persona_id for 1:1 mapping
+          jsonPersonaId: persona.persona_id,
 
           // Archetype Classification
           archetype: archetypeData.archetype,

@@ -1,7 +1,10 @@
 import dotenv from 'dotenv';
 import { z } from 'zod';
+import * as path from 'path';
 
-dotenv.config();
+// Load .env from the api-gateway directory, or fall back to root
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
+dotenv.config({ path: path.join(__dirname, '..', '..', '..', '.env') }); // Also try root .env
 
 const configSchema = z.object({
   port: z.number().default(3001),

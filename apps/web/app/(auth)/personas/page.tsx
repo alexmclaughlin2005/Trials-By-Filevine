@@ -1,8 +1,9 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Plus, Filter, AlertTriangle, Shield, Copy, Edit, FileText, Grid, List } from 'lucide-react';
+import { Plus, Filter, AlertTriangle, Shield, Copy, Edit, FileText, Grid, List, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { apiClient } from '@/lib/api-client';
 import { Select } from '@/components/ui/select';
 import {
@@ -30,6 +31,7 @@ interface Persona {
   signals?: string[];
   plaintiffDangerLevel?: number;
   defenseDangerLevel?: number;
+  imageUrl?: string; // NEW: Image URL for headshot
   demographics?: {
     occupation?: string;
     age_range?: string;
@@ -77,6 +79,17 @@ export default function PersonasPage() {
   const [selectedPersona, setSelectedPersona] = useState<Persona | null>(null);
   const [isCloning, setIsCloning] = useState(false);
   const [editingPersona, setEditingPersona] = useState<Persona | null>(null);
+  const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+  // Get image URL - use Next.js API route proxy (same-origin, no CORS issues)
+  const getImageUrl = (persona: Persona) => {
+    if (!persona.imageUrl) return null;
+    // Extract personaId from the URL path or use persona.id
+    const match = persona.imageUrl.match(/\/personas\/images\/(.+)$/);
+    const personaId = match ? match[1] : persona.id;
+    // Use Next.js API route proxy - same origin, works with Next.js Image component
+    return `/api/personas/images/${personaId}`;
+  };
   const [editForm, setEditForm] = useState({
     name: '',
     nickname: '',
@@ -99,8 +112,9 @@ export default function PersonasPage() {
     async function fetchPersonas() {
       try {
         setLoading(true);
-        // Fetch all personas (V2 fields included if available)
-        const data = await apiClient.get<{ personas: Persona[] }>('/personas');
+        setError(null);
+        // Fetch only V2 personas (version=2)
+        const data = await apiClient.get<{ personas: Persona[] }>('/personas?version=2');
 
         // Load notes from localStorage for system personas
         const personasWithNotes = data.personas.map((persona) => {
@@ -119,9 +133,19 @@ export default function PersonasPage() {
 
         setPersonas(personasWithNotes);
         setFilteredPersonas(personasWithNotes);
-      } catch (err) {
-        console.error('Error fetching personas:', err);
-        setError('Failed to load personas');
+      } catch (err: any) {
+        // Check if it's a connection error
+        const isConnectionError = err?.message?.includes('Failed to fetch') || 
+                                   err?.message?.includes('ERR_CONNECTION_REFUSED') ||
+                                   err?.message?.includes('NetworkError') ||
+                                   (err?.statusCode === 0 && !err?.status);
+
+        if (isConnectionError) {
+          setError('Cannot connect to API Gateway. Please ensure the API Gateway is running on port 3001.');
+        } else {
+          console.error('Error fetching personas:', err);
+          setError('Failed to load personas');
+        }
       } finally {
         setLoading(false);
       }
@@ -496,20 +520,53 @@ export default function PersonasPage() {
           {selectedPersona && (
             <>
               <DialogHeader>
-                <DialogTitle className="text-2xl">
-                  {selectedPersona.nickname || selectedPersona.name}
-                </DialogTitle>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-sm text-muted-foreground">
-                    {selectedPersona.archetype
-                      ? ARCHETYPE_LABELS[selectedPersona.archetype] || selectedPersona.archetype
-                      : 'Unclassified'}
-                  </span>
-                  {selectedPersona.archetypeStrength && (
-                    <span className="text-xs text-muted-foreground">
-                      ({Math.round(selectedPersona.archetypeStrength * 100)}% match)
-                    </span>
+                {/* HEADSHOT IMAGE */}
+                <div className="flex items-start gap-6 mb-4">
+                  {getImageUrl(selectedPersona) && !imageErrors.has(selectedPersona.id) ? (
+                    <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-filevine-blue-200 bg-filevine-gray-100 flex-shrink-0">
+                      <Image
+                        src={getImageUrl(selectedPersona)!}
+                        alt={selectedPersona.name}
+                        fill
+                        className="object-cover"
+                        sizes="128px"
+                        unoptimized={getImageUrl(selectedPersona)?.startsWith('http://localhost')}
+                        onError={() => setImageErrors(prev => new Set(prev).add(selectedPersona.id))}
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-filevine-blue-100 border-4 border-filevine-blue-200 flex items-center justify-center flex-shrink-0">
+                      {selectedPersona.name ? (
+                        <span className="text-filevine-blue-700 font-bold text-2xl">
+                          {selectedPersona.name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .toUpperCase()
+                            .slice(0, 2)}
+                        </span>
+                      ) : (
+                        <User className="h-16 w-16 text-filevine-blue-400" />
+                      )}
+                    </div>
                   )}
+                  <div className="flex-1">
+                    <DialogTitle className="text-2xl">
+                      {selectedPersona.nickname || selectedPersona.name}
+                    </DialogTitle>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-sm text-muted-foreground">
+                        {selectedPersona.archetype
+                          ? ARCHETYPE_LABELS[selectedPersona.archetype] || selectedPersona.archetype
+                          : 'Unclassified'}
+                      </span>
+                      {selectedPersona.archetypeStrength && (
+                        <span className="text-xs text-muted-foreground">
+                          ({Math.round(selectedPersona.archetypeStrength * 100)}% match)
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </DialogHeader>
 

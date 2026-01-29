@@ -5,11 +5,8 @@
   "verdict_lean": "SLIGHT DEFENSE",
   "danger_for_plaintiff": 4,
   "danger_for_defense": 2,
-  
   "what_they_believe": "Decisions should be based on data and methodology, not emotion. Show me the numbers. If you can't quantify it, I'm skeptical. Pain and suffering awards seem arbitrary.",
-  
   "how_they_behave_in_deliberation": "Will question damage calculations. Will discount emotional testimony. Will push for 'reasonable' (usually lower) numbers. May create spreadsheets or calculations. Will respect good expert methodology.",
-  
   "how_to_spot_them": [
     "STEM, finance, accounting, or actuarial background",
     "Questions like 'What's the basis for that number?'",
@@ -17,16 +14,13 @@
     "Higher education in quantitative field",
     "Precise, technical language"
   ],
-  
   "key_insight": "Calculators can be won with superior expert methodology. They respect data and analysis. If plaintiff's expert is more rigorous than defense expert, Calculator may become plaintiff advocate on liability. But on damages, they'll always push numbers down.",
-  
   "personas": [
     {
       "id": "CALC_01",
       "name": "Spreadsheet Steve",
       "tagline": "What's the basis for that number? Show me the methodology.",
       "instant_read": "Data scientist. Everything must be quantified or it's suspect.",
-      
       "demographics": {
         "age": 44,
         "gender": "male",
@@ -39,9 +33,7 @@
         "religion": "Presbyterian (cultural)",
         "politics": "Independent"
       },
-      
       "backstory": "PhD in statistics, career as data scientist. Uncomfortable with anything that can't be measured. Wife is physician, so moderate medical trust. Respects rigorous methodology, skeptical of weak data. Will analyze expert testimony like peer review.",
-      
       "phrases_youll_hear": [
         "What's the basis for that number?",
         "Is that statistically significant?",
@@ -49,25 +41,21 @@
         "Correlation isn't causation",
         "How do you quantify that?"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.50,
+        "liability_finding_probability": 0.5,
         "damages_if_liability": "Conservative. Will push numbers toward 'reasonable' range.",
         "role_in_deliberation": "Will challenge damage calculations. May create own analysis."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP if your experts have superior methodology. STRIKE if case is emotional.",
         "defense_strategy": "KEEP. He'll reduce damages even if he finds liability."
       }
     },
-    
     {
       "id": "CALC_02",
       "name": "Bean-Counter Betty",
       "tagline": "I've audited hundreds of claims. Those numbers look inflated.",
       "instant_read": "CPA who's seen fraudulent claims. Skeptical of damage numbers.",
-      
       "demographics": {
         "age": 52,
         "gender": "female",
@@ -80,9 +68,7 @@
         "religion": "Catholic",
         "politics": "Republican"
       },
-      
       "backstory": "Career auditing corporations and individuals. Has seen exaggerated and fraudulent claims. Skeptical of inflated damage requests by default. Values financial documentation. Slight corporate sympathy from professional experience.",
-      
       "phrases_youll_hear": [
         "Show me the documentation",
         "Those numbers seem inflated",
@@ -90,25 +76,22 @@
         "The financial records tell the real story",
         "I've seen plenty of exaggerated claims"
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.45,
         "damages_if_liability": "Low-moderate. Will scrutinize every number.",
         "role_in_deliberation": "Will audit plaintiff's damages claim line by line."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "STRIKE if damages aren't ironclad. She'll find every weakness.",
         "defense_strategy": "KEEP. She'll do your damages argument for you."
-      }
+      },
+      "image_url": "images/CALC_02.png"
     },
-    
     {
       "id": "CALC_03",
       "name": "Actuary Andy",
       "tagline": "I calculate injury values for a living. This claim is actuarially inflated.",
       "instant_read": "Insurance industry professional. Knows 'what injuries are worth.' Will drive damages down.",
-      
       "demographics": {
         "age": 39,
         "gender": "male",
@@ -121,9 +104,7 @@
         "religion": "None",
         "politics": "Independent (libertarian lean)"
       },
-      
       "backstory": "Career calculating statistical value of injuries and deaths. KNOWS what insurance companies pay for various injuries. Believes most jury awards are inflated above actuarial value. Professional bias toward defense (his employer pays defense verdicts).",
-      
       "phrases_youll_hear": [
         "I calculate these values professionally",
         "Actuarially speaking, this claim is inflated",
@@ -131,25 +112,21 @@
         "Juries systematically overvalue damages",
         "I can show you what these injuries typically settle for"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.50,
+        "liability_finding_probability": 0.5,
         "damages_if_liability": "Will push toward 'actuarial value' - always lower than ask.",
         "role_in_deliberation": "Will claim professional expertise on damage values. Very influential."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "CHALLENGE FOR CAUSE (employer benefits from low verdicts) or STRIKE.",
         "defense_strategy": "KEEP. Your secret weapon on damages. He'll give professional cover for low numbers."
       }
     },
-    
     {
       "id": "CALC_04",
       "name": "Peer-Review Pete",
       "tagline": "Is that study peer-reviewed? What's the sample size?",
       "instant_read": "Research scientist. Evaluates evidence like academic literature.",
-      
       "demographics": {
         "age": 51,
         "gender": "male",
@@ -162,9 +139,7 @@
         "religion": "Hindu",
         "politics": "Democrat"
       },
-      
       "backstory": "PhD in biochemistry, career in pharmaceutical research. Trained to evaluate evidence quality. Skeptical of claims without peer-reviewed support. High medical trust from scientific background. Works for pharma but CAN find against pharma if evidence is clear.",
-      
       "phrases_youll_hear": [
         "Is that peer-reviewed?",
         "What's the sample size?",
@@ -172,25 +147,21 @@
         "That's not how the science works",
         "Let's look at what the research actually shows"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.50,
+        "liability_finding_probability": 0.5,
         "damages_if_liability": "Moderate-conservative. Wants documented basis.",
         "role_in_deliberation": "Will evaluate expert testimony methodology."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP if your expert's methodology is superior. He respects good science.",
         "defense_strategy": "KEEP. He'll scrutinize plaintiff's experts."
       }
     },
-    
     {
       "id": "CALC_05",
       "name": "Just-The-Numbers Nathan",
       "tagline": "I don't care about the stories. What do the documents actually show?",
       "instant_read": "Pure analytical. Immune to emotional appeals. Documents only.",
-      
       "demographics": {
         "age": 47,
         "gender": "male",
@@ -203,9 +174,7 @@
         "religion": "None",
         "politics": "Independent"
       },
-      
       "backstory": "Career analyzing companies for investment decisions. Trained to ignore stories and marketing, focus only on numbers. Completely unmoved by emotional appeals. If it's not in the documents, it didn't happen.",
-      
       "phrases_youll_hear": [
         "What do the documents show?",
         "I don't care about the stories - show me the numbers",
@@ -213,13 +182,11 @@
         "You can't just make up a number for suffering",
         "Let's stick to what we can actually prove"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.50,
+        "liability_finding_probability": 0.5,
         "damages_if_liability": "Economic only unless non-economic is somehow 'proven.'",
         "role_in_deliberation": "Cold voice of documentation. Will frustrate Hearts."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "STRIKE if case relies on emotional impact. He's immune.",
         "defense_strategy": "KEEP. He'll discount the emotional elements that drive big verdicts."

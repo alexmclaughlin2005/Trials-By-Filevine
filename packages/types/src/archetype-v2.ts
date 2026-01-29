@@ -114,6 +114,9 @@ export interface PersonaInsert {
   nickname?: string;
   description: string;
   tagline?: string;
+  
+  // JSON Persona ID - stores the original persona_id from JSON files for 1:1 mapping
+  jsonPersonaId?: string;
 
   // Archetype Classification
   archetype: string;

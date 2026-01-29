@@ -59,7 +59,7 @@ export function Header({ onOpenChat }: HeaderProps) {
             width={32}
             height={32}
             className="h-8 w-8 rounded"
-            quality={100}
+            quality={90}
             priority
           />
           <div className="flex flex-col">

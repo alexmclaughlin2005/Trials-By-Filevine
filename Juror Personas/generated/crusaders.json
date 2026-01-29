@@ -455,7 +455,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/CRUS_2.4_TommyOBrien.png"
     },
     {
       "persona_id": "CRUS_2.1_NurseAdvocateNadine",
@@ -508,7 +509,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/CRUS_2.1_NurseAdvocateNadine.png"
     },
     {
       "persona_id": "CRUS_2.2_TeacherActivistTanya",
@@ -555,7 +557,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/CRUS_2.2_TeacherActivistTanya.png"
     }
   ]
 }

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, CheckCircle, XCircle, Database, RefreshCw, Users, TestTube, ToggleLeft, Flag } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Database, RefreshCw, Users, TestTube, ToggleLeft, Flag, Image as ImageIcon } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import Link from 'next/link';
 
@@ -57,6 +57,24 @@ export default function AdminPage() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([]);
   const [isLoadingFlags, setIsLoadingFlags] = useState(false);
   const [isSeedingFlags, setIsSeedingFlags] = useState(false);
+
+  // Persona headshot generation state
+  const [isGeneratingHeadshots, setIsGeneratingHeadshots] = useState(false);
+  const [headshotStatus, setHeadshotStatus] = useState<{ imageCount: number; totalSizeMB: string } | null>(null);
+  const [isLoadingHeadshotStatus, setIsLoadingHeadshotStatus] = useState(false);
+  const [headshotResult, setHeadshotResult] = useState<{ success: boolean; message: string; statusId?: string } | null>(null);
+  const [headshotError, setHeadshotError] = useState<string | null>(null);
+  const [generationProgress, setGenerationProgress] = useState<{
+    status: 'pending' | 'running' | 'completed' | 'failed';
+    total: number;
+    processed: number;
+    skipped: number;
+    failed: number;
+    current?: { personaId: string; nickname: string; archetype: string };
+    result?: { processed: number; skipped: number; failed: number; errors: string[] };
+    error?: string;
+  } | null>(null);
+  const [isPollingProgress, setIsPollingProgress] = useState(false);
 
   const checkSeedStatus = async () => {
     try {
@@ -183,10 +201,167 @@ export default function AdminPage() {
     }
   };
 
+  const checkHeadshotStatus = async () => {
+    try {
+      setIsLoadingHeadshotStatus(true);
+      const response = await apiClient.get<{ imageCount: number; totalSizeMB: string }>('/admin/persona-headshots-count');
+      setHeadshotStatus(response);
+    } catch (error) {
+      console.error('Error checking headshot status:', error);
+      setHeadshotStatus({ imageCount: 0, totalSizeMB: '0' });
+    } finally {
+      setIsLoadingHeadshotStatus(false);
+    }
+  };
+
+  const handleGenerateHeadshots = async (regenerate: boolean = false) => {
+    try {
+      setIsGeneratingHeadshots(true);
+      setHeadshotError(null);
+      setHeadshotResult(null);
+      setGenerationProgress(null);
+
+      const response = await apiClient.post<{ success: boolean; message: string; statusId: string }>('/admin/generate-persona-headshots', {
+        regenerate,
+        updateJson: true,
+      });
+
+      setHeadshotResult({
+        success: true,
+        message: 'Headshot generation started',
+        statusId: response.statusId,
+      });
+
+      // Start polling for progress
+      if (response.statusId) {
+        setIsPollingProgress(true);
+        pollGenerationProgress(response.statusId);
+      }
+
+      // Refresh image count status after a delay
+      setTimeout(() => {
+        checkHeadshotStatus();
+      }, 5000);
+    } catch (error) {
+      console.error('Error generating headshots:', error);
+      setHeadshotError(error instanceof Error ? error.message : 'Unknown error');
+      setIsPollingProgress(false);
+    } finally {
+      setIsGeneratingHeadshots(false);
+    }
+  };
+
+  const pollGenerationProgress = async (statusId: string) => {
+    let pollDelay = 60000; // Start with 60 seconds (increased from 30s)
+    let consecutiveErrors = 0;
+    const maxConsecutiveErrors = 3; // Reduced from 5 - stop faster on connection errors
+    let pollTimeout: NodeJS.Timeout | null = null;
+
+    const poll = async () => {
+      try {
+        const status = await apiClient.get<{
+          status: 'pending' | 'running' | 'completed' | 'failed';
+          progress: {
+            total: number;
+            processed: number;
+            skipped: number;
+            failed: number;
+            current?: { personaId: string; nickname: string; archetype: string };
+          };
+          result?: { processed: number; skipped: number; failed: number; errors: string[] };
+          error?: string;
+        }>(`/admin/persona-headshots-status/${statusId}`);
+
+        // Reset error counter on success
+        consecutiveErrors = 0;
+        pollDelay = 60000; // Reset to base delay
+
+        setGenerationProgress({
+          status: status.status,
+          total: status.progress.total,
+          processed: status.progress.processed,
+          skipped: status.progress.skipped,
+          failed: status.progress.failed,
+          current: status.progress.current,
+          result: status.result,
+          error: status.error,
+        });
+
+        // Stop polling if completed or failed
+        if (status.status === 'completed' || status.status === 'failed') {
+          setIsPollingProgress(false);
+          
+          // Refresh image count
+          setTimeout(() => {
+            checkHeadshotStatus();
+          }, 2000);
+          return;
+        }
+
+        // Schedule next poll
+        pollTimeout = setTimeout(poll, pollDelay);
+      } catch (error: any) {
+        consecutiveErrors++;
+
+        // Check if it's a connection error (API Gateway not running)
+        const isConnectionError = error?.message?.includes('Failed to fetch') || 
+                                   error?.message?.includes('ERR_CONNECTION_REFUSED') ||
+                                   error?.message?.includes('NetworkError') ||
+                                   (error?.statusCode === 0 && !error?.status);
+
+        // Check if it's a 429 (Too Many Requests) error
+        const isRateLimitError = error?.statusCode === 429 || 
+                                  error?.message?.includes('429') || 
+                                  error?.message?.includes('Too Many Requests');
+
+        if (isConnectionError) {
+          // Stop immediately on connection errors - API Gateway is likely down
+          console.warn('API Gateway connection failed. Stopping polling.');
+          setIsPollingProgress(false);
+          setHeadshotError('Cannot connect to API Gateway. Please ensure the API Gateway is running on port 3001.');
+          return;
+        } else if (isRateLimitError) {
+          // Exponential backoff for rate limit errors (max 2 minutes)
+          pollDelay = Math.min(pollDelay * 1.5, 120000);
+          console.warn(`Rate limited. Increasing poll interval to ${pollDelay / 1000}s`);
+        } else {
+          // For other errors, log but continue polling (up to max errors)
+          if (consecutiveErrors < maxConsecutiveErrors) {
+            console.warn(`Error polling generation progress (${consecutiveErrors}/${maxConsecutiveErrors}):`, error);
+          }
+        }
+
+        // Stop polling after too many consecutive errors
+        if (consecutiveErrors >= maxConsecutiveErrors) {
+          console.error('Too many consecutive errors. Stopping polling.');
+          setIsPollingProgress(false);
+          setHeadshotError('Failed to poll generation status. Please refresh the page or check if the API Gateway is running.');
+          return;
+        }
+
+        // Schedule next poll with current delay
+        pollTimeout = setTimeout(poll, pollDelay);
+      }
+    };
+
+    // Start polling
+    setIsPollingProgress(true);
+    pollTimeout = setTimeout(poll, 5000); // First poll after 5 seconds
+
+    // Cleanup timeout after 30 minutes (safety timeout)
+    setTimeout(() => {
+      if (pollTimeout) {
+        clearTimeout(pollTimeout);
+      }
+      setIsPollingProgress(false);
+    }, 30 * 60 * 1000);
+  };
+
   // Check status on mount
   useEffect(() => {
     checkSeedStatus();
     loadFeatureFlags();
+    checkHeadshotStatus();
   }, []);
 
   return (
@@ -543,6 +718,237 @@ export default function AdminPage() {
               <li><strong>voir_dire_v2:</strong> Enable V2 voir dire question generation</li>
               <li>Toggle ON to enable a feature, OFF to revert to V1</li>
               <li>Changes take effect immediately across all services</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Persona Headshot Generation Section */}
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Persona Headshot Generation
+          </CardTitle>
+          <CardDescription>
+            Generate professional headshot images for all personas using OpenAI DALL-E 3
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Current Status */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-medium">Current Status</h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={checkHeadshotStatus}
+                disabled={isLoadingHeadshotStatus}
+              >
+                <RefreshCw className={`h-4 w-4 ${isLoadingHeadshotStatus ? 'animate-spin' : ''}`} />
+              </Button>
+            </div>
+
+            {isLoadingHeadshotStatus ? (
+              <div className="flex items-center justify-center p-4">
+                <Loader2 className="h-6 w-6 animate-spin text-filevine-blue-600" />
+              </div>
+            ) : headshotStatus ? (
+              <div className="p-3 border rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium">Generated Images</p>
+                    <p className="text-xs text-muted-foreground">
+                      {headshotStatus.imageCount} images ({headshotStatus.totalSizeMB} MB)
+                    </p>
+                  </div>
+                  {headshotStatus.imageCount > 0 ? (
+                    <CheckCircle className="h-5 w-5 text-green-500" />
+                  ) : (
+                    <XCircle className="h-5 w-5 text-gray-400" />
+                  )}
+                </div>
+              </div>
+            ) : null}
+
+            {/* Generation Progress */}
+            {generationProgress && (
+              <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold">Generation Progress</h4>
+                  {generationProgress.status === 'running' && (
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  )}
+                  {generationProgress.status === 'completed' && (
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  )}
+                  {generationProgress.status === 'failed' && (
+                    <XCircle className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+
+                {generationProgress.total > 0 && (
+                  <div className="space-y-2">
+                    {/* Progress Bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${((generationProgress.processed + generationProgress.skipped + generationProgress.failed) / generationProgress.total) * 100}%`,
+                        }}
+                      />
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <p className="text-muted-foreground">Total</p>
+                        <p className="font-semibold">{generationProgress.total}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Processed</p>
+                        <p className="font-semibold text-green-600">{generationProgress.processed}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Skipped</p>
+                        <p className="font-semibold text-gray-600">{generationProgress.skipped}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Failed</p>
+                        <p className="font-semibold text-red-600">{generationProgress.failed}</p>
+                      </div>
+                    </div>
+
+                    {/* Current Item */}
+                    {generationProgress.current && generationProgress.status === 'running' && (
+                      <div className="mt-2 p-2 bg-white rounded text-xs">
+                        <p className="text-muted-foreground">Currently processing:</p>
+                        <p className="font-medium">
+                          {generationProgress.current.nickname} ({generationProgress.current.personaId})
+                        </p>
+                        <p className="text-muted-foreground">{generationProgress.current.archetype}</p>
+                      </div>
+                    )}
+
+                    {/* Completion Message */}
+                    {generationProgress.status === 'completed' && generationProgress.result && (
+                      <div className="mt-2 p-2 bg-green-50 rounded text-xs">
+                        <p className="text-green-800 font-medium">✓ Generation completed!</p>
+                        <p className="text-green-700">
+                          Processed: {generationProgress.result.processed}, 
+                          Skipped: {generationProgress.result.skipped}, 
+                          Failed: {generationProgress.result.failed}
+                        </p>
+                        {generationProgress.result.errors.length > 0 && (
+                          <details className="mt-1">
+                            <summary className="text-red-600 cursor-pointer">View errors ({generationProgress.result.errors.length})</summary>
+                            <ul className="list-disc list-inside mt-1 text-red-700">
+                              {generationProgress.result.errors.slice(0, 5).map((error, idx) => (
+                                <li key={idx}>{error}</li>
+                              ))}
+                              {generationProgress.result.errors.length > 5 && (
+                                <li>... and {generationProgress.result.errors.length - 5} more</li>
+                              )}
+                            </ul>
+                          </details>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Error Message */}
+                    {generationProgress.status === 'failed' && generationProgress.error && (
+                      <div className="mt-2 p-2 bg-red-50 rounded text-xs">
+                        <p className="text-red-800 font-medium">✗ Generation failed</p>
+                        <p className="text-red-700">{generationProgress.error}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Generate Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              onClick={() => handleGenerateHeadshots(false)}
+              disabled={isGeneratingHeadshots}
+              className="w-full"
+              size="lg"
+              variant="default"
+            >
+              {isGeneratingHeadshots ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Generate Missing Headshots
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={() => handleGenerateHeadshots(true)}
+              disabled={isGeneratingHeadshots}
+              className="w-full"
+              size="lg"
+              variant="secondary"
+            >
+              {isGeneratingHeadshots ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Regenerate All Headshots
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Success Message */}
+          {headshotResult && headshotResult.success && (
+            <Alert className="bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                {headshotResult.message}
+                <div className="mt-2 text-xs">
+                  <p>💡 Tip: Generation runs in the background. Refresh the status above to see progress.</p>
+                  <p>⏱️ Estimated time: ~15-20 minutes for all personas</p>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Error Message */}
+          {headshotError && (
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertDescription>
+                Failed to start headshot generation: {headshotError}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Info */}
+          <div className="text-xs text-muted-foreground space-y-1 pt-4 border-t">
+            <p className="font-medium">How it works:</p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li><strong>Generate Missing:</strong> Only creates images for personas that don't have one yet</li>
+              <li><strong>Regenerate All:</strong> Recreates all images (useful if you want to update them)</li>
+              <li>Images are saved to <code className="bg-muted px-1 py-0.5 rounded">Juror Personas/images/</code></li>
+              <li>JSON files are automatically updated with image URLs</li>
+              <li>Uses OpenAI DALL-E 3 (~$0.04 per image, ~$4-5 for all personas)</li>
+            </ul>
+            <p className="font-medium mt-3">Requirements:</p>
+            <ul className="list-disc list-inside space-y-1 ml-2">
+              <li>OPENAI_API_KEY must be set in environment variables</li>
+              <li>Persona JSON files must exist in <code className="bg-muted px-1 py-0.5 rounded">Juror Personas/generated/</code></li>
             </ul>
           </div>
         </CardContent>

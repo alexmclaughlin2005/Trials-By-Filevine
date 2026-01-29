@@ -61,6 +61,9 @@ function convertPersonaToInsert(
     nickname: personaData.name, // Store memorable name as nickname
     description: personaData.backstory,
     tagline: personaData.tagline,
+    
+    // Store JSON persona_id for 1:1 mapping (PersonaV2 uses 'id' field)
+    jsonPersonaId: personaData.id,
 
     // Archetype classification
     archetype: fileData.archetype,

@@ -598,7 +598,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_4.1_RobertCallahan.png"
     },
     {
       "persona_id": "BOOT_4.2_ReverendDorothyHayes",
@@ -692,7 +693,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_4.2_ReverendDorothyHayes.png"
     },
     {
       "persona_id": "BOOT_4.3_ColonelRetFrankMorrison",
@@ -791,7 +793,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_4.3_ColonelRetFrankMorrison.png"
     },
     {
       "persona_id": "BOOT_7.1_DrStevenPark",
@@ -903,7 +906,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_7.1_DrStevenPark.png"
     },
     {
       "persona_id": "BOOT_7.2_ChristineWalsh",
@@ -982,7 +986,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_7.2_ChristineWalsh.png"
     },
     {
       "persona_id": "BOOT_10.1_ReverendCarltonJames",
@@ -1047,7 +1052,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_10.1_ReverendCarltonJames.png"
     },
     {
       "persona_id": "BOOT_1.1_ImmigrantDreamIvan",
@@ -1111,7 +1117,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_1.1_ImmigrantDreamIvan.png"
     },
     {
       "persona_id": "BOOT_1.2_FarmRaisedFrancine",
@@ -1158,7 +1165,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_1.2_FarmRaisedFrancine.png"
     },
     {
       "persona_id": "BOOT_1.3_BlueCollarBill",
@@ -1206,7 +1214,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_1.3_BlueCollarBill.png"
     },
     {
       "persona_id": "BOOT_1.4_DoctorsDaughterDiana",
@@ -1253,7 +1262,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_1.4_DoctorsDaughterDiana.png"
     },
     {
       "persona_id": "BOOT_4.1_AttorneyAngela",
@@ -1301,7 +1311,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_4.1_AttorneyAngela.png"
     },
     {
       "persona_id": "BOOT_4.2_UnionBossUmberto",
@@ -1351,7 +1362,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_4.2_UnionBossUmberto.png"
     },
     {
       "persona_id": "BOOT_10.1_LibertarianLarry",
@@ -1403,7 +1415,8 @@
       },
       "case_type_predictions": {},
       "strategy_guidance": {},
-      "regional_notes": {}
+      "regional_notes": {},
+      "image_url": "images/BOOT_10.1_LibertarianLarry.png"
     }
   ]
 }

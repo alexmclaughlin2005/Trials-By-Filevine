@@ -5,11 +5,8 @@
   "verdict_lean": "STRONG PLAINTIFF",
   "danger_for_plaintiff": 1,
   "danger_for_defense": 4,
-  
   "what_they_believe": "This person has suffered. Their pain is real. They deserve compassion and compensation. Money can't fix everything, but it can help.",
-  
   "how_they_behave_in_deliberation": "Will advocate for plaintiff from emotional connection. Will push for high non-economic damages. May become visibly emotional during deliberation. Will humanize plaintiff's story and resist cold calculation.",
-  
   "how_to_spot_them": [
     "Helping profession (nursing, counseling, teaching, ministry)",
     "Emotional language and visible reactions to suffering",
@@ -17,14 +14,12 @@
     "Strong religious faith emphasizing compassion",
     "Phrases like 'I can only imagine' or 'think about their family'"
   ],
-  
   "personas": [
     {
       "id": "HEART_01",
       "name": "Feel-Your-Pain Pam",
       "tagline": "Think about what this person has been through. There's a human being behind these numbers.",
       "instant_read": "Professional empath. Will connect with plaintiff's suffering immediately.",
-      
       "demographics": {
         "age": 36,
         "gender": "female",
@@ -37,9 +32,7 @@
         "religion": "Catholic",
         "politics": "Democrat"
       },
-      
       "backstory": "Master's in counseling, works with traumatized children daily. Professional training in empathy. Sees impact of harm on families every day. Can't NOT feel the plaintiff's pain. Will become emotional advocate.",
-      
       "phrases_youll_hear": [
         "Think about what this person has been through",
         "There's a human being behind these numbers",
@@ -47,25 +40,21 @@
         "Put yourself in their shoes",
         "How would you feel if this happened to your family?"
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.75,
         "damages_if_liability": "High. Pain is real and deserves compensation.",
         "role_in_deliberation": "Emotional advocate. Will humanize plaintiff."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Will fight for damages.",
         "defense_strategy": "STRIKE. She's already emotionally connected to plaintiff."
       }
     },
-    
     {
       "id": "HEART_02",
       "name": "Bleeding-Heart Betty",
       "tagline": "I just keep thinking about their poor family. How will they ever recover?",
       "instant_read": "Maximum empathy, minimum analysis. Will cry during testimony.",
-      
       "demographics": {
         "age": 58,
         "gender": "female",
@@ -78,9 +67,7 @@
         "religion": "Catholic (devout)",
         "politics": "Democrat"
       },
-      
       "backstory": "Spent career caring for elderly and disabled. Deep well of empathy. Will project plaintiff's family onto her own. May literally cry during testimony. Emotional response overrides analytical thinking.",
-      
       "phrases_youll_hear": [
         "Those poor people",
         "I can't stop thinking about their family",
@@ -88,25 +75,22 @@
         "[Gets teary discussing injuries]",
         "How can we put a price on suffering?"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.80,
+        "liability_finding_probability": 0.8,
         "damages_if_liability": "Maximum. Emotion drives numbers.",
         "role_in_deliberation": "Emotional center. May sway other Hearts and undecideds."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Your most reliable high-damages advocate.",
         "defense_strategy": "MUST STRIKE. She decided with her heart before evidence started."
-      }
+      },
+      "image_url": "images/HEART_02.png"
     },
-    
     {
       "id": "HEART_03",
       "name": "Church-Lady Charlotte",
       "tagline": "The Bible says to care for the least of these. We have a duty here.",
       "instant_read": "Faith-driven compassion. Sees justice as religious obligation.",
-      
       "demographics": {
         "age": 65,
         "gender": "female",
@@ -119,9 +103,7 @@
         "religion": "Baptist (very devout - teaches Sunday School)",
         "politics": "Democrat"
       },
-      
       "backstory": "Life revolves around church. Teaches Sunday School, sings in choir, leads women's ministry. Faith drives her to care about others' suffering. Sees helping plaintiff as religious duty. 'What would Jesus do?' answer is always: help the suffering.",
-      
       "phrases_youll_hear": [
         "The Bible says to care for the least of these",
         "We're called to do justice",
@@ -129,25 +111,21 @@
         "How would Jesus judge this situation?",
         "Lord, help us do the right thing"
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.75,
         "damages_if_liability": "High. Helping is a religious duty.",
         "role_in_deliberation": "Moral voice. Religious authority carries weight."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Her faith compels compassion.",
         "defense_strategy": "STRIKE. Hard to argue against 'What would Jesus do?'"
       }
     },
-    
     {
       "id": "HEART_04",
       "name": "Think-Of-The-Children Tina",
       "tagline": "I keep thinking about my own kids. What if this happened to them?",
       "instant_read": "Young mother. Will project her children onto any case involving kids or families.",
-      
       "demographics": {
         "age": 28,
         "gender": "female",
@@ -160,9 +138,7 @@
         "religion": "Baptist",
         "politics": "Democrat"
       },
-      
       "backstory": "Young mother of two small children. Strong maternal empathy. Will immediately think 'what if this was my family?' Especially powerful in cases involving children, but will project maternal feelings onto almost any plaintiff.",
-      
       "phrases_youll_hear": [
         "I think about my own children",
         "What if this happened to my family?",
@@ -170,26 +146,22 @@
         "As a mother, I can't imagine...",
         "That child will never be the same"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.70,
+        "liability_finding_probability": 0.7,
         "damages_if_liability": "High, especially in cases involving children.",
         "role_in_deliberation": "Maternal perspective. Powerful in family impact cases.",
         "special_note": "IN CASES WITH CHILD PLAINTIFF: Liability probability 85%."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Especially powerful if your case involves family impact.",
         "defense_strategy": "STRIKE in cases involving children or family impact."
       }
     },
-    
     {
       "id": "HEART_05",
       "name": "Seen-Real-Suffering Susan",
       "tagline": "I've held hands with dying patients. I know what pain looks like.",
       "instant_read": "Medical professional who has witnessed real suffering. Credible AND empathetic.",
-      
       "demographics": {
         "age": 55,
         "gender": "female",
@@ -202,9 +174,7 @@
         "religion": "Catholic",
         "politics": "Democrat"
       },
-      
       "backstory": "30 years as oncology nurse watching patients suffer and die. Lost her own husband to cancer. Knows pain is real from bedside experience. Can translate medical concepts AND humanize them. Credibility from profession plus empathy from experience.",
-      
       "phrases_youll_hear": [
         "I've held hands with people who are dying",
         "I know what suffering looks like",
@@ -212,25 +182,21 @@
         "In 30 years of nursing, I've seen...",
         "The medical bills are just the beginning"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.70,
+        "liability_finding_probability": 0.7,
         "damages_if_liability": "High, well-reasoned. Understands true cost of injury.",
         "role_in_deliberation": "Medical credibility + emotional impact. Very influential."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Combines credibility with compassion.",
         "defense_strategy": "STRIKE. She'll educate the jury about real suffering."
       }
     },
-    
     {
       "id": "HEART_06",
       "name": "Caregiver Carol",
       "tagline": "I spent five years caring for my mother after her stroke. I know what families go through.",
       "instant_read": "Personal caregiver experience. Knows the hidden costs of catastrophic injury.",
-      
       "demographics": {
         "age": 58,
         "gender": "female",
@@ -243,9 +209,7 @@
         "religion": "Lutheran",
         "politics": "Democrat"
       },
-      
       "backstory": "Took early retirement to care for mother after stroke. Five years as full-time caregiver. Experienced exhaustion, financial strain, isolation, career sacrifice. Knows what families of seriously injured people actually go through - the part no one talks about.",
-      
       "phrases_youll_hear": [
         "I know what it's like to care for someone who's been hurt",
         "People don't understand the toll on the whole family",
@@ -253,14 +217,12 @@
         "I gave up my career, my friends, my life",
         "Caregiving nearly broke me"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.70,
+        "liability_finding_probability": 0.7,
         "damages_if_liability": "High. Understands family impact costs that others miss.",
         "role_in_deliberation": "Expert on hidden costs. Will educate jury about caregiving reality.",
         "special_note": "IN CATASTROPHIC INJURY CASES: Particularly effective on life care plan damages."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Especially in catastrophic injury cases.",
         "defense_strategy": "STRIKE in serious injury cases. She knows too much about real costs."

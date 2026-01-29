@@ -19,7 +19,7 @@ CREATE UNIQUE INDEX "FeatureFlag_key_organizationId_key" ON "FeatureFlag"("key",
 CREATE INDEX "FeatureFlag_key_idx" ON "FeatureFlag"("key");
 
 -- AddForeignKey
-ALTER TABLE "FeatureFlag" ADD CONSTRAINT "FeatureFlag_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "FeatureFlag" ADD CONSTRAINT "FeatureFlag_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- Insert default V2 persona feature flags
 INSERT INTO "FeatureFlag" ("id", "key", "name", "description", "enabled", "organizationId")

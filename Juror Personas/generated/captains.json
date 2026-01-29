@@ -3,7 +3,6 @@
   "archetype_display_name": "The Captain",
   "archetype_tagline": "I'll take charge of this",
   "archetype_description": "Authoritative leaders who dominate deliberation. Their substantive views combined with leadership ability create outsized impact on verdict. Danger level depends entirely on their secondary archetype orientation.",
-  
   "core_characteristics": {
     "leadership_tendency": "Very High (4.5-5.0)",
     "key_dynamic": "Their substantive views + leadership = outsized verdict impact",
@@ -12,21 +11,19 @@
     "plaintiff_favorability": "Depends on secondary archetype",
     "defense_favorability": "Depends on secondary archetype"
   },
-  
   "archetype_centroids": {
     "attribution_orientation": "varies_by_secondary",
     "just_world_belief": "varies_by_secondary",
-    "authoritarianism": 4.0,
+    "authoritarianism": 4,
     "institutional_trust_corporations": "varies_by_secondary",
     "institutional_trust_medical": "varies_by_secondary",
     "institutional_trust_legal": 3.5,
     "institutional_trust_insurance": 3.5,
     "litigation_attitude": "varies_by_secondary",
-    "leadership_tendency": 5.0,
+    "leadership_tendency": 5,
     "cognitive_style": "varies_by_secondary",
     "damages_orientation": "varies_by_secondary"
   },
-  
   "detection_indicators": [
     "Speaks first in group settings",
     "Makes eye contact with attorneys during voir dire",
@@ -39,7 +36,6 @@
     "Asks clarifying questions confidently",
     "Others look to them before answering"
   ],
-  
   "personas": [
     {
       "persona_id": "CAPT_4.1_CEOCarl",
@@ -48,9 +44,8 @@
       "tagline": "In my experience running a company...",
       "archetype": "captain",
       "secondary_archetype": "bootstrapper",
-      "archetype_strength": 1.0,
+      "archetype_strength": 1,
       "variant": "CORPORATE_EXECUTIVE",
-      
       "demographics": {
         "age": 62,
         "gender": "male",
@@ -74,24 +69,22 @@
         "political_affiliation": "Republican",
         "political_engagement": "donor"
       },
-      
       "dimensions": {
         "attribution_orientation": 1.5,
-        "just_world_belief": 4.0,
+        "just_world_belief": 4,
         "jwb_subtype": "others",
-        "authoritarianism": 4.0,
+        "authoritarianism": 4,
         "institutional_trust": {
-          "corporations": 5.0,
+          "corporations": 5,
           "medical": 4.5,
           "legal_system": 3.5,
           "insurance": 3.5
         },
-        "litigation_attitude": 1.0,
-        "leadership_tendency": 5.0,
+        "litigation_attitude": 1,
+        "leadership_tendency": 5,
         "cognitive_style": 4.5,
-        "damages_orientation": 1.0
+        "damages_orientation": 1
       },
-      
       "life_experiences": [
         "Built and ran successful medical device company",
         "Been sued multiple times as corporate defendant",
@@ -100,7 +93,6 @@
         "Has time and inclination to dominate deliberations",
         "Believes in personal responsibility for success"
       ],
-      
       "characteristic_phrases": [
         "In my experience running a company...",
         "Let me explain how this actually works",
@@ -109,7 +101,6 @@
         "I've seen dozens of these claims",
         "What were the plaintiff's damages again? Let's look at this carefully."
       ],
-      
       "voir_dire_responses": {
         "occupation_question": {
           "question": "What do you do for work?",
@@ -124,7 +115,6 @@
           "response": "Absolutely. I've been on both sides of business disputes. I can evaluate the evidence objectively. That said, I do know how these cases work, and I'll be looking carefully at whether the plaintiff has actually proven their claims."
         }
       },
-      
       "deliberation_behavior": {
         "predicted_role": "foreperson_or_de_facto_leader",
         "foreperson_candidate": true,
@@ -144,14 +134,12 @@
         ],
         "faction_behavior": "Will dominate. If opposing Captain present, potential for conflict or hung jury."
       },
-      
       "simulation_parameters": {
         "liability_threshold": 0.85,
-        "contributory_fault_weight": 3.0,
+        "contributory_fault_weight": 3,
         "damage_multiplier": 0.2,
         "non_economic_skepticism": 0.95,
         "punitive_resistance": 0.95,
-        
         "evidence_processing": {
           "plaintiff_testimony_weight": 0.4,
           "defendant_testimony_weight": 1.4,
@@ -160,18 +148,16 @@
           "documentary_weight": 1.2,
           "emotional_evidence_weight": 0.3
         },
-        
         "deliberation": {
-          "influence_weight": 3.0,
+          "influence_weight": 3,
           "persuadability": 0.15,
           "position_stability": 0.95,
-          "speaking_share": 0.30,
+          "speaking_share": 0.3,
           "social_pressure_susceptibility": 0.1,
           "confrontation_willingness": 0.9,
           "foreperson_probability": 0.85
         }
       },
-      
       "case_type_predictions": {
         "all_cases": {
           "note": "Strongly defense-favorable across all case types",
@@ -179,13 +165,11 @@
           "damages_multiplier": 0.25
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 5,
         "defense_danger_level": 1,
         "cause_challenge_vulnerability": 0.5,
         "strike_priority": "CRITICAL_MUST_STRIKE_FOR_PLAINTIFF",
-        
         "cause_challenge_approach": {
           "strategy": "Difficult to challenge for cause due to sophistication. Focus on business experience creating bias.",
           "script": [
@@ -194,11 +178,10 @@
             "Given your background, would it be difficult to see this case from the plaintiff's perspective?"
           ]
         },
-        
         "warning": "If seated, will likely become foreperson and drive defense verdict. Must strike."
-      }
+      },
+      "image_url": "images/CAPT_4.1_CEOCarl.png"
     },
-    
     {
       "persona_id": "CAPT_4.2_ReverendRighteous",
       "nickname": "Reverend Righteous",
@@ -207,9 +190,8 @@
       "archetype": "captain",
       "secondary_archetype": "crusader",
       "tertiary_archetype": "heart",
-      "archetype_strength": 1.0,
+      "archetype_strength": 1,
       "variant": "MORAL_AUTHORITY",
-      
       "demographics": {
         "age": 59,
         "gender": "female",
@@ -233,24 +215,22 @@
         "political_affiliation": "Democrat",
         "political_engagement": "community_leader"
       },
-      
       "dimensions": {
-        "attribution_orientation": 4.0,
-        "just_world_belief": 2.0,
+        "attribution_orientation": 4,
+        "just_world_belief": 2,
         "jwb_subtype": null,
-        "authoritarianism": 2.0,
+        "authoritarianism": 2,
         "institutional_trust": {
-          "corporations": 2.0,
-          "medical": 3.0,
+          "corporations": 2,
+          "medical": 3,
           "legal_system": 2.5,
-          "insurance": 2.0
+          "insurance": 2
         },
-        "litigation_attitude": 4.0,
-        "leadership_tendency": 5.0,
-        "cognitive_style": 2.0,
+        "litigation_attitude": 4,
+        "leadership_tendency": 5,
+        "cognitive_style": 2,
         "damages_orientation": 4.5
       },
-      
       "life_experiences": [
         "Led congregation of 2,000 for 25 years",
         "Counseled families through every kind of crisis",
@@ -259,7 +239,6 @@
         "Regularly advocates for community against institutions",
         "Commands enormous respect; people defer to her judgment"
       ],
-      
       "characteristic_phrases": [
         "I've sat with families going through this kind of pain",
         "Justice requires us to...",
@@ -268,7 +247,6 @@
         "We have an opportunity to do justice here",
         "Let me tell you what I've seen..."
       ],
-      
       "voir_dire_responses": {
         "occupation_question": {
           "question": "What do you do for work?",
@@ -283,11 +261,10 @@
           "response": "If someone has been wronged, they deserve to be made whole. Money can't fix everything, but it's the tool our system gives us. I wouldn't shy away from that responsibility."
         }
       },
-      
       "deliberation_behavior": {
         "predicted_role": "foreperson_or_moral_leader",
         "foreperson_candidate": true,
-        "foreperson_probability": 0.80,
+        "foreperson_probability": 0.8,
         "deliberation_style": "frames_as_moral_justice_issue",
         "influence_tactics": [
           "Moral authority from pastoral role",
@@ -303,25 +280,22 @@
         ],
         "faction_behavior": "Will lead plaintiff faction with moral authority. Difficult to oppose without seeming callous."
       },
-      
       "simulation_parameters": {
-        "liability_threshold": 0.30,
+        "liability_threshold": 0.3,
         "contributory_fault_weight": 0.3,
-        "damage_multiplier": 2.0,
+        "damage_multiplier": 2,
         "non_economic_skepticism": 0.1,
         "punitive_inclination": 0.8,
-        
         "evidence_processing": {
           "plaintiff_testimony_weight": 1.5,
           "defendant_testimony_weight": 0.6,
           "expert_plaintiff_weight": 1.1,
           "expert_defendant_weight": 0.7,
-          "documentary_weight": 1.0,
+          "documentary_weight": 1,
           "emotional_evidence_weight": 1.6
         },
-        
         "deliberation": {
-          "influence_weight": 3.0,
+          "influence_weight": 3,
           "persuadability": 0.2,
           "position_stability": 0.9,
           "speaking_share": 0.25,
@@ -330,7 +304,6 @@
           "foreperson_probability": 0.8
         }
       },
-      
       "case_type_predictions": {
         "all_cases": {
           "note": "Strongly plaintiff-favorable across all case types",
@@ -338,13 +311,11 @@
           "damages_multiplier": 1.8
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 1,
         "defense_danger_level": 5,
         "cause_challenge_vulnerability": 0.4,
         "strike_priority": "CRITICAL_MUST_STRIKE_FOR_DEFENSE",
-        
         "cause_challenge_approach": {
           "strategy": "Difficult due to sympathetic presentation. Focus on pre-formed views about corporations.",
           "script": [
@@ -353,11 +324,10 @@
             "Would you agree that your experiences have shaped strong views about corporate responsibility?"
           ]
         },
-        
         "warning": "If seated, will likely become foreperson and drive plaintiff verdict with maximum damages. Defense must strike."
-      }
+      },
+      "image_url": "images/CAPT_4.2_ReverendRighteous.png"
     },
-    
     {
       "persona_id": "CAPT_4.3_ColonelCommand",
       "nickname": "Colonel Command",
@@ -367,7 +337,6 @@
       "secondary_archetype": "calculator",
       "archetype_strength": 0.95,
       "variant": "MILITARY_ANALYTICAL",
-      
       "demographics": {
         "age": 64,
         "gender": "male",
@@ -391,24 +360,22 @@
         "political_affiliation": "Republican",
         "political_engagement": "consistent_voter"
       },
-      
       "dimensions": {
         "attribution_orientation": 2.5,
         "just_world_belief": 3.5,
         "jwb_subtype": null,
         "authoritarianism": 4.5,
         "institutional_trust": {
-          "corporations": 4.0,
-          "medical": 4.0,
-          "legal_system": 4.0,
+          "corporations": 4,
+          "medical": 4,
+          "legal_system": 4,
           "insurance": 3.5
         },
         "litigation_attitude": 2.5,
-        "leadership_tendency": 5.0,
-        "cognitive_style": 5.0,
+        "leadership_tendency": 5,
+        "cognitive_style": 5,
         "damages_orientation": 2.5
       },
-      
       "life_experiences": [
         "Career military officer, led troops in combat",
         "Managed billion-dollar defense programs",
@@ -417,7 +384,6 @@
         "Respects expertise and documentation",
         "Expects preparation and logical presentation"
       ],
-      
       "characteristic_phrases": [
         "Let's establish the facts first",
         "What's the evidence for that?",
@@ -426,7 +392,6 @@
         "The burden of proof is on the plaintiff",
         "Let's not get emotional; let's look at what we know"
       ],
-      
       "voir_dire_responses": {
         "occupation_question": {
           "question": "What do you do for work?",
@@ -441,11 +406,10 @@
           "response": "Absolutely. In the military, we don't let personal feelings interfere with mission analysis. I'd apply the same discipline here. Both sides deserve a fair hearing based on the evidence."
         }
       },
-      
       "deliberation_behavior": {
         "predicted_role": "foreperson_procedural_leader",
         "foreperson_candidate": true,
-        "foreperson_probability": 0.80,
+        "foreperson_probability": 0.8,
         "deliberation_style": "evidence_driven_systematic",
         "influence_tactics": [
           "Procedural authority and organization",
@@ -461,24 +425,21 @@
         ],
         "faction_behavior": "Will impose structure. More fair than other Captain types. Outcome depends on evidence quality."
       },
-      
       "simulation_parameters": {
         "liability_threshold": 0.55,
         "contributory_fault_weight": 1.3,
         "damage_multiplier": 0.7,
         "non_economic_skepticism": 0.6,
         "punitive_resistance": 0.5,
-        
         "evidence_processing": {
           "plaintiff_testimony_weight": 0.9,
-          "defendant_testimony_weight": 1.0,
+          "defendant_testimony_weight": 1,
           "expert_plaintiff_weight": 1.2,
           "expert_defendant_weight": 1.2,
           "documentary_weight": 1.4,
           "emotional_evidence_weight": 0.5,
           "procedural_compliance_weight": 1.5
         },
-        
         "deliberation": {
           "influence_weight": 2.8,
           "persuadability": 0.35,
@@ -490,7 +451,6 @@
           "evidence_driven_style": 0.9
         }
       },
-      
       "case_type_predictions": {
         "all_cases": {
           "note": "Moderate defense lean but genuinely evidence-driven. More persuadable than other Captains.",
@@ -498,15 +458,12 @@
           "damages_multiplier": 0.75
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 3,
         "defense_danger_level": 2,
         "cause_challenge_vulnerability": 0.3,
         "strike_priority": "EVALUATE_CAREFULLY",
-        
         "notes": "Unlike CEO Carl, Colonel Command can be won by strong evidence. If plaintiff has good documentation and clear liability, he may be acceptable. If case depends on emotional appeal or circumstantial evidence, consider striking.",
-        
         "if_keeping_as_plaintiff": {
           "strategy": "Emphasize documentary evidence, expert testimony, defendant's failure to follow procedures",
           "arguments_that_work": [
@@ -515,9 +472,9 @@
             "The documentation shows a pattern of negligence"
           ]
         }
-      }
+      },
+      "image_url": "images/CAPT_4.3_ColonelCommand.png"
     },
-    
     {
       "persona_id": "CAPT_4.4_AttorneyAngela",
       "nickname": "Attorney Angela",
@@ -525,9 +482,8 @@
       "tagline": "I've tried cases for 25 years. I know how this works.",
       "archetype": "captain",
       "secondary_archetype": "bootstrapper",
-      "archetype_strength": 1.0,
+      "archetype_strength": 1,
       "variant": "LEGAL_EXPERT_DEFENSE",
-      
       "demographics": {
         "age": 52,
         "gender": "female",
@@ -551,24 +507,22 @@
         "political_affiliation": "Republican",
         "political_engagement": "donor"
       },
-      
       "dimensions": {
-        "attribution_orientation": 2.0,
+        "attribution_orientation": 2,
         "just_world_belief": 3.5,
         "jwb_subtype": null,
         "authoritarianism": 3.5,
         "institutional_trust": {
           "corporations": 4.5,
-          "medical": 4.0,
-          "legal_system": 4.0,
-          "insurance": 4.0
+          "medical": 4,
+          "legal_system": 4,
+          "insurance": 4
         },
         "litigation_attitude": 1.5,
-        "leadership_tendency": 5.0,
+        "leadership_tendency": 5,
         "cognitive_style": 4.5,
         "damages_orientation": 1.5
       },
-      
       "life_experiences": [
         "25 years defending corporations in employment and PI cases",
         "Partner at major defense firm",
@@ -576,7 +530,6 @@
         "Will claim legal expertise to dominate deliberation",
         "May frame legal standards in defense-favorable terms"
       ],
-      
       "characteristic_phrases": [
         "I've been a trial lawyer for 25 years, so let me explain...",
         "Actually, the legal standard is...",
@@ -584,7 +537,6 @@
         "The plaintiff hasn't met their burden",
         "This is exactly the kind of case that..."
       ],
-      
       "voir_dire_responses": {
         "occupation_question": {
           "question": "What do you do for work?",
@@ -595,7 +547,6 @@
           "response": "I'd like to think it would make me a better juror, actually. I understand how trials work, what evidence means, how to evaluate testimony. I can set aside my professional role and just be a citizen evaluating the facts."
         }
       },
-      
       "deliberation_behavior": {
         "predicted_role": "dominant_legal_authority",
         "foreperson_candidate": true,
@@ -615,14 +566,12 @@
         ],
         "faction_behavior": "Will attempt to control deliberation through claimed legal expertise. Extremely dangerous for plaintiffs."
       },
-      
       "simulation_parameters": {
         "liability_threshold": 0.8,
         "contributory_fault_weight": 2.5,
         "damage_multiplier": 0.3,
         "non_economic_skepticism": 0.85,
         "punitive_resistance": 0.9,
-        
         "deliberation": {
           "influence_weight": 2.8,
           "persuadability": 0.1,
@@ -633,13 +582,11 @@
           "other_juror_intimidation": 0.7
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 5,
         "defense_danger_level": 1,
         "cause_challenge_vulnerability": 0.6,
         "strike_priority": "CRITICAL_MUST_STRIKE_FOR_PLAINTIFF",
-        
         "cause_challenge_approach": {
           "strategy": "Focus on professional bias from career defending corporations",
           "script": [
@@ -648,11 +595,10 @@
             "Would you feel uncomfortable finding against a corporation given your career?"
           ]
         },
-        
         "warning": "EXTREMELY DANGEROUS. Will use legal knowledge to dominate deliberation and frame issues defense-favorably. May actually mislead other jurors about legal standards. Strike immediately."
-      }
+      },
+      "image_url": "images/CAPT_4.4_AttorneyAngela.png"
     },
-    
     {
       "persona_id": "CAPT_4.5_PrincipalPatricia",
       "nickname": "Principal Patricia",
@@ -662,7 +608,6 @@
       "secondary_archetype": "scale_balancer",
       "archetype_strength": 0.85,
       "variant": "EDUCATIONAL_LEADER",
-      
       "demographics": {
         "age": 57,
         "gender": "female",
@@ -686,24 +631,22 @@
         "political_affiliation": "Democrat",
         "political_engagement": "community_active"
       },
-      
       "dimensions": {
-        "attribution_orientation": 3.0,
+        "attribution_orientation": 3,
         "just_world_belief": 2.5,
         "jwb_subtype": null,
-        "authoritarianism": 3.0,
+        "authoritarianism": 3,
         "institutional_trust": {
           "corporations": 2.5,
           "medical": 3.5,
-          "legal_system": 3.0,
+          "legal_system": 3,
           "insurance": 2.5
         },
         "litigation_attitude": 3.5,
         "leadership_tendency": 4.5,
-        "cognitive_style": 3.0,
+        "cognitive_style": 3,
         "damages_orientation": 3.5
       },
-      
       "life_experiences": [
         "30 years in education, 15 as principal",
         "Manages staff of 150, student body of 2,000",
@@ -712,7 +655,6 @@
         "Community leader, well-respected",
         "Fair but firm disciplinarian"
       ],
-      
       "characteristic_phrases": [
         "Let's hear from everyone before we decide",
         "I've dealt with situations like this at school",
@@ -720,7 +662,6 @@
         "We need to be fair, but we also need to hold people accountable",
         "What does the evidence actually show?"
       ],
-      
       "deliberation_behavior": {
         "predicted_role": "fair_facilitator",
         "foreperson_candidate": true,
@@ -734,15 +675,13 @@
         ],
         "faction_behavior": "Will try to facilitate rather than advocate. May lean slightly plaintiff but genuinely tries to be fair."
       },
-      
       "simulation_parameters": {
         "liability_threshold": 0.45,
-        "contributory_fault_weight": 1.0,
+        "contributory_fault_weight": 1,
         "damage_multiplier": 1.1,
         "non_economic_skepticism": 0.4,
-        
         "deliberation": {
-          "influence_weight": 2.0,
+          "influence_weight": 2,
           "persuadability": 0.45,
           "position_stability": 0.6,
           "speaking_share": 0.18,
@@ -750,17 +689,15 @@
           "consensus_seeking": 0.8
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 2,
         "defense_danger_level": 2,
         "cause_challenge_vulnerability": 0.2,
         "strike_priority": "GENERALLY_ACCEPTABLE_TO_BOTH",
-        
         "notes": "Patricia is the rare Captain who is genuinely fair. Both sides can likely accept her. She will facilitate balanced discussion and can be persuaded by evidence either way."
-      }
+      },
+      "image_url": "images/CAPT_4.5_PrincipalPatricia.png"
     },
-    
     {
       "persona_id": "CAPT_4.6_SurgeonSam",
       "nickname": "Surgeon Sam",
@@ -770,7 +707,6 @@
       "secondary_archetype": "bootstrapper",
       "archetype_strength": 0.9,
       "variant": "MEDICAL_AUTHORITY",
-      
       "demographics": {
         "age": 58,
         "gender": "male",
@@ -794,7 +730,6 @@
         "political_affiliation": "Independent",
         "political_engagement": "moderate"
       },
-      
       "dimensions": {
         "attribution_orientation": 2.5,
         "just_world_belief": 3.5,
@@ -802,16 +737,15 @@
         "authoritarianism": 3.5,
         "institutional_trust": {
           "corporations": 3.5,
-          "medical": 5.0,
-          "legal_system": 3.0,
-          "insurance": 3.0
+          "medical": 5,
+          "legal_system": 3,
+          "insurance": 3
         },
-        "litigation_attitude": 2.0,
+        "litigation_attitude": 2,
         "leadership_tendency": 4.5,
-        "cognitive_style": 4.0,
+        "cognitive_style": 4,
         "damages_orientation": 2.5
       },
-      
       "life_experiences": [
         "30-year career as orthopedic surgeon",
         "Been sued twice (won both), deeply affected by experience",
@@ -819,7 +753,6 @@
         "Resents malpractice system",
         "Will identify with physician defendants"
       ],
-      
       "characteristic_phrases": [
         "As a physician, I can tell you...",
         "Medicine isn't an exact science",
@@ -827,11 +760,10 @@
         "Bad outcomes aren't the same as malpractice",
         "You can't appreciate how difficult these decisions are"
       ],
-      
       "case_type_predictions": {
         "medical_malpractice": {
           "note": "EXTREMELY defense-favorable in med mal cases",
-          "liability_probability": 0.10,
+          "liability_probability": 0.1,
           "identification_with_defendant": 0.95
         },
         "other_cases": {
@@ -839,13 +771,11 @@
           "liability_probability_modifier": -0.1
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 5,
         "defense_danger_level": 1,
         "cause_challenge_vulnerability": 0.7,
         "strike_priority": "MUST_STRIKE_IN_MED_MAL",
-        
         "cause_challenge_approach": {
           "strategy": "In med mal cases, strong cause challenge based on professional identification",
           "script": [
@@ -854,9 +784,9 @@
             "Would you agree that a physician would have to do something truly egregious for you to find liability?"
           ]
         }
-      }
+      },
+      "image_url": "images/CAPT_4.6_SurgeonSam.png"
     },
-    
     {
       "persona_id": "CAPT_4.7_UnionBossUmberto",
       "nickname": "Union Boss Umberto",
@@ -864,9 +794,8 @@
       "tagline": "I've fought for workers my whole life. I'm not stopping now.",
       "archetype": "captain",
       "secondary_archetype": "crusader",
-      "archetype_strength": 1.0,
+      "archetype_strength": 1,
       "variant": "LABOR_LEADER",
-      
       "demographics": {
         "age": 55,
         "gender": "male",
@@ -890,7 +819,6 @@
         "political_affiliation": "Democrat",
         "political_engagement": "activist"
       },
-      
       "dimensions": {
         "attribution_orientation": 4.5,
         "just_world_belief": 1.5,
@@ -898,16 +826,15 @@
         "authoritarianism": 2.5,
         "institutional_trust": {
           "corporations": 1.5,
-          "medical": 3.0,
+          "medical": 3,
           "legal_system": 2.5,
-          "insurance": 2.0
+          "insurance": 2
         },
         "litigation_attitude": 4.5,
-        "leadership_tendency": 5.0,
+        "leadership_tendency": 5,
         "cognitive_style": 2.5,
-        "damages_orientation": 5.0
+        "damages_orientation": 5
       },
-      
       "life_experiences": [
         "Started as hospital janitor, rose to regional director",
         "Negotiated hundreds of contracts",
@@ -916,7 +843,6 @@
         "Deep distrust of corporate defendants",
         "Strong leadership presence"
       ],
-      
       "characteristic_phrases": [
         "I've been fighting for workers for 30 years",
         "Corporations only understand one thing: money",
@@ -924,11 +850,10 @@
         "Working people deserve justice",
         "I've seen how they treat people"
       ],
-      
       "deliberation_behavior": {
         "predicted_role": "dominant_plaintiff_advocate",
         "foreperson_candidate": true,
-        "foreperson_probability": 0.70,
+        "foreperson_probability": 0.7,
         "deliberation_style": "pro_worker_framing",
         "influence_tactics": [
           "Working-class credibility",
@@ -938,14 +863,12 @@
         ],
         "faction_behavior": "Will dominate deliberations and push for maximum plaintiff verdict. Very difficult to oppose."
       },
-      
       "simulation_parameters": {
         "liability_threshold": 0.2,
         "contributory_fault_weight": 0.3,
-        "damage_multiplier": 2.0,
+        "damage_multiplier": 2,
         "non_economic_skepticism": 0.1,
         "punitive_inclination": 0.9,
-        
         "deliberation": {
           "influence_weight": 2.5,
           "persuadability": 0.2,
@@ -954,13 +877,11 @@
           "foreperson_probability": 0.7
         }
       },
-      
       "strategy_guidance": {
         "plaintiff_danger_level": 1,
         "defense_danger_level": 5,
         "cause_challenge_vulnerability": 0.65,
         "strike_priority": "CRITICAL_MUST_STRIKE_FOR_DEFENSE",
-        
         "cause_challenge_approach": {
           "strategy": "Focus on career opposition to corporations creating inability to be fair",
           "script": [
@@ -969,9 +890,9 @@
             "Is there any amount of evidence that could convince you this corporation acted properly?"
           ]
         },
-        
         "warning": "Plaintiff's dream juror. Will dominate deliberation, push for maximum verdict. Defense must strike."
-      }
+      },
+      "image_url": "images/CAPT_4.7_UnionBossUmberto.png"
     }
   ]
 }

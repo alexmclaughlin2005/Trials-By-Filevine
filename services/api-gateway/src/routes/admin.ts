@@ -1,5 +1,13 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { refreshFeatureFlags } from '../utils/feature-flags';
+import { generatePersonaHeadshots, GenerationProgress } from '../services/persona-headshot-service';
+import {
+  createGenerationStatus,
+  updateGenerationStatus,
+  getGenerationStatus,
+  getLatestGenerationStatus,
+  HeadshotGenerationStatus,
+} from '../services/persona-headshot-status';
 
 // TODO: Add proper authentication middleware
 // For now, this is open but should be protected in production
@@ -127,6 +135,10 @@ export async function adminRoutes(fastify: FastifyInstance) {
               description: persona.backstory,
               backstory: persona.backstory,
               archetype: persona.archetype,
+              
+              // Store JSON persona_id for 1:1 mapping (check both 'id' and 'persona_id' fields)
+              jsonPersonaId: (persona as any).id || (persona as any).persona_id,
+              
               archetypeVerdictLean: persona.archetype_verdict_lean,
               instantRead: persona.instant_read,
               phrasesYoullHear: persona.phrases_youll_hear,
@@ -352,6 +364,233 @@ export async function adminRoutes(fastify: FastifyInstance) {
         error: 'Failed to seed feature flags',
         message: errorMessage,
         details: errorStack,
+      });
+    }
+  });
+
+  /**
+   * POST /api/admin/generate-persona-headshots
+   * Generate headshot images for all personas
+   */
+  fastify.post('/generate-persona-headshots', async (request: FastifyRequest<{ Body: { regenerate?: boolean; updateJson?: boolean } }>, reply: FastifyReply) => {
+    try {
+      const { regenerate = false, updateJson = false } = request.body || {};
+      
+      fastify.log.info({ regenerate, updateJson }, 'Starting persona headshot generation...');
+
+      // Create status tracking
+      const statusId = `headshot-gen-${Date.now()}`;
+      const status = createGenerationStatus(statusId);
+      status.status = 'running';
+      updateGenerationStatus(statusId, status);
+
+      // Start generation in background (non-blocking)
+      generatePersonaHeadshots({
+        regenerate,
+        updateJson,
+        onProgress: (progress) => {
+          fastify.log.info({ progress }, 'Headshot generation progress');
+          updateGenerationStatus(statusId, {
+            progress: {
+              total: progress.total,
+              processed: progress.processed,
+              skipped: progress.skipped,
+              failed: progress.failed,
+              current: progress.current,
+            },
+          });
+        },
+      })
+        .then((result) => {
+          fastify.log.info({ result }, 'Headshot generation completed');
+          updateGenerationStatus(statusId, {
+            status: 'completed',
+            completedAt: new Date(),
+            result,
+          });
+        })
+        .catch((error) => {
+          fastify.log.error({ error }, 'Headshot generation failed');
+          updateGenerationStatus(statusId, {
+            status: 'failed',
+            completedAt: new Date(),
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        });
+
+      // Return immediately with accepted status
+      reply.code(202).send({
+        success: true,
+        message: 'Headshot generation started',
+        statusId,
+        regenerate,
+        updateJson,
+      });
+      
+    } catch (error) {
+      fastify.log.error({ error }, 'Error starting headshot generation');
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to start headshot generation',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * POST /api/admin/generate-persona-headshots-sync
+   * Generate headshot images synchronously (for testing/small batches)
+   * WARNING: This will take a long time for all personas
+   */
+  fastify.post('/generate-persona-headshots-sync', async (request: FastifyRequest<{ Body: { regenerate?: boolean; updateJson?: boolean } }>, reply: FastifyReply) => {
+    try {
+      const { regenerate = false, updateJson = false } = request.body || {};
+      
+      fastify.log.info({ regenerate, updateJson }, 'Starting synchronous persona headshot generation...');
+
+      const progressUpdates: GenerationProgress[] = [];
+      
+      const result = await generatePersonaHeadshots({
+        regenerate,
+        updateJson,
+        onProgress: (progress) => {
+          progressUpdates.push(progress);
+          fastify.log.info({ progress }, 'Headshot generation progress');
+        },
+      });
+
+      return {
+        success: true,
+        message: 'Headshot generation completed',
+        result,
+        progress: progressUpdates,
+      };
+    } catch (error) {
+      fastify.log.error({ error }, 'Error generating headshots');
+      return reply.status(500).send({
+        success: false,
+        error: 'Failed to generate headshots',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/persona-headshots-count
+   * Get count of existing persona headshot images
+   */
+  fastify.get('/persona-headshots-count', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      // Try multiple possible paths
+      const possiblePaths = [
+        process.env.IMAGES_DIR,
+        path.join(process.cwd(), 'Juror Personas', 'images'),
+        path.join(__dirname, '..', '..', '..', '..', 'Juror Personas', 'images'),
+        path.join(process.cwd(), '..', '..', 'Juror Personas', 'images'),
+      ].filter(Boolean) as string[];
+      
+      let imageCount = 0;
+      let totalSize = 0;
+      let imagesDir = '';
+      
+      for (const IMAGES_DIR of possiblePaths) {
+        try {
+          const files = await fs.readdir(IMAGES_DIR);
+          const pngFiles = files.filter((f: string) => f.endsWith('.png'));
+          
+          if (pngFiles.length > 0) {
+            imageCount = pngFiles.length;
+            imagesDir = IMAGES_DIR;
+            
+            // Calculate total size
+            for (const file of pngFiles) {
+              const filePath = path.join(IMAGES_DIR, file);
+              const stats = await fs.stat(filePath);
+              totalSize += stats.size;
+            }
+            break; // Found the directory, stop searching
+          }
+        } catch (error: any) {
+          if (error.code !== 'ENOENT') {
+            fastify.log.warn({ error, path: IMAGES_DIR }, 'Error reading images directory');
+          }
+          // Continue to next path
+        }
+      }
+
+      return {
+        imageCount,
+        totalSize,
+        totalSizeMB: (totalSize / (1024 * 1024)).toFixed(2),
+        imagesDir: imagesDir || 'Not found',
+      };
+    } catch (error) {
+      fastify.log.error({ error }, 'Error getting headshot status');
+      return reply.status(500).send({
+        error: 'Failed to get headshot status',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/persona-headshots-status/:statusId
+   * Get status of a specific headshot generation job
+   */
+  fastify.get('/persona-headshots-status/:statusId', {
+    config: {
+      rateLimit: false, // Exempt from rate limiting (used for polling)
+    },
+  }, async (request: FastifyRequest<{ Params: { statusId: string } }>, reply: FastifyReply) => {
+    try {
+      const { statusId } = request.params;
+      const status = getGenerationStatus(statusId);
+
+      if (!status) {
+        return reply.status(404).send({
+          error: 'Generation status not found',
+          message: `No status found for ID: ${statusId}`,
+        });
+      }
+
+      return status;
+    } catch (error) {
+      fastify.log.error({ error }, 'Error getting headshot generation status');
+      return reply.status(500).send({
+        error: 'Failed to get generation status',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * GET /api/admin/persona-headshots-status
+   * Get latest headshot generation status
+   */
+  fastify.get('/persona-headshots-status', {
+    config: {
+      rateLimit: false, // Exempt from rate limiting (used for polling)
+    },
+  }, async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const status = getLatestGenerationStatus();
+
+      if (!status) {
+        return reply.status(404).send({
+          error: 'No generation status found',
+          message: 'No headshot generation has been started yet',
+        });
+      }
+
+      return status;
+    } catch (error) {
+      fastify.log.error({ error }, 'Error getting latest headshot generation status');
+      return reply.status(500).send({
+        error: 'Failed to get generation status',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });

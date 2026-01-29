@@ -1,6 +1,6 @@
 # Juries by Filevine - Project Structure & AI Instructions
 
-**Last Updated:** 2026-01-21
+**Last Updated:** 2026-01-29
 **Version:** 1.0.0
 
 ## Project Overview
@@ -594,6 +594,29 @@ CASE_SERVICE_URL=...
    - Logs document count, extraction status, character counts
    - Tracks success/failure of text fetching
    - Shows combined content size in prompts
+
+### ✅ Persona Image Generation Fix (Jan 29, 2026)
+1. **V2 Persona Support** - Fixed image generation for V2 personas imported through "Persona V2 setup"
+   - Updated `persona-image-utils.ts` and `persona-headshot-service.ts` to search both V1 and V2 directories
+   - Handles format differences: V1 uses `persona_id`/`full_name`, V2 uses `id`/`name`
+   - Normalized demographic fields across both formats
+2. **Database Schema Enhancement** - Added `jsonPersonaId` field to `Persona` model
+   - Provides reliable 1:1 mapping between database personas and JSON files
+   - Eliminates need for fuzzy matching fallback
+   - Backfill script (`scripts/backfill-json-persona-ids.ts`) populates existing personas
+3. **Initials Overlay Feature** - Added watermark to generated images for identification
+   - Uses `sharp` library to add semi-transparent initials overlay
+   - Watermark appears in bottom right corner
+   - Helps verify which persona an image belongs to
+4. **Cache Busting** - Fixed aggressive caching preventing updated images from appearing
+   - Added timestamp query parameters to image URLs
+   - Changed Next.js proxy route from `force-cache` to `no-store`
+   - Frontend updates images immediately without page refresh
+5. **Image Serving Optimization** - Direct `jsonPersonaId` lookup for faster image serving
+   - Constructs filename directly from `jsonPersonaId` (e.g., `BOOT_09.png`)
+   - Comprehensive logging for debugging
+   - Falls back to fuzzy matching only if direct lookup fails
+   - See: [SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md](./SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md) for complete details
 
 ### 🚧 In Progress / Next Steps
 

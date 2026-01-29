@@ -102,6 +102,7 @@ export async function buildServer() {
   await server.register(rateLimit, {
     max: config.rateLimitMax,
     timeWindow: config.rateLimitWindow,
+    global: true, // Allow route-level overrides via config.rateLimit: false
   });
 
   await server.register(jwt, {

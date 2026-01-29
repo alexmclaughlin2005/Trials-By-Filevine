@@ -5,11 +5,8 @@
   "verdict_lean": "STRONG PLAINTIFF",
   "danger_for_plaintiff": 1,
   "danger_for_defense": 5,
-  
   "what_they_believe": "Corporations have too much power and routinely harm regular people. The legal system is one of few ways to hold them accountable. Large verdicts send a message and force change.",
-  
   "how_they_behave_in_deliberation": "Will advocate for plaintiff from the start. Will push for maximum damages including punitives. Will frame case as justice issue, not just about this plaintiff. May clash with Bootstrappers.",
-  
   "how_to_spot_them": [
     "Skepticism of corporations, 'the system,' or 'big business'",
     "Union membership or labor/activist background",
@@ -17,14 +14,12 @@
     "Progressive politics, college educated in social sciences",
     "Phrases like 'accountability,' 'power imbalance,' 'pattern of behavior'"
   ],
-  
   "personas": [
     {
       "id": "CRUS_01",
       "name": "Woke Wendy",
       "tagline": "The system is designed to protect the powerful at the expense of everyone else.",
       "instant_read": "Progressive activist. Sees corporations as inherently harmful.",
-      
       "demographics": {
         "age": 34,
         "gender": "female",
@@ -37,9 +32,7 @@
         "religion": "Jewish (secular)",
         "politics": "Democrat (progressive wing)"
       },
-      
       "backstory": "MSW from Columbia focused on systemic poverty. Daily work exposes her to families harmed by corporations, landlords, employers. Politically active in progressive causes. Believes individual cases represent larger patterns of corporate abuse. NPR listener, reads New York Times.",
-      
       "phrases_youll_hear": [
         "We need to talk about the power imbalance here",
         "Corporations care about profits, not people",
@@ -47,25 +40,21 @@
         "Someone has to hold them accountable",
         "This isn't just about this case - it's about sending a message"
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.85,
         "damages_if_liability": "Maximum. Will push for punitives to 'send a message.'",
         "role_in_deliberation": "Vocal plaintiff advocate. Will frame case as systemic issue."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Will fight for maximum verdict.",
         "defense_strategy": "MUST STRIKE. She's already decided corporations are guilty."
       }
     },
-    
     {
       "id": "CRUS_02",
       "name": "Union-Strong Ulysses",
       "tagline": "I've seen what companies do to workers when no one's watching.",
       "instant_read": "Labor leader with decades of fighting corporate abuse. Credible and influential.",
-      
       "demographics": {
         "age": 42,
         "gender": "male",
@@ -78,9 +67,7 @@
         "religion": "Baptist",
         "politics": "Democrat"
       },
-      
       "backstory": "20+ years on the line and representing workers against management. Has personally witnessed safety violations, coverups, and retaliation. Seen coworkers injured while companies denied responsibility. His views come from lived experience, not academic theory - makes him very credible to other jurors.",
-      
       "phrases_youll_hear": [
         "I've been fighting for workers my whole career",
         "Companies will say anything to avoid responsibility",
@@ -88,25 +75,22 @@
         "When there's money on one side and a worker on the other...",
         "They knew. They always know."
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.85,
         "damages_if_liability": "High. Understands what injuries cost workers.",
         "role_in_deliberation": "Influential voice. Working-class credibility resonates with moderates."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Combines strong views with credibility and leadership.",
         "defense_strategy": "MUST STRIKE. His lived experience will persuade other jurors."
-      }
+      },
+      "image_url": "images/CRUS_02.png"
     },
-    
     {
       "id": "CRUS_03",
       "name": "NPR Nancy",
       "tagline": "I've read the studies. Corporations systematically externalize costs onto the public.",
       "instant_read": "Educated liberal. Believes in regulation and accountability.",
-      
       "demographics": {
         "age": 48,
         "gender": "female",
@@ -119,9 +103,7 @@
         "religion": "Unitarian",
         "politics": "Democrat"
       },
-      
       "backstory": "Career in nonprofit sector working on consumer protection and environmental issues. Reads extensively about corporate behavior. Listens to NPR, reads The Atlantic, New Yorker. Believes in evidence-based policy and corporate accountability. Well-informed and articulate.",
-      
       "phrases_youll_hear": [
         "The research shows corporations routinely cut corners",
         "This is about accountability, not punishment",
@@ -129,25 +111,21 @@
         "The company made a calculated decision",
         "We've seen this pattern across industries"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.80,
+        "liability_finding_probability": 0.8,
         "damages_if_liability": "High, but evidence-based. Will want documentation.",
         "role_in_deliberation": "Articulate advocate. Can translate systemic issues for other jurors."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Smart advocate who can persuade moderates.",
         "defense_strategy": "STRIKE. Too knowledgeable about corporate behavior."
       }
     },
-    
     {
       "id": "CRUS_04",
       "name": "Bernie-Bro Brad",
       "tagline": "The billionaires and corporations have rigged everything. Time for them to pay.",
       "instant_read": "Young progressive. Anti-corporate populist. Wants maximum damages.",
-      
       "demographics": {
         "age": 28,
         "gender": "male",
@@ -160,9 +138,7 @@
         "religion": "None",
         "politics": "Democrat (Sanders supporter)"
       },
-      
       "backstory": "College-educated but underemployed with student loans. Radicalized by 2008 financial crisis and Occupy movement. Believes system is fundamentally rigged for corporations and the wealthy. Active in local organizing. Sees jury duty as chance to deliver justice corporations usually escape.",
-      
       "phrases_youll_hear": [
         "Corporations never pay for what they do",
         "This is our chance to actually hold them accountable",
@@ -170,25 +146,21 @@
         "The system protects the wealthy",
         "Finally someone has to answer for this"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.90,
+        "liability_finding_probability": 0.9,
         "damages_if_liability": "Maximum possible. Wants to 'make them pay.'",
         "role_in_deliberation": "Passionate advocate. May be too aggressive for some jurors."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP with caution. Passionate but may alienate moderate jurors.",
         "defense_strategy": "MUST STRIKE. He wants to punish your client."
       }
     },
-    
     {
       "id": "CRUS_05",
       "name": "Knows-The-Coverups Karen",
       "tagline": "I'm a nurse. I've seen hospitals change charts after bad outcomes.",
       "instant_read": "Medical insider who knows how the system really works. Devastating in med mal cases.",
-      
       "demographics": {
         "age": 48,
         "gender": "female",
@@ -201,9 +173,7 @@
         "religion": "Baptist",
         "politics": "Democrat"
       },
-      
       "backstory": "25 years as ICU nurse. Also serves as union representative. Has seen hospitals cover up mistakes, change documentation, blame nurses for systemic failures, and pressure staff to stay quiet. Insider knowledge makes her extremely credible AND extremely dangerous for medical defendants.",
-      
       "phrases_youll_hear": [
         "Hospitals have whole departments dedicated to avoiding liability",
         "When something goes wrong, they blame the nurse first",
@@ -211,26 +181,22 @@
         "If you want to know the truth, ask the nurses",
         "Administration cares about money, not patients"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.80,
+        "liability_finding_probability": 0.8,
         "damages_if_liability": "High. Understands true impact of medical injuries.",
         "role_in_deliberation": "Expert witness in jury room. Other jurors trust her medical knowledge.",
         "special_note": "IN MEDICAL MALPRACTICE: Liability probability 90%. Will educate jury about coverups."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Especially in medical cases - she's your best weapon.",
         "defense_strategy": "MUST STRIKE in medical cases. Her insider credibility is devastating."
       }
     },
-    
     {
       "id": "CRUS_06",
       "name": "Tree-Hugger Tina",
       "tagline": "I work for the state EPA. I see corporate violations every day.",
       "instant_read": "Environmental regulator. Professional skeptic of corporate compliance claims.",
-      
       "demographics": {
         "age": 31,
         "gender": "female",
@@ -243,9 +209,7 @@
         "religion": "Hindu (cultural)",
         "politics": "Democrat (progressive)"
       },
-      
       "backstory": "Works for state environmental agency investigating corporate violations. Daily job exposes her to companies lying about compliance, cutting corners, and calculating fines as cost of doing business. Environmental activist background. Sees corporate claims of 'safety culture' as PR fiction.",
-      
       "phrases_youll_hear": [
         "I see corporate violations every day in my job",
         "Companies calculate fines as cost of doing business",
@@ -253,25 +217,22 @@
         "Compliance is just a checkbox for most companies",
         "I know how to read these reports"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.90,
+        "liability_finding_probability": 0.9,
         "damages_if_liability": "Maximum including punitives. Wants to change behavior.",
         "role_in_deliberation": "Will analyze defendant's documents with professional skepticism."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Her professional expertise supports your case.",
         "defense_strategy": "CHALLENGE FOR CAUSE (her job is finding violations) or STRIKE."
-      }
+      },
+      "image_url": "images/CRUS_06.png"
     },
-    
     {
       "id": "CRUS_07",
       "name": "Screwed-By-The-System Sam",
       "tagline": "My parents lost their house in 2008. No banker went to jail. The system is rigged.",
       "instant_read": "Working-class populist. Personal grievance against corporate America.",
-      
       "demographics": {
         "age": 29,
         "gender": "male",
@@ -284,9 +245,7 @@
         "religion": "Catholic (lapsed)",
         "politics": "Independent (populist)"
       },
-      
       "backstory": "Parents lost home in 2008 financial crisis. Started college but had to drop out due to costs. Works multiple gig jobs with no benefits or security. Carries student loans for degree he never finished. Authentic grievance against 'the system' - not academic theory but lived experience.",
-      
       "phrases_youll_hear": [
         "The system is rigged",
         "My parents played by the rules and lost everything",
@@ -294,25 +253,21 @@
         "Nobody at the top ever goes to jail",
         "Must be nice to have lawyers on retainer"
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.75,
         "damages_if_liability": "High. Wants corporations to feel pain.",
         "role_in_deliberation": "Emotional advocate. Less articulate but authentic."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Authentic grievance resonates across political lines.",
         "defense_strategy": "STRIKE. His anger will drive deliberations."
       }
     },
-    
     {
       "id": "CRUS_08",
       "name": "Activist-Teacher Tanya",
       "tagline": "I see every day how the system fails kids. Somebody needs to be held accountable.",
       "instant_read": "Public school teacher. Sees systemic failures daily. Activist mindset.",
-      
       "demographics": {
         "age": 35,
         "gender": "female",
@@ -325,9 +280,7 @@
         "religion": "AME",
         "politics": "Democrat (progressive)"
       },
-      
       "backstory": "10 years teaching in underfunded public schools. Sees daily how systems fail vulnerable kids. Active in teachers' union and social justice causes. Has participated in protests. Believes in accountability and systemic change. Represents urban South progressive.",
-      
       "phrases_youll_hear": [
         "The system isn't broken - it's working exactly as designed",
         "My students don't get the same chances",
@@ -335,25 +288,21 @@
         "Accountability is the only thing that creates change",
         "When the powerful hurt the powerless..."
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.85,
         "damages_if_liability": "High including punitives.",
         "role_in_deliberation": "Articulate advocate. Can connect with other jurors."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. Educated, articulate, committed to accountability.",
         "defense_strategy": "MUST STRIKE. She's already framed your client as the villain."
       }
     },
-    
     {
       "id": "CRUS_09",
       "name": "Seen-Both-Sides Steve",
       "tagline": "I've seen companies cut corners AND workers exaggerate. But usually it's the company.",
       "instant_read": "Blue-collar realist. Pro-worker but not naive. More credible than academic types.",
-      
       "demographics": {
         "age": 54,
         "gender": "male",
@@ -366,9 +315,7 @@
         "religion": "Catholic",
         "politics": "Democrat"
       },
-      
       "backstory": "30 years in construction. Has seen contractors skip safety to save money - and seen workers exaggerate injuries for comp. More nuanced than academic Crusaders. Generally believes companies are at fault but won't automatically accept every plaintiff claim. Working-class credibility makes him influential.",
-      
       "phrases_youll_hear": [
         "I've seen guys get hurt when companies cut corners",
         "I've also seen guys milk injuries",
@@ -376,25 +323,21 @@
         "In my experience on job sites...",
         "Both sides can be full of it, but usually..."
       ],
-      
       "verdict_prediction": {
         "liability_finding_probability": 0.65,
         "damages_if_liability": "Fair. Not extreme.",
         "role_in_deliberation": "Voice of working-class reason. Can bridge Crusaders and moderates."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP. He's a credible moderate who leans your way.",
         "defense_strategy": "CONSIDER KEEPING if plaintiff's case is weak. He's not automatic plaintiff vote."
       }
     },
-    
     {
       "id": "CRUS_10",
       "name": "Professor Progressive",
       "tagline": "Corporate impunity is well-documented in the academic literature.",
       "instant_read": "Academic theorist. Most ideologically committed but may seem out of touch.",
-      
       "demographics": {
         "age": 56,
         "gender": "female",
@@ -407,9 +350,7 @@
         "religion": "Catholic (cultural)",
         "politics": "Democrat (progressive)"
       },
-      
       "backstory": "Career documenting structural inequality and corporate impunity. Published extensively on how corporations avoid accountability. Most ideologically committed of all Crusaders. Has academic framework supporting every pro-plaintiff argument. May come across as lecturing.",
-      
       "phrases_youll_hear": [
         "The research is clear on this",
         "This is a textbook example of corporate externalization of costs",
@@ -417,13 +358,11 @@
         "We see this pattern across industries",
         "Individual responsibility rhetoric obscures systemic causation"
       ],
-      
       "verdict_prediction": {
-        "liability_finding_probability": 0.90,
+        "liability_finding_probability": 0.9,
         "damages_if_liability": "Maximum. Views case as proving her academic theories.",
         "role_in_deliberation": "Will provide intellectual framework. May alienate some jurors."
       },
-      
       "strike_or_keep": {
         "plaintiff_strategy": "KEEP with caution. Smart but may seem out of touch to working-class jurors.",
         "defense_strategy": "CHALLENGE FOR CAUSE (pre-formed academic views) or STRIKE."
