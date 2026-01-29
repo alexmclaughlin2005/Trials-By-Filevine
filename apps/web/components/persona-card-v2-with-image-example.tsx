@@ -21,8 +21,9 @@ interface PersonaV2 {
   nickname?: string;
   tagline?: string;
   archetype?: string;
-  // ... other fields
   imageUrl?: string; // NEW: Image URL field
+  instantRead?: string; // V2 field
+  [key: string]: unknown; // Allow additional properties
 }
 
 interface PersonaCardV2Props {
@@ -128,7 +129,7 @@ export function PersonaCardV2WithImage({
                 </div>
 
                 {/* Instant Read */}
-                {persona.instantRead && (
+                {'instantRead' in persona && persona.instantRead && (
                   <p className="text-sm text-filevine-gray-700 italic mt-2 line-clamp-2">
                     &ldquo;{persona.instantRead}&rdquo;
                   </p>
