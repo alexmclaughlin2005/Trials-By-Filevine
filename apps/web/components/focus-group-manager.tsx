@@ -23,6 +23,9 @@ interface Argument {
   title: string;
   content: string;
   argumentType: string;
+  version: number;
+  isCurrent: boolean;
+  parentId?: string;
 }
 
 interface FocusGroupManagerProps {

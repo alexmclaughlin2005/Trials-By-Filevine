@@ -9,6 +9,9 @@ interface ArgumentListItemProps {
     title: string;
     content: string;
     argumentType: string;
+    version: number;
+    isCurrent: boolean;
+    parentId?: string;
   };
   isSelected: boolean;
   order?: number;
@@ -55,7 +58,14 @@ export function ArgumentListItem({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-gray-900">{argument.title}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-gray-900">{argument.title}</p>
+            {argument.version > 1 && (
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">
+                v{argument.version}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-gray-600 mt-1">
             {argument.argumentType} • {argument.content.length} characters
           </p>

@@ -21,6 +21,9 @@ interface ArgumentCheckboxListProps {
     title: string;
     content: string;
     argumentType: string;
+    version: number;
+    isCurrent: boolean;
+    parentId?: string;
   }>;
   selectedArguments: SelectedArgument[];
   onUpdate: (selected: SelectedArgument[]) => void;

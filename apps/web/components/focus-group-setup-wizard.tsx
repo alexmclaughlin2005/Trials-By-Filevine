@@ -25,6 +25,9 @@ interface FocusGroupSetupWizardProps {
     title: string;
     content: string;
     argumentType: string;
+    version: number;
+    isCurrent: boolean;
+    parentId?: string;
   }>;
   onComplete?: (sessionId: string) => void;
   onCancel?: () => void;
@@ -622,6 +625,9 @@ function ArgumentsSelectionStep({
     title: string;
     content: string;
     argumentType: string;
+    version: number;
+    isCurrent: boolean;
+    parentId?: string;
   }>;
   onUpdate: (updates: FocusGroupConfigUpdate) => void;
 }) {
@@ -629,15 +635,19 @@ function ArgumentsSelectionStep({
     onUpdate({ selectedArguments: updated });
   };
 
+  // Filter to only show current versions of arguments
+  // If multiple versions exist, only show the current one to avoid duplicates
+  const currentArguments = caseArguments.filter(arg => arg.isCurrent);
+
   // If no arguments exist, show empty state
-  if (!caseArguments || caseArguments.length === 0) {
+  if (!currentArguments || currentArguments.length === 0) {
     return <EmptyArgumentsState caseId={caseId} />;
   }
 
   return (
     <ArgumentCheckboxList
       caseId={caseId}
-      arguments={caseArguments}
+      arguments={currentArguments}
       selectedArguments={session.selectedArguments || []}
       onUpdate={handleUpdateArguments}
     />
