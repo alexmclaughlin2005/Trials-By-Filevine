@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient, APIClientError } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -174,7 +173,7 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
             Strategic Takeaways
           </h3>
           <p className="text-base text-filevine-gray-600 mb-6">
-            Takeaways are being generated automatically. Click below to check if they're ready.
+            Takeaways are being generated automatically. Click below to check if they&apos;re ready.
           </p>
           <Button
             onClick={() => refetch()}
