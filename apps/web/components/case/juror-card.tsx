@@ -83,7 +83,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       style={style}
       {...attributes}
       className={`
-        relative rounded-lg border-2 p-3 bg-white shadow-sm
+        relative rounded-lg border-2 p-4 bg-white shadow-sm
         hover:shadow-md transition-all select-none
         ${isDraggingState ? 'opacity-50 cursor-grabbing' : 'cursor-pointer'}
         ${getStatusColor(juror.status)}
@@ -107,9 +107,9 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
 
       {/* Juror Image - Clickable */}
       {juror.imageUrl ? (
-        <div className="mb-2 flex justify-center">
-          <div 
-            className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer hover:border-primary transition-colors"
+        <div className="mb-3 flex justify-center">
+          <div
+            className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer hover:border-primary transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleImageClick(e);
@@ -120,21 +120,21 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
               alt={`${juror.firstName} ${juror.lastName}`}
               fill
               className="object-cover"
-              sizes="64px"
+              sizes="96px"
               unoptimized
             />
           </div>
         </div>
       ) : (
-        <div className="mb-2 flex justify-center">
-          <div 
-            className="w-16 h-16 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
+        <div className="mb-3 flex justify-center">
+          <div
+            className="w-24 h-24 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleImageClick(e);
             }}
           >
-            <span className="text-xs font-semibold text-gray-400">
+            <span className="text-sm font-semibold text-gray-400">
               {juror.firstName?.[0]}{juror.lastName?.[0]}
             </span>
           </div>
@@ -143,16 +143,16 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
 
       {/* Juror Number */}
       {juror.jurorNumber && (
-        <div className="mb-1">
-          <span className="text-xs font-semibold text-gray-600">
+        <div className="mb-2">
+          <span className="text-sm font-semibold text-gray-600">
             #{juror.jurorNumber}
           </span>
         </div>
       )}
 
       {/* Name - Clickable */}
-      <div 
-        className="font-semibold text-sm mb-1 cursor-pointer hover:text-primary transition-colors"
+      <div
+        className="font-semibold text-base mb-2 cursor-pointer hover:text-primary transition-colors"
         onClick={(e) => {
           e.stopPropagation();
           handleNameClick(e);
@@ -162,7 +162,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       </div>
 
       {/* Details */}
-      <div className="text-xs text-gray-600 space-y-0.5">
+      <div className="text-sm text-gray-600 space-y-1">
         {juror.age && <div>Age {juror.age}</div>}
         {juror.occupation && <div>{juror.occupation}</div>}
       </div>
@@ -170,7 +170,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       {/* Archetype Badge */}
       {juror.classifiedArchetype && (
         <div className="mt-2">
-          <span className="inline-block px-2 py-0.5 text-xs font-medium rounded bg-purple-100 text-purple-700">
+          <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-700">
             {juror.classifiedArchetype.replace(/_/g, ' ')}
           </span>
         </div>
@@ -178,7 +178,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
 
       {/* Position Indicator */}
       {juror.boxRow !== null && juror.boxRow !== undefined && juror.boxSeat !== null && juror.boxSeat !== undefined && (
-        <div className="mt-1 text-xs text-gray-500">
+        <div className="mt-2 text-xs text-gray-500">
           Row {juror.boxRow}, Seat {juror.boxSeat}
         </div>
       )}

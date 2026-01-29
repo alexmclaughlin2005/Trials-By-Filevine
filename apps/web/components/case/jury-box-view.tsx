@@ -55,7 +55,7 @@ function Seat({ row, seat, juror, nextJuror, isDragging, onJurorClick, className
     <div
       ref={setNodeRef}
       className={`
-        relative min-h-[120px] rounded-lg border-2 border-dashed p-2
+        relative min-h-[180px] rounded-lg border-2 border-dashed p-3
         transition-all
         ${isOver ? 'border-primary bg-primary/5' : 'border-gray-300 bg-gray-50'}
         ${juror ? 'border-solid border-gray-400 bg-white' : ''}
@@ -302,11 +302,11 @@ export function JuryBoxView({ panelId, onJurorClick, showAutoFill = true }: Jury
                     Back Row
                   </div>
                 )}
-                {/* Use flexbox with even distribution for consistent spacing, always fill horizontal space */}
-                <div className="flex flex-wrap justify-evenly items-start gap-3 w-full">
+                {/* Use flexbox without wrapping - cards will shrink to fit available space */}
+                <div className="flex justify-evenly items-start gap-4 w-full">
                   {rowSeats.map(({ row, seat, juror }) => {
-                    // Ensure all seats have the same width for consistent spacing
-                    const baseWidth = 'min-w-[200px] max-w-[200px] flex-shrink-0';
+                    // Cards will flex to fit available space, with min-width of 200px and preferred width of 280px
+                    const baseWidth = 'flex-1 min-w-[200px] max-w-[280px]';
                     return (
                       <Seat
                         key={`${row}-${seat}`}
