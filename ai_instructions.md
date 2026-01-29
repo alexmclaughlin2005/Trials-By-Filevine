@@ -573,6 +573,28 @@ CASE_SERVICE_URL=...
 5. **Always-Visible Deep Research** - No longer hidden, shows helpful instructions before confirmation
 6. **Reduced Navigation** - 2 steps shorter workflow, no separate juror pages needed
 
+### ✅ Phase 6 Complete - Document Context in Focus Groups (Jan 2026)
+1. **Document Attachment to Arguments** - Users can attach documents to case arguments via UI
+2. **Text Extraction Service** - Automatic text extraction from PDFs and Word documents
+   - Extracts text and stores in Vercel Blob (production) or local files (development)
+   - Supports PDF, DOCX, and DOC formats
+   - Status tracking: pending → processing → completed/failed
+3. **Focus Group Document Integration** - Document content automatically included in focus group prompts
+   - Documents attached to arguments are fetched when starting roundtable conversations
+   - Full document text is included in prompts for personas to reference
+   - Supports both HTTP/HTTPS URLs (production) and file:// URLs (local testing)
+4. **Roundtable Document Context** - Personas have access to full document text during deliberations
+   - Documents formatted with filename, type, notes, and full text content
+   - Included in both initial reactions and conversation turns
+   - Comprehensive logging for debugging document fetching and inclusion
+5. **Local Testing Support** - Scripts for adding test documents without Vercel Blob
+   - `scripts/add-test-document.ts` - Add documents with text extraction for local testing
+   - `scripts/check-document-attachments.ts` - Check document attachments and status
+6. **Comprehensive Logging** - Detailed logs for document fetching and inclusion
+   - Logs document count, extraction status, character counts
+   - Tracks success/failure of text fetching
+   - Shows combined content size in prompts
+
 ### 🚧 In Progress / Next Steps
 
 #### Immediate Priority (This Week)
