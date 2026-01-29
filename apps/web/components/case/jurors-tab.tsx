@@ -6,7 +6,7 @@ import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Select } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image as ImageIcon } from 'lucide-react';
+import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image as ImageIcon, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
@@ -94,6 +94,83 @@ interface JuryPanel {
 
 interface JurorsTabProps {
   caseId: string;
+}
+
+interface GenerateAllImagesButtonProps {
+  panelId: string;
+  imageStyle: 'realistic' | 'avatar';
+  onStyleChange: (style: 'realistic' | 'avatar') => void;
+}
+
+function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: GenerateAllImagesButtonProps) {
+  const queryClient = useQueryClient();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const generateAllMutation = useMutation({
+    mutationFn: async (style: 'realistic' | 'avatar') => {
+      return await apiClient.post(`/jurors/panel/${panelId}/generate-all-images`, {
+        imageStyle: style,
+        regenerate: false, // Only generate for jurors without images
+      });
+    },
+    onSuccess: (data) => {
+      // Invalidate queries to refresh juror data
+      queryClient.invalidateQueries({ queryKey: ['case'] });
+      queryClient.invalidateQueries({ queryKey: ['panel', panelId] });
+      queryClient.invalidateQueries({ queryKey: ['panel', panelId, 'jury-box'] });
+      
+      setIsGenerating(false);
+      
+      // Show success message
+      if (data.processed > 0) {
+        alert(`Successfully generated ${data.processed} image${data.processed !== 1 ? 's' : ''}.${data.failed > 0 ? ` ${data.failed} failed.` : ''}`);
+      } else {
+        alert('No images were generated. All jurors may already have images, or they may be missing required fields (first name, last name).');
+      }
+    },
+    onError: (error: any) => {
+      setIsGenerating(false);
+      alert(`Failed to generate images: ${error.message || 'Unknown error'}`);
+    },
+  });
+
+  const handleGenerate = () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    generateAllMutation.mutate(imageStyle);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Select
+        value={imageStyle}
+        onChange={(e) => onStyleChange(e.target.value as 'realistic' | 'avatar')}
+        className="w-32"
+        disabled={isGenerating}
+      >
+        <option value="realistic">Realistic</option>
+        <option value="avatar">Avatar</option>
+      </Select>
+      <Button
+        onClick={handleGenerate}
+        disabled={isGenerating}
+        variant="outline"
+        size="sm"
+      >
+        {isGenerating ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Generating...
+          </>
+        ) : (
+          <>
+            <Sparkles className="mr-2 h-4 w-4" />
+            Generate All Images
+          </>
+        )}
+      </Button>
+    </div>
+  );
 }
 
 export function JurorsTab({ caseId }: JurorsTabProps) {
@@ -329,10 +406,20 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
               Jury Box
             </button>
         </div>
-        <Button onClick={() => setShowJurorDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Juror
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Generate All Images Button */}
+          {panel && (
+            <GenerateAllImagesButton 
+              panelId={panel.id}
+              imageStyle={imageStyle}
+              onStyleChange={setImageStyle}
+            />
+          )}
+          <Button onClick={() => setShowJurorDialog(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Juror
+          </Button>
+        </div>
       </div>
       </div>
 

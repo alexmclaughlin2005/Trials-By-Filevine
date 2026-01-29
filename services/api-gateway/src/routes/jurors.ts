@@ -1200,4 +1200,148 @@ export async function jurorsRoutes(server: FastifyInstance) {
       }
     },
   });
+
+  /**
+   * POST /api/jurors/panel/:panelId/generate-all-images
+   * Generate headshot images for all jurors in a panel
+   */
+  server.post('/panel/:panelId/generate-all-images', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<{ Params: { panelId: string } }>, reply: FastifyReply) => {
+      const { organizationId } = request.user as any;
+      const { panelId } = request.params as any;
+      const body = (request.body as { imageStyle?: 'realistic' | 'avatar'; regenerate?: boolean }) || {};
+      const imageStyle = (body.imageStyle === 'avatar' ? 'avatar' : 'realistic') as 'realistic' | 'avatar';
+      const regenerate = body.regenerate ?? false;
+
+      // Verify panel belongs to organization
+      const panel = await server.prisma.juryPanel.findFirst({
+        where: {
+          id: panelId,
+          case: { organizationId },
+        },
+      });
+
+      if (!panel) {
+        reply.code(404);
+        return { error: 'Jury panel not found' };
+      }
+
+      // Get all jurors for this panel with required fields
+      const allJurors = await server.prisma.juror.findMany({
+        where: {
+          panelId,
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          age: true,
+          gender: true,
+          hairColor: true,
+          height: true,
+          weight: true,
+          skinTone: true,
+          race: true,
+          physicalDescription: true,
+          shirtColor: true,
+          occupation: true,
+          imageUrl: true,
+        },
+      });
+
+      // Filter to only jurors with required fields (firstName and lastName)
+      const jurors = allJurors.filter(j => j.firstName && j.lastName);
+
+      if (jurors.length === 0) {
+        return reply.send({
+          success: true,
+          message: 'No jurors found to generate images for',
+          processed: 0,
+          skipped: 0,
+          failed: 0,
+        });
+      }
+
+      server.log.info({
+        panelId,
+        totalJurors: jurors.length,
+        imageStyle,
+        regenerate,
+      }, 'Starting batch image generation for panel');
+
+      // Process jurors
+      const results = {
+        processed: 0,
+        skipped: 0,
+        failed: 0,
+        errors: [] as Array<{ jurorId: string; error: string }>,
+      };
+
+      for (const juror of jurors) {
+        try {
+          // Skip if image exists and not regenerating
+          if (!regenerate && juror.imageUrl) {
+            results.skipped++;
+            continue;
+          }
+
+          // Generate image
+          const result = await generateJurorHeadshot(
+            {
+              id: juror.id,
+              firstName: juror.firstName!,
+              lastName: juror.lastName!,
+              age: juror.age,
+              gender: juror.gender,
+              hairColor: juror.hairColor,
+              height: juror.height,
+              weight: juror.weight,
+              skinTone: juror.skinTone,
+              race: juror.race,
+              physicalDescription: juror.physicalDescription,
+              shirtColor: juror.shirtColor,
+              occupation: juror.occupation,
+            },
+            { regenerate, imageStyle }
+          );
+
+          if (result.success) {
+            results.processed++;
+          } else {
+            results.failed++;
+            results.errors.push({
+              jurorId: juror.id,
+              error: result.error || 'Unknown error',
+            });
+          }
+        } catch (error: any) {
+          results.failed++;
+          results.errors.push({
+            jurorId: juror.id,
+            error: error.message || 'Unknown error',
+          });
+          server.log.error({
+            jurorId: juror.id,
+            error: error.message,
+            stack: error.stack,
+          }, 'Error generating image for juror in batch');
+        }
+      }
+
+      server.log.info({
+        panelId,
+        results,
+      }, 'Batch image generation completed');
+
+      return reply.send({
+        success: true,
+        message: `Generated images for ${results.processed} jurors`,
+        processed: results.processed,
+        skipped: results.skipped,
+        failed: results.failed,
+        errors: results.errors.length > 0 ? results.errors : undefined,
+      });
+    },
+  });
 }
