@@ -202,31 +202,6 @@ export function TakeawaysTab({ conversationId, argumentId, caseId }: TakeawaysTa
       );
     }
 
-    // After 5 minutes, show the generate button
-    if (isNotFound && hasWaitedTooLong) {
-
-      // Takeaways don't exist yet - might be generating in background
-      return (
-        <div className="p-12 text-center max-w-2xl mx-auto">
-          <div className="bg-gradient-to-br from-filevine-blue/10 to-purple-100/50 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-6">
-            <Loader2 className="h-10 w-10 text-filevine-blue animate-spin" />
-          </div>
-          <h3 className="text-2xl font-semibold text-filevine-gray-900 mb-3">
-            Generating Strategic Takeaways
-          </h3>
-          <p className="text-base text-filevine-gray-600 mb-6">
-            Analyzing the focus group conversation to extract key insights, identify what landed well,
-            what confused the panel, and generate concrete recommendations for improving your argument.
-          </p>
-          <p className="text-sm text-filevine-gray-500">
-            This process typically takes 30-60 seconds...
-          </p>
-          <p className="text-xs text-filevine-gray-400 mt-4">
-            Checking every few seconds for completion
-          </p>
-        </div>
-      );
-    }
 
     // Other error - show generate button
     return (
