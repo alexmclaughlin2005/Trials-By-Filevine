@@ -50,6 +50,7 @@ export interface SelectedPersona {
   jurorId?: string;
   jurorName?: string;
   confidence?: number;
+  imageUrl?: string; // Image URL for persona headshot
 }
 
 export interface FocusGroupSession {
@@ -93,6 +94,7 @@ export interface PersonaOption {
   source?: 'system' | 'case_juror' | 'organization';
   jurorName?: string;
   confidence?: number;
+  imageUrl?: string; // Image URL for persona headshot
 }
 
 export interface FocusGroupConfigUpdate {
@@ -123,6 +125,7 @@ export interface ConversationStatement {
   disagreementSignals?: string[];
   speakCount: number;
   createdAt: string;
+  imageUrl?: string; // Image URL for persona headshot (added from persona lookup)
 }
 
 export type PersonaPosition = 'favorable' | 'neutral' | 'unfavorable' | 'mixed';
@@ -139,6 +142,7 @@ export interface PersonaDetails {
   attributes?: any;
   leadershipLevel?: string | null;
   communicationStyle?: string | null;
+  imageUrl?: string; // Image URL for persona headshot
 }
 
 export interface PersonaSummary {
@@ -164,6 +168,7 @@ export interface PersonaSummary {
   summary: string;
   statements: ConversationStatement[];
   persona?: PersonaDetails | null;
+  imageUrl?: string; // Image URL for persona headshot
 }
 
 export interface InfluentialPersona {

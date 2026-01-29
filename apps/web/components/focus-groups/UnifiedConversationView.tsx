@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -12,6 +13,7 @@ import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsight } from './PersonaInsightsCard';
 import { apiClient } from '@/lib/api-client';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
+import { getPersonaImageUrl } from '@/lib/persona-image-utils';
 
 interface UnifiedConversationViewProps {
   conversationId: string;
@@ -382,9 +384,21 @@ export function UnifiedConversationView({
                                 return (
                                   <div key={statement.id} className={cn("px-4 py-3", !isExplicitResponse && "bg-gray-50")}>
                                     <div className="flex items-start gap-3">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
-                                        {statement.sequenceNumber}
-                                      </span>
+                                      {/* Persona Image or Sequence Number */}
+                                      {statement.imageUrl && getPersonaImageUrl(statement.personaId, statement.imageUrl) ? (
+                                        <Image
+                                          src={getPersonaImageUrl(statement.personaId, statement.imageUrl)!}
+                                          alt={statement.personaName}
+                                          width={24}
+                                          height={24}
+                                          className="rounded-full object-cover border border-gray-200 flex-shrink-0 mt-0.5"
+                                          unoptimized={getPersonaImageUrl(statement.personaId, statement.imageUrl)?.startsWith('http://localhost')}
+                                        />
+                                      ) : (
+                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
+                                          {statement.sequenceNumber}
+                                        </span>
+                                      )}
                                       <div className="flex-1 min-w-0 w-full">
                                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                                           <span className="font-medium text-gray-900 text-sm">{statement.personaName}</span>

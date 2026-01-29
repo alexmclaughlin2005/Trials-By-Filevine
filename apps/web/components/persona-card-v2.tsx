@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, AlertCircle, Shield, Scale } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { ChevronDown, ChevronUp, AlertCircle, Shield, Scale, User, ImageIcon, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { apiClient } from '@/lib/api-client';
 
 interface PersonaV2 {
   id: string;
@@ -13,6 +15,7 @@ interface PersonaV2 {
   tagline?: string;
   archetype?: string;
   secondaryArchetype?: string;
+  imageUrl?: string; // NEW: Image URL for headshot
 
   // V2 Fields
   instantRead?: string;
@@ -49,6 +52,107 @@ export function PersonaCardV2({
   side = 'both'
 }: PersonaCardV2Props) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [imageError, setImageError] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [imageGenerationError, setImageGenerationError] = useState<string | null>(null);
+  const [localImageUrl, setLocalImageUrl] = useState<string | undefined>(persona.imageUrl);
+
+  // Update local image URL when persona prop changes (e.g., after parent refresh)
+  useEffect(() => {
+    if (persona.imageUrl) {
+      setLocalImageUrl(persona.imageUrl);
+    }
+  }, [persona.imageUrl]);
+
+  // Get initials for fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  // Get image URL - use Next.js API route proxy (same-origin, no CORS issues)
+  // Prefer localImageUrl (for newly generated images) over persona.imageUrl
+  const getImageUrl = () => {
+    const urlToUse = localImageUrl || persona.imageUrl;
+    if (!urlToUse) return null;
+    // Extract personaId from the URL path or use persona.id
+    const match = urlToUse.match(/\/personas\/images\/(.+)$/);
+    const personaId = match ? match[1].split('?')[0] : persona.id; // Remove query params if present
+    
+    // If localImageUrl already has a timestamp, use it; otherwise add one
+    if (localImageUrl && localImageUrl.includes('?t=')) {
+      return localImageUrl;
+    }
+    
+    // Use Next.js API route proxy - same origin, works with Next.js Image component
+    // Add timestamp to bust Next.js image cache when images are regenerated
+    return `/api/personas/images/${personaId}?t=${Date.now()}`;
+  };
+
+  const imageUrl = getImageUrl();
+
+  const handleGenerateImage = async () => {
+    if (isGeneratingImage) return;
+    
+    setIsGeneratingImage(true);
+    setImageGenerationError(null);
+    setImageError(false); // Reset error to show new image
+    
+    try {
+      const response = await apiClient.post<{ success: boolean; imageUrl?: string; message?: string }>(
+        `/personas/${persona.id}/generate-image`,
+        { regenerate: true }
+      );
+
+      if (response.success && response.imageUrl) {
+        // Update local state with the new image URL
+        // The imageUrl from backend is like "/api/personas/images/{personaId}"
+        // We need to add a timestamp to bust Next.js image cache
+        const timestamp = Date.now();
+        const newImageUrl = `/api/personas/images/${persona.id}?t=${timestamp}`;
+        
+        setLocalImageUrl(newImageUrl);
+        setImageError(false);
+        setImageGenerationError(null);
+        
+        // Force image reload by updating the URL with new timestamp
+        // No page refresh needed - React will re-render with the new image URL
+      } else {
+        setImageGenerationError('Failed to generate image');
+      }
+    } catch (error: any) {
+      console.error('Error generating image:', error);
+      
+      // Log full error details including debug info
+      // APIClientError stores the full response in apiError property
+      const errorData = error?.apiError || error?.data || error;
+      
+      if (errorData?.debug) {
+        console.error('=== DEBUG INFO FROM SERVER ===');
+        console.error('Searched for:', errorData.debug.searchedFor);
+        console.error('Available personas (matching archetype):', errorData.debug.availablePersonasCount);
+        console.error('All available personas:', errorData.debug.allPersonasCount);
+        console.error('Sample personas from matching archetype:', errorData.debug.samplePersonas);
+        console.error('================================');
+      }
+      
+      // Show more detailed error message if available
+      const errorMessage = errorData?.message || error?.message || 'Failed to generate image';
+      setImageGenerationError(errorMessage);
+      
+      // Also log the full error object for debugging
+      console.error('Full error object:', error);
+      if (errorData) {
+        console.error('Error data:', JSON.stringify(errorData, null, 2));
+      }
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
 
   const getVerdictLeanColor = (lean?: string) => {
     if (!lean) return 'bg-gray-100 text-gray-700';
@@ -86,16 +190,72 @@ export function PersonaCardV2({
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <CardTitle className="text-xl">{persona.name}</CardTitle>
-              {persona.nickname && persona.nickname !== persona.name && (
-                <span className="text-sm text-filevine-gray-600">
-                  ({persona.nickname})
-                </span>
+        <div className="flex items-start gap-4">
+          {/* HEADSHOT IMAGE */}
+          <div className="flex-shrink-0 relative">
+            {imageUrl && !imageError ? (
+              <div className="relative w-20 h-20 rounded-full overflow-hidden border-2 border-filevine-gray-200 bg-filevine-gray-100">
+                <Image
+                  src={imageUrl}
+                  alt={persona.name}
+                  fill
+                  className="object-cover"
+                  onError={() => setImageError(true)}
+                  sizes="80px"
+                />
+              </div>
+            ) : (
+              // Fallback: Initials or icon
+              <div className="w-20 h-20 rounded-full bg-filevine-blue-100 border-2 border-filevine-blue-200 flex items-center justify-center">
+                {persona.name ? (
+                  <span className="text-filevine-blue-700 font-semibold text-lg">
+                    {getInitials(persona.name)}
+                  </span>
+                ) : (
+                  <User className="h-10 w-10 text-filevine-blue-400" />
+                )}
+              </div>
+            )}
+            
+            {/* Generate Image Button */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="absolute -bottom-1 -right-1 h-7 w-7 p-0 rounded-full bg-white shadow-md border-2 hover:bg-gray-50 z-10"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleGenerateImage();
+              }}
+              disabled={isGeneratingImage}
+              title={isGeneratingImage ? "Generating image..." : "Generate headshot image"}
+            >
+              {isGeneratingImage ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+              ) : (
+                <ImageIcon className="h-3.5 w-3.5 text-gray-600" />
               )}
-            </div>
+            </Button>
+            
+            {imageGenerationError && (
+              <div className="absolute -top-10 left-0 right-0 text-xs text-red-600 bg-red-50 px-2 py-1 rounded shadow-sm border border-red-200 whitespace-nowrap z-20">
+                {imageGenerationError}
+              </div>
+            )}
+          </div>
+
+          {/* CONTENT */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <CardTitle className="text-xl truncate">{persona.name}</CardTitle>
+                  {persona.nickname && persona.nickname !== persona.name && (
+                    <span className="text-sm text-filevine-gray-600 truncate">
+                      ({persona.nickname})
+                    </span>
+                  )}
+                </div>
 
             {/* Archetype Badges */}
             <div className="flex flex-wrap gap-2 mb-2">
@@ -121,23 +281,26 @@ export function PersonaCardV2({
               </p>
             )}
 
-            {/* Tagline */}
-            {persona.tagline && (
-              <p className="text-sm text-filevine-gray-600 mt-1">
-                {persona.tagline}
-              </p>
-            )}
-          </div>
+                {/* Tagline */}
+                {persona.tagline && (
+                  <p className="text-sm text-filevine-gray-600 mt-1 line-clamp-2">
+                    {persona.tagline}
+                  </p>
+                )}
+              </div>
 
-          {onSelect && (
-            <Button
-              size="sm"
-              onClick={() => onSelect(persona.id)}
-              variant="outline"
-            >
-              Select
-            </Button>
-          )}
+              {onSelect && (
+                <Button
+                  size="sm"
+                  onClick={() => onSelect(persona.id)}
+                  variant="outline"
+                  className="flex-shrink-0"
+                >
+                  Select
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
       </CardHeader>
 

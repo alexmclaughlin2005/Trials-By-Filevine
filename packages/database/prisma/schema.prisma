@@ -258,6 +258,10 @@ model Persona {
   nickname    String? // e.g., "Bootstrap Bob"
   description String  @db.Text
   tagline     String? // Brief characteristic phrase
+  
+  // JSON Persona ID - stores the original persona_id from JSON files (e.g., "BOOT_1.2_FarmRaisedFrancine")
+  // This enables 1:1 mapping between database personas and JSON personas without fuzzy matching
+  jsonPersonaId String? @map("json_persona_id") @unique // Unique to ensure one database persona per JSON persona
 
   // Archetype Classification
   archetype          String? // bootstrapper | crusader | scale_balancer | captain | chameleon | scarred | calculator | heart | trojan_horse | maverick
@@ -329,6 +333,7 @@ model Persona {
   @@index([organizationId])
   @@index([sourceType])
   @@index([archetype])
+  @@index([jsonPersonaId])
   @@map("personas")
 }
 

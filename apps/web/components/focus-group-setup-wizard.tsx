@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Button } from './ui/button';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
@@ -17,6 +18,7 @@ import {
 } from '@/types/focus-group';
 import { Users, FileText, MessageSquare, CheckCircle, Shuffle, Settings, Sparkles } from 'lucide-react';
 import { ArgumentCheckboxList, EmptyArgumentsState, WizardProgressFooter, UnifiedQuestionList } from './focus-group-setup-wizard/index';
+import { getPersonaImageUrl } from '@/lib/persona-image-utils';
 
 interface FocusGroupSetupWizardProps {
   caseId: string;
@@ -578,13 +580,26 @@ function PanelConfigurationStep({
                       : 'border-filevine-gray-200 hover:border-filevine-gray-300'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
+                  <div className="flex items-start justify-between gap-3">
+                    {/* Persona Image */}
+                    {persona.imageUrl && getPersonaImageUrl(persona.id, persona.imageUrl) && (
+                      <div className="flex-shrink-0">
+                        <Image
+                          src={getPersonaImageUrl(persona.id, persona.imageUrl)!}
+                          alt={persona.name}
+                          width={48}
+                          height={48}
+                          className="rounded-full object-cover border border-gray-200"
+                          unoptimized={getPersonaImageUrl(persona.id, persona.imageUrl)?.startsWith('http://localhost')}
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
                       <p className="font-medium text-filevine-gray-900">{persona.name}</p>
                       {persona.tagline && (
                         <p className="mt-1 text-xs font-medium text-filevine-blue">{persona.tagline}</p>
                       )}
-                      <p className="mt-1 text-xs text-filevine-gray-600">{persona.description}</p>
+                      <p className="mt-1 text-xs text-filevine-gray-600 line-clamp-2">{persona.description}</p>
                       {persona.jurorName && (
                         <p className="mt-2 text-xs text-filevine-gray-500">
                           From Juror: {persona.jurorName}
@@ -855,9 +870,21 @@ function ReviewStep({
               <div className="grid grid-cols-2 gap-2">
                 {session.selectedPersonas.map((persona, index) => (
                   <div key={persona.id} className="flex items-center gap-2 rounded-md bg-white border border-filevine-gray-200 px-3 py-2">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-filevine-blue text-xs font-semibold text-white flex-shrink-0">
-                      {index + 1}
-                    </span>
+                    {/* Persona Image */}
+                    {persona.imageUrl && getPersonaImageUrl(persona.id, persona.imageUrl) ? (
+                      <Image
+                        src={getPersonaImageUrl(persona.id, persona.imageUrl)!}
+                        alt={persona.name}
+                        width={32}
+                        height={32}
+                        className="rounded-full object-cover border border-gray-200 flex-shrink-0"
+                        unoptimized={getPersonaImageUrl(persona.id, persona.imageUrl)?.startsWith('http://localhost')}
+                      />
+                    ) : (
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-filevine-blue text-xs font-semibold text-white flex-shrink-0">
+                        {index + 1}
+                      </span>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-filevine-gray-900 truncate">{persona.name}</p>
                       {persona.tagline && (

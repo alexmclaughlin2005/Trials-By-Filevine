@@ -1,11 +1,13 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { PersonaSummary } from '@/types/focus-group';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { PersonaInsight } from './PersonaInsightsCard';
 import { TrendingUp, TrendingDown, Minus, ArrowRight, MessageSquare, Brain, AlertTriangle, Lightbulb, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getPersonaImageUrl } from '@/lib/persona-image-utils';
 
 interface PersonaSummaryCardProps {
   summary: PersonaSummary;
@@ -79,7 +81,21 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
         {/* Header */}
       <div className="p-6 border-b bg-gradient-to-r from-slate-50 to-white">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
+          <div className="flex items-start gap-4 flex-1">
+            {/* Persona Image */}
+            {summary.imageUrl && getPersonaImageUrl(summary.personaId, summary.imageUrl) && (
+              <div className="flex-shrink-0">
+                <Image
+                  src={getPersonaImageUrl(summary.personaId, summary.imageUrl)!}
+                  alt={summary.personaName}
+                  width={64}
+                  height={64}
+                  className="rounded-full object-cover border-2 border-gray-200"
+                  unoptimized={getPersonaImageUrl(summary.personaId, summary.imageUrl)?.startsWith('http://localhost')}
+                />
+              </div>
+            )}
+            <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
               <h3 className="text-lg font-semibold text-gray-900">
                 {summary.personaName}
@@ -129,6 +145,7 @@ export function PersonaSummaryCard({ summary, insight }: PersonaSummaryCardProps
               <span>•</span>
               <span>{Math.round(summary.averageEmotionalIntensity * 100)}% emotional intensity</span>
             </div>
+          </div>
           </div>
         </div>
       </div>

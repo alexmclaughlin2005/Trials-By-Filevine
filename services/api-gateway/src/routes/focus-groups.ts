@@ -659,22 +659,43 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         ],
       });
 
-      const personaList = personas.map((persona) => ({
-        id: persona.id,
-        name: persona.name,
-        nickname: persona.nickname,
-        description: persona.description,
-        tagline: persona.tagline,
-        archetype: persona.archetype,
-        archetypeStrength: persona.archetypeStrength
-          ? parseFloat(persona.archetypeStrength.toString())
-          : 0,
-        demographics: persona.demographics,
-        plaintiffDangerLevel: persona.plaintiffDangerLevel,
-        defenseDangerLevel: persona.defenseDangerLevel,
-        sourceType: persona.sourceType,
-        source: persona.organizationId ? 'organization' : 'system',
-      }));
+      // Import getPersonaImageUrl for adding image URLs
+      const { getPersonaImageUrl } = await import('../services/persona-image-utils');
+
+      // Add imageUrl to each persona (gracefully handle errors to not break persona fetching)
+      const personaList = await Promise.all(
+        personas.map(async (persona) => {
+          let imageUrl: string | null = null;
+          try {
+            imageUrl = await getPersonaImageUrl(
+              persona.id,
+              persona.name,
+              persona.nickname || null,
+              persona.archetype || null
+            );
+          } catch (error) {
+            // Log error but don't break persona fetching
+            server.log.warn({ error, personaId: persona.id }, 'Failed to get persona image URL');
+          }
+          return {
+            id: persona.id,
+            name: persona.name,
+            nickname: persona.nickname,
+            description: persona.description,
+            tagline: persona.tagline,
+            archetype: persona.archetype,
+            archetypeStrength: persona.archetypeStrength
+              ? parseFloat(persona.archetypeStrength.toString())
+              : 0,
+            demographics: persona.demographics,
+            plaintiffDangerLevel: persona.plaintiffDangerLevel,
+            defenseDangerLevel: persona.defenseDangerLevel,
+            sourceType: persona.sourceType,
+            source: persona.organizationId ? 'organization' : 'system',
+            imageUrl: imageUrl || undefined,
+          };
+        })
+      );
 
       return { personas: personaList, source: 'system' };
     },
@@ -1164,10 +1185,28 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         a => a.id === conversation.argumentId
       );
 
-      // Create persona lookup map
+      // Import getPersonaImageUrl for adding image URLs
+      const { getPersonaImageUrl } = await import('../services/persona-image-utils');
+
+      // Create persona lookup map with image URLs
       const personaLookup = new Map();
       for (const fp of conversation.session.personas) {
-        personaLookup.set(fp.persona.id, fp.persona);
+        let imageUrl: string | null = null;
+        try {
+          imageUrl = await getPersonaImageUrl(
+            fp.persona.id,
+            fp.persona.name,
+            fp.persona.nickname || null,
+            fp.persona.archetype || null
+          );
+        } catch (error) {
+          // Log error but don't break conversation fetching
+          server.log.warn({ error, personaId: fp.persona.id }, 'Failed to get persona image URL');
+        }
+        personaLookup.set(fp.persona.id, {
+          ...fp.persona,
+          imageUrl: imageUrl || undefined,
+        });
       }
 
       // Group statements by persona for easy lookup
@@ -1239,8 +1278,11 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
               demographics: persona.demographics,
               attributes: persona.attributes,
               leadershipLevel: persona.leadershipLevel,
-              communicationStyle: persona.communicationStyle
-            } : null
+              communicationStyle: persona.communicationStyle,
+              imageUrl: persona.imageUrl
+            } : null,
+            // Include imageUrl at summary level for easy access
+            imageUrl: persona?.imageUrl
           };
         }),
 
@@ -1253,22 +1295,26 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
         },
 
         // All statements chronologically (for timeline view)
-        allStatements: conversation.statements.map(s => ({
-          id: s.id,
-          personaId: s.personaId,
-          personaName: s.personaName,
-          sequenceNumber: s.sequenceNumber,
-          content: s.content,
-          questionId: s.questionId,
-          sentiment: s.sentiment,
-          emotionalIntensity: s.emotionalIntensity,
-          keyPoints: s.keyPoints,
-          addressedTo: s.addressedTo,
-          agreementSignals: s.agreementSignals,
-          disagreementSignals: s.disagreementSignals,
-          speakCount: s.speakCount,
-          createdAt: s.createdAt
-        })),
+        allStatements: conversation.statements.map(s => {
+          const statementPersona = personaLookup.get(s.personaId);
+          return {
+            id: s.id,
+            personaId: s.personaId,
+            personaName: s.personaName,
+            sequenceNumber: s.sequenceNumber,
+            content: s.content,
+            questionId: s.questionId,
+            sentiment: s.sentiment,
+            emotionalIntensity: s.emotionalIntensity,
+            keyPoints: s.keyPoints,
+            addressedTo: s.addressedTo,
+            agreementSignals: s.agreementSignals,
+            disagreementSignals: s.disagreementSignals,
+            speakCount: s.speakCount,
+            createdAt: s.createdAt,
+            imageUrl: statementPersona?.imageUrl
+          };
+        }),
 
         // Custom questions for this session
         customQuestions: conversation.session.customQuestions as any[] || []

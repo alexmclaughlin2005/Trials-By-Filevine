@@ -30,7 +30,8 @@
     "list-personas": "npx tsx scripts/list-personas.ts",
     "cleanup-personas": "npx tsx scripts/cleanup-duplicate-personas.ts",
     "deploy-personas": "npx tsx scripts/deploy-personas-to-production.ts",
-    "test:pdf-extraction": "npx tsx scripts/test-pdf-extraction.ts"
+    "test:pdf-extraction": "npx tsx scripts/test-pdf-extraction.ts",
+    "generate-persona-headshots": "npx tsx scripts/generate-persona-headshots.ts"
   },
   "devDependencies": {
     "prettier": "^3.2.4",
@@ -41,5 +42,8 @@
     "node": ">=20.0.0",
     "npm": ">=9.0.0"
   },
-  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610",
+  "dependencies": {
+    "openai": "^6.17.0"
+  }
 }

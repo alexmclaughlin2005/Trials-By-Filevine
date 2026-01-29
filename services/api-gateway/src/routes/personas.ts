@@ -1,5 +1,43 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { z } from 'zod';
+import { getPersonaImageUrl, getPersonaImagePath, findPersonaIdFromDatabase, listAvailableJsonPersonas, loadPersonaImageMappings } from '../services/persona-image-utils';
+import { generateSinglePersonaHeadshot } from '../services/persona-headshot-service';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+
+// Simple string similarity function (Levenshtein-like)
+function calculateSimilarity(str1: string, str2: string): number {
+  if (!str1 || !str2) return 0;
+  const longer = str1.length > str2.length ? str1 : str2;
+  const shorter = str1.length > str2.length ? str2 : str1;
+  if (longer.length === 0) return 1.0;
+  const distance = levenshteinDistance(longer, shorter);
+  return (longer.length - distance) / longer.length;
+}
+
+function levenshteinDistance(str1: string, str2: string): number {
+  const matrix: number[][] = [];
+  for (let i = 0; i <= str2.length; i++) {
+    matrix[i] = [i];
+  }
+  for (let j = 0; j <= str1.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (let i = 1; i <= str2.length; i++) {
+    for (let j = 1; j <= str1.length; j++) {
+      if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          matrix[i][j - 1] + 1,
+          matrix[i - 1][j] + 1
+        );
+      }
+    }
+  }
+  return matrix[str2.length][str1.length];
+}
 
 const createPersonaSchema = z.object({
   name: z.string().min(1),
@@ -70,7 +108,29 @@ export async function personasRoutes(server: FastifyInstance) {
         orderBy: [{ sourceType: 'asc' }, { archetype: 'asc' }, { createdAt: 'desc' }],
       });
 
-      return { personas };
+      // Add imageUrl to each persona (gracefully handle errors to not break persona fetching)
+      const personasWithImages = await Promise.all(
+        personas.map(async (persona) => {
+          let imageUrl: string | null = null;
+          try {
+            imageUrl = await getPersonaImageUrl(
+              persona.id,
+              persona.name,
+              persona.nickname || null,
+              persona.archetype || null
+            );
+          } catch (error) {
+            // Log error but don't break persona fetching
+            server.log.warn({ error, personaId: persona.id }, 'Failed to get persona image URL');
+          }
+          return {
+            ...persona,
+            imageUrl: imageUrl || undefined,
+          };
+        })
+      );
+
+      return { personas: personasWithImages };
     },
   });
 
@@ -496,6 +556,387 @@ export async function personasRoutes(server: FastifyInstance) {
         },
         personas,
       };
+    },
+  });
+
+  /**
+   * GET /api/personas/images/:personaId
+   * Serve persona headshot image
+   * Public endpoint - images are not sensitive data
+   */
+  server.get('/images/:personaId', {
+    config: {
+      rateLimit: false, // Exempt from rate limiting (images are cached)
+    },
+  }, async (request: FastifyRequest<{ Params: { personaId: string }; Querystring: { t?: string } }>, reply: FastifyReply) => {
+    try {
+      const { personaId } = request.params;
+
+      server.log.info({ personaId }, 'Image request received');
+
+      // Get persona from database (public - only check if active)
+      const persona = await server.prisma.persona.findFirst({
+        where: {
+          id: personaId,
+          isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+          archetype: true,
+          jsonPersonaId: true, // Get stored JSON persona_id for direct lookup
+        },
+      });
+
+      if (!persona) {
+        server.log.warn({ personaId }, 'Persona not found for image request');
+        return reply.status(404).send({
+          error: 'Persona not found',
+          message: `Persona with ID ${personaId} not found`,
+        });
+      }
+
+      server.log.info({ 
+        personaId, 
+        personaName: persona.name,
+        jsonPersonaId: persona.jsonPersonaId 
+      }, 'Serving image for persona');
+
+      // Get image path - use jsonPersonaId directly to construct filename (most reliable)
+      let imagePath: string | null = null;
+      
+      if (persona.jsonPersonaId) {
+        // Direct lookup: construct filename from jsonPersonaId (e.g., "BOOT_08" -> "BOOT_08.png")
+        const filename = `${persona.jsonPersonaId}.png`;
+        
+        // Use the same image directory finding logic as persona-image-utils
+        const possibleImageDirs = [
+          path.join(process.cwd(), 'Juror Personas', 'images'),
+          path.join(process.cwd(), '..', 'Juror Personas', 'images'),
+          path.join(process.cwd(), '..', '..', 'Juror Personas', 'images'),
+          path.join(__dirname, '..', '..', '..', '..', 'Juror Personas', 'images'),
+        ];
+        
+        for (const imageDir of possibleImageDirs) {
+          const fullImagePath = path.join(imageDir, filename);
+          try {
+            await fs.access(fullImagePath);
+            imagePath = fullImagePath;
+            server.log.info({ 
+              personaId, 
+              jsonPersonaId: persona.jsonPersonaId, 
+              imagePath,
+              filename 
+            }, 'Found image via direct jsonPersonaId lookup');
+            break;
+          } catch {
+            continue;
+          }
+        }
+        
+        if (!imagePath) {
+          server.log.warn({ 
+            personaId, 
+            jsonPersonaId: persona.jsonPersonaId, 
+            filename,
+            checkedDirs: possibleImageDirs 
+          }, 'Image file not found for jsonPersonaId');
+        }
+      }
+      
+      // Fallback to fuzzy matching if direct lookup failed
+      if (!imagePath) {
+        server.log.info({ personaId, name: persona.name }, 'Falling back to fuzzy matching for image path');
+        imagePath = await getPersonaImagePath(
+          persona.id,
+          persona.name,
+          persona.nickname || null,
+          persona.archetype || null
+        );
+      }
+
+      if (!imagePath) {
+        server.log.warn({ 
+          personaId, 
+          personaName: persona.name,
+          jsonPersonaId: persona.jsonPersonaId 
+        }, 'Image file not found');
+        return reply.status(404).send({
+          error: 'Image not found',
+          message: `No image found for persona ${persona.name}`,
+        });
+      }
+
+      server.log.info({ 
+        personaId, 
+        personaName: persona.name,
+        jsonPersonaId: persona.jsonPersonaId,
+        imagePath,
+        filename: path.basename(imagePath)
+      }, 'Serving image file');
+
+      // Read and serve image
+      const imageBuffer = await fs.readFile(imagePath);
+      const ext = path.extname(imagePath).toLowerCase();
+      
+      // Set appropriate content type
+      const contentType = ext === '.png' ? 'image/png' : 
+                          ext === '.jpg' || ext === '.jpeg' ? 'image/jpeg' : 
+                          'image/png';
+
+      reply.type(contentType);
+      reply.header('Cache-Control', 'public, max-age=31536000, immutable'); // Cache for 1 year
+      return reply.send(imageBuffer);
+    } catch (error) {
+      server.log.error({ error }, 'Error serving persona image');
+      return reply.status(500).send({
+        error: 'Failed to serve image',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  /**
+   * POST /api/personas/:personaId/generate-image
+   * Generate headshot image for a single persona
+   */
+  server.post('/:personaId/generate-image', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      try {
+      const { personaId } = request.params as { personaId: string };
+      const { regenerate = false } = (request.body as { regenerate?: boolean }) || {};
+      const { organizationId } = request.user as any;
+
+      // Get persona from database
+      const persona = await server.prisma.persona.findFirst({
+        where: {
+          id: personaId,
+          OR: [{ organizationId }, { sourceType: 'system' }],
+          isActive: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          nickname: true,
+          archetype: true,
+          sourceType: true,
+          organizationId: true,
+          jsonPersonaId: true, // NEW: Get the stored JSON persona_id
+        },
+      });
+
+      server.log.info({
+        personaId,
+        name: persona?.name,
+        nickname: persona?.nickname,
+        jsonPersonaId: persona?.jsonPersonaId,
+      }, 'Generating image for persona');
+
+      if (!persona) {
+        return reply.status(404).send({
+          error: 'Persona not found',
+          message: `Persona with ID ${personaId} not found`,
+        });
+      }
+
+      // Only system personas can have images generated from JSON files
+      if (persona.sourceType !== 'system' || persona.organizationId !== null) {
+        return reply.status(400).send({
+          error: 'Image generation only available for system personas',
+          message: `Persona ${persona.name} is not a system persona. Image generation is only available for system personas imported from JSON files.`,
+        });
+      }
+
+      // Use stored jsonPersonaId if available (1:1 mapping), otherwise fall back to fuzzy matching
+      let jsonPersonaId: string | null = null;
+      
+      if (persona.jsonPersonaId) {
+        // Direct 1:1 mapping - no fuzzy matching needed!
+        jsonPersonaId = persona.jsonPersonaId;
+        server.log.info({
+          personaId,
+          jsonPersonaId,
+          method: 'direct_mapping',
+        }, 'Using stored jsonPersonaId for direct mapping');
+      } else {
+        // Fallback to fuzzy matching for personas imported before jsonPersonaId was added
+        server.log.warn({
+          personaId,
+          name: persona.name,
+          nickname: persona.nickname,
+          archetype: persona.archetype,
+        }, 'Persona missing jsonPersonaId, falling back to fuzzy matching');
+
+        // Temporarily enable debug mode for this request
+        const originalDebug = process.env.DEBUG_PERSONA_MATCHING;
+        process.env.DEBUG_PERSONA_MATCHING = 'true';
+
+        jsonPersonaId = await findPersonaIdFromDatabase(
+          persona.name,
+          persona.nickname || null,
+          persona.archetype || null
+        );
+
+        // Restore original debug setting
+        process.env.DEBUG_PERSONA_MATCHING = originalDebug || 'false';
+
+        server.log.info({
+          personaId,
+          databaseName: persona.name,
+          databaseNickname: persona.nickname,
+          matchedJsonPersonaId: jsonPersonaId,
+          method: 'fuzzy_matching',
+        }, 'Persona matching result (fuzzy)');
+      }
+
+      if (!jsonPersonaId) {
+        // Get list of available personas for debugging
+        const availablePersonas = await listAvailableJsonPersonas(persona.archetype || null);
+        
+        // Also get personas from other archetypes for comparison
+        const allAvailablePersonas = await listAvailableJsonPersonas(null);
+        
+        server.log.error({
+          personaId,
+          name: persona.name,
+          nickname: persona.nickname,
+          archetype: persona.archetype,
+          searchedFor: {
+            normalizedName: persona.name?.toLowerCase().trim(),
+            normalizedNickname: persona.nickname?.toLowerCase().trim(),
+            normalizedArchetype: persona.archetype?.toLowerCase(),
+          },
+          availablePersonasCount: availablePersonas.length,
+          allPersonasCount: allAvailablePersonas.length,
+          samplePersonas: availablePersonas.slice(0, 10).map(p => ({
+            persona_id: p.persona_id,
+            nickname: p.nickname,
+            full_name: p.full_name,
+            name: p.name,
+          })),
+          sampleAllPersonas: allAvailablePersonas.slice(0, 5).map(p => ({
+            persona_id: p.persona_id,
+            nickname: p.nickname,
+            full_name: p.full_name,
+            archetype: 'unknown', // We'd need to check file for this
+          })),
+        }, 'Could not find JSON persona_id - detailed debug info');
+        
+        // Check if there's a similar persona (same last name or similar name)
+        const similarPersonas = allAvailablePersonas.filter(p => {
+          const pFullName = p.full_name?.toLowerCase().trim() || '';
+          const pNickname = p.nickname?.toLowerCase().trim() || '';
+          const dbName = persona.name?.toLowerCase().trim() || '';
+          const dbNickname = persona.nickname?.toLowerCase().trim() || '';
+          
+          // Extract last name from database persona
+          const dbNameParts = dbName.split(/\s+/);
+          const dbLastName = dbNameParts[dbNameParts.length - 1];
+          
+          // Check if last name matches
+          if (dbLastName && dbLastName.length > 2) {
+            if (pFullName.includes(dbLastName) || pNickname.includes(dbLastName)) {
+              return true;
+            }
+          }
+          
+          // Check if names are similar (fuzzy match)
+          const similarity = calculateSimilarity(dbName, pFullName);
+          if (similarity > 0.6) {
+            return true;
+          }
+          
+          return false;
+        });
+
+        return reply.status(404).send({
+          error: 'Persona not found in JSON files',
+          message: `Could not find JSON persona_id for "${persona.name}". This persona does not exist in the JSON files and cannot generate an image. ${similarPersonas.length > 0 ? `Found ${similarPersonas.length} similar persona(s) that might match.` : 'This appears to be a custom persona that was created directly in the database without a corresponding JSON file.'}`,
+          debug: {
+            searchedFor: {
+              name: persona.name,
+              nickname: persona.nickname,
+              archetype: persona.archetype,
+              normalized: {
+                name: persona.name?.toLowerCase().trim(),
+                nickname: persona.nickname?.toLowerCase().trim(),
+                archetype: persona.archetype?.toLowerCase(),
+              },
+            },
+            availablePersonasCount: availablePersonas.length,
+            allPersonasCount: allAvailablePersonas.length,
+            similarPersonas: similarPersonas.slice(0, 5).map(p => ({
+              persona_id: p.persona_id,
+              nickname: p.nickname,
+              full_name: p.full_name,
+              name: p.name,
+            })),
+            samplePersonas: availablePersonas.slice(0, 20).map(p => ({
+              persona_id: p.persona_id,
+              nickname: p.nickname,
+              full_name: p.full_name,
+              name: p.name,
+            })),
+            note: 'To generate images, personas must exist in the JSON files located in "Juror Personas/generated/". Custom personas created directly in the database cannot generate images unless they are added to the JSON files first.',
+          },
+        });
+      }
+
+      server.log.info({
+        personaId,
+        personaName: persona.name,
+        personaNickname: persona.nickname,
+        jsonPersonaId,
+      }, 'Found JSON persona_id - generating image');
+
+      // Generate image
+      const result = await generateSinglePersonaHeadshot(jsonPersonaId, {
+        regenerate,
+        updateJson: true,
+      });
+      
+      server.log.info({
+        personaId,
+        personaName: persona.name,
+        jsonPersonaId,
+        resultSuccess: result.success,
+        resultImageUrl: result.imageUrl,
+      }, 'Image generation completed');
+
+      if (!result.success) {
+        server.log.error({
+          personaId,
+          jsonPersonaId,
+          error: result.error,
+        }, 'Image generation failed');
+        return reply.status(500).send({
+          error: 'Failed to generate image',
+          message: result.error || 'Unknown error',
+        });
+      }
+
+      server.log.info({
+        personaId,
+        jsonPersonaId,
+        imageUrl: result.imageUrl,
+      }, 'Image generated successfully');
+
+      // Return the image URL (use the API endpoint path, not the relative path)
+      // The frontend expects: /api/personas/images/{personaId}
+      return reply.send({
+        success: true,
+        imageUrl: `/api/personas/images/${personaId}`,
+        message: 'Image generated successfully',
+      });
+    } catch (error) {
+      server.log.error({ error }, 'Error generating persona image');
+      return reply.status(500).send({
+        error: 'Failed to generate image',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+      }
     },
   });
 }
