@@ -20,9 +20,6 @@ const nextConfig: NextConfig = {
     localPatterns: [
       {
         pathname: '/api/**',
-        searchparams: {
-          t: '*',
-        },
       },
       {
         pathname: '/filevine-logo.jpeg',

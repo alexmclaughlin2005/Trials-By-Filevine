@@ -309,7 +309,7 @@ export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic'
   const initials = getInitials(juror.firstName, juror.lastName);
   
   // Build the comprehensive prompt
-  let prompt = `Realistic portrait photograph of a ${ageDesc} ${ethnicityDesc} ${pronoun}`;
+  let prompt = `Portrait of a single ${ageDesc} ${ethnicityDesc} ${pronoun}`;
   
   if (skinToneDesc) {
     prompt += ` with ${skinToneDesc}`;
@@ -328,11 +328,11 @@ export function createJurorImagePrompt(juror: JurorImageData, style: 'realistic'
     prompt += ` ${juror.physicalDescription}.`;
   }
   
-  prompt += ` The person should be centered in the frame, facing forward with their head and shoulders visible.`;
+  prompt += ` This must be a portrait of exactly ONE person only - a single individual, not multiple people. The person should be centered in the frame, facing forward with their head and shoulders visible.`;
   
   // Add style-specific instructions
   if (style === 'avatar') {
-    prompt += ` Create a clean, professional avatar-style portrait. Simple, minimalist design with a neutral or solid color background. The image should be more generic and stylized, like a professional avatar or icon, rather than a realistic photograph. Use a modern, clean aesthetic with soft lighting.`;
+    prompt += ` Create a stylized, semi-realistic avatar portrait with simplified features. The image should have a slightly cartoonish, illustrated quality - softer edges, simplified facial features, and a more artistic rendering style. Think of it as a professional illustration or digital art portrait, not a photograph. Use a neutral or solid color background. The style should be modern and clean, with simplified shadows and highlights that give it a more artistic, less photorealistic appearance.`;
   } else {
     prompt += ` Neutral background. Natural lighting, authentic candid portrait style, not a corporate headshot. The person should look like a real, everyday juror - authentic, diverse, and representative of their actual physical characteristics. Avoid overly polished or corporate appearance.`;
   }
