@@ -335,12 +335,8 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
                     Back Row
                   </div>
                 )}
-                {/* Use flexbox with even distribution when there are empty seats and filled cards, otherwise use grid */}
-                <div className={
-                  hasEmptySeats && filledSeats > 0
-                    ? `flex flex-wrap justify-evenly items-start gap-3`
-                    : `grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3`
-                }>
+                {/* Use flexbox with even distribution for consistent spacing, always fill horizontal space */}
+                <div className="flex flex-wrap justify-evenly items-start gap-3 w-full">
                   {rowSeats.map(({ row, seat, juror }) => {
                     // Ensure all seats have the same width for consistent spacing
                     const baseWidth = 'min-w-[200px] max-w-[200px] flex-shrink-0';
@@ -353,7 +349,7 @@ export function JuryBoxView({ panelId, onJurorClick }: JuryBoxViewProps) {
                         nextJuror={nextJuror}
                         isDragging={!!activeId}
                         onJurorClick={handleJurorClick}
-                        className={hasEmptySeats && filledSeats > 0 ? baseWidth : ''}
+                        className={baseWidth}
                       />
                     );
                   })}
