@@ -78,7 +78,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           return {
             id: doc.id,
             filename: doc.filename,
-            documentType: doc.documentType || undefined,
+            documentType: doc.documentCategory || undefined, // Use documentCategory from schema
             textContent: textContent,
             notes: attachment.notes || undefined,
             textExtractionStatus: doc.textExtractionStatus,
@@ -917,8 +917,10 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
                 } else {
                   try {
                     textContent = readFileSync(filePath, 'utf-8');
-                    const charCount = textContent.length;
-                    console.log(`   ✅ Successfully read ${charCount.toLocaleString()} characters from local file`);
+                    if (textContent) {
+                      const charCount = textContent.length;
+                      console.log(`   ✅ Successfully read ${charCount.toLocaleString()} characters from local file`);
+                    }
                   } catch (readError) {
                     console.error(`   ❌ Error reading file:`, readError);
                   }
@@ -944,7 +946,7 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
           return {
             id: doc.id,
             filename: doc.filename,
-            documentType: doc.documentType || undefined,
+            documentType: doc.documentCategory || undefined, // Use documentCategory from schema
             textContent: textContent,
             notes: attachment.notes || undefined,
             textExtractionStatus: doc.textExtractionStatus,
@@ -958,7 +960,8 @@ export async function focusGroupsRoutes(server: FastifyInstance) {
       if (documentsWithText.length > 0) {
         console.log(`📄 [ROUNDTABLE] Documents with text:`);
         documentsWithText.forEach((doc, idx) => {
-          console.log(`   ${idx + 1}. ${doc.filename} (${(doc.textContent?.length || 0).toLocaleString()} chars)`);
+          const charCount = doc.textContent ? doc.textContent.length : 0;
+          console.log(`   ${idx + 1}. ${doc.filename} (${charCount.toLocaleString()} chars)`);
         });
       }
 
