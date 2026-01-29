@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { PersonaSummary, ConversationStatement, OverallAnalysis, InfluentialPersona, PersonaDetails, CustomQuestion } from '@/types/focus-group';
 import { PersonaSummaryCard } from './PersonaSummaryCard';
 import { PersonaDetailModal } from './PersonaDetailModal';
 import { Users, BarChart3, HelpCircle, Download } from 'lucide-react';
+import { getPersonaImageUrl } from '@/lib/persona-image-utils';
 
 interface ConversationTabsProps {
   conversationId: string;
@@ -176,9 +178,21 @@ export function ConversationTabs({ conversationId, personaSummaries, allStatemen
                               return (
                                 <div key={statement.id} className="px-4 py-3">
                                   <div className="flex items-start gap-3">
-                                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
-                                      {statement.sequenceNumber}
-                                    </span>
+                                    {/* Persona Image or Sequence Number */}
+                                    {statement.imageUrl && getPersonaImageUrl(statement.personaId, statement.imageUrl) ? (
+                                      <Image
+                                        src={getPersonaImageUrl(statement.personaId, statement.imageUrl)!}
+                                        alt={statement.personaName}
+                                        width={32}
+                                        height={32}
+                                        className="rounded-full object-cover border border-gray-200 flex-shrink-0 mt-0.5"
+                                        unoptimized={getPersonaImageUrl(statement.personaId, statement.imageUrl)?.startsWith('http://localhost')}
+                                      />
+                                    ) : (
+                                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
+                                        {statement.sequenceNumber}
+                                      </span>
+                                    )}
                                     <div className="flex-1 min-w-0 w-full">
                                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                                         <span className="font-medium text-gray-900 text-sm">{statement.personaName}</span>

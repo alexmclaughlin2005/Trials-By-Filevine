@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -9,6 +10,7 @@ import { Badge } from './ui/badge';
 import { MessageSquare, TrendingUp, TrendingDown, Minus, AlertCircle, Sparkles, FileText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TakeawaysTab } from './focus-groups/TakeawaysTab';
+import { getPersonaImageUrl } from '@/lib/persona-image-utils';
 
 interface Statement {
   id: string;
@@ -24,6 +26,7 @@ interface Statement {
   disagreementSignals?: string[];
   speakCount: number;
   createdAt: string;
+  imageUrl?: string | null;
 }
 
 interface Conversation {
@@ -288,12 +291,24 @@ export function RoundtableConversationViewer({ conversationId, caseId }: Roundta
                     {/* Statement Header */}
                     <div className="flex items-start justify-between gap-4 mb-2">
                       <div className="flex items-center gap-2 flex-1">
+                        {/* Persona Image or Sequence Number */}
+                        {statement.imageUrl && getPersonaImageUrl(statement.personaId, statement.imageUrl) ? (
+                          <Image
+                            src={getPersonaImageUrl(statement.personaId, statement.imageUrl)!}
+                            alt={statement.personaName}
+                            width={32}
+                            height={32}
+                            className="rounded-full object-cover border border-gray-200 flex-shrink-0"
+                            unoptimized={getPersonaImageUrl(statement.personaId, statement.imageUrl)?.startsWith('http://localhost')}
+                          />
+                        ) : (
+                          <Badge variant="outline" className="text-xs">
+                            #{statement.sequenceNumber}
+                          </Badge>
+                        )}
                         <div className="font-semibold text-filevine-gray-900">
                           {statement.personaName}
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          #{statement.sequenceNumber}
-                        </Badge>
                         {statement.sentiment && (
                           <div className="flex items-center gap-1 text-xs text-filevine-gray-600">
                             {sentimentIcons[statement.sentiment as keyof typeof sentimentIcons]}

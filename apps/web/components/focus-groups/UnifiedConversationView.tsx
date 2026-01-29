@@ -389,13 +389,13 @@ export function UnifiedConversationView({
                                         <Image
                                           src={getPersonaImageUrl(statement.personaId, statement.imageUrl)!}
                                           alt={statement.personaName}
-                                          width={24}
-                                          height={24}
+                                          width={32}
+                                          height={32}
                                           className="rounded-full object-cover border border-gray-200 flex-shrink-0 mt-0.5"
                                           unoptimized={getPersonaImageUrl(statement.personaId, statement.imageUrl)?.startsWith('http://localhost')}
                                         />
                                       ) : (
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
+                                        <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-gray-600 text-xs font-medium flex-shrink-0 mt-0.5">
                                           {statement.sequenceNumber}
                                         </span>
                                       )}
