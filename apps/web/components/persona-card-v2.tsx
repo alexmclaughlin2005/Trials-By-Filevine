@@ -290,7 +290,7 @@ export function PersonaCardV2({
             </div>
 
             {/* Instant Read */}
-            {persona.instantRead && (
+            {'instantRead' in persona && persona.instantRead && (
               <p className="text-sm text-filevine-gray-700 italic mt-2">
                 &ldquo;{persona.instantRead}&rdquo;
               </p>
