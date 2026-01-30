@@ -1,14 +1,57 @@
 # Juror-Persona Matching System - Implementation Plan
 
 **Created:** January 30, 2026  
-**Status:** Planning Phase  
+**Last Updated:** January 30, 2026  
+**Status:** Phase 2 In Progress (Embedding & Ensemble Complete)  
 **PRD Reference:** TrialForge_Juror_Persona_Matching_PRD.md
+
+## Recent Updates (January 30, 2026)
+
+### ✅ Completed Implementations
+
+1. **Voyage AI Embedding Scorer**
+   - Replaced placeholder hash-based embedding with Voyage AI `voyage-law-2` model
+   - 1024-dimensional embeddings optimized for legal content
+   - Preload function (`preloadPersonaEmbeddings()`) runs at server startup
+   - Batch processing (10 personas at a time) for efficient preloading
+   - Fallback embedding method when Voyage AI unavailable
+   - **File:** `services/api-gateway/src/services/matching/embedding-scorer.ts`
+
+2. **Updated Ensemble Weights**
+   - Changed from: signal=0.35, embedding=0.30, bayesian=0.35
+   - Changed to: **signal=0.15, embedding=0.55, bayesian=0.30**
+   - Embedding similarity is now the primary matching method (55% weight)
+   - Dynamic weight adjustment based on data availability maintained
+   - **File:** `services/api-gateway/src/services/matching/ensemble-matcher.ts`
+
+3. **Startup Integration**
+   - `preloadPersonaEmbeddings()` called automatically in `index.ts`
+   - Non-blocking background execution
+   - Comprehensive error handling and logging
+   - **File:** `services/api-gateway/src/index.ts`
+
+### 📦 Sample Data Available
+- **60 Personas** ready for testing (see `personas-v2-export.json`)
+- All personas will be preloaded with Voyage AI embeddings at startup
+- Distribution across 10 archetypes provides comprehensive test coverage
+
+### 🔧 Environment Setup Required
+- Add `VOYAGE_API_KEY` to environment variables
+- Get API key from: https://dash.voyageai.com
+- Embedding scorer will use fallback if key not set (with warning)
 
 ## Executive Summary
 
 This document analyzes the gap between the comprehensive Juror-Persona Matching PRD and the current implementation, then provides a phased implementation plan to build the full matching system.
 
-**Current State:** Basic LLM-based persona suggestion exists, but lacks the sophisticated multi-algorithm matching, signal extraction, and real-time voir dire integration described in the PRD.
+**Current State:** 
+- ✅ Embedding similarity matching (Voyage AI voyage-law-2) - **COMPLETE**
+- ✅ Ensemble combination with updated weights - **COMPLETE**
+- ⚠️ Basic LLM-based persona suggestion exists
+- ⚠️ Basic signal extraction exists (needs enhancement)
+- ⚠️ Basic Bayesian updating exists (needs enhancement)
+- ❌ Discriminative question generation (not yet implemented)
+- ❌ Real-time voir dire integration (not yet implemented)
 
 **Target State:** Full implementation of signal-based scoring, embedding similarity, Bayesian updating, ensemble combination, discriminative question generation, and real-time voir dire response tracking.
 
@@ -17,6 +60,23 @@ This document analyzes the gap between the comprehensive Juror-Persona Matching 
 ## 1. Current Implementation Analysis
 
 ### 1.1 What Exists Today
+
+#### ✅ Persona V2 Library (60 Personas)
+- **Location:** `personas-v2-export.json`
+- **Status:** ✅ Complete - 60 personas across 10 archetypes ready for matching
+- **Distribution:**
+  - Bootstrapper: 10 personas
+  - Crusader: 10 personas
+  - Scale-Balancer: 6 personas
+  - Captain: 6 personas
+  - Heart: 6 personas
+  - Chameleon: 5 personas
+  - Calculator: 5 personas
+  - Scarred: 5 personas
+  - Maverick: 4 personas
+  - Trojan Horse: 3 personas
+- **Features:** Each persona includes demographics, danger levels, phrases, verdict predictions, strike/keep guidance
+- **Usage:** All 60 personas will be preloaded with embeddings at server startup
 
 #### ✅ Persona Suggestion Service
 - **Location:** `services/api-gateway/src/services/persona-suggester.ts`
@@ -39,11 +99,32 @@ This document analyzes the gap between the comprehensive Juror-Persona Matching 
 - **Output:** Structured signals with categories (decision_style, values, communication, etc.)
 - **Limitation:** Signals stored as JSON, not structured Signal objects
 
+#### ✅ Embedding-Based Matching (Voyage AI)
+- **Service:** `EmbeddingScorer` in `services/api-gateway/src/services/matching/embedding-scorer.ts`
+- **Status:** ✅ **COMPLETE** - Production-ready implementation
+- **Model:** Voyage AI `voyage-law-2` (1024 dimensions, legal-optimized)
+- **Features:**
+  - Pre-computed persona embeddings (preloaded at startup)
+  - Juror narrative generation with caching
+  - Cosine similarity calculation
+  - Fallback embedding for when Voyage AI unavailable
+- **Performance:** Batch processing, in-memory caching, non-blocking startup preload
+
 #### ✅ Question Generation
 - **Services:** `QuestionGeneratorService`, `VoirDireGeneratorV2Service`
 - **Capability:** Generates voir dire questions by category
 - **Features:** Opening, persona identification, case-specific, strike justification
 - **Limitation:** Not discriminative (doesn't target ambiguous matches specifically)
+
+#### ✅ Ensemble Matching System
+- **Service:** `EnsembleMatcher` in `services/api-gateway/src/services/matching/ensemble-matcher.ts`
+- **Status:** ✅ **COMPLETE** - Production-ready with updated weights
+- **Weights:** Signal=0.15, Embedding=0.55, Bayesian=0.30
+- **Features:**
+  - Parallel execution of all three algorithms
+  - Dynamic weight adjustment based on data availability
+  - Rationale and counterfactual generation for top matches
+  - Confidence scoring per method
 
 #### ✅ Database Schema Support
 - **Juror Model:** Has `questionnaireData` JSON field
@@ -59,11 +140,11 @@ This document analyzes the gap between the comprehensive Juror-Persona Matching 
 - No signal-to-persona weight mappings
 - Signals exist only as unstructured JSON
 
-#### ❌ Multi-Algorithm Matching
-- No signal-based scoring algorithm
-- No embedding similarity matching
-- No Bayesian updating
-- No ensemble combination of methods
+#### ⚠️ Multi-Algorithm Matching (Partially Implemented)
+- ✅ Embedding similarity matching (Voyage AI voyage-law-2) - **IMPLEMENTED**
+- ✅ Ensemble combination with updated weights - **IMPLEMENTED**
+- ⚠️ Signal-based scoring algorithm - **IN PROGRESS** (basic implementation exists)
+- ⚠️ Bayesian updating - **IN PROGRESS** (basic implementation exists)
 
 #### ❌ Voir Dire Response Tracking
 - No `voir_dire_responses` array in Juror model
@@ -103,10 +184,10 @@ This document analyzes the gap between the comprehensive Juror-Persona Matching 
 
 | PRD Requirement | Current State | Gap |
 |----------------|---------------|-----|
-| Signal-based scoring | Not implemented | Need weighted signal matching algorithm |
-| Embedding similarity | Not implemented | Need embedding generation and cosine similarity |
-| Bayesian updating | Not implemented | Need probabilistic updating with priors |
-| Ensemble combination | Not implemented | Need weighted combination of methods |
+| Signal-based scoring | Basic implementation exists | Need enhancement and signal weight mappings |
+| Embedding similarity | ✅ Implemented (Voyage AI) | Voyage AI voyage-law-2 with preload at startup |
+| Bayesian updating | Basic implementation exists | Need enhancement with proper priors |
+| Ensemble combination | ✅ Implemented | Weights: signal=0.15, embedding=0.55, bayesian=0.30 |
 | Rationale generation | Basic LLM generation | Exists but could be enhanced |
 | Counterfactual generation | Field exists, not generated | Need algorithm to identify decision boundaries |
 
@@ -323,9 +404,15 @@ class SignalExtractorService {
 
 ---
 
-### Phase 2: Matching Algorithms (Weeks 3-5)
+### Phase 2: Matching Algorithms (Weeks 3-5) ⚠️ **PARTIALLY COMPLETE**
 
 **Goal:** Implement the three matching algorithms and ensemble combination.
+
+**Status:**
+- ✅ Embedding Similarity Algorithm - **COMPLETE** (Voyage AI voyage-law-2)
+- ✅ Ensemble Combination - **COMPLETE** (Updated weights: signal=0.15, embedding=0.55, bayesian=0.30)
+- ⚠️ Signal-Based Scoring - **IN PROGRESS** (basic implementation exists, needs enhancement)
+- ⚠️ Bayesian Updating - **IN PROGRESS** (basic implementation exists, needs enhancement)
 
 #### 3.2.1 Signal-Based Scoring Algorithm
 
@@ -349,33 +436,41 @@ class SignalBasedScorer {
 }
 ```
 
-#### 3.2.2 Embedding Similarity Algorithm
+#### 3.2.2 Embedding Similarity Algorithm ✅ **IMPLEMENTED**
 
 **File:** `services/api-gateway/src/services/matching/embedding-scorer.ts`
 
-**Requirements:**
-- Pre-compute persona embeddings (store in Persona model or cache)
-- Generate juror narrative embedding on-demand
-- Compute cosine similarity
-- Normalize across all personas
+**Status:** ✅ Complete - Using Voyage AI voyage-law-2 model
+
+**Implementation Details:**
+- **Embedding Model:** Voyage AI `voyage-law-2` (1024 dimensions, optimized for legal/legal-adjacent content)
+- **Pre-computation:** Persona embeddings preloaded at server startup via `preloadPersonaEmbeddings()`
+- **Caching:** In-memory cache for persona embeddings, narrative cache with 1-hour TTL
+- **Juror Narratives:** Generated on-demand using `JurorNarrativeGenerator`
+- **Similarity:** Cosine similarity with normalization to 0-1 range
+- **Fallback:** Hash-based fallback embedding if Voyage AI unavailable
 
 **Dependencies:**
-- Embedding model (OpenAI text-embedding-3-large or Anthropic embedding API)
-- Vector storage (pgvector extension or Redis)
+- `voyageai` npm package
+- `VOYAGE_API_KEY` environment variable
+- Voyage AI API access (dash.voyageai.com)
 
-**Algorithm:**
+**Key Methods:**
 ```typescript
 class EmbeddingScorer {
-  async generateJurorNarrative(jurorId: string): Promise<string>
-  async scoreJuror(jurorId: string, personaIds: string[]): Promise<{
-    scores: Record<string, number>;
-    confidence: number;
-  }>
-  private async getPersonaEmbedding(personaId: string): Promise<number[]>
-  private async generateEmbedding(text: string): Promise<number[]>
+  async scoreJuror(jurorId: string, personaId: string): Promise<EmbeddingScore>
+  async scoreJurorAgainstPersonas(jurorId: string, personaIds: string[]): Promise<Map<string, EmbeddingScore>>
+  async preloadPersonaEmbeddings(): Promise<void> // Called at startup
+  private async generateEmbedding(text: string): Promise<number[]> // Voyage AI API call
   private cosineSimilarity(vecA: number[], vecB: number[]): number
 }
 ```
+
+**Startup Integration:**
+- `preloadPersonaEmbeddings()` called automatically in `services/api-gateway/src/index.ts`
+- Runs in background (non-blocking) after server starts
+- Processes personas in batches of 10 to avoid rate limits
+- Logs progress and errors without blocking server startup
 
 #### 3.2.3 Bayesian Updating Algorithm
 
@@ -404,48 +499,61 @@ class BayesianUpdater {
 }
 ```
 
-#### 3.2.4 Ensemble Combination
+#### 3.2.4 Ensemble Combination ✅ **IMPLEMENTED**
 
 **File:** `services/api-gateway/src/services/matching/ensemble-matcher.ts`
+
+**Status:** ✅ Complete - Updated weights implemented
+
+**Base Weights (Updated):**
+- **Signal-based:** 0.15 (15%)
+- **Embedding:** 0.55 (55%) - **Primary method**
+- **Bayesian:** 0.30 (30%)
+
+**Rationale:** Embedding similarity is now the primary matching method due to:
+- Voyage AI voyage-law-2 model optimized for legal content
+- Better semantic understanding of juror narratives vs persona descriptions
+- Pre-computed persona embeddings for fast matching
+
+**Dynamic Weight Adjustment:**
+- Rich narrative data (research + voir dire) → +0.05 embedding, -0.03 signal, -0.02 bayesian
+- Sparse data (<3 signals, no narrative) → +0.10 bayesian, -0.10 embedding
+- Many signals (>10) → +0.05 signal, -0.05 embedding
+- Weights normalized to sum to 1.0
 
 **Algorithm:**
 ```typescript
 class EnsembleMatcher {
-  async matchJuror(jurorId: string, personaIds: string[]): Promise<{
-    matches: Array<{
-      personaId: string;
-      probability: number;
-      confidence: number;
-      methodScores: {
-        signalBased: number;
-        embedding: number;
-        bayesian: number;
-      };
-      rationale: string;
-      counterfactual: string;
-    }>;
-  }> {
-    // 1. Run all three algorithms
-    // 2. Adjust weights based on data availability
-    // 3. Weighted average of scores
-    // 4. Generate rationale and counterfactual
+  async matchJuror(jurorId: string, personaIds: string[]): Promise<EnsembleMatch[]> {
+    // 1. Run all three algorithms in parallel
+    // 2. Determine weights based on data availability
+    // 3. Weighted average: signal*0.15 + embedding*0.55 + bayesian*0.30
+    // 4. Generate rationale and counterfactual for top 5 matches
+    // 5. Return sorted by probability
   }
   
-  private adjustWeights(jurorData: JurorData): Weights {
-    // Rich narrative -> favor embedding
-    // Sparse data -> favor Bayesian
-    // Many signals -> favor signal-based
+  private async determineWeights(jurorId: string): Promise<EnsembleWeights> {
+    // Base: {signalBased: 0.15, embedding: 0.55, bayesian: 0.30}
+    // Adjust based on signal count, research artifacts, voir dire responses
+    // Normalize to ensure sum = 1.0
   }
 }
 ```
 
+**Performance Optimizations:**
+- Parallel execution of all three algorithms
+- Rationale generation only for top 5 matches (others generated on-demand)
+- Cached persona embeddings (preloaded at startup)
+- Cached juror narratives (1-hour TTL)
+
 **Deliverables:**
-- ✅ Signal-based scorer
-- ✅ Embedding scorer (with persona embedding pre-computation)
-- ✅ Bayesian updater
-- ✅ Ensemble matcher
-- ✅ Rationale generation (enhance existing LLM prompt)
-- ✅ Counterfactual generation algorithm
+- ✅ Signal-based scorer (basic implementation)
+- ✅ Embedding scorer (Voyage AI voyage-law-2) - **COMPLETE**
+- ✅ Bayesian updater (basic implementation)
+- ✅ Ensemble matcher (updated weights) - **COMPLETE**
+- ✅ Rationale generation (LLM-based with signal citations)
+- ✅ Counterfactual generation algorithm (LLM-based)
+- ✅ Persona embedding preload at startup - **COMPLETE**
 
 ---
 
@@ -591,17 +699,25 @@ GET /api/jurors/:jurorId/suggested-follow-ups?responseId=xxx
 | Question generation | <15s | Pre-compute discriminating signals, cache results |
 | Embedding generation | <2s | Pre-compute persona embeddings, cache juror narratives |
 
-### 4.2 Caching Strategy
+### 4.2 Caching Strategy ✅ **IMPLEMENTED**
 
-- **Persona Embeddings:** Pre-compute and cache in Redis or database
-- **Juror Narratives:** Cache for 1 hour, invalidate on new signals
+- **Persona Embeddings:** ✅ Pre-computed at server startup, cached in-memory (Map<string, number[]>)
+  - Preload via `preloadPersonaEmbeddings()` called in `index.ts`
+  - Batch processing (10 personas at a time) to avoid rate limits
+  - Persists for server lifetime (reloads on restart)
+- **Juror Narratives:** ✅ Cache for 1 hour, invalidate on new signals
 - **Persona Matches:** Cache for 5 minutes, invalidate on new voir dire response
-- **Discriminating Signals:** Pre-compute for common persona pairs
+- **Discriminating Signals:** Pre-compute for common persona pairs (planned)
 
-### 4.3 AI Service Integration
+### 4.3 AI Service Integration ✅ **UPDATED**
 
 - **Signal Extraction (NLP):** Use Claude 4.5 for attitudinal signal classification
-- **Embedding Generation:** Use OpenAI text-embedding-3-large or Anthropic embedding API
+- **Embedding Generation:** ✅ **Voyage AI voyage-law-2** (1024 dimensions, legal-optimized)
+  - API: `voyageai` npm package
+  - Model: `voyage-law-2`
+  - Context length: 16,000 tokens
+  - Embedding dimension: 1024
+  - Requires `VOYAGE_API_KEY` environment variable
 - **Rationale Generation:** Enhance existing Claude prompt with signal citations
 - **Counterfactual Generation:** Use Claude to identify decision boundaries
 

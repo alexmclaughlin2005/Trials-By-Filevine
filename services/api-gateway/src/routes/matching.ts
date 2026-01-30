@@ -8,6 +8,7 @@
 
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { EnsembleMatcher } from '../services/matching/ensemble-matcher';
+import { EmbeddingScorer } from '../services/matching/embedding-scorer';
 import { ClaudeClient } from '@juries/ai-client';
 
 export async function matchingRoutes(server: FastifyInstance) {
@@ -40,7 +41,7 @@ export async function matchingRoutes(server: FastifyInstance) {
         // Use provided persona IDs
         availablePersonaIds = personaIds;
       } else {
-        // Get all active personas for organization
+        // Get all active V2 personas for organization
         const personas = await server.prisma.persona.findMany({
           where: {
             OR: [
@@ -48,6 +49,7 @@ export async function matchingRoutes(server: FastifyInstance) {
               { organizationId: null }, // System personas
             ],
             isActive: true,
+            version: 2, // Only V2 personas
           },
           select: { id: true },
         });
@@ -431,6 +433,44 @@ export async function matchingRoutes(server: FastifyInstance) {
         server.log.error(error);
         reply.code(500);
         return { error: 'Failed to generate match breakdown' };
+      }
+    },
+  });
+
+  // Get embedding cache status
+  server.get('/cache-status', {
+    onRequest: [server.authenticate],
+    handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
+      try {
+        const embeddingScorer = (server as any).embeddingScorer as EmbeddingScorer | undefined;
+        
+        if (!embeddingScorer) {
+          return {
+            available: false,
+            message: 'Embedding scorer not initialized',
+          };
+        }
+
+        const stats = embeddingScorer.getCacheStats();
+        const totalPersonas = await server.prisma.persona.count({
+          where: { isActive: true, version: 2 },
+        });
+
+        return {
+          available: true,
+          cache: {
+            personaEmbeddingsCached: stats.personaEmbeddingsCached,
+            totalPersonas,
+            completionPercentage: totalPersonas > 0 
+              ? ((stats.personaEmbeddingsCached / totalPersonas) * 100).toFixed(1)
+              : '0.0',
+            jurorNarrativesCached: stats.jurorNarrativesCached,
+          },
+        };
+      } catch (error) {
+        server.log.error(error);
+        reply.code(500);
+        return { error: 'Failed to get cache status' };
       }
     },
   });

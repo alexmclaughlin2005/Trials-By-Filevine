@@ -76,6 +76,7 @@ export class DiscriminativeQuestionGenerator {
             { organizationId: null }, // System personas
           ],
           isActive: true,
+          version: 2, // Only V2 personas
         },
         select: { id: true },
       });

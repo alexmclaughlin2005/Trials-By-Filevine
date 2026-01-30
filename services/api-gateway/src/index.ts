@@ -1,8 +1,12 @@
 import { config } from './config';
 import { buildServer } from './server';
 import { startDocumentDownloader, stopDocumentDownloader } from './workers/document-downloader.js';
+import { prisma } from '@juries/database';
+import { ClaudeClient } from '@juries/ai-client';
+import { EmbeddingScorer } from './services/matching/embedding-scorer';
 
 let downloaderInterval: NodeJS.Timeout | null = null;
+let embeddingScorerInstance: EmbeddingScorer | null = null;
 
 async function start() {
   const server = await buildServer();
@@ -39,6 +43,23 @@ async function start() {
 
     // Start document download worker
     downloaderInterval = startDocumentDownloader();
+
+    // Preload persona embeddings at startup
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (apiKey) {
+      const claudeClient = new ClaudeClient({ apiKey });
+      embeddingScorerInstance = new EmbeddingScorer(prisma, claudeClient);
+      
+      // Store in server context for cache status endpoint
+      (server as any).embeddingScorer = embeddingScorerInstance;
+      
+      // Preload in background (don't block server startup)
+      embeddingScorerInstance.preloadPersonaEmbeddings().catch((error) => {
+        server.log.error('Failed to preload persona embeddings:', error);
+      });
+    } else {
+      server.log.warn('ANTHROPIC_API_KEY not set - skipping persona embedding preload');
+    }
   } catch (err) {
     server.log.error(err);
     process.exit(1);

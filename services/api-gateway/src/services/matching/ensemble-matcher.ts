@@ -215,9 +215,9 @@ export class EnsembleMatcher {
     if (!juror) {
       // Default weights if juror not found
       return {
-        signalBased: 0.35,
-        embedding: 0.30,
-        bayesian: 0.35,
+        signalBased: 0.15,
+        embedding: 0.55,
+        bayesian: 0.30,
       };
     }
 
@@ -226,18 +226,18 @@ export class EnsembleMatcher {
     const voirDireCount = juror.voirDireResponses.length;
     const hasRichNarrative = researchCount > 0 || voirDireCount > 0;
 
-    // Adjust weights based on data availability
+    // Base weights: signal=0.15, embedding=0.55, bayesian=0.30
     let weights: EnsembleWeights = {
-      signalBased: 0.35,
-      embedding: 0.30,
-      bayesian: 0.35,
+      signalBased: 0.15,
+      embedding: 0.55,
+      bayesian: 0.30,
     };
 
-    // Rich narrative data -> favor embedding
+    // Rich narrative data -> favor embedding even more
     if (hasRichNarrative && signalCount > 5) {
-      weights.embedding += 0.10;
-      weights.signalBased -= 0.05;
-      weights.bayesian -= 0.05;
+      weights.embedding += 0.05;
+      weights.signalBased -= 0.03;
+      weights.bayesian -= 0.02;
     }
 
     // Sparse data -> favor Bayesian (handles uncertainty better)
@@ -246,10 +246,10 @@ export class EnsembleMatcher {
       weights.embedding -= 0.10;
     }
 
-    // Many signals -> favor signal-based
+    // Many signals -> slightly favor signal-based
     if (signalCount > 10) {
       weights.signalBased += 0.05;
-      weights.bayesian -= 0.05;
+      weights.embedding -= 0.05;
     }
 
     // Normalize to ensure sum = 1

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useCaseVoirDireQuestions, type CaseVoirDireQuestion } from '@/hooks/use-case-voir-dire-questions';
 import { useVoirDireResponses } from '@/hooks/use-voir-dire-responses';
 import { Button } from '@/components/ui/button';
-import { Loader2, HelpCircle, CheckCircle2, MessageSquare, Plus } from 'lucide-react';
+import { Loader2, HelpCircle, CheckCircle2, MessageSquare, Plus, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface VoirDireManagerProps {
@@ -20,6 +20,7 @@ export function VoirDireManager({
 }: VoirDireManagerProps) {
   const [showQuestions, setShowQuestions] = useState(true);
   const [showResponses, setShowResponses] = useState(true);
+  const [expandedResponseId, setExpandedResponseId] = useState<string | null>(null);
 
   const { data: questionsData, isLoading: questionsLoading } = useCaseVoirDireQuestions(caseId, {
     jurorId,
@@ -201,39 +202,160 @@ export function VoirDireManager({
               </div>
             ) : (
               <div className="space-y-2">
-                {responses.map((response) => (
-                  <div
-                    key={response.id}
-                    className="rounded-lg border border-filevine-gray-200 bg-white p-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-filevine-gray-900 mb-1">
-                          {response.questionText}
-                        </p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {response.yesNoAnswer !== null && (
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                response.yesNoAnswer
-                                  ? 'bg-filevine-green/20 text-filevine-green-700'
-                                  : 'bg-filevine-red/20 text-filevine-red-700'
-                              }`}
-                            >
-                              {response.yesNoAnswer ? 'Yes' : 'No'}
-                            </span>
-                          )}
-                          <span className="text-xs text-filevine-gray-600">
-                            {response.responseSummary}
-                          </span>
+                {responses.map((response) => {
+                  const hasSignals = response.extractedSignals.length > 0;
+                  const hasImpacts = response.personaImpacts.length > 0;
+                  const isExpanded = expandedResponseId === response.id;
+                  
+                  return (
+                    <div
+                      key={response.id}
+                      className="rounded-lg border border-filevine-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
+                    >
+                      <div
+                        className="cursor-pointer p-3"
+                        onClick={() => setExpandedResponseId(isExpanded ? null : response.id)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="text-sm font-medium text-filevine-gray-900">
+                                {response.questionText}
+                              </p>
+                              {hasSignals && (
+                                <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 flex items-center gap-1">
+                                  <Zap className="h-3 w-3" />
+                                  {response.extractedSignals.length} signal{response.extractedSignals.length !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                              {hasImpacts && (
+                                <span className="rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+                                  {response.personaImpacts.length} persona impact{response.personaImpacts.length !== 1 ? 's' : ''}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {response.yesNoAnswer !== null && (
+                                <span
+                                  className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                                    response.yesNoAnswer
+                                      ? 'bg-filevine-green/20 text-filevine-green-700'
+                                      : 'bg-filevine-red/20 text-filevine-red-700'
+                                  }`}
+                                >
+                                  {response.yesNoAnswer ? 'Yes' : 'No'}
+                                </span>
+                              )}
+                              <span className={`text-xs text-filevine-gray-600 ${response.yesNoAnswer !== null ? 'line-clamp-1' : 'line-clamp-2'}`}>
+                                {response.responseSummary}
+                              </span>
+                            </div>
+                            <p className="text-xs text-filevine-gray-500 mt-1">
+                              {format(new Date(response.responseTimestamp), 'MMM d, yyyy h:mm a')}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 ml-2">
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4 text-filevine-gray-400" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4 text-filevine-gray-400" />
+                            )}
+                          </div>
                         </div>
-                        <p className="text-xs text-filevine-gray-500 mt-1">
-                          {format(new Date(response.responseTimestamp), 'MMM d, yyyy h:mm a')}
-                        </p>
                       </div>
+
+                      {isExpanded && (
+                        <div className="border-t border-filevine-gray-200 p-3 space-y-3">
+                          <div>
+                            <h5 className="text-xs font-medium text-filevine-gray-700 mb-1">Full Response</h5>
+                            <div className="flex items-start gap-2">
+                              {response.yesNoAnswer !== null && (
+                                <span
+                                  className={`rounded-full px-2 py-1 text-xs font-semibold flex-shrink-0 ${
+                                    response.yesNoAnswer
+                                      ? 'bg-filevine-green/20 text-filevine-green-700'
+                                      : 'bg-filevine-red/20 text-filevine-red-700'
+                                  }`}
+                                >
+                                  {response.yesNoAnswer ? 'Yes' : 'No'}
+                                </span>
+                              )}
+                              <p className="text-xs text-filevine-gray-900 whitespace-pre-wrap flex-1">
+                                {response.responseSummary}
+                              </p>
+                            </div>
+                          </div>
+
+                          {hasSignals && (
+                            <div>
+                              <h5 className="text-xs font-medium text-filevine-gray-700 mb-2">
+                                Extracted Signals ({response.extractedSignals.length})
+                              </h5>
+                              <div className="space-y-1">
+                                {response.extractedSignals.map((signal) => (
+                                  <div
+                                    key={signal.id}
+                                    className="rounded bg-filevine-gray-50 px-2 py-1.5 text-xs"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium text-filevine-gray-900">{signal.signalName}</span>
+                                      <span className="text-filevine-gray-600">
+                                        {typeof signal.value === 'object'
+                                          ? JSON.stringify(signal.value)
+                                          : String(signal.value)}
+                                      </span>
+                                    </div>
+                                    <div className="mt-0.5 text-xs text-filevine-gray-500">
+                                      Confidence: {Math.round(signal.confidence * 100)}%
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {hasImpacts && (
+                            <div>
+                              <h5 className="text-xs font-medium text-filevine-gray-700 mb-2">
+                                Persona Match Updates ({response.personaImpacts.length})
+                              </h5>
+                              <div className="space-y-1">
+                                {response.personaImpacts.map((impact) => (
+                                  <div
+                                    key={impact.id}
+                                    className="rounded bg-filevine-gray-50 px-2 py-1.5 text-xs"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium text-filevine-gray-900">{impact.personaName}</span>
+                                      <span
+                                        className={`font-medium ${
+                                          impact.probabilityDelta > 0
+                                            ? 'text-filevine-green'
+                                            : impact.probabilityDelta < 0
+                                            ? 'text-filevine-red'
+                                            : 'text-filevine-gray-600'
+                                        }`}
+                                      >
+                                        {impact.probabilityDelta > 0 ? '+' : ''}
+                                        {Math.round(impact.probabilityDelta * 100)}%
+                                      </span>
+                                    </div>
+                                    {impact.previousProbability !== null && (
+                                      <div className="mt-0.5 text-xs text-filevine-gray-500">
+                                        {Math.round(impact.previousProbability * 100)}% →{' '}
+                                        {Math.round(impact.newProbability * 100)}%
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

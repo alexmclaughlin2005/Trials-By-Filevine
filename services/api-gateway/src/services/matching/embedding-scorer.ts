@@ -2,13 +2,14 @@
  * Embedding Similarity Scorer
  * 
  * Calculates similarity between juror narratives and persona descriptions
- * using semantic embeddings and cosine similarity.
+ * using Voyage AI voyage-law-2 embeddings and cosine similarity.
  * 
  * Phase 2: Matching Algorithms
  */
 
 import { PrismaClient } from '@juries/database';
 import { ClaudeClient } from '@juries/ai-client';
+import { VoyageAIClient } from 'voyageai';
 import { JurorNarrativeGenerator } from './juror-narrative-generator';
 
 export interface EmbeddingScore {
@@ -21,12 +22,22 @@ export class EmbeddingScorer {
   private narrativeGenerator: JurorNarrativeGenerator;
   private embeddingCache = new Map<string, number[]>(); // personaId -> embedding
   private narrativeCache = new Map<string, { narrative: string; timestamp: number }>(); // jurorId -> cached narrative
+  private voyageClient: VoyageAIClient | null = null;
+  private readonly MODEL = 'voyage-law-2';
 
   constructor(
     private prisma: PrismaClient,
     private claudeClient: ClaudeClient
   ) {
     this.narrativeGenerator = new JurorNarrativeGenerator(prisma);
+    
+    // Initialize Voyage AI client if API key is available
+    const voyageApiKey = process.env.VOYAGE_API_KEY;
+    if (voyageApiKey) {
+      this.voyageClient = new VoyageAIClient({ apiKey: voyageApiKey });
+    } else {
+      console.warn('⚠️  VOYAGE_API_KEY not set - embedding scorer will use fallback');
+    }
   }
 
   /**
@@ -198,20 +209,39 @@ export class EmbeddingScorer {
   }
 
   /**
-   * Generate embedding using Claude's embedding API
-   * Note: Claude doesn't have a direct embedding API, so we'll use a workaround
-   * For now, we'll use OpenAI's embedding API or a text similarity approach
-   * 
-   * TODO: Integrate with actual embedding service (OpenAI text-embedding-3-large)
+   * Generate embedding using Voyage AI voyage-law-2 model
    */
   private async generateEmbedding(text: string): Promise<number[]> {
-    // For Phase 2, we'll use a simple text-based similarity approach
-    // In production, replace with actual embedding API call
-    
-    // Simple hash-based "embedding" for now (will be replaced with real embeddings)
-    // This is a placeholder - actual implementation should call OpenAI/Anthropic embedding API
+    if (!this.voyageClient) {
+      // Fallback to hash-based embedding if Voyage client not available
+      console.warn('Voyage AI client not available, using fallback embedding');
+      return this.fallbackEmbedding(text);
+    }
+
+    try {
+      const response = await this.voyageClient.embed({
+        input: [text],
+        model: this.MODEL,
+      });
+
+      if (!response.data || response.data.length === 0) {
+        throw new Error('No embedding data returned from Voyage AI');
+      }
+
+      return response.data[0].embedding;
+    } catch (error) {
+      console.error('Error generating Voyage AI embedding:', error);
+      // Fallback to hash-based embedding on error
+      return this.fallbackEmbedding(text);
+    }
+  }
+
+  /**
+   * Fallback embedding method (hash-based) for when Voyage AI is unavailable
+   */
+  private fallbackEmbedding(text: string): number[] {
     const words = text.toLowerCase().split(/\s+/);
-    const embedding = new Array(1536).fill(0); // OpenAI embedding dimension
+    const embedding = new Array(1024).fill(0); // voyage-law-2 dimension is 1024
     
     // Simple word frequency-based "embedding"
     for (let i = 0; i < words.length; i++) {
@@ -228,7 +258,7 @@ export class EmbeddingScorer {
   }
 
   /**
-   * Simple hash function for placeholder embedding
+   * Simple hash function for fallback embedding
    */
   private simpleHash(str: string): number {
     let hash = 0;
@@ -284,6 +314,253 @@ export class EmbeddingScorer {
     // Scale confidence from 0.5 to 1.0 based on richness
     const richnessScore = Math.min(1.0, length / 2000); // Max at 2000 chars
     return 0.5 + richnessScore * 0.5;
+  }
+
+  /**
+   * Preload all persona embeddings into cache at startup
+   * This warms the cache and improves matching performance
+   * 
+   * Runs in background and continues even after rate limit errors.
+   * Will complete gradually as rate limits allow.
+   */
+  async preloadPersonaEmbeddings(): Promise<void> {
+    if (!this.voyageClient) {
+      console.warn('⚠️  Voyage AI client not available - skipping persona embedding preload');
+      return;
+    }
+
+    try {
+      console.log('🔄 Preloading persona embeddings...');
+      
+      // Get all personas
+      const personas = await this.prisma.persona.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          instantRead: true,
+          phrasesYoullHear: true,
+          attributes: true,
+        },
+      });
+
+      console.log(`📦 Found ${personas.length} personas to preload`);
+
+      // Build persona texts
+      const personaTexts = personas.map((persona) => ({
+        id: persona.id,
+        text: this.buildPersonaDescription(persona),
+      }));
+
+      // Generate embeddings in batches (Voyage AI supports batch requests)
+      // Use smaller batches and add delays to respect rate limits
+      const batchSize = 3; // Smaller batches to avoid rate limits (3 RPM = 1 batch per 20 seconds)
+      const delayBetweenBatches = 21000; // 21 seconds between batches (slightly more than 20s for safety)
+      let loaded = 0;
+      let failedBatches = 0;
+      const maxRetries = 3;
+
+      for (let i = 0; i < personaTexts.length; i += batchSize) {
+        const batch = personaTexts.slice(i, i + batchSize);
+        const batchNumber = Math.floor(i / batchSize) + 1;
+        let retryCount = 0;
+        let success = false;
+
+        // Retry logic for rate limit errors
+        while (retryCount < maxRetries && !success) {
+          try {
+            const response = await this.voyageClient!.embed({
+              input: batch.map((p) => p.text),
+              model: this.MODEL,
+            });
+
+            if (response.data && response.data.length === batch.length) {
+              // Cache each embedding
+              batch.forEach((persona, index) => {
+                this.embeddingCache.set(persona.id, response.data[index].embedding);
+                loaded++;
+              });
+              success = true;
+              
+              if (retryCount > 0) {
+                console.log(`✅ Batch ${batchNumber} succeeded on retry ${retryCount + 1}`);
+              } else {
+                // Log progress every 5 batches
+                if (batchNumber % 5 === 0 || batchNumber === 1) {
+                  const progress = ((loaded / personas.length) * 100).toFixed(1);
+                  console.log(`📦 Preload progress: ${loaded}/${personas.length} (${progress}%) - Batch ${batchNumber}`);
+                }
+              }
+            }
+          } catch (error: any) {
+            retryCount++;
+            
+            // Check if it's a rate limit error
+            if (error.statusCode === 429 || error.message?.includes('rate limit')) {
+              if (retryCount < maxRetries) {
+                // Wait longer before retry (exponential backoff)
+                const waitTime = delayBetweenBatches * Math.pow(2, retryCount - 1);
+                console.log(`⏳ Rate limit hit for batch ${batchNumber}, waiting ${waitTime / 1000}s before retry ${retryCount + 1}/${maxRetries}...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+              } else {
+                console.error(`❌ Batch ${batchNumber} failed after ${maxRetries} retries (rate limit)`);
+                failedBatches++;
+                // Continue to next batch even after failure - will be loaded on-demand
+              }
+            } else {
+              // Non-rate-limit error - log and move on
+              console.error(`Error loading batch ${batchNumber}:`, error.message || error);
+              failedBatches++;
+              break; // Don't retry non-rate-limit errors
+            }
+          }
+        }
+
+        // Always add delay between batches to respect rate limits
+        // Even if batch failed, we still need to wait before next attempt
+        if (i + batchSize < personaTexts.length) {
+          // If batch failed, wait longer before trying next batch
+          const waitTime = success ? delayBetweenBatches : delayBetweenBatches * 2;
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+
+      const successRate = ((loaded / personas.length) * 100).toFixed(1);
+      const remaining = personas.length - loaded;
+      
+      console.log(`✅ Preloaded ${loaded}/${personas.length} persona embeddings (${successRate}%)`);
+      
+      if (failedBatches > 0) {
+        console.log(`⚠️  ${failedBatches} batches failed due to rate limits.`);
+      }
+      
+      if (remaining > 0) {
+        console.log(`ℹ️  ${remaining} personas will be loaded on-demand when needed.`);
+        console.log(`💡 Tip: Run 'npx tsx scripts/resume-embedding-preload.ts' to continue preloading.`);
+      } else {
+        console.log(`🎉 All personas preloaded successfully!`);
+      }
+    } catch (error) {
+      console.error('Error preloading persona embeddings:', error);
+      // Don't throw - allow app to continue even if preload fails
+    }
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getCacheStats(): {
+    personaEmbeddingsCached: number;
+    jurorNarrativesCached: number;
+  } {
+    return {
+      personaEmbeddingsCached: this.embeddingCache.size,
+      jurorNarrativesCached: this.narrativeCache.size,
+    };
+  }
+
+  /**
+   * Resume preloading for personas not yet cached
+   * Useful for completing preload after rate limits are resolved
+   */
+  async resumePreload(): Promise<void> {
+    if (!this.voyageClient) {
+      console.warn('⚠️  Voyage AI client not available - cannot resume preload');
+      return;
+    }
+
+    try {
+      // Get all personas
+      const personas = await this.prisma.persona.findMany({
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          instantRead: true,
+          phrasesYoullHear: true,
+          attributes: true,
+        },
+      });
+
+      // Filter to only personas not yet cached
+      const uncachedPersonas = personas.filter(
+        (p) => !this.embeddingCache.has(p.id)
+      );
+
+      if (uncachedPersonas.length === 0) {
+        console.log('✅ All personas already cached - no resume needed');
+        return;
+      }
+
+      console.log(`🔄 Resuming preload for ${uncachedPersonas.length} uncached personas...`);
+
+      // Build persona texts
+      const personaTexts = uncachedPersonas.map((persona) => ({
+        id: persona.id,
+        text: this.buildPersonaDescription(persona),
+      }));
+
+      // Use same batch processing logic as preload
+      const batchSize = 3;
+      const delayBetweenBatches = 21000;
+      let loaded = 0;
+      let failedBatches = 0;
+      const maxRetries = 3;
+
+      for (let i = 0; i < personaTexts.length; i += batchSize) {
+        const batch = personaTexts.slice(i, i + batchSize);
+        const batchNumber = Math.floor(i / batchSize) + 1;
+        let retryCount = 0;
+        let success = false;
+
+        while (retryCount < maxRetries && !success) {
+          try {
+            const response = await this.voyageClient!.embed({
+              input: batch.map((p) => p.text),
+              model: this.MODEL,
+            });
+
+            if (response.data && response.data.length === batch.length) {
+              batch.forEach((persona, index) => {
+                this.embeddingCache.set(persona.id, response.data[index].embedding);
+                loaded++;
+              });
+              success = true;
+            }
+          } catch (error: any) {
+            retryCount++;
+            
+            if (error.statusCode === 429 || error.message?.includes('rate limit')) {
+              if (retryCount < maxRetries) {
+                const waitTime = delayBetweenBatches * Math.pow(2, retryCount - 1);
+                console.log(`⏳ Rate limit hit for batch ${batchNumber}, waiting ${waitTime / 1000}s before retry...`);
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+              } else {
+                console.error(`❌ Batch ${batchNumber} failed after ${maxRetries} retries`);
+                failedBatches++;
+              }
+            } else {
+              console.error(`Error loading batch ${batchNumber}:`, error.message || error);
+              failedBatches++;
+              break;
+            }
+          }
+        }
+
+        if (i + batchSize < personaTexts.length && success) {
+          await new Promise(resolve => setTimeout(resolve, delayBetweenBatches));
+        }
+      }
+
+      const successRate = ((loaded / uncachedPersonas.length) * 100).toFixed(1);
+      console.log(`✅ Resumed preload: ${loaded}/${uncachedPersonas.length} personas loaded (${successRate}%)`);
+      
+      if (failedBatches > 0) {
+        console.log(`⚠️  ${failedBatches} batches failed. Will retry on next resume.`);
+      }
+    } catch (error) {
+      console.error('Error resuming preload:', error);
+    }
   }
 
   /**

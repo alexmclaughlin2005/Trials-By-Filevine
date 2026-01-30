@@ -247,7 +247,7 @@ export class VoirDireResponseService {
       response.yesNoAnswer // Pass yes/no answer for better signal extraction
     );
 
-    // Get available personas for the organization
+    // Get available V2 personas for the organization
     const personas = await this.prisma.persona.findMany({
       where: {
         OR: [
@@ -255,6 +255,7 @@ export class VoirDireResponseService {
           { organizationId: null }, // System personas
         ],
         isActive: true,
+        version: 2, // Only V2 personas
       },
       select: { id: true },
     });
