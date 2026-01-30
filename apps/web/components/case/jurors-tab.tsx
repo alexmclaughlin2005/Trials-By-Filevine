@@ -571,7 +571,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                           }}
                         >
                           <Image
-                            src={`/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`}
+                            src={juror.imageUrl.startsWith('https://') ? juror.imageUrl : `/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`}
                             alt={`${juror.firstName} ${juror.lastName}`}
                             fill
                             className="object-cover"
@@ -697,7 +697,7 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                               }}
                             >
                               <Image
-                                src={`/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`}
+                                src={juror.imageUrl.startsWith('https://') ? juror.imageUrl : `/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`}
                                 alt={`${juror.firstName} ${juror.lastName}`}
                                 fill
                                 className="object-cover"

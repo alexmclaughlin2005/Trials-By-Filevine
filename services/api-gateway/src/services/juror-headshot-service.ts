@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { put } from '@vercel/blob';
 
 // Lazy load OpenAI to avoid errors if not configured
 let openai: any = null;
@@ -375,9 +376,10 @@ async function generateImage(prompt: string, jurorId: string, style: 'realistic'
 }
 
 /**
- * Download image from URL and save locally with initials overlay
+ * Download image from URL and process with initials overlay
+ * Returns processed image buffer for upload to Vercel Blob
  */
-async function downloadAndSaveImage(imageUrl: string, filePath: string, initials?: string): Promise<void> {
+async function downloadAndProcessImage(imageUrl: string, initials?: string): Promise<Buffer> {
   const response = await fetch(imageUrl);
   if (!response.ok) {
     throw new Error(`Failed to download image: ${response.statusText}`);
@@ -412,21 +414,29 @@ async function downloadAndSaveImage(imageUrl: string, filePath: string, initials
         .png()
         .toBuffer();
       
-      await fs.writeFile(filePath, finalImage);
-      console.log(`[downloadAndSaveImage] Added initials overlay "${initials}" to image`);
-      return;
+      console.log(`[downloadAndProcessImage] Added initials overlay "${initials}" to image`);
+      return finalImage;
     } catch (error: any) {
-      // If sharp fails, fall back to saving without overlay
-      console.warn(`[downloadAndSaveImage] Failed to add initials overlay, saving without overlay:`, error.message);
+      // If sharp fails, fall back to image without overlay
+      console.warn(`[downloadAndProcessImage] Failed to add initials overlay, using original image:`, error.message);
     }
   }
   
-  // Save without overlay (fallback or if no initials)
-  await fs.writeFile(filePath, Buffer.from(buffer));
+  // Return without overlay (fallback or if no initials)
+  return Buffer.from(buffer);
+}
+
+/**
+ * Download image from URL and save locally with initials overlay (legacy - for local dev)
+ */
+async function downloadAndSaveImage(imageUrl: string, filePath: string, initials?: string): Promise<void> {
+  const buffer = await downloadAndProcessImage(imageUrl, initials);
+  await fs.writeFile(filePath, buffer);
 }
 
 /**
  * Generate headshot for a single juror
+ * Uploads to Vercel Blob Storage for persistence
  */
 export async function generateJurorHeadshot(
   juror: JurorImageData,
@@ -439,35 +449,13 @@ export async function generateJurorHeadshot(
   const imageStyle = (options.imageStyle === 'avatar' ? 'avatar' : 'realistic') as 'realistic' | 'avatar';
 
   try {
-    // Create images directory if it doesn't exist
-    try {
-      await fs.mkdir(JUROR_IMAGES_DIR, { recursive: true });
-    } catch (error: any) {
-      if (error.code !== 'EEXIST') {
-        throw error;
-      }
+    // Check if BLOB_READ_WRITE_TOKEN is set
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      throw new Error('BLOB_READ_WRITE_TOKEN environment variable is required for image storage');
     }
 
-    // Generate image filename from juror ID
-    const imageFileName = `${juror.id}.png`;
-    const imagePath = path.join(JUROR_IMAGES_DIR, imageFileName);
-
-    // Check if image already exists
-    let imageExists = false;
-    try {
-      await fs.access(imagePath);
-      imageExists = true;
-    } catch {
-      // Image doesn't exist
-    }
-
-    // Skip if exists and not regenerating
-    if (imageExists && !regenerate) {
-      return {
-        success: true,
-        imageUrl: `/api/jurors/images/${juror.id}`,
-      };
-    }
+    // Generate image filename for Vercel Blob
+    const imageFileName = `jurors/${juror.id}.png`;
 
     // Create prompt
     const prompt = createJurorImagePrompt(juror, imageStyle);
@@ -482,8 +470,8 @@ export async function generateJurorHeadshot(
       promptPreview: prompt.substring(0, 200) + '...',
     });
 
-    // Generate image
-    const imageUrl = await generateImage(prompt, juror.id, imageStyle);
+    // Generate image from DALL-E
+    const dalleImageUrl = await generateImage(prompt, juror.id, imageStyle);
 
     // Get initials for overlay
     const getInitials = (firstName: string, lastName: string): string => {
@@ -495,17 +483,26 @@ export async function generateJurorHeadshot(
     const jurorInitials = getInitials(juror.firstName, juror.lastName);
     console.log(`[generateJurorHeadshot] Adding initials overlay: "${jurorInitials}"`);
 
-    // Download and save image with initials overlay
-    await downloadAndSaveImage(imageUrl, imagePath, jurorInitials);
+    // Download image, add initials overlay, and upload to Vercel Blob
+    const imageBuffer = await downloadAndProcessImage(dalleImageUrl, jurorInitials);
+    
+    console.log(`[generateJurorHeadshot] Uploading to Vercel Blob: ${imageFileName}`);
+    
+    // Upload to Vercel Blob Storage
+    const blobResult = await put(imageFileName, imageBuffer, {
+      access: 'public',
+      contentType: 'image/png',
+      addRandomSuffix: false, // Use consistent filename based on juror ID
+    });
 
-    console.log(`[generateJurorHeadshot] Image saved successfully:`, {
+    console.log(`[generateJurorHeadshot] Image uploaded successfully:`, {
       jurorId: juror.id,
-      imagePath,
+      blobUrl: blobResult.url,
     });
 
     return {
       success: true,
-      imageUrl: `/api/jurors/images/${juror.id}`,
+      imageUrl: blobResult.url, // Return Vercel Blob URL directly
     };
   } catch (error: any) {
     console.error(`[generateJurorHeadshot] Error generating image:`, {

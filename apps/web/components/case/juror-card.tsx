@@ -38,8 +38,12 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
     },
   });
 
-  // Use imageUrl as cache buster instead of Date.now() to prevent re-fetching on every render
-  const imageSrc = juror.imageUrl ? `/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}` : '';
+  // Use Vercel Blob URL directly if available, otherwise proxy through API Gateway
+  const imageSrc = juror.imageUrl 
+    ? (juror.imageUrl.startsWith('https://') 
+        ? juror.imageUrl // Vercel Blob URL - use directly
+        : `/api/jurors/images/${juror.id}?v=${encodeURIComponent(juror.imageUrl.split('/').pop() || '')}`) // Legacy proxy
+    : '';
 
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();

@@ -1075,22 +1075,29 @@ export async function jurorsRoutes(server: FastifyInstance) {
           });
         }
 
-        // Update juror with image URL
-        // The imageUrl should be a relative path like "/api/jurors/images/{jurorId}"
-        const imageUrlToSave = result.imageUrl || `/api/jurors/images/${jurorId}`;
+        // Update juror with image URL (now a Vercel Blob URL)
+        const imageUrlToSave = result.imageUrl;
+        
+        if (!imageUrlToSave) {
+          server.log.error({ jurorId }, 'Image generation succeeded but no imageUrl returned');
+          return reply.status(500).send({
+            error: 'Image generation failed',
+            message: 'Image was generated but no URL was returned',
+          });
+        }
         
         try {
           await server.prisma.juror.update({
             where: { id: jurorId },
             data: {
-              imageUrl: imageUrlToSave,
+              imageUrl: imageUrlToSave, // Store Vercel Blob URL directly
             },
           });
           
           server.log.info({
             jurorId,
             imageUrl: imageUrlToSave,
-          }, 'Successfully updated juror with image URL');
+          }, 'Successfully updated juror with Vercel Blob image URL');
         } catch (prismaError: any) {
           server.log.error({
             jurorId,
@@ -1146,7 +1153,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
 
         server.log.info({ jurorId }, 'Image request received');
 
-        // Verify juror exists (public - images are not sensitive)
+        // Verify juror exists and get imageUrl
         const juror = await server.prisma.juror.findFirst({
           where: {
             id: jurorId,
@@ -1155,6 +1162,7 @@ export async function jurorsRoutes(server: FastifyInstance) {
             id: true,
             firstName: true,
             lastName: true,
+            imageUrl: true,
           },
         });
 
@@ -1165,18 +1173,18 @@ export async function jurorsRoutes(server: FastifyInstance) {
           });
         }
 
-        // Get image path
+        // If imageUrl is a Vercel Blob URL (starts with https://), redirect to it
+        if (juror.imageUrl && juror.imageUrl.startsWith('https://')) {
+          server.log.info({ jurorId, imageUrl: juror.imageUrl }, 'Redirecting to Vercel Blob URL');
+          return reply.redirect(302, juror.imageUrl);
+        }
+
+        // Legacy filesystem support (for backward compatibility)
+        // Get image path from filesystem
         const imagePath = await getJurorImagePath(jurorId);
 
         if (!imagePath) {
-          server.log.warn({ jurorId }, 'Image not found for juror - clearing imageUrl from database (ephemeral filesystem)');
-          // Clear imageUrl from database since file doesn't exist (Railway ephemeral filesystem)
-          await server.prisma.juror.update({
-            where: { id: jurorId },
-            data: { imageUrl: null },
-          }).catch((err) => {
-            server.log.warn({ jurorId, error: err }, 'Failed to clear imageUrl from database');
-          });
+          server.log.warn({ jurorId }, 'Image not found for juror');
           return reply.status(404).send({
             error: 'Image not found',
             message: 'No image has been generated for this juror yet',
@@ -1187,21 +1195,14 @@ export async function jurorsRoutes(server: FastifyInstance) {
         try {
           await fs.access(imagePath);
         } catch {
-          server.log.warn({ jurorId, imagePath }, 'Image file does not exist - clearing imageUrl from database (ephemeral filesystem)');
-          // Clear imageUrl from database since file doesn't exist (Railway ephemeral filesystem)
-          await server.prisma.juror.update({
-            where: { id: jurorId },
-            data: { imageUrl: null },
-          }).catch((err) => {
-            server.log.warn({ jurorId, error: err }, 'Failed to clear imageUrl from database');
-          });
+          server.log.warn({ jurorId, imagePath }, 'Image file does not exist');
           return reply.status(404).send({
             error: 'Image file not found',
             message: 'Image was lost due to server restart. Please regenerate.',
           });
         }
 
-        // Read and serve image
+        // Read and serve image from filesystem (legacy)
         const imageBuffer = await fs.readFile(imagePath);
         
         reply.type('image/png');
@@ -1301,13 +1302,18 @@ export async function jurorsRoutes(server: FastifyInstance) {
             continue;
           }
 
-          // If regenerating, delete existing image file and clear imageUrl from database
+          // If regenerating, clear imageUrl from database (new image will replace old one in Vercel Blob)
           if (regenerate && juror.imageUrl) {
-            await deleteJurorImage(juror.id);
-            // Clear imageUrl from database
+            // Clear imageUrl - new upload will replace the old one in Vercel Blob
             await server.prisma.juror.update({
               where: { id: juror.id },
               data: { imageUrl: null },
+            }).catch(() => {
+              // Ignore errors - best effort cleanup
+            });
+            // Legacy: Try to delete from filesystem if it exists (for backward compatibility)
+            await deleteJurorImage(juror.id).catch(() => {
+              // Ignore errors - filesystem cleanup is optional
             });
           }
 

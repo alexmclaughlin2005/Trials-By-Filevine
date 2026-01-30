@@ -287,7 +287,7 @@ export default function JurorDetailPage() {
             {data.imageUrl ? (
               <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-filevine-gray-200">
                 <Image
-                  src={`/api/jurors/images/${data.id}?t=${Date.now()}`}
+                  src={data.imageUrl?.startsWith('https://') ? data.imageUrl : `/api/jurors/images/${data.id}?t=${Date.now()}`}
                   alt={`${data.firstName} ${data.lastName}`}
                   fill
                   className="object-cover"
