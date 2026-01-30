@@ -335,6 +335,12 @@ model Persona {
   verdictPrediction Json?   @map("verdict_prediction") // {liability_finding_probability, damages_if_liability, role_in_deliberation}
   strikeOrKeep      Json?   @map("strike_or_keep") // {plaintiff_strategy, defense_strategy}
 
+  // Embedding storage (Voyage AI voyage-law-2, 1024 dimensions)
+  // Stored as JSON array of numbers for persistence across server restarts
+  embedding         Json?   // Array of 1024 numbers (Voyage AI voyage-law-2 embedding)
+  embeddingModel    String? @map("embedding_model") // e.g., "voyage-law-2"
+  embeddingUpdatedAt DateTime? @map("embedding_updated_at") // When embedding was last generated
+
   // Metadata
   isActive  Boolean  @default(true) @map("is_active")
   version   Int      @default(1)

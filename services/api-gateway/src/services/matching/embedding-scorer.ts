@@ -148,24 +148,27 @@ export class EmbeddingScorer {
   }
 
   /**
-   * Get or generate persona embedding (with caching)
+   * Get or generate persona embedding (with caching and database persistence)
    */
   private async getPersonaEmbedding(personaId: string): Promise<number[]> {
-    // Check cache first
+    // Check in-memory cache first
     if (this.embeddingCache.has(personaId)) {
       return this.embeddingCache.get(personaId)!;
     }
 
-    // Get persona description
+    // Check database for persisted embedding
     const persona = await this.prisma.persona.findUnique({
       where: { id: personaId },
       select: {
+        id: true,
         name: true,
         description: true,
         instantRead: true,
         phrasesYoullHear: true,
         attributes: true,
         archetype: true,
+        embedding: true,
+        embeddingModel: true,
       },
     });
 
@@ -173,17 +176,35 @@ export class EmbeddingScorer {
       throw new Error(`Persona ${personaId} not found`);
     }
 
-    // Build persona description text
+    // If embedding exists in database and matches current model, use it
+    if (persona.embedding && Array.isArray(persona.embedding) && persona.embeddingModel === this.MODEL) {
+      const dbEmbedding = persona.embedding as number[];
+      // Load into memory cache for faster access
+      this.embeddingCache.set(personaId, dbEmbedding);
+      console.log(`[EMBEDDING] Loaded embedding from database for persona ${personaId} (${persona.name})`);
+      return dbEmbedding;
+    }
+
+    // Generate new embedding
     const personaText = this.buildPersonaDescription(persona);
+    console.log(`[EMBEDDING] Generating embedding for persona ${personaId} (${persona.name}, ${persona.archetype || 'unknown'}) - DB MISS`);
 
-    // Log cache miss
-    console.log(`[EMBEDDING] Generating embedding for persona ${personaId} (${persona.name}, ${persona.archetype || 'unknown'}) - CACHE MISS`);
-
-    // Generate embedding
     const embedding = await this.generateEmbedding(personaText);
 
-    // Cache it
+    // Save to database
+    await this.prisma.persona.update({
+      where: { id: personaId },
+      data: {
+        embedding: embedding as any, // Store as JSON
+        embeddingModel: this.MODEL,
+        embeddingUpdatedAt: new Date(),
+      },
+    });
+
+    // Cache in memory
     this.embeddingCache.set(personaId, embedding);
+
+    console.log(`[EMBEDDING] Saved embedding to database for persona ${personaId}`);
 
     return embedding;
   }
@@ -358,7 +379,7 @@ export class EmbeddingScorer {
     try {
       console.log('🔄 Preloading persona embeddings...');
       
-      // Get all personas
+      // Get all personas with their embedding status
       const personas = await this.prisma.persona.findMany({
         where: {
           isActive: true,
@@ -371,13 +392,25 @@ export class EmbeddingScorer {
           instantRead: true,
           phrasesYoullHear: true,
           attributes: true,
+          embedding: true,
+          embeddingModel: true,
         },
       });
 
-      // Filter to only personas not yet cached
-      const uncachedPersonas = personas.filter(
-        (p) => !this.embeddingCache.has(p.id)
-      );
+      // Filter to personas that need embeddings:
+      // 1. Not in memory cache
+      // 2. Not in database OR database embedding is wrong model
+      const uncachedPersonas = personas.filter((p) => {
+        if (this.embeddingCache.has(p.id)) {
+          return false; // Already in memory cache
+        }
+        if (p.embedding && Array.isArray(p.embedding) && p.embeddingModel === this.MODEL) {
+          // Load from DB into memory cache
+          this.embeddingCache.set(p.id, p.embedding as number[]);
+          return false; // Already in database with correct model
+        }
+        return true; // Needs generation
+      });
 
       const cachedCount = personas.length - uncachedPersonas.length;
       console.log(`📦 Found ${personas.length} personas (${cachedCount} already cached, ${uncachedPersonas.length} need preloading)`);
@@ -416,14 +449,26 @@ export class EmbeddingScorer {
             });
 
             if (response.data && response.data.length === batch.length) {
-              // Cache each embedding
-              batch.forEach((persona, index) => {
-                const embedding = response.data![index]?.embedding;
-                if (embedding) {
-                  this.embeddingCache.set(persona.id, embedding);
-                  loaded++;
-                }
-              });
+              // Save embeddings to database and cache
+              await Promise.all(
+                batch.map(async (persona, index) => {
+                  const embedding = response.data![index]?.embedding;
+                  if (embedding) {
+                    // Save to database
+                    await this.prisma.persona.update({
+                      where: { id: persona.id },
+                      data: {
+                        embedding: embedding as any,
+                        embeddingModel: this.MODEL,
+                        embeddingUpdatedAt: new Date(),
+                      },
+                    });
+                    // Cache in memory
+                    this.embeddingCache.set(persona.id, embedding);
+                    loaded++;
+                  }
+                })
+              );
               success = true;
               
               if (retryCount > 0) {
@@ -516,8 +561,12 @@ export class EmbeddingScorer {
     }
 
     try {
-      // Get all personas
+      // Get all personas with embedding status
       const personas = await this.prisma.persona.findMany({
+        where: {
+          isActive: true,
+          version: 2, // Only V2 personas
+        },
         select: {
           id: true,
           name: true,
@@ -525,13 +574,23 @@ export class EmbeddingScorer {
           instantRead: true,
           phrasesYoullHear: true,
           attributes: true,
+          embedding: true,
+          embeddingModel: true,
         },
       });
 
-      // Filter to only personas not yet cached
-      const uncachedPersonas = personas.filter(
-        (p) => !this.embeddingCache.has(p.id)
-      );
+      // Filter to personas that need embeddings (same logic as preload)
+      const uncachedPersonas = personas.filter((p) => {
+        if (this.embeddingCache.has(p.id)) {
+          return false; // Already in memory cache
+        }
+        if (p.embedding && Array.isArray(p.embedding) && p.embeddingModel === this.MODEL) {
+          // Load from DB into memory cache
+          this.embeddingCache.set(p.id, p.embedding as number[]);
+          return false; // Already in database with correct model
+        }
+        return true; // Needs generation
+      });
 
       if (uncachedPersonas.length === 0) {
         console.log('✅ All personas already cached - no resume needed');
@@ -567,13 +626,26 @@ export class EmbeddingScorer {
             });
 
             if (response.data && response.data.length === batch.length) {
-              batch.forEach((persona, index) => {
-                const embedding = response.data![index]?.embedding;
-                if (embedding) {
-                  this.embeddingCache.set(persona.id, embedding);
-                  loaded++;
-                }
-              });
+              // Save embeddings to database and cache
+              await Promise.all(
+                batch.map(async (persona, index) => {
+                  const embedding = response.data![index]?.embedding;
+                  if (embedding) {
+                    // Save to database
+                    await this.prisma.persona.update({
+                      where: { id: persona.id },
+                      data: {
+                        embedding: embedding as any,
+                        embeddingModel: this.MODEL,
+                        embeddingUpdatedAt: new Date(),
+                      },
+                    });
+                    // Cache in memory
+                    this.embeddingCache.set(persona.id, embedding);
+                    loaded++;
+                  }
+                })
+              );
               success = true;
             }
           } catch (error: any) {
