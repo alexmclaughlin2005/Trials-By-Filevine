@@ -103,11 +103,14 @@ export class SignalExtractorService {
 
   /**
    * Extract signals from voir dire responses
+   * Enhanced to use question-answer context for better signal extraction
    */
   async extractFromVoirDireResponse(
     jurorId: string,
     responseId: string,
-    responseText: string
+    responseText: string,
+    questionText?: string | null,
+    yesNoAnswer?: boolean | null
   ): Promise<ExtractedSignal[]> {
     const extractedSignals: ExtractedSignal[] = [];
 
@@ -119,16 +122,44 @@ export class SignalExtractorService {
       },
     });
 
+    // Build enhanced text for matching (include question context)
+    const enhancedText = questionText 
+      ? `${questionText}\n${responseText}` 
+      : responseText;
+
     for (const signal of voirDireSignals) {
       let matched = false;
       let confidence = 0.5;
+      let signalValue: any = true;
 
-      // Try pattern matching first
-      if (signal.patterns && Array.isArray(signal.patterns)) {
-        const matches = this.matchPatterns(responseText, signal.patterns as string[]);
+      // For yes/no answers, check if the signal pattern matches the question
+      // and use the yes/no value directly for boolean signals
+      if (yesNoAnswer !== null && questionText) {
+        // Check if question matches signal patterns (indicating this signal is relevant)
+        const questionMatches = signal.patterns && Array.isArray(signal.patterns)
+          ? this.matchPatterns(questionText, signal.patterns as string[])
+          : [];
+        
+        if (questionMatches.length > 0) {
+          // Question is relevant to this signal, use yes/no answer
+          matched = true;
+          // For boolean signals, use the yes/no value directly
+          if (signal.valueType === 'BOOLEAN') {
+            signalValue = yesNoAnswer;
+            confidence = 0.9; // High confidence for direct yes/no answers
+          } else {
+            // For other signal types, still mark as matched but use response text
+            confidence = 0.8;
+          }
+        }
+      }
+
+      // Try pattern matching on response text (if not already matched via yes/no)
+      if (!matched && signal.patterns && Array.isArray(signal.patterns)) {
+        const matches = this.matchPatterns(enhancedText, signal.patterns as string[]);
         if (matches.length > 0) {
           matched = true;
-          confidence = 0.7;
+          confidence = Math.max(confidence, 0.7);
         }
       }
 
@@ -138,7 +169,7 @@ export class SignalExtractorService {
       if (matched) {
         extractedSignals.push({
           signalId: signal.signalId,
-          value: true,
+          value: signalValue,
           confidence,
           sourceReference: responseId,
         });

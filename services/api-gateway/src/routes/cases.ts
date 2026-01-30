@@ -33,6 +33,13 @@ export async function casesRoutes(server: FastifyInstance) {
               arguments: true,
             },
           },
+          filevineProject: {
+            select: {
+              id: true,
+              filevineProjectId: true,
+              projectName: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       });

@@ -219,12 +219,32 @@ export class VoirDireResponseService {
 
     const jurorId = response.jurorId;
 
-    // Extract signals
+    // Only process if there's an actual answer (responseSummary or yesNoAnswer)
+    if (!response.responseSummary && response.yesNoAnswer === null) {
+      // No answer provided, skip signal extraction
+      return { signals: [], updates: [] };
+    }
+
+    // Build combined text for signal extraction (question + answer)
+    let extractionText = response.responseSummary || '';
+    
+    // Include yes/no answer if present
+    if (response.yesNoAnswer !== null) {
+      const yesNoText = response.yesNoAnswer ? 'Yes' : 'No';
+      extractionText = `Question: ${response.questionText}\nAnswer: ${yesNoText}${extractionText ? `\nDetails: ${extractionText}` : ''}`;
+    } else if (response.questionText) {
+      // Include question context even for freeform answers
+      extractionText = `Question: ${response.questionText}\nAnswer: ${extractionText}`;
+    }
+
+    // Extract signals using question-answer context
     const extractor = new SignalExtractorService(this.prisma);
     const extractedSignals = await extractor.extractFromVoirDireResponse(
       jurorId,
       responseId,
-      response.responseSummary
+      extractionText,
+      response.questionText, // Pass question text for context
+      response.yesNoAnswer // Pass yes/no answer for better signal extraction
     );
 
     // Get available personas for the organization

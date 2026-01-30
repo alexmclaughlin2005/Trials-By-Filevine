@@ -37,10 +37,16 @@ export class JurorNarrativeGenerator {
           },
         },
         voirDireResponses: {
+          where: {
+            OR: [
+              { responseSummary: { not: null } },
+              { yesNoAnswer: { not: null } },
+            ],
+          },
           orderBy: {
             responseTimestamp: 'desc',
           },
-          take: 5, // Most recent responses
+          take: 10, // Most recent responses with answers
         },
         panel: {
           include: {
@@ -113,12 +119,28 @@ export class JurorNarrativeGenerator {
       }
     }
 
-    // Voir dire responses
-    if (juror.voirDireResponses.length > 0) {
+    // Voir dire responses (only include responses with answers)
+    const voirDireWithAnswers = juror.voirDireResponses.filter(
+      (r) => r.responseSummary || r.yesNoAnswer !== null
+    );
+    
+    if (voirDireWithAnswers.length > 0) {
       parts.push('\nVoir Dire Responses:');
-      for (const response of juror.voirDireResponses) {
-        parts.push(`Q: ${response.questionText.substring(0, 100)}`);
-        parts.push(`A: ${response.responseSummary.substring(0, 150)}`);
+      for (const response of voirDireWithAnswers) {
+        const questionPreview = response.questionText.substring(0, 100);
+        let answerText = '';
+        
+        if (response.yesNoAnswer !== null) {
+          answerText = response.yesNoAnswer ? 'Yes' : 'No';
+          if (response.responseSummary) {
+            answerText += ` - ${response.responseSummary.substring(0, 100)}`;
+          }
+        } else {
+          answerText = response.responseSummary.substring(0, 150);
+        }
+        
+        parts.push(`Q: ${questionPreview}`);
+        parts.push(`A: ${answerText}`);
       }
     }
 

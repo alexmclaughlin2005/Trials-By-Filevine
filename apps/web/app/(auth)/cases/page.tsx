@@ -22,6 +22,11 @@ interface Case {
     facts: number;
     arguments: number;
   };
+  filevineProject?: {
+    id: string;
+    filevineProjectId: string;
+    projectName: string;
+  } | null;
 }
 
 type SortField = 'name' | 'trialDate' | 'status' | 'updatedAt';
@@ -210,7 +215,7 @@ export default function CasesPage() {
           <>
             {/* Table Header */}
             <div className="grid grid-cols-12 gap-4 border-b bg-muted/50 px-6 py-3 text-sm font-medium text-muted-foreground">
-              <div className="col-span-4 flex items-center gap-2">
+              <div className="col-span-5 flex items-center gap-2">
                 <button
                   onClick={() => handleSort('name')}
                   className="flex items-center gap-1 hover:text-foreground"
@@ -237,7 +242,7 @@ export default function CasesPage() {
                   <ArrowUpDown className="h-3 w-3" />
                 </button>
               </div>
-              <div className="col-span-2">Jurors</div>
+              <div className="col-span-1">Jurors</div>
               <div className="col-span-2 flex items-center gap-2">
                 <button
                   onClick={() => handleSort('updatedAt')}
@@ -258,6 +263,30 @@ export default function CasesPage() {
               ) : (
                 filteredAndSortedCases.map((caseItem) => {
                   const urgency = getTrialUrgency(caseItem.trialDate);
+                  // Generate initials for avatar
+                  const initials = caseItem.name
+                    .split(' ')
+                    .map((word) => word[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2);
+
+                  // Generate consistent color for avatar based on case name
+                  const getAvatarColor = (name: string) => {
+                    const colors = [
+                      'from-blue-500 to-blue-600',
+                      'from-purple-500 to-purple-600',
+                      'from-green-500 to-green-600',
+                      'from-orange-500 to-orange-600',
+                      'from-pink-500 to-pink-600',
+                      'from-indigo-500 to-indigo-600',
+                      'from-teal-500 to-teal-600',
+                      'from-red-500 to-red-600',
+                    ];
+                    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                    return colors[hash % colors.length];
+                  };
+
                   return (
                     <Link
                       key={caseItem.id}
@@ -265,7 +294,7 @@ export default function CasesPage() {
                       className="grid grid-cols-12 gap-4 px-6 py-4 transition-colors hover:bg-muted/50"
                     >
                       {/* Case Name & Number */}
-                      <div className="col-span-4">
+                      <div className="col-span-5">
                         <div className="flex items-center gap-3">
                           {/* Urgency Indicator */}
                           <div
@@ -279,8 +308,38 @@ export default function CasesPage() {
                                     : 'bg-gray-200'
                             }`}
                           />
+                          {/* Avatar with initials */}
+                          <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${getAvatarColor(caseItem.name)} text-sm font-semibold text-white shadow-sm`}>
+                            {initials}
+                          </div>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate font-semibold text-foreground">{caseItem.name}</p>
+                            <div className="flex items-center gap-2">
+                              <p className="truncate font-semibold text-foreground">{caseItem.name}</p>
+                              {caseItem.filevineProject && (
+                                <div className="group relative">
+                                  <div className="flex h-5 w-5 items-center justify-center rounded-full bg-filevine-blue">
+                                    <svg
+                                      className="h-3 w-3 text-white"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                                      />
+                                    </svg>
+                                  </div>
+                                  {/* Tooltip */}
+                                  <div className="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                                    Linked to Filevine
+                                    <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-gray-900"></div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
                             {caseItem.caseNumber && (
                               <p className="truncate text-sm text-muted-foreground">#{caseItem.caseNumber}</p>
                             )}
@@ -328,7 +387,7 @@ export default function CasesPage() {
                       </div>
 
                       {/* Jurors */}
-                      <div className="col-span-2 flex items-center">
+                      <div className="col-span-1 flex items-center">
                         <p className="text-sm">
                           <span className="font-medium">{caseItem._count.juryPanels}</span>
                           <span className="text-muted-foreground"> panel(s)</span>

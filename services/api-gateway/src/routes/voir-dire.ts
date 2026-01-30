@@ -278,6 +278,7 @@ export async function voirDireRoutes(server: FastifyInstance) {
         const updated = await responseService.updateResponse(responseId, {
           questionText: validationResult.data.questionText,
           responseSummary: validationResult.data.responseSummary,
+          yesNoAnswer: validationResult.data.yesNoAnswer,
           entryMethod: validationResult.data.entryMethod,
           responseTimestamp: validationResult.data.responseTimestamp
             ? new Date(validationResult.data.responseTimestamp)
