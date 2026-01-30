@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useCaseVoirDireQuestions, type CaseVoirDireQuestion } from '@/hooks/use-case-voir-dire-questions';
 import { useVoirDireResponses } from '@/hooks/use-voir-dire-responses';
-import { Button } from '@/components/ui/button';
-import { Loader2, HelpCircle, CheckCircle2, MessageSquare, Plus, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { Loader2, HelpCircle, CheckCircle2, MessageSquare, ChevronDown, ChevronUp, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface VoirDireManagerProps {
@@ -45,19 +44,6 @@ export function VoirDireManager({
 
   return (
     <div className="space-y-4">
-      {/* Header with Add Response Button */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-filevine-gray-900">Voir Dire</h3>
-        <Button
-          onClick={() => onAddResponse()}
-          variant="primary"
-          size="sm"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add Response
-        </Button>
-      </div>
-
       {/* Case-Level Questions Section */}
       {questions.length > 0 && (
         <div className="space-y-3">

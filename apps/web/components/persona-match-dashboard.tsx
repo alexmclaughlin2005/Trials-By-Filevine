@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import type { ReactNode } from 'react';
 import { useJurorMatches, useMatchJuror, useConfirmPersonaMatch, useMatchBreakdown, type EnsembleMatch } from '@/hooks/use-juror-matching';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -13,6 +14,7 @@ interface PersonaMatchDashboardProps {
   jurorId: string;
   organizationId: string;
   caseId?: string;
+  onHeaderActionsReady?: (actions: React.ReactNode) => void;
 }
 
 interface Persona {
@@ -41,7 +43,7 @@ function formatArchetypeName(archetype: string | undefined): string {
   return ARCHETYPE_LABELS[archetype] || archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 }
 
-export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: PersonaMatchDashboardProps) {
+export function PersonaMatchDashboard({ jurorId, organizationId, caseId, onHeaderActionsReady }: PersonaMatchDashboardProps) {
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
   const [showSearchDialog, setShowSearchDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +99,7 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
     }
   };
 
-  const handleMatch = async () => {
+  const handleMatch = useCallback(async () => {
     try {
       // Explicitly regenerate matches
       await matchJurorMutation.mutateAsync({ jurorId, personaIds: undefined, regenerate: true });
@@ -105,7 +107,7 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
     } catch (err) {
       console.error('Failed to match juror:', err);
     }
-  };
+  }, [jurorId, matchJurorMutation, refetch]);
 
   const handleConfirmMatch = async (personaId: string, mappingId?: string, confirmed: boolean = true) => {
     try {
@@ -140,16 +142,11 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
     return 'text-orange-600';
   };
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex-1">
-          <p className="text-sm text-filevine-gray-600">
-            AI-powered ensemble matching using signal-based scoring, embedding similarity, and Bayesian updating.
-            Running matching will also automatically classify the juror's archetype from the top matched persona (v2 personas only).
-          </p>
-        </div>
-        <div className="flex gap-2">
+  // Expose header actions to parent
+  useEffect(() => {
+    if (onHeaderActionsReady) {
+      const actions = (
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <Button
             onClick={() => setShowSearchDialog(true)}
             variant="outline"
@@ -162,6 +159,7 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
             onClick={handleMatch}
             disabled={matchJurorMutation.isPending || isLoading}
             variant="primary"
+            size="sm"
           >
             {matchJurorMutation.isPending ? (
               <>
@@ -176,7 +174,13 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
             )}
           </Button>
         </div>
-      </div>
+      );
+      onHeaderActionsReady(actions);
+    }
+  }, [onHeaderActionsReady, matchJurorMutation.isPending, isLoading, handleMatch]);
+
+  return (
+    <div className="space-y-4">
 
       {error && (
         <div className="rounded-md bg-red-50 p-4">
@@ -202,14 +206,6 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
 
       {matches && matches.length > 0 && (
         <div className="space-y-4">
-          {matches.length === 1 && matches[0].isConfirmed && (
-            <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" />
-                <span>Match confirmed. Click "Run Matching" to see other options or regenerate matches.</span>
-              </div>
-            </div>
-          )}
           {matches.length >= 5 && !matches[0].isConfirmed && (
             <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
               Showing top 5 matches. Use "Add Persona" to search for and add additional personas.

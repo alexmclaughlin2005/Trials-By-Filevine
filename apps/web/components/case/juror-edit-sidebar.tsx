@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { ResearchSummarizer } from '@/components/research-summarizer';
@@ -18,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Loader2, Edit2, Save, X, Image as ImageIcon, Search } from 'lucide-react';
+import { Loader2, Edit2, Save, X, Image as ImageIcon, Search, Plus, BarChart3 } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { CollapsibleSection } from '@/components/ui/collapsible-section';
@@ -121,6 +122,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
   const [caseQuestionId, setCaseQuestionId] = useState<string | undefined>();
   const [caseQuestionText, setCaseQuestionText] = useState<string | undefined>();
   const [isSearchingIdentity, setIsSearchingIdentity] = useState(false);
+  const [personaMatchHeaderActions, setPersonaMatchHeaderActions] = useState<ReactNode>(null);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['juror', jurorId],
@@ -777,11 +779,16 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
 
               {/* Persona Matching Dashboard */}
               {user?.organization?.id && (
-                <CollapsibleSection title="Persona Matching and Archetype Classification" defaultOpen={false}>
+                <CollapsibleSection
+                  title="Persona Matching and Archetype Classification"
+                  defaultOpen={false}
+                  headerActions={personaMatchHeaderActions}
+                >
                   <PersonaMatchDashboard
                     jurorId={jurorId}
                     organizationId={user.organization.id}
                     caseId={data.panel.case.id}
+                    onHeaderActionsReady={setPersonaMatchHeaderActions}
                   />
                 </CollapsibleSection>
               )}
@@ -809,7 +816,27 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
 
               {/* Voir Dire - Combined Questions & Responses */}
               {user?.organization?.id && (
-                <CollapsibleSection title="Voir Dire" defaultOpen={false}>
+                <CollapsibleSection
+                  title="Voir Dire"
+                  defaultOpen={false}
+                  headerActions={
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCaseQuestionId(undefined);
+                        setCaseQuestionText(undefined);
+                        setSuggestedQuestionId(undefined);
+                        setSuggestedQuestionText(undefined);
+                        setIsVoirDireEntryOpen(true);
+                      }}
+                      variant="primary"
+                      size="sm"
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Response
+                    </Button>
+                  }
+                >
                   <VoirDireManager
                     caseId={data.panel.case.id}
                     jurorId={jurorId}

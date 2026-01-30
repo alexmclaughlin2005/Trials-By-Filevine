@@ -11,6 +11,13 @@ export interface Signal {
   description?: string;
 }
 
+export interface VoirDireCitation {
+  id: string;
+  questionText: string;
+  responseSummary: string;
+  responseTimestamp: string;
+}
+
 export interface JurorSignal {
   id: string;
   signalId: string;
@@ -18,6 +25,7 @@ export interface JurorSignal {
   value: any;
   source: string;
   sourceReference?: string;
+  voirDireResponse?: VoirDireCitation | null;
   confidence: number;
   extractedAt: string;
 }

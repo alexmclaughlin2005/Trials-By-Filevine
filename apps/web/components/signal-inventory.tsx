@@ -161,7 +161,21 @@ export function SignalInventory({ jurorId }: SignalInventoryProps) {
                             {(Number(signal.confidence) * 100).toFixed(0)}%
                           </span>
                         </div>
-                        {signal.sourceReference && (
+                        {signal.voirDireResponse && (
+                          <div className="col-span-2 mt-2 rounded-md border border-filevine-blue-200 bg-blue-50 p-2">
+                            <div className="font-medium text-filevine-gray-900 mb-1">Citation:</div>
+                            <div className="text-filevine-gray-700 mb-1">
+                              <span className="font-semibold">Q:</span> {signal.voirDireResponse.questionText}
+                            </div>
+                            <div className="text-filevine-gray-700">
+                              <span className="font-semibold">A:</span> {signal.voirDireResponse.responseSummary}
+                            </div>
+                            <div className="text-filevine-gray-500 text-xs mt-1">
+                              {new Date(signal.voirDireResponse.responseTimestamp).toLocaleString()}
+                            </div>
+                          </div>
+                        )}
+                        {signal.sourceReference && !signal.voirDireResponse && (
                           <div className="col-span-2">
                             <span className="text-filevine-gray-600">Source Reference:</span>
                             <span className="ml-2 text-filevine-gray-900">

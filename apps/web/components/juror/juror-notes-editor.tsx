@@ -65,8 +65,7 @@ export function JurorNotesEditor({ jurorId, initialNotes }: JurorNotesEditorProp
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <Label htmlFor="juror-notes">General Notes</Label>
+      <div className="flex items-center justify-end">
         {isSaving && (
           <div className="flex items-center gap-1 text-xs text-filevine-gray-500">
             <Loader2 className="h-3 w-3 animate-spin" />

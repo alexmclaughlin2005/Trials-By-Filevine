@@ -326,6 +326,14 @@ export class SignalExtractorService {
       where: { jurorId },
       include: {
         signal: true,
+        voirDireResponse: {
+          select: {
+            id: true,
+            questionText: true,
+            responseSummary: true,
+            responseTimestamp: true,
+          },
+        },
       },
       orderBy: {
         extractedAt: 'desc',
@@ -349,6 +357,14 @@ export class SignalExtractorService {
       },
       include: {
         signal: true,
+        voirDireResponse: {
+          select: {
+            id: true,
+            questionText: true,
+            responseSummary: true,
+            responseTimestamp: true,
+          },
+        },
       },
       orderBy: {
         extractedAt: 'desc',
