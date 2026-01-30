@@ -32,6 +32,7 @@
     "cleanup-personas": "npx tsx scripts/cleanup-duplicate-personas.ts",
     "deploy-personas": "npx tsx scripts/deploy-personas-to-production.ts",
     "import-v2-personas-production": "npx tsx scripts/import-v2-personas-to-production.ts",
+    "clear-persona-embeddings": "npx tsx scripts/clear-persona-embeddings.ts",
     "test:pdf-extraction": "npx tsx scripts/test-pdf-extraction.ts",
     "generate-persona-headshots": "npx tsx scripts/generate-persona-headshots.ts"
   },
