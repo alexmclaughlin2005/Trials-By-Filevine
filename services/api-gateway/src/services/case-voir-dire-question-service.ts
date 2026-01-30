@@ -12,14 +12,14 @@ import { PrismaClient } from '@juries/database';
 export interface CreateCaseVoirDireQuestionInput {
   questionText: string;
   questionType: 'AI_GENERATED' | 'USER_CREATED';
-  questionCategory?: string;
-  source?: string;
+  questionCategory?: string | null;
+  source?: string | null;
   sortOrder?: number;
 }
 
 export interface UpdateCaseVoirDireQuestionInput {
   questionText?: string;
-  questionCategory?: string;
+  questionCategory?: string | null;
   sortOrder?: number;
   isActive?: boolean;
 }
@@ -47,8 +47,8 @@ export class CaseVoirDireQuestionService {
         caseId,
         questionText: data.questionText,
         questionType: data.questionType,
-        questionCategory: data.questionCategory || null,
-        source: data.source || null,
+        questionCategory: data.questionCategory ?? null,
+        source: data.source ?? null,
         sortOrder: data.sortOrder ?? (maxSortOrder?.sortOrder ?? 0) + 1,
         createdBy: userId,
       },
@@ -86,7 +86,7 @@ export class CaseVoirDireQuestionService {
   async updateQuestion(questionId: string, data: UpdateCaseVoirDireQuestionInput) {
     const updateData: any = {};
     if (data.questionText !== undefined) updateData.questionText = data.questionText;
-    if (data.questionCategory !== undefined) updateData.questionCategory = data.questionCategory;
+    if (data.questionCategory !== undefined) updateData.questionCategory = data.questionCategory ?? null;
     if (data.sortOrder !== undefined) updateData.sortOrder = data.sortOrder;
     if (data.isActive !== undefined) updateData.isActive = data.isActive;
 

@@ -174,7 +174,10 @@ export async function caseVoirDireQuestionsRoutes(server: FastifyInstance) {
             createdBy: q.createdBy,
             createdAt: q.createdAt.toISOString(),
             updatedAt: q.updatedAt.toISOString(),
-            ...('hasAnswer' in q && { hasAnswer: q.hasAnswer, answerCount: q.answerCount }),
+            ...(('hasAnswer' in q && 'answerCount' in q) ? { 
+              hasAnswer: (q as any).hasAnswer, 
+              answerCount: (q as any).answerCount 
+            } : {}),
           })),
           count: questions.length,
         };
@@ -410,7 +413,7 @@ export async function caseVoirDireQuestionsRoutes(server: FastifyInstance) {
               {
                 questionText: q.question,
                 questionType: 'AI_GENERATED',
-                questionCategory: q.category || undefined,
+                questionCategory: undefined, // VoirDireQuestion doesn't have category field
                 source: 'voir_dire_generator_v2',
                 sortOrder: index,
               },
