@@ -228,7 +228,12 @@ export class EmbeddingScorer {
         throw new Error('No embedding data returned from Voyage AI');
       }
 
-      return response.data[0].embedding;
+      const embedding = response.data[0]?.embedding;
+      if (!embedding) {
+        throw new Error('No embedding in response data');
+      }
+
+      return embedding;
     } catch (error) {
       console.error('Error generating Voyage AI embedding:', error);
       // Fallback to hash-based embedding on error
@@ -377,8 +382,11 @@ export class EmbeddingScorer {
             if (response.data && response.data.length === batch.length) {
               // Cache each embedding
               batch.forEach((persona, index) => {
-                this.embeddingCache.set(persona.id, response.data[index].embedding);
-                loaded++;
+                const embedding = response.data![index]?.embedding;
+                if (embedding) {
+                  this.embeddingCache.set(persona.id, embedding);
+                  loaded++;
+                }
               });
               success = true;
               
@@ -522,8 +530,11 @@ export class EmbeddingScorer {
 
             if (response.data && response.data.length === batch.length) {
               batch.forEach((persona, index) => {
-                this.embeddingCache.set(persona.id, response.data[index].embedding);
-                loaded++;
+                const embedding = response.data![index]?.embedding;
+                if (embedding) {
+                  this.embeddingCache.set(persona.id, embedding);
+                  loaded++;
+                }
               });
               success = true;
             }
