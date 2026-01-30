@@ -1,10 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useJurorMatches, useMatchJuror, useConfirmPersonaMatch, useMatchBreakdown, type EnsembleMatch } from '@/hooks/use-juror-matching';
 import { Button } from './ui/button';
-import { Loader2, CheckCircle2, XCircle, BarChart3, Info } from 'lucide-react';
+import { Input } from './ui/input';
+import { Loader2, CheckCircle2, XCircle, BarChart3, Info, Search, Plus } from 'lucide-react';
 import { MatchBreakdownModal } from './match-breakdown-modal';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './ui/dialog';
+import { apiClient } from '@/lib/api-client';
 
 interface PersonaMatchDashboardProps {
   jurorId: string;
@@ -12,16 +15,91 @@ interface PersonaMatchDashboardProps {
   caseId?: string;
 }
 
+interface Persona {
+  id: string;
+  name: string;
+  archetype?: string;
+  description?: string;
+  instantRead?: string;
+}
+
+const ARCHETYPE_LABELS: Record<string, string> = {
+  bootstrapper: 'The Bootstrapper',
+  crusader: 'The Crusader',
+  scale_balancer: 'The Scale-Balancer',
+  captain: 'The Captain',
+  chameleon: 'The Chameleon',
+  scarred: 'The Scarred',
+  calculator: 'The Calculator',
+  heart: 'The Heart',
+  trojan_horse: 'The Trojan Horse',
+  maverick: 'The Maverick',
+};
+
+function formatArchetypeName(archetype: string | undefined): string {
+  if (!archetype) return 'Unclassified';
+  return ARCHETYPE_LABELS[archetype] || archetype.replace(/_/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
 export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: PersonaMatchDashboardProps) {
   const [selectedPersonaId, setSelectedPersonaId] = useState<string | null>(null);
+  const [showSearchDialog, setShowSearchDialog] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [availablePersonas, setAvailablePersonas] = useState<Persona[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   const { data: matches, isLoading, error, refetch } = useJurorMatches(jurorId);
   const matchJurorMutation = useMatchJuror();
   const confirmMatchMutation = useConfirmPersonaMatch();
   const { data: breakdown } = useMatchBreakdown(jurorId, selectedPersonaId);
 
+  // Fetch available personas when search dialog opens
+  useEffect(() => {
+    if (showSearchDialog) {
+      setSearchLoading(true);
+      apiClient.get<{ personas: Persona[] }>('/personas?version=2')
+        .then((data) => {
+          setAvailablePersonas(data.personas);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch personas:', err);
+        })
+        .finally(() => {
+          setSearchLoading(false);
+        });
+    }
+  }, [showSearchDialog]);
+
+  // Filter personas based on search query
+  const filteredPersonas = availablePersonas.filter((persona) => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      persona.name.toLowerCase().includes(query) ||
+      persona.description?.toLowerCase().includes(query) ||
+      persona.instantRead?.toLowerCase().includes(query) ||
+      formatArchetypeName(persona.archetype).toLowerCase().includes(query)
+    );
+  });
+
+  // Get already matched persona IDs
+  const matchedPersonaIds = new Set(matches?.map(m => m.personaId) || []);
+
+  const handleAddPersona = async (personaId: string) => {
+    try {
+      // Add persona without regenerating all matches
+      await matchJurorMutation.mutateAsync({ jurorId, personaIds: [personaId], regenerate: false });
+      refetch();
+      setShowSearchDialog(false);
+      setSearchQuery('');
+    } catch (err) {
+      console.error('Failed to add persona match:', err);
+    }
+  };
+
   const handleMatch = async () => {
     try {
-      await matchJurorMutation.mutateAsync({ jurorId, personaIds: undefined });
+      // Explicitly regenerate matches
+      await matchJurorMutation.mutateAsync({ jurorId, personaIds: undefined, regenerate: true });
       refetch();
     } catch (err) {
       console.error('Failed to match juror:', err);
@@ -71,23 +149,33 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
             AI-powered ensemble matching using signal-based scoring, embedding similarity, and Bayesian updating
           </p>
         </div>
-        <Button
-          onClick={handleMatch}
-          disabled={matchJurorMutation.isPending || isLoading}
-          variant="primary"
-        >
-          {matchJurorMutation.isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Matching...
-            </>
-          ) : (
-            <>
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Run Matching
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowSearchDialog(true)}
+            variant="outline"
+            size="sm"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Persona
+          </Button>
+          <Button
+            onClick={handleMatch}
+            disabled={matchJurorMutation.isPending || isLoading}
+            variant="primary"
+          >
+            {matchJurorMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Matching...
+              </>
+            ) : (
+              <>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Run Matching
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -114,7 +202,12 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
 
       {matches && matches.length > 0 && (
         <div className="space-y-4">
-          {matches.map((match, index) => (
+          {matches.length >= 5 && (
+            <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+              Showing top 5 matches. Use "Add Persona" to search for and add additional personas.
+            </div>
+          )}
+          {matches.slice(0, 5).map((match, index) => (
             <div
               key={match.personaId}
               className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
@@ -126,9 +219,16 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
                       #{index + 1}
                     </span>
                     <div>
-                      <h4 className="text-lg font-semibold text-filevine-gray-900">
-                        {match.personaName || `Persona ${match.personaId.slice(0, 8)}`}
-                      </h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-lg font-semibold text-filevine-gray-900">
+                          {match.personaName || `Persona ${match.personaId.slice(0, 8)}`}
+                        </h4>
+                        {match.personaArchetype && (
+                          <span className="rounded-full bg-filevine-blue/10 px-2 py-0.5 text-xs font-medium text-filevine-blue">
+                            {formatArchetypeName(match.personaArchetype)}
+                          </span>
+                        )}
+                      </div>
                       {match.personaDescription && (
                         <p className="text-sm text-filevine-gray-600">
                           {match.personaDescription}
@@ -243,6 +343,94 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
           breakdown={breakdown}
         />
       )}
+
+      {/* Search/Add Persona Dialog */}
+      <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+        <DialogContent className="max-w-2xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Search and Add Persona</DialogTitle>
+            <DialogClose onClick={() => setShowSearchDialog(false)} />
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-filevine-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search personas by name, description, or archetype..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Personas List */}
+            {searchLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-6 w-6 animate-spin text-filevine-blue" />
+              </div>
+            ) : filteredPersonas.length === 0 ? (
+              <div className="text-center py-8 text-sm text-filevine-gray-600">
+                No personas found matching your search.
+              </div>
+            ) : (
+              <div className="max-h-[400px] overflow-y-auto space-y-2">
+                {filteredPersonas.map((persona) => {
+                  const isAlreadyMatched = matchedPersonaIds.has(persona.id);
+                  return (
+                    <div
+                      key={persona.id}
+                      className={`rounded-lg border p-4 transition-colors ${
+                        isAlreadyMatched
+                          ? 'border-filevine-gray-200 bg-filevine-gray-50 opacity-60'
+                          : 'border-filevine-gray-200 hover:border-filevine-blue hover:bg-blue-50'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="font-semibold text-filevine-gray-900">{persona.name}</h5>
+                            {persona.archetype && (
+                              <span className="rounded-full bg-filevine-blue/10 px-2 py-0.5 text-xs font-medium text-filevine-blue">
+                                {formatArchetypeName(persona.archetype)}
+                              </span>
+                            )}
+                          </div>
+                          {persona.instantRead && (
+                            <p className="mt-1 text-sm text-filevine-gray-600">{persona.instantRead}</p>
+                          )}
+                          {persona.description && (
+                            <p className="mt-1 text-sm text-filevine-gray-500 line-clamp-2">{persona.description}</p>
+                          )}
+                        </div>
+                        <Button
+                          variant={isAlreadyMatched ? 'outline' : 'primary'}
+                          size="sm"
+                          onClick={() => !isAlreadyMatched && handleAddPersona(persona.id)}
+                          disabled={isAlreadyMatched}
+                        >
+                          {isAlreadyMatched ? (
+                            <>
+                              <CheckCircle2 className="mr-2 h-4 w-4" />
+                              Already Matched
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="mr-2 h-4 w-4" />
+                              Add
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

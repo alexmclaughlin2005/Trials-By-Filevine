@@ -368,11 +368,13 @@ model JurorPersonaMapping {
   id             String    @id @default(uuid())
   jurorId        String    @map("juror_id")
   personaId      String    @map("persona_id")
-  mappingType    String    @map("mapping_type") // primary | secondary
+  mappingType    String    @map("mapping_type") // primary | secondary | suggested
   source         String // ai_suggested | user_assigned
   confidence     Decimal   @db.Decimal(3, 2) // 0.00 - 1.00
   rationale      String?   @db.Text
   counterfactual String?   @db.Text
+  matchRank      Int?      @map("match_rank") // Rank/position in match results (1-5)
+  matchDetails   Json?     @map("match_details") // Store methodScores, methodConfidences, etc.
   isConfirmed    Boolean   @default(false) @map("is_confirmed")
   confirmedBy    String?   @map("confirmed_by")
   confirmedAt    DateTime? @map("confirmed_at")

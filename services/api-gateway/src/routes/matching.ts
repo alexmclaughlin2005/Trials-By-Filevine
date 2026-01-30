@@ -18,7 +18,7 @@ export async function matchingRoutes(server: FastifyInstance) {
     handler: async (request: FastifyRequest<any>, reply: FastifyReply) => {
       const { organizationId } = request.user as any;
       const { jurorId } = request.params as any;
-      const { personaIds, topN } = request.query as any;
+      const { personaIds, topN, regenerate } = request.query as any;
 
       // Verify juror belongs to organization
       const juror = await server.prisma.juror.findFirst({
@@ -37,9 +37,27 @@ export async function matchingRoutes(server: FastifyInstance) {
 
       // Get available personas (system + org-specific)
       let availablePersonaIds: string[];
-      if (personaIds && Array.isArray(personaIds)) {
-        // Use provided persona IDs
-        availablePersonaIds = personaIds;
+      if (personaIds) {
+        // Handle both array and single string from query params
+        const ids = Array.isArray(personaIds) ? personaIds : [personaIds];
+        const filteredIds = ids.filter((id): id is string => typeof id === 'string' && id.length > 0);
+        if (filteredIds.length > 0) {
+          availablePersonaIds = filteredIds;
+        } else {
+          // If provided but empty/invalid, fall back to all personas
+          const personas = await server.prisma.persona.findMany({
+            where: {
+              OR: [
+                { organizationId },
+                { organizationId: null }, // System personas
+              ],
+              isActive: true,
+              version: 2, // Only V2 personas
+            },
+            select: { id: true },
+          });
+          availablePersonaIds = personas.map((p) => p.id);
+        }
       } else {
         // Get all active V2 personas for organization
         const personas = await server.prisma.persona.findMany({
@@ -92,47 +110,89 @@ export async function matchingRoutes(server: FastifyInstance) {
           server.log.info(`[MATCHING] Top 3 matches for juror ${jurorId}: ${JSON.stringify(top3)}`);
         }
 
-        // Store top match as primary persona mapping (if not exists)
-        if (matches.length > 0 && matches[0].probability > 0.3) {
-          const topMatch = matches[0];
-          // Check if mapping already exists
-          const existingMapping = await server.prisma.jurorPersonaMapping.findFirst({
+        // Limit matches to top 5
+        const limitedMatches = matches.slice(0, 5);
+
+        // Store all top 5 matches as persistent mappings
+        // If regenerating, delete existing suggested mappings (but keep confirmed ones)
+        if (regenerate === 'true' || regenerate === true) {
+          await server.prisma.jurorPersonaMapping.deleteMany({
             where: {
               jurorId,
-              personaId: topMatch.personaId,
+              mappingType: 'suggested',
+              isConfirmed: false,
+            },
+          });
+          // Also reset primary if not confirmed
+          await server.prisma.jurorPersonaMapping.deleteMany({
+            where: {
+              jurorId,
               mappingType: 'primary',
+              isConfirmed: false,
+            },
+          });
+        }
+
+        // Store each match as a mapping
+        for (let i = 0; i < limitedMatches.length; i++) {
+          const match = limitedMatches[i];
+          
+          // Check if this persona already has a confirmed mapping
+          const existingConfirmed = await server.prisma.jurorPersonaMapping.findFirst({
+            where: {
+              jurorId,
+              personaId: match.personaId,
+              isConfirmed: true,
             },
           });
 
-          if (existingMapping) {
-            // Update existing mapping
-            await server.prisma.jurorPersonaMapping.update({
-              where: { id: existingMapping.id },
-              data: {
-                confidence: topMatch.probability,
-                rationale: topMatch.rationale,
-                counterfactual: topMatch.counterfactual,
-              },
-            });
-          } else {
-            // Create new mapping
-            await server.prisma.jurorPersonaMapping.create({
-              data: {
+          // Only store if not already confirmed (don't overwrite user confirmations)
+          if (!existingConfirmed) {
+            const mappingType = i === 0 ? 'primary' : 'suggested';
+            const existing = await server.prisma.jurorPersonaMapping.findFirst({
+              where: {
                 jurorId,
-                personaId: topMatch.personaId,
-                mappingType: 'primary',
-                source: 'ai_suggested',
-                confidence: topMatch.probability,
-                rationale: topMatch.rationale,
-                counterfactual: topMatch.counterfactual,
+                personaId: match.personaId,
+                mappingType,
+                isConfirmed: false,
               },
             });
+
+            const matchData = {
+              confidence: match.probability,
+              rationale: match.rationale,
+              counterfactual: match.counterfactual,
+              matchRank: i + 1,
+              matchDetails: {
+                methodScores: match.methodScores,
+                methodConfidences: match.methodConfidences,
+                supportingSignals: match.supportingSignals,
+                contradictingSignals: match.contradictingSignals,
+              },
+            };
+
+            if (existing) {
+              await server.prisma.jurorPersonaMapping.update({
+                where: { id: existing.id },
+                data: matchData,
+              });
+            } else {
+              await server.prisma.jurorPersonaMapping.create({
+                data: {
+                  jurorId,
+                  personaId: match.personaId,
+                  mappingType,
+                  source: 'ai_suggested',
+                  ...matchData,
+                },
+              });
+            }
           }
         }
 
         // Enrich matches with persona details to avoid frontend rate limiting
         const enrichedMatches = await Promise.all(
-          matches.map(async (match) => {
+          limitedMatches.map(async (match) => {
             try {
               const persona = await server.prisma.persona.findUnique({
                 where: { id: match.personaId },
@@ -140,12 +200,14 @@ export async function matchingRoutes(server: FastifyInstance) {
                   id: true,
                   name: true,
                   description: true,
+                  archetype: true,
                 },
               });
               return {
                 ...match,
                 personaName: persona?.name,
                 personaDescription: persona?.description || undefined,
+                personaArchetype: persona?.archetype || undefined,
               };
             } catch {
               return match;
@@ -189,21 +251,29 @@ export async function matchingRoutes(server: FastifyInstance) {
         return { error: 'Juror not found' };
       }
 
-      // Get persona mappings
+      // Get persona mappings - prioritize suggested matches with matchRank
       const mappings = await server.prisma.jurorPersonaMapping.findMany({
-        where: { jurorId },
+        where: { 
+          jurorId,
+          OR: [
+            { mappingType: 'suggested' },
+            { mappingType: 'primary' },
+          ],
+        },
         include: {
           persona: {
             select: {
               id: true,
               name: true,
               description: true,
+              archetype: true,
               instantRead: true,
             },
           },
         },
         orderBy: [
-          { mappingType: 'asc' }, // primary first
+          { matchRank: 'asc' }, // Order by match rank (1-5)
+          { mappingType: 'asc' }, // primary first if no rank
           { confidence: 'desc' },
         ],
       });
@@ -228,7 +298,43 @@ export async function matchingRoutes(server: FastifyInstance) {
         });
       }
 
+      // Convert stored mappings to EnsembleMatch format
+      const matches: any[] = mappings
+        .filter(m => m.matchRank !== null || m.mappingType === 'primary') // Only return ranked matches
+        .map((m) => {
+          const matchDetails = (m.matchDetails as any) || {};
+          return {
+            personaId: m.personaId,
+            personaName: m.persona.name,
+            personaDescription: m.persona.description || undefined,
+            personaArchetype: m.persona.archetype || undefined,
+            probability: Number(m.confidence),
+            confidence: Number(m.confidence), // Use confidence as overall confidence for now
+            rationale: m.rationale || '',
+            counterfactual: m.counterfactual || '',
+            methodScores: matchDetails.methodScores || {
+              signalBased: 0,
+              embedding: 0,
+              bayesian: 0,
+            },
+            methodConfidences: matchDetails.methodConfidences || {
+              signalBased: 0,
+              embedding: 0,
+              bayesian: 0,
+            },
+            supportingSignals: matchDetails.supportingSignals,
+            contradictingSignals: matchDetails.contradictingSignals,
+            mappingId: m.id,
+            isConfirmed: m.isConfirmed,
+            matchRank: m.matchRank,
+          };
+        })
+        .sort((a, b) => (a.matchRank || 999) - (b.matchRank || 999)); // Sort by rank
+
       return {
+        success: true,
+        matches,
+        count: matches.length,
         mappings: mappings.map((m) => ({
           id: m.id,
           personaId: m.personaId,

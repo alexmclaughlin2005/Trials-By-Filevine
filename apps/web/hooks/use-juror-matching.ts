@@ -5,6 +5,7 @@ export interface EnsembleMatch {
   personaId: string;
   personaName?: string;
   personaDescription?: string;
+  personaArchetype?: string;
   probability: number; // 0-1 combined probability
   confidence: number; // 0-1 overall confidence
   rationale: string;
@@ -26,6 +27,7 @@ export interface EnsembleMatch {
 export interface MatchJurorInput {
   jurorId: string;
   personaIds?: string[];
+  regenerate?: boolean; // If true, forces regeneration of all matches
 }
 
 export interface MatchJurorResponse {
@@ -67,14 +69,13 @@ export function useJurorMatches(jurorId: string | null) {
     queryKey: ['juror-matches', jurorId],
     queryFn: async () => {
       if (!jurorId) return null;
-      // Call POST endpoint to get fresh matches
-      // Persona data is now included in the matching response to avoid rate limiting
-      const data = await apiClient.post<{ success: boolean; matches: EnsembleMatch[]; count: number }>(
-        `/matching/jurors/${jurorId}/match`,
-        {}
+      // Call GET endpoint to retrieve stored matches
+      // This returns persistent matches from the database
+      const data = await apiClient.get<{ success: boolean; matches: EnsembleMatch[]; count: number }>(
+        `/matching/jurors/${jurorId}/matches`
       );
       
-      return data.matches;
+      return data.matches || [];
     },
     enabled: !!jurorId,
   });
@@ -83,13 +84,24 @@ export function useJurorMatches(jurorId: string | null) {
 export function useMatchJuror() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: MatchJurorInput) => {
+    mutationFn: async (input: MatchJurorInput & { regenerate?: boolean }) => {
+      // Use POST endpoint to run matching and store results
+      // Set regenerate=true to force recalculation
+      const regenerate = input.regenerate !== false; // Default to true for regeneration
+      const queryParams = new URLSearchParams();
+      if (input.personaIds && input.personaIds.length > 0) {
+        input.personaIds.forEach(id => queryParams.append('personaIds', id));
+      }
+      if (regenerate) {
+        queryParams.append('regenerate', 'true');
+      }
+      
+      const url = `/matching/jurors/${input.jurorId}/match${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
       const data = await apiClient.post<{ success: boolean; matches: EnsembleMatch[]; count: number }>(
-        `/matching/jurors/${input.jurorId}/match`,
-        { personaIds: input.personaIds }
+        url,
+        {}
       );
       
-      // Persona data is now included in the matching response to avoid rate limiting
       return data.matches;
     },
     onSuccess: (_, variables) => {
