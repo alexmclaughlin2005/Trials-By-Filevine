@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useJurorMatches, useMatchJuror, useConfirmPersonaMatch, useMatchBreakdown, type EnsembleMatch } from '@/hooks/use-juror-matching';
 import { Button } from './ui/button';
@@ -54,6 +54,7 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId, onHeade
   const matchJurorMutation = useMatchJuror();
   const confirmMatchMutation = useConfirmPersonaMatch();
   const { data: breakdown } = useMatchBreakdown(jurorId, selectedPersonaId);
+  const lastActionsRef = useRef<string>('');
 
   // Fetch available personas when search dialog opens
   useEffect(() => {
@@ -142,42 +143,51 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId, onHeade
     return 'text-orange-600';
   };
 
-  // Expose header actions to parent - use useEffect to avoid hydration issues
+  // Expose header actions to parent - use ref to prevent infinite loops
   useEffect(() => {
-    if (onHeaderActionsReady) {
-      const actions = (
-        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-          <Button
-            onClick={() => setShowSearchDialog(true)}
-            variant="outline"
-            size="sm"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Add Persona
-          </Button>
-          <Button
-            onClick={handleMatch}
-            disabled={matchJurorMutation.isPending || isLoading}
-            variant="primary"
-            size="sm"
-          >
-            {matchJurorMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Matching...
-              </>
-            ) : (
-              <>
-                <BarChart3 className="mr-2 h-4 w-4" />
-                Run Matching
-              </>
-            )}
-          </Button>
-        </div>
-      );
-      onHeaderActionsReady(actions);
-    }
-  }, [onHeaderActionsReady, handleMatch, matchJurorMutation.isPending, isLoading]);
+    if (!onHeaderActionsReady) return;
+    
+    // Create a unique key based on the actual state values to detect real changes
+    const actionKey = `${matchJurorMutation.isPending}-${isLoading}`;
+    
+    // Only update if the actual state has changed
+    if (lastActionsRef.current === actionKey) return;
+    
+    const actions = (
+      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+        <Button
+          onClick={() => setShowSearchDialog(true)}
+          variant="outline"
+          size="sm"
+        >
+          <Plus className="mr-2 h-4 w-4" />
+          Add Persona
+        </Button>
+        <Button
+          onClick={handleMatch}
+          disabled={matchJurorMutation.isPending || isLoading}
+          variant="primary"
+          size="sm"
+        >
+          {matchJurorMutation.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Matching...
+            </>
+          ) : (
+            <>
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Run Matching
+            </>
+          )}
+        </Button>
+      </div>
+    );
+    
+    lastActionsRef.current = actionKey;
+    onHeaderActionsReady(actions);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [matchJurorMutation.isPending, isLoading]); // Only depend on the actual state values, not the callback
 
   return (
     <div className="space-y-4">
