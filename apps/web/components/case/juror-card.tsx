@@ -109,7 +109,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       {juror.imageUrl ? (
         <div className="mb-3 flex justify-center">
           <div
-            className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer hover:border-primary transition-colors"
+            className="relative w-36 h-36 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer hover:border-primary transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleImageClick(e);
@@ -120,7 +120,7 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
               alt={`${juror.firstName} ${juror.lastName}`}
               fill
               className="object-cover"
-              sizes="96px"
+              sizes="144px"
               unoptimized
             />
           </div>
@@ -128,13 +128,13 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
       ) : (
         <div className="mb-3 flex justify-center">
           <div
-            className="w-24 h-24 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
+            className="w-36 h-36 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleImageClick(e);
             }}
           >
-            <span className="text-sm font-semibold text-gray-400">
+            <span className="text-base font-semibold text-gray-400">
               {juror.firstName?.[0]}{juror.lastName?.[0]}
             </span>
           </div>

@@ -4,10 +4,14 @@ import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useAuth } from '@/contexts/auth-context';
 import { ResearchSummarizer } from '@/components/research-summarizer';
 import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
+import { PersonaMatchDashboard } from '@/components/persona-match-dashboard';
+import { SignalInventory } from '@/components/signal-inventory';
+import { DiscriminativeQuestions } from '@/components/discriminative-questions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -102,6 +106,7 @@ export default function JurorDetailPage() {
   const params = useParams();
   const jurorId = params.id as string;
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Juror>>({});
 
@@ -630,6 +635,33 @@ export default function JurorDetailPage() {
             caseIssues={[]}
             clientPosition={(data.panel.case.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
           />
+        )}
+
+        {/* Signal Inventory */}
+        <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
+          <SignalInventory jurorId={jurorId} />
+        </div>
+
+        {/* Persona Matching Dashboard */}
+        {user?.organization?.id && (
+          <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
+            <PersonaMatchDashboard
+              jurorId={jurorId}
+              organizationId={user.organization.id}
+              caseId={data.panel.case.id}
+            />
+          </div>
+        )}
+
+        {/* Discriminative Questions */}
+        {user?.organization?.id && (
+          <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
+            <DiscriminativeQuestions
+              jurorId={jurorId}
+              organizationId={user.organization.id}
+              caseId={data.panel.case.id}
+            />
+          </div>
         )}
 
         {/* Archetype Classifier */}

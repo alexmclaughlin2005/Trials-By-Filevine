@@ -28,6 +28,10 @@ import { caseFilevineRoutes } from './routes/case-filevine';
 import { apiDocsRoutes } from './routes/api-docs';
 import { chatRoutes } from './routes/chat';
 import { adminRoutes } from './routes/admin';
+import { signalsRoutes } from './routes/signals';
+import { matchingRoutes } from './routes/matching';
+import { questionsRoutes } from './routes/questions';
+import { voirDireRoutes } from './routes/voir-dire';
 // import { jurorResearchRoutes } from './routes/juror-research'; // Disabled - conflicts with jurorsRoutes
 
 export async function buildServer() {
@@ -89,14 +93,36 @@ export async function buildServer() {
   });
 
   // Log CORS configuration
-  server.log.info({ allowedOrigins: config.allowedOrigins }, 'CORS configuration');
+  server.log.info({ 
+    allowedOrigins: config.allowedOrigins, 
+    nodeEnv: config.nodeEnv,
+    corsSetting: config.nodeEnv === 'development' ? 'ALLOW_ALL' : config.allowedOrigins
+  }, 'CORS configuration');
+
+  // In development, allow all localhost origins
+  const corsOrigins = config.nodeEnv === 'development' 
+    ? true // Allow all origins in development
+    : config.allowedOrigins;
 
   await server.register(cors, {
-    origin: config.allowedOrigins,
+    origin: corsOrigins,
     credentials: true,
-    preflight: true,
-    strictPreflight: false,
-    preflightContinue: false,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    maxAge: 86400, // 24 hours
+  });
+
+  // Add explicit OPTIONS handler for all routes (backup)
+  server.addHook('onRequest', async (request, reply) => {
+    if (request.method === 'OPTIONS') {
+      reply.header('Access-Control-Allow-Origin', request.headers.origin || '*');
+      reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+      reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+      reply.header('Access-Control-Allow-Credentials', 'true');
+      reply.header('Access-Control-Max-Age', '86400');
+      return reply.send();
+    }
   });
 
   await server.register(rateLimit, {
@@ -147,6 +173,10 @@ export async function buildServer() {
   await server.register(synthesisRoutes, { prefix: '/api' });
   await server.register(filevineRoutes, { prefix: '/api/filevine' });
   await server.register(caseFilevineRoutes, { prefix: '/api/cases' });
+  await server.register(signalsRoutes, { prefix: '/api/signals' });
+  await server.register(matchingRoutes, { prefix: '/api/matching' });
+  await server.register(questionsRoutes, { prefix: '/api/questions' });
+  await server.register(voirDireRoutes, { prefix: '/api' });
   // await server.register(jurorResearchRoutes); // Disabled - conflicts with jurorsRoutes
 
   // Error handler

@@ -90,6 +90,7 @@ model Case {
   trialSessions      TrialSession[]
   focusGroupSessions FocusGroupSession[]
   filevineProject    CaseFilevineProject?
+  suggestedQuestions SuggestedQuestion[]
 
   @@index([organizationId])
   @@index([status])
@@ -201,15 +202,15 @@ model Juror {
   questionnaireData Json?   @map("questionnaire_data")
 
   // Physical Description
-  hairColor         String? @map("hair_color")
-  height            String? // e.g., "5'10\"", "178cm"
-  weight            String? // e.g., "180 lbs", "82 kg"
-  gender            String?
-  skinTone          String? @map("skin_tone")
-  race              String?
+  hairColor           String? @map("hair_color")
+  height              String? // e.g., "5'10\"", "178cm"
+  weight              String? // e.g., "180 lbs", "82 kg"
+  gender              String?
+  skinTone            String? @map("skin_tone")
+  race                String?
   physicalDescription String? @map("physical_description") @db.Text
-  shirtColor        String? @map("shirt_color") // Shirt color or clothing description
-  imageUrl          String? @map("image_url") // URL to generated headshot image
+  shirtColor          String? @map("shirt_color") // Shirt color or clothing description
+  imageUrl            String? @map("image_url") // URL to generated headshot image
 
   // Archetype Classification
   classifiedArchetype String?   @map("classified_archetype") // Primary archetype classification
@@ -240,13 +241,16 @@ model Juror {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  panel             JuryPanel             @relation(fields: [panelId], references: [id], onDelete: Cascade)
-  venue             Venue?                @relation(fields: [venueId], references: [id])
-  capture           Capture?              @relation(fields: [captureId], references: [id])
-  researchArtifacts ResearchArtifact[]
-  personaMappings   JurorPersonaMapping[]
-  candidates        Candidate[]
-  searchJobs        SearchJob[]
+  panel               JuryPanel             @relation(fields: [panelId], references: [id], onDelete: Cascade)
+  venue               Venue?                @relation(fields: [venueId], references: [id])
+  capture             Capture?              @relation(fields: [captureId], references: [id])
+  researchArtifacts   ResearchArtifact[]
+  personaMappings     JurorPersonaMapping[]
+  candidates          Candidate[]
+  searchJobs          SearchJob[]
+  extractedSignals    JurorSignal[]
+  voirDireResponses   VoirDireResponse[]
+  personaMatchUpdates PersonaMatchUpdate[]
 
   @@index([panelId])
   @@index([venueId])
@@ -269,10 +273,10 @@ model Persona {
   nickname    String? // e.g., "Bootstrap Bob"
   description String  @db.Text
   tagline     String? // Brief characteristic phrase
-  
+
   // JSON Persona ID - stores the original persona_id from JSON files (e.g., "BOOT_1.2_FarmRaisedFrancine")
   // This enables 1:1 mapping between database personas and JSON personas without fuzzy matching
-  jsonPersonaId String? @map("json_persona_id") @unique // Unique to ensure one database persona per JSON persona
+  jsonPersonaId String? @unique @map("json_persona_id") // Unique to ensure one database persona per JSON persona
 
   // Archetype Classification
   archetype          String? // bootstrapper | crusader | scale_balancer | captain | chameleon | scarred | calculator | heart | trojan_horse | maverick
@@ -340,6 +344,8 @@ model Persona {
   organization       Organization?         @relation(fields: [organizationId], references: [id])
   jurorMappings      JurorPersonaMapping[]
   focusGroupPersonas FocusGroupPersona[]
+  signalWeights      SignalPersonaWeight[]
+  matchUpdates       PersonaMatchUpdate[]
 
   @@index([organizationId])
   @@index([sourceType])
@@ -370,6 +376,145 @@ model JurorPersonaMapping {
   @@index([jurorId])
   @@index([personaId])
   @@map("juror_persona_mappings")
+}
+
+// ============================================
+// SIGNAL SYSTEM (Juror-Persona Matching)
+// ============================================
+
+model Signal {
+  id               String   @id @default(uuid())
+  signalId         String   @unique @map("signal_id") // e.g., "OCCUPATION_HEALTHCARE"
+  name             String
+  category         String // DEMOGRAPHIC | BEHAVIORAL | ATTITUDINAL | LINGUISTIC | SOCIAL
+  extractionMethod String   @map("extraction_method") // FIELD_MAPPING | PATTERN_MATCH | NLP_CLASSIFICATION | MANUAL
+  sourceField      String?  @map("source_field") // If FIELD_MAPPING, which questionnaire field
+  patterns         Json? // Regex patterns for PATTERN_MATCH
+  nlpClassifierId  String?  @map("nlp_classifier_id") // If NLP_CLASSIFICATION, reference to trained model
+  valueType        String   @map("value_type") // BOOLEAN | CATEGORICAL | NUMERIC | TEXT
+  possibleValues   Json?    @map("possible_values") // If CATEGORICAL, array of valid values
+  description      String?  @db.Text
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  personaWeights SignalPersonaWeight[]
+  jurorSignals   JurorSignal[]
+
+  @@index([category])
+  @@index([signalId])
+  @@index([extractionMethod])
+  @@map("signals")
+}
+
+model SignalPersonaWeight {
+  id        String   @id @default(uuid())
+  signalId  String   @map("signal_id")
+  personaId String   @map("persona_id")
+  direction String // POSITIVE | NEGATIVE
+  weight    Decimal  @db.Decimal(3, 2) // 0.00 - 1.00
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  signal  Signal  @relation(fields: [signalId], references: [id], onDelete: Cascade)
+  persona Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
+
+  @@unique([signalId, personaId, direction])
+  @@index([signalId])
+  @@index([personaId])
+  @@map("signal_persona_weights")
+}
+
+model JurorSignal {
+  id                 String   @id @default(uuid())
+  jurorId            String   @map("juror_id")
+  signalId           String   @map("signal_id")
+  value              Json // Value based on signal's valueType
+  source             String // QUESTIONNAIRE | RESEARCH | VOIR_DIRE | MANUAL
+  sourceReference    String?  @map("source_reference") // Field name, artifact ID, or response ID
+  voirDireResponseId String?  @map("voir_dire_response_id") // If source is VOIR_DIRE
+  confidence         Decimal  @db.Decimal(3, 2) // Extraction confidence 0-1
+  extractedAt        DateTime @default(now()) @map("extracted_at")
+
+  // Relations
+  juror            Juror             @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  signal           Signal            @relation(fields: [signalId], references: [id])
+  voirDireResponse VoirDireResponse? @relation("VoirDireSource", fields: [voirDireResponseId], references: [id], onDelete: SetNull)
+
+  @@unique([jurorId, signalId, source, sourceReference])
+  @@index([jurorId])
+  @@index([signalId])
+  @@index([source])
+  @@index([voirDireResponseId])
+  @@map("juror_signals")
+}
+
+model VoirDireResponse {
+  id                String   @id @default(uuid())
+  jurorId           String   @map("juror_id")
+  questionId        String?  @map("question_id") // If from suggested question
+  questionText      String   @map("question_text") @db.Text
+  responseSummary   String   @map("response_summary") @db.Text
+  responseTimestamp DateTime @map("response_timestamp")
+  enteredBy         String   @map("entered_by")
+  entryMethod       String   @map("entry_method") // TYPED | VOICE_TO_TEXT | QUICK_SELECT
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  // Relations
+  juror            Juror                @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  extractedSignals JurorSignal[]        @relation("VoirDireSource")
+  personaImpacts   PersonaMatchUpdate[]
+
+  @@index([jurorId])
+  @@index([responseTimestamp])
+  @@index([questionId])
+  @@map("voir_dire_responses")
+}
+
+model PersonaMatchUpdate {
+  id                  String   @id @default(uuid())
+  jurorId             String   @map("juror_id")
+  personaId           String   @map("persona_id")
+  voirDireResponseId  String?  @map("voir_dire_response_id")
+  probabilityDelta    Decimal  @map("probability_delta") @db.Decimal(5, 4) // Change in probability (-1 to 1)
+  previousProbability Decimal? @map("previous_probability") @db.Decimal(3, 2)
+  newProbability      Decimal  @map("new_probability") @db.Decimal(3, 2)
+  updatedAt           DateTime @default(now()) @map("updated_at")
+
+  // Relations
+  juror            Juror             @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  persona          Persona           @relation(fields: [personaId], references: [id])
+  voirDireResponse VoirDireResponse? @relation(fields: [voirDireResponseId], references: [id])
+
+  @@index([jurorId])
+  @@index([personaId])
+  @@index([updatedAt])
+  @@map("persona_match_updates")
+}
+
+model SuggestedQuestion {
+  id                      String   @id @default(uuid())
+  caseId                  String   @map("case_id")
+  targetType              String   @map("target_type") // SPECIFIC_JUROR | PANEL_WIDE
+  targetJurorId           String?  @map("target_juror_id")
+  questionText            String   @map("question_text") @db.Text
+  questionCategory        String   @map("question_category")
+  discriminatesBetween    Json     @map("discriminates_between") // Array of {persona_a_id, persona_b_id, expected_information_gain}
+  responseInterpretations Json     @map("response_interpretations")
+  followUpQuestions       Json?    @map("follow_up_questions")
+  priorityScore           Decimal  @map("priority_score") @db.Decimal(5, 4)
+  priorityRationale       String?  @map("priority_rationale") @db.Text
+  timesAsked              Int      @default(0) @map("times_asked")
+  averageInformationGain  Decimal? @map("average_information_gain") @db.Decimal(5, 4)
+  createdAt               DateTime @default(now()) @map("created_at")
+
+  // Relations
+  case Case @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@index([targetJurorId])
+  @@index([priorityScore])
+  @@map("suggested_questions")
 }
 
 // ============================================
@@ -1446,12 +1591,12 @@ model PromptAnalytics {
 // ============================================
 
 model FeatureFlag {
-  id             String   @id @default(uuid())
-  key            String   // e.g., "personas_v2", "focus_groups_v2"
-  name           String   // Display name
-  description    String?  // Description of what the flag does
-  enabled        Boolean  @default(false)
-  organizationId String?  @map("organization_id") // NULL = global flag
+  id             String  @id @default(uuid())
+  key            String // e.g., "personas_v2", "focus_groups_v2"
+  name           String // Display name
+  description    String? // Description of what the flag does
+  enabled        Boolean @default(false)
+  organizationId String? @map("organization_id") // NULL = global flag
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

@@ -7,14 +7,21 @@ import { ResearchSummarizer } from '@/components/research-summarizer';
 import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
+import { SignalInventory } from '@/components/signal-inventory';
+import { PersonaMatchDashboard } from '@/components/persona-match-dashboard';
+import { DiscriminativeQuestions } from '@/components/discriminative-questions';
+import { VoirDireResponseEntry } from '@/components/voir-dire/voir-dire-response-entry';
+import { VoirDireResponseHistory } from '@/components/voir-dire/voir-dire-response-history';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select } from '@/components/ui/select';
-import { Loader2, Edit2, Save, X, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Edit2, Save, X, Image as ImageIcon, Search } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { CollapsibleSection } from '@/components/ui/collapsible-section';
 
 interface ScoreFactors {
   nameScore: number;
@@ -104,9 +111,14 @@ interface JurorEditSidebarProps {
 
 export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarProps) {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Juror>>({});
   const [imageStyle, setImageStyle] = useState<'realistic' | 'avatar'>('realistic');
+  const [isVoirDireEntryOpen, setIsVoirDireEntryOpen] = useState(false);
+  const [suggestedQuestionId, setSuggestedQuestionId] = useState<string | undefined>();
+  const [suggestedQuestionText, setSuggestedQuestionText] = useState<string | undefined>();
+  const [isSearchingIdentity, setIsSearchingIdentity] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['juror', jurorId],
@@ -295,7 +307,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
@@ -310,26 +322,25 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
               </p>
             </div>
           ) : data ? (
-            <div className="space-y-6 max-w-4xl">
+            <div className="space-y-3 max-w-4xl">
               {/* Juror Photo Section */}
-              <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
-                <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-filevine-gray-900">Juror Photo</h3>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="imageStyle" className="text-sm text-filevine-gray-700">
-                        Style:
-                      </Label>
-                      <Select
-                        id="imageStyle"
-                        value={imageStyle}
-                        onChange={(e) => setImageStyle(e.target.value as 'realistic' | 'avatar')}
-                        className="w-32"
-                      >
-                        <option value="realistic">Realistic</option>
-                        <option value="avatar">Avatar</option>
-                      </Select>
-                    </div>
+              <CollapsibleSection
+                title="Juror Photo"
+                defaultOpen={true}
+                headerActions={
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Label htmlFor="imageStyle" className="text-sm text-filevine-gray-700">
+                      Style:
+                    </Label>
+                    <Select
+                      id="imageStyle"
+                      value={imageStyle}
+                      onChange={(e) => setImageStyle(e.target.value as 'realistic' | 'avatar')}
+                      className="w-32"
+                    >
+                      <option value="realistic">Realistic</option>
+                      <option value="avatar">Avatar</option>
+                    </Select>
                     <Button
                       onClick={() => generateImageMutation.mutate(!!data.imageUrl)}
                       disabled={generateImageMutation.isPending}
@@ -341,13 +352,14 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                       ) : (
                         <ImageIcon className="mr-2 h-4 w-4" />
                       )}
-                      {data.imageUrl ? 'Regenerate Image' : 'Generate Image'}
+                      {data.imageUrl ? 'Regenerate' : 'Generate'}
                     </Button>
                   </div>
-                </div>
-                <div className="mt-4 flex items-center gap-6">
+                }
+              >
+                <div className="flex items-center gap-4">
                   {data.imageUrl ? (
-                    <div className="relative h-32 w-32 overflow-hidden rounded-full border-2 border-filevine-gray-200">
+                    <div className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-filevine-gray-200 flex-shrink-0">
                       <Image
                         src={`/api/jurors/images/${data.id}?v=${encodeURIComponent(data.imageUrl.split('/').pop() || '')}`}
                         alt={`${data.firstName} ${data.lastName}`}
@@ -357,59 +369,56 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                       />
                     </div>
                   ) : (
-                    <div className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-filevine-gray-200 bg-filevine-gray-100 text-2xl font-semibold text-filevine-gray-600">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-filevine-gray-200 bg-filevine-gray-100 text-xl font-semibold text-filevine-gray-600 flex-shrink-0">
                       {getInitials(data.firstName, data.lastName)}
                     </div>
                   )}
                   <div className="flex-1">
                     <p className="text-sm text-filevine-gray-600">
                       {data.imageUrl
-                        ? 'Click "Regenerate Image" to create a new image based on updated physical description fields.'
-                        : 'Generate an AI headshot based on the juror\'s physical description fields. Fill in age, gender, hair color, height, weight, skin tone, race, and other identifying details, then click "Generate Image".'}
+                        ? 'Click "Regenerate" to create a new image based on updated physical description fields.'
+                        : 'Generate an AI headshot based on the juror\'s physical description fields. Fill in age, gender, hair color, height, weight, skin tone, race, and other identifying details, then click "Generate".'}
                     </p>
                   </div>
                 </div>
-              </div>
+              </CollapsibleSection>
 
               {/* Juror Information */}
-              <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-filevine-gray-900 mb-4">
-                  Juror Information
-                </h3>
+              <CollapsibleSection title="Juror Information" defaultOpen={true}>
                 {!isEditing ? (
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">First Name</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.firstName || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">First Name</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.firstName || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Last Name</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.lastName || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Last Name</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.lastName || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Age</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.age || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Age</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.age || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Occupation</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.occupation || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Occupation</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.occupation || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Employer</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.employer || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Employer</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.employer || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">City</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.city || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">City</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.city || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Zip Code</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.zipCode || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Zip Code</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.zipCode || 'Not provided'}</p>
                     </div>
                     {data.notes && (
                       <div className="col-span-2">
-                        <p className="text-sm font-medium text-filevine-gray-700">Notes</p>
-                        <p className="mt-1 text-filevine-gray-900">{data.notes}</p>
+                        <p className="text-xs font-medium text-filevine-gray-700">Notes</p>
+                        <p className="mt-0.5 text-sm text-filevine-gray-900">{data.notes}</p>
                       </div>
                     )}
                   </div>
@@ -516,49 +525,46 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                     </div>
                   </div>
                 )}
-              </div>
+              </CollapsibleSection>
 
               {/* Physical Description */}
-              <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-filevine-gray-900 mb-4">
-                  Physical Description
-                </h3>
+              <CollapsibleSection title="Physical Description" defaultOpen={false}>
                 {!isEditing ? (
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Hair Color</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.hairColor || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Hair Color</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.hairColor || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Height</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.height || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Height</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.height || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Weight</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.weight || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Weight</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.weight || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Gender</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.gender || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Gender</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.gender || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Skin Tone</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.skinTone || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Skin Tone</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.skinTone || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Race</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.race || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Race</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.race || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-filevine-gray-700">Shirt Color / Clothing</p>
-                      <p className="mt-1 text-filevine-gray-900">{data.shirtColor || 'Not provided'}</p>
+                      <p className="text-xs font-medium text-filevine-gray-700">Shirt Color / Clothing</p>
+                      <p className="mt-0.5 text-sm text-filevine-gray-900">{data.shirtColor || 'Not provided'}</p>
                     </div>
                     {data.physicalDescription && (
                       <div className="col-span-2">
-                        <p className="text-sm font-medium text-filevine-gray-700">
+                        <p className="text-xs font-medium text-filevine-gray-700">
                           Other Identifying Details
                         </p>
-                        <p className="mt-1 text-filevine-gray-900">{data.physicalDescription}</p>
+                        <p className="mt-0.5 text-sm text-filevine-gray-900">{data.physicalDescription}</p>
                       </div>
                     )}
                   </div>
@@ -653,14 +659,11 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                     </div>
                   </div>
                 )}
-              </div>
+              </CollapsibleSection>
 
               {/* Research Artifacts */}
               {data.researchArtifacts && data.researchArtifacts.length > 0 && (
-                <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
-                  <h3 className="text-lg font-semibold text-filevine-gray-900 mb-4">
-                    Research Artifacts
-                  </h3>
+                <CollapsibleSection title="Research Artifacts" defaultOpen={false}>
                   <div className="space-y-4">
                     {data.researchArtifacts.map((artifact) => (
                       <div
@@ -681,31 +684,68 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                       </div>
                     ))}
                   </div>
-                </div>
+                </CollapsibleSection>
               )}
 
               {/* Research Summarizer */}
               {data.researchArtifacts && data.researchArtifacts.length > 0 && (
-                <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
+                <CollapsibleSection title="Research Summary" defaultOpen={false}>
                   <ResearchSummarizer jurorId={jurorId} artifacts={data.researchArtifacts} />
-                </div>
+                </CollapsibleSection>
               )}
 
               {/* Juror Research Panel */}
-              <JurorResearchPanel
-                jurorId={jurorId}
-                jurorName={`${data.firstName} ${data.lastName}`}
-                jurorInfo={{
-                  firstName: data.firstName,
-                  lastName: data.lastName,
-                  age: data.age || undefined,
-                  city: data.city || undefined,
-                  zipCode: data.zipCode || undefined,
-                  occupation: data.occupation || undefined,
-                }}
-                initialCandidates={data.candidates || []}
-                onCandidateConfirmed={refetch}
-              />
+              <CollapsibleSection
+                title="Identity Research"
+                defaultOpen={false}
+                headerActions={
+                  <Button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      setIsSearchingIdentity(true);
+                      try {
+                        await apiClient.post(`/jurors/${jurorId}/search`, {});
+                        refetch();
+                      } catch (error) {
+                        console.error('Search error:', error);
+                      } finally {
+                        setIsSearchingIdentity(false);
+                      }
+                    }}
+                    disabled={isSearchingIdentity}
+                    variant="default"
+                    size="sm"
+                  >
+                    {isSearchingIdentity ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="mr-2 h-4 w-4" />
+                        Search Public Records
+                      </>
+                    )}
+                  </Button>
+                }
+              >
+                <JurorResearchPanel
+                  jurorId={jurorId}
+                  jurorName={`${data.firstName} ${data.lastName}`}
+                  jurorInfo={{
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    age: data.age || undefined,
+                    city: data.city || undefined,
+                    zipCode: data.zipCode || undefined,
+                    occupation: data.occupation || undefined,
+                  }}
+                  initialCandidates={data.candidates || []}
+                  onCandidateConfirmed={refetch}
+                  hideHeader={true}
+                />
+              </CollapsibleSection>
 
               {/* Deep Research - Only show if candidate is confirmed */}
               {data.candidates && data.candidates.some((c) => c.isConfirmed) && (
@@ -719,21 +759,88 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
               )}
 
               {/* Archetype Classifier */}
-              <div className="rounded-lg border border-filevine-gray-200 bg-white p-6 shadow-sm">
-                <h3 className="mb-4 text-lg font-semibold text-filevine-gray-900">
-                  Archetype Classification
-                </h3>
+              <CollapsibleSection title="Archetype Classification" defaultOpen={false}>
                 <ArchetypeClassifier
                   jurorId={jurorId}
                   caseType={data.panel.case.caseType || undefined}
                   jurisdiction={data.panel.case.jurisdiction || undefined}
                   ourSide={data.panel.case.ourSide as 'plaintiff' | 'defense' | undefined}
                 />
-              </div>
+              </CollapsibleSection>
+
+              {/* Signal Inventory */}
+              <CollapsibleSection title="Signal Inventory" defaultOpen={false}>
+                <SignalInventory jurorId={jurorId} />
+              </CollapsibleSection>
+
+              {/* Persona Matching Dashboard */}
+              {user?.organization?.id && (
+                <CollapsibleSection title="Persona Matching" defaultOpen={false}>
+                  <PersonaMatchDashboard
+                    jurorId={jurorId}
+                    organizationId={user.organization.id}
+                    caseId={data.panel.case.id}
+                  />
+                </CollapsibleSection>
+              )}
+
+              {/* Discriminative Questions */}
+              {user?.organization?.id && (
+                <CollapsibleSection title="Discriminative Questions" defaultOpen={false}>
+                  <DiscriminativeQuestions
+                    jurorId={jurorId}
+                    organizationId={user.organization.id}
+                    caseId={data.panel.case.id}
+                    onAskQuestion={(questionId, questionText) => {
+                      setSuggestedQuestionId(questionId);
+                      setSuggestedQuestionText(questionText);
+                      setIsVoirDireEntryOpen(true);
+                    }}
+                  />
+                </CollapsibleSection>
+              )}
+
+              {/* Voir Dire Responses */}
+              <CollapsibleSection
+                title="Voir Dire Responses"
+                defaultOpen={false}
+                headerActions={
+                  <Button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSuggestedQuestionId(undefined);
+                      setSuggestedQuestionText(undefined);
+                      setIsVoirDireEntryOpen(true);
+                    }}
+                    variant="primary"
+                    size="sm"
+                  >
+                    Add Response
+                  </Button>
+                }
+              >
+                <VoirDireResponseHistory jurorId={jurorId} />
+              </CollapsibleSection>
             </div>
           ) : null}
         </div>
       </div>
+
+      {/* Voir Dire Entry Modal */}
+      <VoirDireResponseEntry
+        jurorId={jurorId}
+        isOpen={isVoirDireEntryOpen}
+        onClose={() => {
+          setIsVoirDireEntryOpen(false);
+          setSuggestedQuestionId(undefined);
+          setSuggestedQuestionText(undefined);
+        }}
+        onSuccess={() => {
+          refetch();
+        }}
+        suggestedQuestionId={suggestedQuestionId}
+        suggestedQuestionText={suggestedQuestionText}
+      />
     </>
   );
 }

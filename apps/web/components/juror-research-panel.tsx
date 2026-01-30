@@ -53,12 +53,16 @@ interface JurorResearchPanelProps {
   };
   initialCandidates?: Candidate[];
   onCandidateConfirmed?: () => void;
+  hideHeader?: boolean;
+  onSearchClick?: () => void;
 }
 
 export function JurorResearchPanel({
   jurorId,
   initialCandidates = [],
   onCandidateConfirmed,
+  hideHeader = false,
+  onSearchClick,
 }: JurorResearchPanelProps) {
   const [candidates, setCandidates] = useState<Candidate[]>(initialCandidates);
   const [searching, setSearching] = useState(false);
@@ -144,48 +148,58 @@ export function JurorResearchPanel({
     }
   };
 
+  const handleSearchClick = () => {
+    if (onSearchClick) {
+      onSearchClick();
+    } else {
+      handleSearch();
+    }
+  };
+
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">Identity Research</h2>
-        <Button
-          onClick={(e) => {
-            e.preventDefault();
-            console.log('Button clicked!');
-            handleSearch();
-          }}
-          disabled={searching}
-          className="flex items-center gap-2"
-          size="sm"
-          type="button"
-        >
-          {searching ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            <>
-              <Search className="w-4 h-4" />
-              Search Public Records
-            </>
-          )}
-        </Button>
-      </div>
+    <div className={hideHeader ? '' : 'rounded-lg border border-gray-200 bg-white p-6 shadow-sm'}>
+      {!hideHeader && (
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-gray-900">Identity Research</h2>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              console.log('Button clicked!');
+              handleSearchClick();
+            }}
+            disabled={searching}
+            className="flex items-center gap-2"
+            size="sm"
+            type="button"
+          >
+            {searching ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Searching...
+              </>
+            ) : (
+              <>
+                <Search className="w-4 h-4" />
+                Search Public Records
+              </>
+            )}
+          </Button>
+        </div>
+      )}
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 border border-red-200 p-3">
+        <div className={`rounded-md bg-red-50 border border-red-200 p-3 ${hideHeader ? 'mb-3' : 'mb-4'}`}>
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {candidates.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className={`text-center text-gray-500 ${hideHeader ? 'py-8' : 'py-12'}`}>
           <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
           <p className="text-sm">
             No candidate matches found.
             <br />
-            Click &quot;Search Public Records&quot; to find potential identity matches.
+            {hideHeader ? 'Click "Search Public Records" above to find potential identity matches.' : 'Click "Search Public Records" to find potential identity matches.'}
           </p>
         </div>
       ) : (
