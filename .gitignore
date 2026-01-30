@@ -89,3 +89,5 @@ services/api-gateway/juror-images/
 # OS
 Thumbs.db
 .DS_Store
+embedding-scorer.ts
+ensemble-matcher-updated.ts

@@ -52,9 +52,11 @@ export class EmbeddingScorer {
 
     // Get or generate persona embedding
     const personaEmbedding = await this.getPersonaEmbedding(personaId);
+    const personaCacheHit = this.embeddingCache.has(personaId);
 
     // Generate embedding for juror narrative
     const jurorEmbedding = await this.generateEmbedding(jurorNarrative);
+    const jurorCacheHit = this.narrativeCache.has(jurorId);
 
     // Calculate cosine similarity
     const similarity = this.cosineSimilarity(
@@ -67,6 +69,9 @@ export class EmbeddingScorer {
 
     // Calculate confidence based on narrative richness
     const confidence = this.calculateConfidence(jurorNarrative);
+
+    // Log embedding usage for debugging
+    console.log(`[EMBEDDING] Juror ${jurorId} vs Persona ${personaId}: score=${normalizedScore.toFixed(3)}, cache=${personaCacheHit ? 'HIT' : 'MISS'}/${jurorCacheHit ? 'HIT' : 'MISS'}, narrative=${jurorNarrative.length}chars`);
 
     return {
       score: normalizedScore,
@@ -85,12 +90,14 @@ export class EmbeddingScorer {
     // Get juror narrative once
     const jurorNarrative = await this.getJurorNarrative(jurorId);
     const jurorEmbedding = await this.generateEmbedding(jurorNarrative);
+    const jurorCacheHit = this.narrativeCache.has(jurorId);
 
     // Get all persona embeddings
     const personaEmbeddings = await Promise.all(
       personaIds.map(async (personaId) => {
         const embedding = await this.getPersonaEmbedding(personaId);
-        return { personaId, embedding };
+        const cacheHit = this.embeddingCache.has(personaId);
+        return { personaId, embedding, cacheHit };
       })
     );
 
@@ -98,7 +105,11 @@ export class EmbeddingScorer {
     const scores = new Map<string, EmbeddingScore>();
     const confidence = this.calculateConfidence(jurorNarrative);
 
-    for (const { personaId, embedding } of personaEmbeddings) {
+    const cacheStats = { hits: 0, misses: 0 };
+    for (const { personaId, embedding, cacheHit } of personaEmbeddings) {
+      if (cacheHit) cacheStats.hits++;
+      else cacheStats.misses++;
+
       const similarity = this.cosineSimilarity(jurorEmbedding, embedding);
       const normalizedScore = (similarity + 1) / 2;
 
@@ -108,6 +119,9 @@ export class EmbeddingScorer {
         narrativeLength: jurorNarrative.length,
       });
     }
+
+    // Log batch matching stats
+    console.log(`[EMBEDDING] Batch match: Juror ${jurorId} vs ${personaIds.length} personas, cache=${cacheStats.hits}HIT/${cacheStats.misses}MISS (personas), juror=${jurorCacheHit ? 'HIT' : 'MISS'}`);
 
     return scores;
   }
@@ -151,6 +165,7 @@ export class EmbeddingScorer {
         instantRead: true,
         phrasesYoullHear: true,
         attributes: true,
+        archetype: true,
       },
     });
 
@@ -160,6 +175,9 @@ export class EmbeddingScorer {
 
     // Build persona description text
     const personaText = this.buildPersonaDescription(persona);
+
+    // Log cache miss
+    console.log(`[EMBEDDING] Generating embedding for persona ${personaId} (${persona.name}, ${persona.archetype || 'unknown'}) - CACHE MISS`);
 
     // Generate embedding
     const embedding = await this.generateEmbedding(personaText);
@@ -214,15 +232,17 @@ export class EmbeddingScorer {
   private async generateEmbedding(text: string): Promise<number[]> {
     if (!this.voyageClient) {
       // Fallback to hash-based embedding if Voyage client not available
-      console.warn('Voyage AI client not available, using fallback embedding');
+      console.warn('[EMBEDDING] Voyage AI client not available, using fallback embedding');
       return this.fallbackEmbedding(text);
     }
 
     try {
+      const startTime = Date.now();
       const response = await this.voyageClient.embed({
         input: [text],
         model: this.MODEL,
       });
+      const duration = Date.now() - startTime;
 
       if (!response.data || response.data.length === 0) {
         throw new Error('No embedding data returned from Voyage AI');
@@ -233,9 +253,10 @@ export class EmbeddingScorer {
         throw new Error('No embedding in response data');
       }
 
+      console.log(`[EMBEDDING] Generated embedding via Voyage AI (${duration}ms, ${text.length}chars)`);
       return embedding;
     } catch (error) {
-      console.error('Error generating Voyage AI embedding:', error);
+      console.error('[EMBEDDING] Error generating Voyage AI embedding:', error);
       // Fallback to hash-based embedding on error
       return this.fallbackEmbedding(text);
     }

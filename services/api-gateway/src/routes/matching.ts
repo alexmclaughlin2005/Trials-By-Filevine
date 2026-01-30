@@ -72,10 +72,25 @@ export async function matchingRoutes(server: FastifyInstance) {
       const matcher = new EnsembleMatcher(server.prisma, claudeClient);
 
       try {
+        // Log matching request
+        server.log.info(`[MATCHING] Starting match for juror ${jurorId} against ${availablePersonaIds.length} personas`);
+
         // Run matching
         const matches = topN
           ? await matcher.getTopMatches(jurorId, availablePersonaIds, parseInt(topN))
           : await matcher.matchJuror(jurorId, availablePersonaIds);
+
+        // Log top matches
+        if (matches.length > 0) {
+          const top3 = matches.slice(0, 3).map(m => ({
+            personaId: m.personaId,
+            score: m.probability.toFixed(3),
+            embedding: m.methodScores?.embedding?.toFixed(3) || 'N/A',
+            signal: m.methodScores?.signalBased?.toFixed(3) || 'N/A',
+            bayesian: m.methodScores?.bayesian?.toFixed(3) || 'N/A',
+          }));
+          server.log.info(`[MATCHING] Top 3 matches for juror ${jurorId}: ${JSON.stringify(top3)}`);
+        }
 
         // Store top match as primary persona mapping (if not exists)
         if (matches.length > 0 && matches[0].probability > 0.3) {
