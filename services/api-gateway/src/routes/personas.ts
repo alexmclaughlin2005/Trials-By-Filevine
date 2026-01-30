@@ -586,6 +586,7 @@ export async function personasRoutes(server: FastifyInstance) {
           nickname: true,
           archetype: true,
           jsonPersonaId: true, // Get stored JSON persona_id for direct lookup
+          imageUrl: true, // Get stored image URL from database
         },
       });
 
@@ -600,10 +601,21 @@ export async function personasRoutes(server: FastifyInstance) {
       server.log.info({ 
         personaId, 
         personaName: persona.name,
-        jsonPersonaId: persona.jsonPersonaId 
+        jsonPersonaId: persona.jsonPersonaId,
+        imageUrl: persona.imageUrl ? 'present' : 'missing'
       }, 'Serving image for persona');
 
-      // First check if image is stored in Vercel Blob (via JSON mappings)
+      // First check if image URL is stored in database (persistent, survives restarts)
+      if (persona.imageUrl && persona.imageUrl.startsWith('https://')) {
+        server.log.info({ 
+          personaId, 
+          jsonPersonaId: persona.jsonPersonaId,
+          blobUrl: persona.imageUrl 
+        }, 'Redirecting to Vercel Blob URL from database');
+        return reply.redirect(302, persona.imageUrl);
+      }
+
+      // Fallback: check if image is stored in Vercel Blob (via JSON mappings)
       if (persona.jsonPersonaId) {
         const { loadPersonaImageMappings, invalidatePersonaImageCache } = await import('../services/persona-image-utils');
         
@@ -947,6 +959,19 @@ export async function personasRoutes(server: FastifyInstance) {
         jsonPersonaId,
         imageUrl: result.imageUrl,
       }, 'Image generated successfully');
+
+      // Save image URL to database for persistence (if it's a Vercel Blob URL)
+      if (result.imageUrl && result.imageUrl.startsWith('https://')) {
+        try {
+          await server.prisma.persona.update({
+            where: { id: personaId },
+            data: { imageUrl: result.imageUrl },
+          });
+          server.log.info({ personaId, imageUrl: result.imageUrl }, 'Saved image URL to database');
+        } catch (error: any) {
+          server.log.warn({ error: error.message, personaId }, 'Failed to save image URL to database (non-fatal)');
+        }
+      }
 
       // Return the image URL (use the API endpoint path, not the relative path)
       // The frontend expects: /api/personas/images/{personaId}
