@@ -360,6 +360,10 @@ export class EmbeddingScorer {
       
       // Get all personas
       const personas = await this.prisma.persona.findMany({
+        where: {
+          isActive: true,
+          version: 2, // Only V2 personas
+        },
         select: {
           id: true,
           name: true,
@@ -370,10 +374,21 @@ export class EmbeddingScorer {
         },
       });
 
-      console.log(`📦 Found ${personas.length} personas to preload`);
+      // Filter to only personas not yet cached
+      const uncachedPersonas = personas.filter(
+        (p) => !this.embeddingCache.has(p.id)
+      );
 
-      // Build persona texts
-      const personaTexts = personas.map((persona) => ({
+      const cachedCount = personas.length - uncachedPersonas.length;
+      console.log(`📦 Found ${personas.length} personas (${cachedCount} already cached, ${uncachedPersonas.length} need preloading)`);
+
+      if (uncachedPersonas.length === 0) {
+        console.log('✅ All personas already cached - skipping preload');
+        return;
+      }
+
+      // Build persona texts for uncached personas only
+      const personaTexts = uncachedPersonas.map((persona) => ({
         id: persona.id,
         text: this.buildPersonaDescription(persona),
       }));
@@ -454,10 +469,12 @@ export class EmbeddingScorer {
         }
       }
 
-      const successRate = ((loaded / personas.length) * 100).toFixed(1);
-      const remaining = personas.length - loaded;
+      const successRate = ((loaded / uncachedPersonas.length) * 100).toFixed(1);
+      const remaining = uncachedPersonas.length - loaded;
+      const totalCached = cachedCount + loaded;
       
-      console.log(`✅ Preloaded ${loaded}/${personas.length} persona embeddings (${successRate}%)`);
+      console.log(`✅ Preloaded ${loaded}/${uncachedPersonas.length} new persona embeddings (${successRate}%)`);
+      console.log(`📊 Total cached: ${totalCached}/${personas.length} (${((totalCached / personas.length) * 100).toFixed(1)}%)`);
       
       if (failedBatches > 0) {
         console.log(`⚠️  ${failedBatches} batches failed due to rate limits.`);
