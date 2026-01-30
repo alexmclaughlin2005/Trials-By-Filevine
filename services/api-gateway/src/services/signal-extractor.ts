@@ -257,13 +257,15 @@ export class SignalExtractorService {
         return null;
       }
 
+      const finalSourceReference = signal.sourceReference || sourceReference || null;
+      
       return this.prisma.jurorSignal.upsert({
         where: {
           jurorId_signalId_source_sourceReference: {
             jurorId,
             signalId: signalDbId,
             source,
-            sourceReference: signal.sourceReference || sourceReference || null,
+            sourceReference: (finalSourceReference || '') as string,
           },
         },
         create: {
@@ -271,7 +273,7 @@ export class SignalExtractorService {
           signalId: signalDbId,
           value: signal.value,
           source,
-          sourceReference: signal.sourceReference || sourceReference || null,
+          sourceReference: finalSourceReference,
           confidence: signal.confidence,
         },
         update: {

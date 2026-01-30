@@ -287,6 +287,11 @@ export async function voirDireRoutes(server: FastifyInstance) {
         // Fetch full response with relations
         const fullResponse = await responseService.getResponseWithRelations(updated.id);
 
+        if (!fullResponse) {
+          reply.code(404);
+          return { error: 'Voir dire response not found after update' };
+        }
+
         return {
           success: true,
           response: {

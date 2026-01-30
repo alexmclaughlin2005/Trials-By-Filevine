@@ -28,6 +28,13 @@ export async function questionsRoutes(server: FastifyInstance) {
             case: { organizationId },
           },
         },
+        include: {
+          panel: {
+            select: {
+              caseId: true,
+            },
+          },
+        },
       });
 
       if (!juror) {

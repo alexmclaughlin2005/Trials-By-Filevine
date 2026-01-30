@@ -334,12 +334,12 @@ export class DiscriminativeQuestionGenerator {
             Number(personaAWeight.weight),
             Number(personaBWeight.weight)
           );
-          direction = personaAWeight.direction;
+          direction = personaAWeight.direction as 'POSITIVE' | 'NEGATIVE';
         } else if (personaAWeight) {
           // Signal only relevant to persona A
           discriminationPower = Number(personaAWeight.weight);
           weight = Number(personaAWeight.weight);
-          direction = personaAWeight.direction;
+          direction = personaAWeight.direction as 'POSITIVE' | 'NEGATIVE';
         } else if (personaBWeight) {
           // Signal only relevant to persona B (opposite for persona A)
           discriminationPower = Number(personaBWeight.weight);
@@ -459,11 +459,11 @@ export class DiscriminativeQuestionGenerator {
           Number(personaAWeight.weight),
           Number(personaBWeight.weight)
         );
-        direction = personaAWeight.direction;
+        direction = personaAWeight.direction as 'POSITIVE' | 'NEGATIVE';
       } else if (personaAWeight) {
         discriminationPower = Number(personaAWeight.weight);
         weight = Number(personaAWeight.weight);
-        direction = personaAWeight.direction;
+        direction = personaAWeight.direction as 'POSITIVE' | 'NEGATIVE';
       } else if (personaBWeight) {
         discriminationPower = Number(personaBWeight.weight);
         weight = Number(personaBWeight.weight);

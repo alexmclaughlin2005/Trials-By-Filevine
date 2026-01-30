@@ -124,12 +124,12 @@ export class CounterfactualGenerator {
         );
         discriminationPower = weightDiff;
         weight = Number(personaWeight.weight);
-        direction = personaWeight.direction;
+        direction = personaWeight.direction as 'POSITIVE' | 'NEGATIVE';
       } else if (personaWeight) {
         // Signal only relevant to primary persona
         discriminationPower = Number(personaWeight.weight);
         weight = Number(personaWeight.weight);
-        direction = personaWeight.direction;
+        direction = personaWeight.direction as 'POSITIVE' | 'NEGATIVE';
       } else if (alternativeWeight) {
         // Signal only relevant to alternative persona (negative for primary)
         discriminationPower = Number(alternativeWeight.weight);
