@@ -218,6 +218,7 @@ export class EmbeddingScorer {
     instantRead: string | null;
     phrasesYoullHear: any;
     attributes: any;
+    verdictPrediction?: any;
   }): string {
     const parts: string[] = [];
 
@@ -225,6 +226,16 @@ export class EmbeddingScorer {
 
     if (persona.instantRead) {
       parts.push(`Quick Summary: ${persona.instantRead}`);
+    }
+
+    // Add verdict prediction stance if available
+    if (persona.verdictPrediction?.liability_finding_probability !== undefined) {
+      const prob = persona.verdictPrediction.liability_finding_probability;
+      if (prob >= 0.7) {
+        parts.push(`STANCE: Strongly favors plaintiffs. Likely to find liability.`);
+      } else if (prob <= 0.3) {
+        parts.push(`STANCE: Strongly favors defendants. Unlikely to find liability.`);
+      }
     }
 
     if (persona.description) {
@@ -392,6 +403,7 @@ export class EmbeddingScorer {
           instantRead: true,
           phrasesYoullHear: true,
           attributes: true,
+          verdictPrediction: true,
           embedding: true,
           embeddingModel: true,
         },
