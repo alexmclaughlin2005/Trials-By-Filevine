@@ -19,19 +19,41 @@
  *   railway run --service api-gateway npx tsx scripts/verify-embedding-stance.ts
  */
 
+// IMPORTANT: Capture DATABASE_URL from command line BEFORE any imports
+// When running: DATABASE_URL="..." npx tsx script.ts
+// The env var is already set in process.env, but we need to ensure it's valid
+const cmdLineDatabaseUrl = process.env.DATABASE_URL;
+
 import dotenv from 'dotenv';
 import path from 'path';
+
+// Load .env files (but command line DATABASE_URL takes precedence)
 dotenv.config({ path: path.join(__dirname, '..', 'services', 'api-gateway', '.env') });
 dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
+// Restore command-line DATABASE_URL if it was set (takes precedence over .env files)
+if (cmdLineDatabaseUrl) {
+  process.env.DATABASE_URL = cmdLineDatabaseUrl;
+}
+
 // Support production DATABASE_URL from environment
-// IMPORTANT: Set DATABASE_URL before importing PrismaClient so schema validation works
+// IMPORTANT: Ensure DATABASE_URL is set and valid before importing PrismaClient
 const databaseUrl = process.env.DATABASE_URL;
 if (databaseUrl) {
-  // Set it in process.env so Prisma schema validation passes
-  process.env.DATABASE_URL = databaseUrl;
+  // Validate and ensure it's set correctly
+  const trimmedUrl = databaseUrl.trim();
+  if (!trimmedUrl.startsWith('postgresql://') && !trimmedUrl.startsWith('postgres://')) {
+    console.error('❌ ERROR: DATABASE_URL must start with postgresql:// or postgres://');
+    console.error(`   Got: ${trimmedUrl.substring(0, 50)}...`);
+    console.error(`   Full URL length: ${trimmedUrl.length}`);
+    process.exit(1);
+  }
+  // Ensure we use the trimmed version
+  process.env.DATABASE_URL = trimmedUrl;
   console.log('🔗 Using DATABASE_URL from environment (production mode)');
-  console.log('   Database:', databaseUrl.replace(/:[^:@]+@/, ':****@')); // Hide password
+  console.log('   Database:', trimmedUrl.replace(/:[^:@]+@/, ':****@')); // Hide password
+} else {
+  console.log('ℹ️  Using DATABASE_URL from .env files (local mode)');
 }
 
 import { PrismaClient } from '@juries/database';
