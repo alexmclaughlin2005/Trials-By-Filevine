@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { ResearchSummarizer } from '@/components/research-summarizer';
-import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
 import { SignalInventory } from '@/components/signal-inventory';
@@ -310,7 +309,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 pb-[10px]">
+        <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
@@ -325,7 +324,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
               </p>
             </div>
           ) : data ? (
-            <div className="space-y-3 max-w-4xl">
+            <div className="space-y-3 max-w-4xl pb-[25px]">
               {/* Juror Photo Section */}
               <CollapsibleSection
                 title="Juror Photo"
@@ -770,15 +769,6 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                 />
               )}
 
-              {/* Archetype Classifier */}
-              <CollapsibleSection title="Archetype Classification" defaultOpen={false}>
-                <ArchetypeClassifier
-                  jurorId={jurorId}
-                  caseType={data.panel.case.caseType || undefined}
-                  jurisdiction={data.panel.case.jurisdiction || undefined}
-                  ourSide={data.panel.case.ourSide as 'plaintiff' | 'defense' | undefined}
-                />
-              </CollapsibleSection>
 
               {/* Signal Inventory */}
               <CollapsibleSection title="Signal Inventory" defaultOpen={false}>
@@ -787,7 +777,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
 
               {/* Persona Matching Dashboard */}
               {user?.organization?.id && (
-                <CollapsibleSection title="Persona Matching" defaultOpen={false}>
+                <CollapsibleSection title="Persona Matching and Archetype Classification" defaultOpen={false}>
                   <PersonaMatchDashboard
                     jurorId={jurorId}
                     organizationId={user.organization.id}

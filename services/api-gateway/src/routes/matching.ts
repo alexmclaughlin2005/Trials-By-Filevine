@@ -113,21 +113,46 @@ export async function matchingRoutes(server: FastifyInstance) {
         // Limit matches to top 5
         const limitedMatches = matches.slice(0, 5);
 
+        // Update juror's classifiedArchetype from top matched persona (v2 personas)
+        if (limitedMatches.length > 0 && limitedMatches[0].probability > 0.3) {
+          const topMatch = limitedMatches[0];
+          const topPersona = await server.prisma.persona.findUnique({
+            where: { id: topMatch.personaId },
+            select: { archetype: true, version: true },
+          });
+
+          // Only update if persona is v2 and has an archetype
+          if (topPersona?.archetype && topPersona.version === 2) {
+            await server.prisma.juror.update({
+              where: { id: jurorId },
+              data: {
+                classifiedArchetype: topPersona.archetype,
+                archetypeConfidence: topMatch.probability,
+                classifiedAt: new Date(),
+              },
+            });
+          }
+        }
+
         // Store all top 5 matches as persistent mappings
-        // If regenerating, delete existing suggested mappings (but keep confirmed ones)
+        // If regenerating, unconfirm existing confirmed matches and delete all non-confirmed mappings
         if (regenerate === 'true' || regenerate === true) {
-          await server.prisma.jurorPersonaMapping.deleteMany({
+          // Unconfirm any existing confirmed matches (user wants to see new matches)
+          await server.prisma.jurorPersonaMapping.updateMany({
             where: {
               jurorId,
-              mappingType: 'suggested',
+              isConfirmed: true,
+            },
+            data: {
               isConfirmed: false,
+              confirmedBy: null,
+              confirmedAt: null,
             },
           });
-          // Also reset primary if not confirmed
+          // Delete all non-confirmed mappings
           await server.prisma.jurorPersonaMapping.deleteMany({
             where: {
               jurorId,
-              mappingType: 'primary',
               isConfirmed: false,
             },
           });
@@ -201,6 +226,7 @@ export async function matchingRoutes(server: FastifyInstance) {
                   name: true,
                   description: true,
                   archetype: true,
+                  version: true,
                 },
               });
               return {
@@ -251,14 +277,11 @@ export async function matchingRoutes(server: FastifyInstance) {
         return { error: 'Juror not found' };
       }
 
-      // Get persona mappings - prioritize suggested matches with matchRank
-      const mappings = await server.prisma.jurorPersonaMapping.findMany({
-        where: { 
+      // Check if there's a confirmed match - if so, only return that one
+      const confirmedMapping = await server.prisma.jurorPersonaMapping.findFirst({
+        where: {
           jurorId,
-          OR: [
-            { mappingType: 'suggested' },
-            { mappingType: 'primary' },
-          ],
+          isConfirmed: true,
         },
         include: {
           persona: {
@@ -267,16 +290,42 @@ export async function matchingRoutes(server: FastifyInstance) {
               name: true,
               description: true,
               archetype: true,
+              version: true,
               instantRead: true,
             },
           },
         },
-        orderBy: [
-          { matchRank: 'asc' }, // Order by match rank (1-5)
-          { mappingType: 'asc' }, // primary first if no rank
-          { confidence: 'desc' },
-        ],
       });
+
+      // If there's a confirmed match, only return that one
+      const mappings = confirmedMapping
+        ? [confirmedMapping]
+        : await server.prisma.jurorPersonaMapping.findMany({
+            where: { 
+              jurorId,
+              OR: [
+                { mappingType: 'suggested' },
+                { mappingType: 'primary' },
+              ],
+            },
+            include: {
+              persona: {
+                select: {
+                  id: true,
+                  name: true,
+                  description: true,
+                  archetype: true,
+                  version: true,
+                  instantRead: true,
+                },
+              },
+            },
+            orderBy: [
+              { matchRank: 'asc' }, // Order by match rank (1-5)
+              { mappingType: 'asc' }, // primary first if no rank
+              { confidence: 'desc' },
+            ],
+          });
 
       // Get match updates if requested
       let updates: any[] = [];
@@ -300,7 +349,7 @@ export async function matchingRoutes(server: FastifyInstance) {
 
       // Convert stored mappings to EnsembleMatch format
       const matches: any[] = mappings
-        .filter(m => m.matchRank !== null || m.mappingType === 'primary') // Only return ranked matches
+        .filter(m => (m.matchRank !== null || m.mappingType === 'primary') && m.persona.version === 2) // Only return ranked v2 matches
         .map((m) => {
           const matchDetails = (m.matchDetails as any) || {};
           return {
@@ -330,6 +379,27 @@ export async function matchingRoutes(server: FastifyInstance) {
           };
         })
         .sort((a, b) => (a.matchRank || 999) - (b.matchRank || 999)); // Sort by rank
+
+      // Update juror's classifiedArchetype from top match if not set or if top match changed
+      if (matches.length > 0 && matches[0].personaArchetype) {
+        const topMatchArchetype = matches[0].personaArchetype;
+        const currentJuror = await server.prisma.juror.findUnique({
+          where: { id: jurorId },
+          select: { classifiedArchetype: true },
+        });
+
+        // Update if archetype is missing or different
+        if (!currentJuror?.classifiedArchetype || currentJuror.classifiedArchetype !== topMatchArchetype) {
+          await server.prisma.juror.update({
+            where: { id: jurorId },
+            data: {
+              classifiedArchetype: topMatchArchetype,
+              archetypeConfidence: matches[0].probability,
+              classifiedAt: new Date(),
+            },
+          });
+        }
+      }
 
       return {
         success: true,
@@ -389,6 +459,20 @@ export async function matchingRoutes(server: FastifyInstance) {
       }
 
       if (action === 'confirm') {
+        // Unconfirm any other confirmed matches for this juror (only one confirmed match at a time)
+        await server.prisma.jurorPersonaMapping.updateMany({
+          where: {
+            jurorId,
+            isConfirmed: true,
+            id: { not: mappingId }, // Don't unconfirm the one we're about to confirm
+          },
+          data: {
+            isConfirmed: false,
+            confirmedBy: null,
+            confirmedAt: null,
+          },
+        });
+
         // Confirm existing mapping
         const mapping = await server.prisma.jurorPersonaMapping.update({
           where: {

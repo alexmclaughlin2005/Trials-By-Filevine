@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useJurorMatches, useMatchJuror, useConfirmPersonaMatch, useMatchBreakdown, type EnsembleMatch } from '@/hooks/use-juror-matching';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Loader2, CheckCircle2, XCircle, BarChart3, Info, Search, Plus } from 'lucide-react';
+import { Loader2, CheckCircle2, XCircle, BarChart3, Info, Search, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { MatchBreakdownModal } from './match-breakdown-modal';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from './ui/dialog';
 import { apiClient } from '@/lib/api-client';
@@ -47,6 +47,7 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
   const [searchQuery, setSearchQuery] = useState('');
   const [availablePersonas, setAvailablePersonas] = useState<Persona[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [expandedReasoning, setExpandedReasoning] = useState<Set<string>>(new Set());
   const { data: matches, isLoading, error, refetch } = useJurorMatches(jurorId);
   const matchJurorMutation = useMatchJuror();
   const confirmMatchMutation = useConfirmPersonaMatch();
@@ -114,6 +115,7 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
         personaId,
         confirmed,
       });
+      // Refetch to get updated matches (will now only show the confirmed one)
       refetch();
     } catch (err) {
       console.error('Failed to confirm match:', err);
@@ -141,12 +143,10 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-filevine-gray-900">
-            Persona Matching
-          </h3>
+        <div className="flex-1">
           <p className="text-sm text-filevine-gray-600">
-            AI-powered ensemble matching using signal-based scoring, embedding similarity, and Bayesian updating
+            AI-powered ensemble matching using signal-based scoring, embedding similarity, and Bayesian updating.
+            Running matching will also automatically classify the juror's archetype from the top matched persona (v2 personas only).
           </p>
         </div>
         <div className="flex gap-2">
@@ -202,7 +202,15 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
 
       {matches && matches.length > 0 && (
         <div className="space-y-4">
-          {matches.length >= 5 && (
+          {matches.length === 1 && matches[0].isConfirmed && (
+            <div className="rounded-md bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Match confirmed. Click "Run Matching" to see other options or regenerate matches.</span>
+              </div>
+            </div>
+          )}
+          {matches.length >= 5 && !matches[0].isConfirmed && (
             <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
               Showing top 5 matches. Use "Add Persona" to search for and add additional personas.
             </div>
@@ -290,22 +298,51 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
                     </div>
                   </div>
 
-                  {/* Rationale */}
-                  <div className="mt-4">
-                    <h5 className="text-sm font-semibold text-filevine-gray-900">Rationale</h5>
-                    <p className="mt-2 text-sm text-filevine-gray-700">{match.rationale}</p>
-                  </div>
-
-                  {/* Counterfactual */}
-                  {match.counterfactual && (
-                    <div className="mt-4 rounded-md bg-blue-50 p-3">
-                      <div className="flex items-start gap-2">
-                        <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <h5 className="text-sm font-semibold text-blue-900">What Would Change This Match?</h5>
-                          <p className="mt-1 text-sm text-blue-800">{match.counterfactual}</p>
+                  {/* Reasoning (Rationale + Counterfactual) */}
+                  {(match.rationale || match.counterfactual) && (
+                    <div className="mt-4 rounded-md border border-filevine-gray-200 bg-white overflow-hidden">
+                      <button
+                        onClick={() => {
+                          const newExpanded = new Set(expandedReasoning);
+                          if (newExpanded.has(match.personaId)) {
+                            newExpanded.delete(match.personaId);
+                          } else {
+                            newExpanded.add(match.personaId);
+                          }
+                          setExpandedReasoning(newExpanded);
+                        }}
+                        className="w-full flex items-center justify-between p-3 hover:bg-filevine-gray-50 transition-colors"
+                      >
+                        <h5 className="text-sm font-semibold text-filevine-gray-900">Reasoning</h5>
+                        {expandedReasoning.has(match.personaId) ? (
+                          <ChevronUp className="h-4 w-4 text-filevine-gray-400" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4 text-filevine-gray-400" />
+                        )}
+                      </button>
+                      {expandedReasoning.has(match.personaId) && (
+                        <div className="px-3 pb-3 space-y-4">
+                          {/* Rationale */}
+                          {match.rationale && (
+                            <div>
+                              <h6 className="text-xs font-semibold text-filevine-gray-700 mb-1">Rationale</h6>
+                              <p className="text-sm text-filevine-gray-700">{match.rationale}</p>
+                            </div>
+                          )}
+                          {/* Counterfactual */}
+                          {match.counterfactual && (
+                            <div className="rounded-md bg-blue-50 p-3 border border-blue-200">
+                              <div className="flex items-start gap-2">
+                                <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <h6 className="text-xs font-semibold text-blue-900 mb-1">What Would Change This Match?</h6>
+                                  <p className="text-sm text-blue-800">{match.counterfactual}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
 
@@ -322,11 +359,20 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId }: Perso
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleConfirmMatch(match.personaId, undefined, true)}
-                      disabled={confirmMatchMutation.isPending}
+                      onClick={() => handleConfirmMatch(match.personaId, match.mappingId, true)}
+                      disabled={confirmMatchMutation.isPending || match.isConfirmed}
                     >
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Confirm Match
+                      {match.isConfirmed ? (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />
+                          Confirmed
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Confirm Match
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>

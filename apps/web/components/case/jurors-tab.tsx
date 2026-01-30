@@ -10,7 +10,6 @@ import { Plus, Users, Loader2, ChevronDown, ChevronUp, LayoutGrid, List, Image a
 import Image from 'next/image';
 import { JurorResearchPanel } from '@/components/juror-research-panel';
 import { DeepResearch } from '@/components/deep-research';
-import { ArchetypeClassifier } from '@/components/archetype-classifier';
 import { ResearchSummarizer } from '@/components/research-summarizer';
 import { JuryBoxView } from './jury-box-view';
 import { JuryBoxConfig } from './jury-box-config';
@@ -814,18 +813,6 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                         clientPosition={(panel.case?.ourSide as 'plaintiff' | 'defense') || 'plaintiff'}
                       />
 
-                      {/* Archetype Classifier */}
-                      <div className="rounded-lg border border-gray-200 bg-white p-6">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                          Archetype Classification
-                        </h3>
-                        <ArchetypeClassifier
-                          jurorId={juror.id}
-                          caseType={panel.case?.caseType || undefined}
-                          jurisdiction={panel.case?.jurisdiction || undefined}
-                          ourSide={panel.case?.ourSide as 'plaintiff' | 'defense' | undefined}
-                        />
-                      </div>
                     </div>
                   )}
                 </div>

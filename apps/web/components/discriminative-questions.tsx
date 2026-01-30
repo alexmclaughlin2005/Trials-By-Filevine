@@ -68,10 +68,7 @@ export function DiscriminativeQuestions({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-lg font-semibold text-filevine-gray-900">
-            Discriminative Questions
-          </h3>
+        <div className="flex-1">
           <p className="text-sm text-filevine-gray-600">
             AI-generated questions designed to maximize information gain and resolve ambiguous persona matches
           </p>

@@ -22,6 +22,9 @@ export interface EnsembleMatch {
   };
   supportingSignals?: Array<{ signalId: string; signalName: string; value: any }>;
   contradictingSignals?: Array<{ signalId: string; signalName: string; value: any }>;
+  mappingId?: string; // ID of the JurorPersonaMapping record
+  isConfirmed?: boolean; // Whether this match has been confirmed by the user
+  matchRank?: number; // Rank/position in match results (1-5)
 }
 
 export interface MatchJurorInput {
@@ -126,14 +129,29 @@ export function useConfirmPersonaMatch() {
     }) => {
       if (mappingId) {
         return await apiClient.post(`/matching/jurors/${jurorId}/matches/${mappingId}/confirm`, {
-          confirmed,
+          action: 'confirm',
         });
       } else {
-        // Create new mapping
-        return await apiClient.post(`/matching/jurors/${jurorId}/match`, {
+        // If no mappingId provided, find the mapping for this persona
+        // Get current matches to find the mappingId
+        const matchesData = await apiClient.get(`/matching/jurors/${jurorId}/matches`);
+        const match = matchesData.matches?.find((m: any) => m.personaId === personaId);
+        if (match?.mappingId) {
+          return await apiClient.post(`/matching/jurors/${jurorId}/matches/${match.mappingId}/confirm`, {
+            action: 'confirm',
+          });
+        }
+        // If still no mappingId, create a new match and then confirm it
+        const matchData = await apiClient.post(`/matching/jurors/${jurorId}/match`, {
           personaIds: [personaId],
-          confirmed,
         });
+        const newMatch = matchData.matches?.find((m: any) => m.personaId === personaId);
+        if (newMatch?.mappingId) {
+          return await apiClient.post(`/matching/jurors/${jurorId}/matches/${newMatch.mappingId}/confirm`, {
+            action: 'confirm',
+          });
+        }
+        throw new Error('Failed to find or create mapping to confirm');
       }
     },
     onSuccess: (_, variables) => {
