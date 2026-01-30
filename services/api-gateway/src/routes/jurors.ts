@@ -1302,20 +1302,8 @@ export async function jurorsRoutes(server: FastifyInstance) {
             continue;
           }
 
-          // If regenerating, clear imageUrl from database (new image will replace old one in Vercel Blob)
-          if (regenerate && juror.imageUrl) {
-            // Clear imageUrl - new upload will replace the old one in Vercel Blob
-            await server.prisma.juror.update({
-              where: { id: juror.id },
-              data: { imageUrl: null },
-            }).catch(() => {
-              // Ignore errors - best effort cleanup
-            });
-            // Legacy: Try to delete from filesystem if it exists (for backward compatibility)
-            await deleteJurorImage(juror.id).catch(() => {
-              // Ignore errors - filesystem cleanup is optional
-            });
-          }
+          // Note: We don't clear imageUrl before generating - Vercel Blob will overwrite with allowOverwrite: true
+          // This way if generation fails, the juror keeps their existing image
 
           // Generate image
           const result = await generateJurorHeadshot(
@@ -1339,12 +1327,33 @@ export async function jurorsRoutes(server: FastifyInstance) {
 
           if (result.success) {
             results.processed++;
+            
+            // Update juror with new image URL (Vercel Blob URL)
+            if (result.imageUrl) {
+              await server.prisma.juror.update({
+                where: { id: juror.id },
+                data: { imageUrl: result.imageUrl },
+              }).catch((error: any) => {
+                server.log.warn({ jurorId: juror.id, error: error.message }, 'Failed to update juror imageUrl (non-fatal)');
+              });
+            }
+            
+            // Add small delay to avoid rate limiting (DALL-E has rate limits)
+            // Only delay between requests, not after the last one
+            if (results.processed + results.failed < jurors.length) {
+              await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+            }
           } else {
             results.failed++;
             results.errors.push({
               jurorId: juror.id,
               error: result.error || 'Unknown error',
             });
+            
+            // Add delay even on failure to avoid rapid retries hitting rate limits
+            if (results.processed + results.failed < jurors.length) {
+              await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay on failure
+            }
           }
         } catch (error: any) {
           results.failed++;
@@ -1357,6 +1366,11 @@ export async function jurorsRoutes(server: FastifyInstance) {
             error: error.message,
             stack: error.stack,
           }, 'Error generating image for juror in batch');
+          
+          // Add delay on exception too
+          if (results.processed + results.failed < jurors.length) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay on exception
+          }
         }
       }
 

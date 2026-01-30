@@ -124,7 +124,7 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
       });
       return response;
     },
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       // Invalidate queries to refresh juror data
       queryClient.invalidateQueries({ queryKey: ['case'] });
       queryClient.invalidateQueries({ queryKey: ['panel', panelId] });
@@ -132,9 +132,24 @@ function GenerateAllImagesButton({ panelId, imageStyle, onStyleChange }: Generat
       
       setIsGenerating(false);
       
-      // Show success message
+      // Show success message with detailed results
+      const parts: string[] = [];
       if (data.processed > 0) {
-        alert(`Successfully generated ${data.processed} image${data.processed !== 1 ? 's' : ''}.${data.failed > 0 ? ` ${data.failed} failed.` : ''}`);
+        parts.push(`Successfully ${variables.regenerate ? 'regenerated' : 'generated'} ${data.processed} image${data.processed !== 1 ? 's' : ''}`);
+      }
+      if (data.skipped > 0) {
+        parts.push(`Skipped ${data.skipped} (already had images)`);
+      }
+      if (data.failed > 0) {
+        parts.push(`${data.failed} failed`);
+        if (data.errors && data.errors.length > 0) {
+          const errorSummary = data.errors.slice(0, 3).map(e => e.error).join(', ');
+          parts.push(`Errors: ${errorSummary}${data.errors.length > 3 ? '...' : ''}`);
+        }
+      }
+      
+      if (parts.length > 0) {
+        alert(parts.join('. '));
       } else {
         alert('No images were generated. All jurors may already have images, or they may be missing required fields (first name, last name).');
       }

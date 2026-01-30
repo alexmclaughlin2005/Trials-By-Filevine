@@ -493,6 +493,7 @@ export async function generateJurorHeadshot(
       access: 'public',
       contentType: 'image/png',
       addRandomSuffix: false, // Use consistent filename based on juror ID
+      allowOverwrite: true, // Allow overwriting when regenerating images
     });
 
     console.log(`[generateJurorHeadshot] Image uploaded successfully:`, {
