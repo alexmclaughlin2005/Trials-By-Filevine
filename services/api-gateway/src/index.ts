@@ -45,9 +45,15 @@ async function start() {
     downloaderInterval = startDocumentDownloader();
 
     // Preload persona embeddings at startup
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (apiKey) {
-      const claudeClient = new ClaudeClient({ apiKey });
+    const voyageApiKey = process.env.VOYAGE_API_KEY;
+    const anthropicApiKey = process.env.ANTHROPIC_API_KEY; // Still needed for narrative generation
+    
+    if (voyageApiKey) {
+      // ClaudeClient is still needed for narrative generation
+      const claudeClient = anthropicApiKey 
+        ? new ClaudeClient({ apiKey: anthropicApiKey })
+        : new ClaudeClient({ apiKey: '' }); // Will fail gracefully if needed
+      
       embeddingScorerInstance = new EmbeddingScorer(prisma, claudeClient);
       
       // Store in server context for cache status endpoint
@@ -57,8 +63,10 @@ async function start() {
       embeddingScorerInstance.preloadPersonaEmbeddings().catch((error) => {
         server.log.error('Failed to preload persona embeddings:', error);
       });
+      
+      server.log.info('🚀 Starting persona embedding preload in background...');
     } else {
-      server.log.warn('ANTHROPIC_API_KEY not set - skipping persona embedding preload');
+      server.log.warn('VOYAGE_API_KEY not set - skipping persona embedding preload');
     }
   } catch (err) {
     server.log.error(err);
