@@ -634,6 +634,7 @@ export async function generatePersonaHeadshots(
               access: 'public',
               contentType: 'image/png',
               addRandomSuffix: false,
+              allowOverwrite: true, // Allow overwriting when regenerating images
             });
 
             finalImageUrl = blobResult.url;
@@ -857,6 +858,7 @@ export async function generateSinglePersonaHeadshot(
         access: 'public',
         contentType: 'image/png',
         addRandomSuffix: false, // Use consistent filename based on persona ID
+        allowOverwrite: true, // Allow overwriting when regenerating images
       });
 
       console.log(`[generateSinglePersonaHeadshot] Image uploaded to Vercel Blob:`, {
