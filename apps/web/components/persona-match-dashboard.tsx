@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useJurorMatches, useMatchJuror, useConfirmPersonaMatch, useMatchBreakdown, type EnsembleMatch } from '@/hooks/use-juror-matching';
 import { Button } from './ui/button';
@@ -142,44 +142,42 @@ export function PersonaMatchDashboard({ jurorId, organizationId, caseId, onHeade
     return 'text-orange-600';
   };
 
-  // Memoize header actions to avoid recreating on every render
-  const headerActions = useMemo(() => (
-    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-      <Button
-        onClick={() => setShowSearchDialog(true)}
-        variant="outline"
-        size="sm"
-      >
-        <Plus className="mr-2 h-4 w-4" />
-        Add Persona
-      </Button>
-      <Button
-        onClick={handleMatch}
-        disabled={matchJurorMutation.isPending || isLoading}
-        variant="primary"
-        size="sm"
-      >
-        {matchJurorMutation.isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Matching...
-          </>
-        ) : (
-          <>
-            <BarChart3 className="mr-2 h-4 w-4" />
-            Run Matching
-          </>
-        )}
-      </Button>
-    </div>
-  ), [handleMatch, matchJurorMutation.isPending, isLoading]);
-
-  // Expose header actions to parent - use useLayoutEffect to ensure it runs before paint
-  useLayoutEffect(() => {
+  // Expose header actions to parent - use useEffect to avoid hydration issues
+  useEffect(() => {
     if (onHeaderActionsReady) {
-      onHeaderActionsReady(headerActions);
+      const actions = (
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+          <Button
+            onClick={() => setShowSearchDialog(true)}
+            variant="outline"
+            size="sm"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Add Persona
+          </Button>
+          <Button
+            onClick={handleMatch}
+            disabled={matchJurorMutation.isPending || isLoading}
+            variant="primary"
+            size="sm"
+          >
+            {matchJurorMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Matching...
+              </>
+            ) : (
+              <>
+                <BarChart3 className="mr-2 h-4 w-4" />
+                Run Matching
+              </>
+            )}
+          </Button>
+        </div>
+      );
+      onHeaderActionsReady(actions);
     }
-  }, [onHeaderActionsReady, headerActions]);
+  }, [onHeaderActionsReady, handleMatch, matchJurorMutation.isPending, isLoading]);
 
   return (
     <div className="space-y-4">
