@@ -19,15 +19,18 @@ export async function GET(
     // Fetch image from API Gateway
     // Use 'no-store' to prevent caching - images can be regenerated and we want fresh versions
     // Add timestamp to URL to ensure fresh fetch
+    // Set redirect: 'follow' to automatically follow redirects (e.g., to Vercel Blob URLs)
     const response = await fetch(`${apiUrl}/personas/images/${personaId}?t=${timestamp}`, {
       cache: 'no-store', // Don't cache - images can be regenerated
+      redirect: 'follow', // Follow redirects (e.g., to Vercel Blob URLs)
     });
 
     if (!response.ok) {
+      console.error(`Failed to fetch persona image: ${response.status} ${response.statusText}`);
       return new NextResponse(null, { status: response.status });
     }
 
-    // Get image data
+    // Get image data (fetch will automatically follow redirects to Vercel Blob URLs)
     const imageBuffer = await response.arrayBuffer();
     const contentType = response.headers.get('content-type') || 'image/png';
 
