@@ -5,6 +5,7 @@ export interface VoirDireResponse {
   id: string;
   jurorId: string;
   questionId: string | null;
+  questionType: 'DISCRIMINATIVE' | 'CASE_LEVEL' | 'CUSTOM' | null;
   questionText: string;
   responseSummary: string;
   yesNoAnswer: boolean | null;

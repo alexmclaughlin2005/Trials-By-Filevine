@@ -34,6 +34,11 @@ interface Case {
     jurors?: Array<{ id: string }>;
   }>;
   focusGroupSessions?: Array<{ id: string }>;
+  filevineProject?: {
+    id: string;
+    filevineProjectId: string;
+    projectName: string;
+  } | null;
 }
 
 interface CaseResponse {
@@ -89,6 +94,30 @@ export default function CaseLayout({ children }: { children: React.ReactNode }) 
   const witnessesCount = data.witnesses?.length || 0;
   const focusGroupsCount = data.focusGroupSessions?.length || 0;
 
+  // Generate initials for avatar
+  const initials = data.name
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+
+  // Generate consistent color for avatar based on case name
+  const getAvatarColor = (name: string) => {
+    const colors = [
+      'from-blue-500 to-blue-600',
+      'from-purple-500 to-purple-600',
+      'from-green-500 to-green-600',
+      'from-orange-500 to-orange-600',
+      'from-pink-500 to-pink-600',
+      'from-indigo-500 to-indigo-600',
+      'from-teal-500 to-teal-600',
+      'from-red-500 to-red-600',
+    ];
+    const hash = name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+  };
+
   return (
     <div className="flex h-full overflow-hidden">
       {/* Case Sidebar */}
@@ -106,72 +135,106 @@ export default function CaseLayout({ children }: { children: React.ReactNode }) 
         {/* Header Section */}
         <div className="border-b border-filevine-gray-200 bg-white px-4 py-4">
           <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-4">
-                  <h1 className="text-2xl font-bold text-filevine-gray-900">{data.name}</h1>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                      data.status === 'active'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {data.status}
-                  </span>
-                </div>
-                <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-filevine-gray-600">
-                  <div className="flex items-center gap-1.5">
-                    <FileText className="h-3.5 w-3.5" />
-                    <span>Case #{data.caseNumber}</span>
-                  </div>
-                  <span>•</span>
-                  <div className="flex items-center gap-1.5">
-                    <Scale className="h-3.5 w-3.5" />
-                    <span className="capitalize">{data.caseType}</span>
-                  </div>
-                  {data.trialDate && (
-                    <>
-                      <span>•</span>
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-3.5 w-3.5" />
-                        <span>{new Date(data.trialDate).toLocaleDateString()}</span>
-                      </div>
-                    </>
-                  )}
-                  {data.venue && (
-                    <>
-                      <span>•</span>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="h-3.5 w-3.5" />
-                        <span>{data.venue}</span>
-                      </div>
-                    </>
-                  )}
+              <div className="flex flex-1 items-start gap-4">
+                {/* Case Avatar */}
+                <div
+                  className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${getAvatarColor(data.name)} text-base font-semibold text-white shadow-sm`}
+                >
+                  {initials}
                 </div>
 
-                {/* Case Information - Compact */}
-                <div className="mt-3 flex items-center gap-6 text-xs text-filevine-gray-600">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <span className="font-medium">Plaintiff:</span> {data.plaintiffName}
+                {/* Case Info */}
+                <div className="flex-1">
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-2xl font-bold text-filevine-gray-900">{data.name}</h1>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        data.status === 'active'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {data.status}
+                    </span>
+                    {data.filevineProject && (
+                      <div className="group relative">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-filevine-blue">
+                          <svg
+                            className="h-3.5 w-3.5 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                            />
+                          </svg>
+                        </div>
+                        {/* Tooltip */}
+                        <div className="absolute left-1/2 top-full z-50 mt-2 hidden -translate-x-1/2 whitespace-nowrap rounded-md bg-gray-900 px-2 py-1 text-xs text-white group-hover:block">
+                          Linked to Filevine
+                          <div className="absolute -top-1 left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-gray-900"></div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-filevine-gray-600">
+                    <div className="flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5" />
+                      <span>Case #{data.caseNumber}</span>
                     </div>
                     <span>•</span>
-                    <div>
-                      <span className="font-medium">Defendant:</span> {data.defendantName}
+                    <div className="flex items-center gap-1.5">
+                      <Scale className="h-3.5 w-3.5" />
+                      <span className="capitalize">{data.caseType}</span>
                     </div>
-                    <span>•</span>
-                    <div>
-                      <span className="font-medium">Our Side:</span>{' '}
-                      <span className="capitalize">{data.ourSide}</span>
-                    </div>
-                    {data.jurisdiction && (
+                    {data.trialDate && (
                       <>
                         <span>•</span>
-                        <div>
-                          <span className="font-medium">Jurisdiction:</span> {data.jurisdiction}
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span>{new Date(data.trialDate).toLocaleDateString()}</span>
                         </div>
                       </>
                     )}
+                    {data.venue && (
+                      <>
+                        <span>•</span>
+                        <div className="flex items-center gap-1.5">
+                          <MapPin className="h-3.5 w-3.5" />
+                          <span>{data.venue}</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Case Information - Compact */}
+                  <div className="mt-3 flex items-center gap-6 text-xs text-filevine-gray-600">
+                    <div className="flex items-center gap-4">
+                      <div>
+                        <span className="font-medium">Plaintiff:</span> {data.plaintiffName}
+                      </div>
+                      <span>•</span>
+                      <div>
+                        <span className="font-medium">Defendant:</span> {data.defendantName}
+                      </div>
+                      <span>•</span>
+                      <div>
+                        <span className="font-medium">Our Side:</span>{' '}
+                        <span className="capitalize">{data.ourSide}</span>
+                      </div>
+                      {data.jurisdiction && (
+                        <>
+                          <span>•</span>
+                          <div>
+                            <span className="font-medium">Jurisdiction:</span> {data.jurisdiction}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

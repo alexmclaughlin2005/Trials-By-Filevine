@@ -83,6 +83,13 @@ export async function casesRoutes(server: FastifyInstance) {
               id: true,
             },
           },
+          filevineProject: {
+            select: {
+              id: true,
+              filevineProjectId: true,
+              projectName: true,
+            },
+          },
         },
       });
 
