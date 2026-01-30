@@ -1169,7 +1169,14 @@ export async function jurorsRoutes(server: FastifyInstance) {
         const imagePath = await getJurorImagePath(jurorId);
 
         if (!imagePath) {
-          server.log.warn({ jurorId }, 'Image not found for juror');
+          server.log.warn({ jurorId }, 'Image not found for juror - clearing imageUrl from database (ephemeral filesystem)');
+          // Clear imageUrl from database since file doesn't exist (Railway ephemeral filesystem)
+          await server.prisma.juror.update({
+            where: { id: jurorId },
+            data: { imageUrl: null },
+          }).catch((err) => {
+            server.log.warn({ jurorId, error: err }, 'Failed to clear imageUrl from database');
+          });
           return reply.status(404).send({
             error: 'Image not found',
             message: 'No image has been generated for this juror yet',
@@ -1180,9 +1187,17 @@ export async function jurorsRoutes(server: FastifyInstance) {
         try {
           await fs.access(imagePath);
         } catch {
-          server.log.warn({ jurorId, imagePath }, 'Image file does not exist');
+          server.log.warn({ jurorId, imagePath }, 'Image file does not exist - clearing imageUrl from database (ephemeral filesystem)');
+          // Clear imageUrl from database since file doesn't exist (Railway ephemeral filesystem)
+          await server.prisma.juror.update({
+            where: { id: jurorId },
+            data: { imageUrl: null },
+          }).catch((err) => {
+            server.log.warn({ jurorId, error: err }, 'Failed to clear imageUrl from database');
+          });
           return reply.status(404).send({
             error: 'Image file not found',
+            message: 'Image was lost due to server restart. Please regenerate.',
           });
         }
 
