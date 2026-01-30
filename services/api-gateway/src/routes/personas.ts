@@ -605,7 +605,14 @@ export async function personasRoutes(server: FastifyInstance) {
 
       // First check if image is stored in Vercel Blob (via JSON mappings)
       if (persona.jsonPersonaId) {
-        const { loadPersonaImageMappings } = await import('../services/persona-image-utils');
+        const { loadPersonaImageMappings, invalidatePersonaImageCache } = await import('../services/persona-image-utils');
+        
+        // Force cache reload if timestamp query param is present (indicates image was just regenerated)
+        const searchParams = request.query as { t?: string };
+        if (searchParams.t) {
+          invalidatePersonaImageCache();
+        }
+        
         const mappings = await loadPersonaImageMappings();
         const imageUrl = mappings.get(persona.jsonPersonaId);
         
