@@ -114,14 +114,21 @@ export async function buildServer() {
     maxAge: 86400, // 24 hours
   });
 
-  // Add explicit OPTIONS handler for all routes (backup)
+  // Add explicit CORS headers for all responses (ensures headers are set even if CORS plugin fails)
   server.addHook('onRequest', async (request, reply) => {
-    if (request.method === 'OPTIONS') {
-      reply.header('Access-Control-Allow-Origin', request.headers.origin || '*');
+    const origin = request.headers.origin;
+    
+    // In development, allow any origin; in production, check against allowed origins
+    if (config.nodeEnv === 'development' || (origin && config.allowedOrigins.includes(origin))) {
+      reply.header('Access-Control-Allow-Origin', origin || '*');
       reply.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
       reply.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
       reply.header('Access-Control-Allow-Credentials', 'true');
       reply.header('Access-Control-Max-Age', '86400');
+    }
+    
+    // Handle preflight OPTIONS requests
+    if (request.method === 'OPTIONS') {
       return reply.send();
     }
   });
