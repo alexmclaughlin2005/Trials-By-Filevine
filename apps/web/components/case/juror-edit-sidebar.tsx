@@ -370,10 +370,19 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                         className="object-cover"
                         unoptimized
                       />
+                      {generateImageMutation.isPending && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                          <Loader2 className="h-6 w-6 animate-spin text-white" />
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-filevine-gray-200 bg-filevine-gray-100 text-xl font-semibold text-filevine-gray-600 flex-shrink-0">
-                      {getInitials(data.firstName, data.lastName)}
+                    <div className="relative flex h-24 w-24 items-center justify-center rounded-full border-2 border-filevine-gray-200 bg-filevine-gray-100 text-xl font-semibold text-filevine-gray-600 flex-shrink-0">
+                      {generateImageMutation.isPending ? (
+                        <Loader2 className="h-6 w-6 animate-spin text-filevine-gray-600" />
+                      ) : (
+                        getInitials(data.firstName, data.lastName)
+                      )}
                     </div>
                   )}
                   <div className="flex-1">

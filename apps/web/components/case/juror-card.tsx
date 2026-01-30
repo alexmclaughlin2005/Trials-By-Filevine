@@ -1,6 +1,6 @@
 'use client';
 
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Loader2 } from 'lucide-react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import Image from 'next/image';
@@ -21,9 +21,10 @@ interface JurorCardProps {
   };
   isDragging?: boolean;
   onClick?: () => void;
+  isGeneratingImage?: boolean;
 }
 
-export function JurorCard({ juror, onClick }: JurorCardProps) {
+export function JurorCard({ juror, onClick, isGeneratingImage = false }: JurorCardProps) {
   const {
     attributes,
     listeners,
@@ -127,20 +128,29 @@ export function JurorCard({ juror, onClick }: JurorCardProps) {
               sizes="144px"
               unoptimized
             />
+            {isGeneratingImage && (
+              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                <Loader2 className="h-8 w-8 animate-spin text-white" />
+              </div>
+            )}
           </div>
         </div>
       ) : (
         <div className="mb-3 flex justify-center">
           <div
-            className="w-36 h-36 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
+            className="relative w-36 h-36 rounded-full bg-gray-100 border-2 border-gray-300 flex items-center justify-center cursor-pointer hover:border-primary hover:bg-gray-200 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleImageClick(e);
             }}
           >
-            <span className="text-base font-semibold text-gray-400">
-              {juror.firstName?.[0]}{juror.lastName?.[0]}
-            </span>
+            {isGeneratingImage ? (
+              <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            ) : (
+              <span className="text-base font-semibold text-gray-400">
+                {juror.firstName?.[0]}{juror.lastName?.[0]}
+              </span>
+            )}
           </div>
         </div>
       )}

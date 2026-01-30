@@ -392,9 +392,13 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
     setExpandedJurors(newExpanded);
   };
 
+  // Track which juror is currently generating an image
+  const [generatingJurorId, setGeneratingJurorId] = useState<string | null>(null);
+
   // Generate juror image mutation
   const generateImageMutation = useMutation({
     mutationFn: async (jurorId: string) => {
+      setGeneratingJurorId(jurorId);
       return await apiClient.post(`/jurors/${jurorId}/generate-image`, {
         regenerate: false,
         imageStyle,
@@ -407,6 +411,10 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
         queryClient.invalidateQueries({ queryKey: ['panel', panel?.id, 'jury-box'] }),
       ]);
       await refetch();
+      setGeneratingJurorId(null);
+    },
+    onError: () => {
+      setGeneratingJurorId(null);
     },
   });
 
@@ -719,6 +727,11 @@ export function JurorsTab({ caseId }: JurorsTabProps) {
                                 sizes="128px"
                                 unoptimized
                               />
+                              {generatingJurorId === juror.id && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full">
+                                  <Loader2 className="h-8 w-8 animate-spin text-white" />
+                                </div>
+                              )}
                             </div>
                             <p className="text-xs text-gray-500">
                               AI-generated based on physical description
