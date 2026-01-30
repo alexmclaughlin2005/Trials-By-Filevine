@@ -181,14 +181,14 @@ export function JurorCard({ juror, onClick, isGeneratingImage = false }: JurorCa
         {juror.occupation && <div>{juror.occupation}</div>}
       </div>
 
-      {/* Archetype Badge */}
-      {juror.classifiedArchetype && (
-        <div className="mt-2">
+      {/* Archetype Badge - Always reserve space to standardize height */}
+      <div className="mt-2 min-h-[24px]">
+        {juror.classifiedArchetype && (
           <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-700">
             {juror.classifiedArchetype.replace(/_/g, ' ')}
           </span>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Position Indicator */}
       {juror.boxRow !== null && juror.boxRow !== undefined && juror.boxSeat !== null && juror.boxSeat !== undefined && (
