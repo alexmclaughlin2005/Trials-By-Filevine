@@ -11,7 +11,8 @@ import { SignalInventory } from '@/components/signal-inventory';
 import { PersonaMatchDashboard } from '@/components/persona-match-dashboard';
 import { DiscriminativeQuestions } from '@/components/discriminative-questions';
 import { VoirDireResponseEntry } from '@/components/voir-dire/voir-dire-response-entry';
-import { VoirDireResponseHistory } from '@/components/voir-dire/voir-dire-response-history';
+import { VoirDireManager } from '@/components/voir-dire/voir-dire-manager';
+import { JurorNotesEditor } from '@/components/juror/juror-notes-editor';
 import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -118,6 +119,8 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
   const [isVoirDireEntryOpen, setIsVoirDireEntryOpen] = useState(false);
   const [suggestedQuestionId, setSuggestedQuestionId] = useState<string | undefined>();
   const [suggestedQuestionText, setSuggestedQuestionText] = useState<string | undefined>();
+  const [caseQuestionId, setCaseQuestionId] = useState<string | undefined>();
+  const [caseQuestionText, setCaseQuestionText] = useState<string | undefined>();
   const [isSearchingIdentity, setIsSearchingIdentity] = useState(false);
 
   const { data, isLoading, error, refetch } = useQuery({
@@ -307,7 +310,7 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4">
+        <div className="flex-1 overflow-y-auto p-4 pb-[10px]">
           {isLoading ? (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">
@@ -800,27 +803,36 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
                 </CollapsibleSection>
               )}
 
-              {/* Voir Dire Responses */}
-              <CollapsibleSection
-                title="Voir Dire Responses"
-                defaultOpen={false}
-                headerActions={
-                  <Button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSuggestedQuestionId(undefined);
-                      setSuggestedQuestionText(undefined);
+              {/* General Notes */}
+              <CollapsibleSection title="General Notes" defaultOpen={false}>
+                <JurorNotesEditor jurorId={jurorId} initialNotes={data.notes} />
+              </CollapsibleSection>
+
+              {/* Voir Dire - Combined Questions & Responses */}
+              {user?.organization?.id && (
+                <CollapsibleSection title="Voir Dire" defaultOpen={false}>
+                  <VoirDireManager
+                    caseId={data.panel.case.id}
+                    jurorId={jurorId}
+                    onAddResponse={(questionId, questionText) => {
+                      if (questionId && questionText) {
+                        // Answering a case-level question
+                        setCaseQuestionId(questionId);
+                        setCaseQuestionText(questionText);
+                        setSuggestedQuestionId(undefined);
+                        setSuggestedQuestionText(undefined);
+                      } else {
+                        // Adding a custom response
+                        setCaseQuestionId(undefined);
+                        setCaseQuestionText(undefined);
+                        setSuggestedQuestionId(undefined);
+                        setSuggestedQuestionText(undefined);
+                      }
                       setIsVoirDireEntryOpen(true);
                     }}
-                    variant="primary"
-                    size="sm"
-                  >
-                    Add Response
-                  </Button>
-                }
-              >
-                <VoirDireResponseHistory jurorId={jurorId} />
-              </CollapsibleSection>
+                  />
+                </CollapsibleSection>
+              )}
             </div>
           ) : null}
         </div>
@@ -834,12 +846,16 @@ export function JurorEditSidebar({ jurorId, isOpen, onClose }: JurorEditSidebarP
           setIsVoirDireEntryOpen(false);
           setSuggestedQuestionId(undefined);
           setSuggestedQuestionText(undefined);
+          setCaseQuestionId(undefined);
+          setCaseQuestionText(undefined);
         }}
         onSuccess={() => {
           refetch();
         }}
         suggestedQuestionId={suggestedQuestionId}
         suggestedQuestionText={suggestedQuestionText}
+        caseQuestionId={caseQuestionId}
+        caseQuestionText={caseQuestionText}
       />
     </>
   );

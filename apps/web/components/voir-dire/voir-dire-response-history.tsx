@@ -111,9 +111,22 @@ export function VoirDireResponseHistory({ jurorId }: VoirDireResponseHistoryProp
                     {formatEntryMethod(response.entryMethod)}
                   </span>
                 </div>
-                <p className="mt-1 text-sm text-filevine-gray-600 line-clamp-2">
-                  {response.responseSummary}
-                </p>
+                <div className="mt-1 flex items-center gap-2">
+                  {response.yesNoAnswer !== null && (
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        response.yesNoAnswer
+                          ? 'bg-filevine-green/20 text-filevine-green-700'
+                          : 'bg-filevine-red/20 text-filevine-red-700'
+                      }`}
+                    >
+                      {response.yesNoAnswer ? 'Yes' : 'No'}
+                    </span>
+                  )}
+                  <p className={`text-sm text-filevine-gray-600 ${response.yesNoAnswer !== null ? 'line-clamp-1' : 'line-clamp-2'}`}>
+                    {response.responseSummary}
+                  </p>
+                </div>
                 <p className="mt-2 text-xs text-filevine-gray-500">
                   {format(new Date(response.responseTimestamp), 'MMM d, yyyy h:mm a')}
                 </p>
@@ -132,7 +145,22 @@ export function VoirDireResponseHistory({ jurorId }: VoirDireResponseHistoryProp
             <div className="border-t border-filevine-gray-200 p-4 space-y-4">
               <div>
                 <h5 className="text-sm font-medium text-filevine-gray-700 mb-1">Full Response</h5>
-                <p className="text-sm text-filevine-gray-900 whitespace-pre-wrap">{response.responseSummary}</p>
+                <div className="flex items-start gap-2">
+                  {response.yesNoAnswer !== null && (
+                    <span
+                      className={`rounded-full px-3 py-1 text-sm font-semibold flex-shrink-0 ${
+                        response.yesNoAnswer
+                          ? 'bg-filevine-green/20 text-filevine-green-700'
+                          : 'bg-filevine-red/20 text-filevine-red-700'
+                      }`}
+                    >
+                      {response.yesNoAnswer ? 'Yes' : 'No'}
+                    </span>
+                  )}
+                  <p className="text-sm text-filevine-gray-900 whitespace-pre-wrap flex-1">
+                    {response.responseSummary}
+                  </p>
+                </div>
               </div>
 
               {response.extractedSignals.length > 0 && (

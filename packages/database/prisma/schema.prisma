@@ -82,7 +82,7 @@ model Case {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  organization       Organization         @relation(fields: [organizationId], references: [id])
+  organization       Organization           @relation(fields: [organizationId], references: [id])
   facts              CaseFact[]
   arguments          CaseArgument[]
   witnesses          CaseWitness[]
@@ -91,6 +91,7 @@ model Case {
   focusGroupSessions FocusGroupSession[]
   filevineProject    CaseFilevineProject?
   suggestedQuestions SuggestedQuestion[]
+  voirDireQuestions  CaseVoirDireQuestion[]
 
   @@index([organizationId])
   @@index([status])
@@ -452,22 +453,29 @@ model JurorSignal {
 model VoirDireResponse {
   id                String   @id @default(uuid())
   jurorId           String   @map("juror_id")
-  questionId        String?  @map("question_id") // If from suggested question
+  questionId        String?  @map("question_id") // If from suggested question or case-level question
+  questionType      String?  @map("question_type") // DISCRIMINATIVE | CASE_LEVEL | CUSTOM
   questionText      String   @map("question_text") @db.Text
   responseSummary   String   @map("response_summary") @db.Text
+  yesNoAnswer       Boolean? @map("yes_no_answer") // null = freeform, true = yes, false = no
   responseTimestamp DateTime @map("response_timestamp")
   enteredBy         String   @map("entered_by")
   entryMethod       String   @map("entry_method") // TYPED | VOICE_TO_TEXT | QUICK_SELECT
   createdAt         DateTime @default(now()) @map("created_at")
 
   // Relations
-  juror            Juror                @relation(fields: [jurorId], references: [id], onDelete: Cascade)
-  extractedSignals JurorSignal[]        @relation("VoirDireSource")
-  personaImpacts   PersonaMatchUpdate[]
+  juror                  Juror                 @relation(fields: [jurorId], references: [id], onDelete: Cascade)
+  // Note: questionId can reference either SuggestedQuestion.id or CaseVoirDireQuestion.id
+  // Handled at application level due to polymorphic relationship
+  extractedSignals       JurorSignal[]         @relation("VoirDireSource")
+  personaImpacts         PersonaMatchUpdate[]
+  CaseVoirDireQuestion   CaseVoirDireQuestion? @relation(fields: [caseVoirDireQuestionId], references: [id])
+  caseVoirDireQuestionId String?
 
   @@index([jurorId])
   @@index([responseTimestamp])
   @@index([questionId])
+  @@index([questionType])
   @@map("voir_dire_responses")
 }
 
@@ -515,6 +523,30 @@ model SuggestedQuestion {
   @@index([targetJurorId])
   @@index([priorityScore])
   @@map("suggested_questions")
+}
+
+model CaseVoirDireQuestion {
+  id               String   @id @default(uuid())
+  caseId           String   @map("case_id")
+  questionText     String   @map("question_text") @db.Text
+  questionType     String   @map("question_type") // AI_GENERATED | USER_CREATED
+  questionCategory String?  @map("question_category") // Optional categorization
+  source           String?  @db.Text // If AI-generated, reference to generation source
+  sortOrder        Int      @default(0) @map("sort_order")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdBy        String   @map("created_by")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  case             Case               @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  // Note: responses relation handled via questionId in VoirDireResponse (polymorphic)
+  VoirDireResponse VoirDireResponse[]
+
+  @@index([caseId])
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("case_voir_dire_questions")
 }
 
 // ============================================

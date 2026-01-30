@@ -32,6 +32,7 @@ import { signalsRoutes } from './routes/signals';
 import { matchingRoutes } from './routes/matching';
 import { questionsRoutes } from './routes/questions';
 import { voirDireRoutes } from './routes/voir-dire';
+import { caseVoirDireQuestionsRoutes } from './routes/case-voir-dire-questions';
 // import { jurorResearchRoutes } from './routes/juror-research'; // Disabled - conflicts with jurorsRoutes
 
 export async function buildServer() {
@@ -177,6 +178,7 @@ export async function buildServer() {
   await server.register(matchingRoutes, { prefix: '/api/matching' });
   await server.register(questionsRoutes, { prefix: '/api/questions' });
   await server.register(voirDireRoutes, { prefix: '/api' });
+  await server.register(caseVoirDireQuestionsRoutes, { prefix: '/api' });
   // await server.register(jurorResearchRoutes); // Disabled - conflicts with jurorsRoutes
 
   // Error handler

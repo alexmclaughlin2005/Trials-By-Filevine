@@ -15,8 +15,10 @@ import { ClaudeClient } from '@juries/ai-client';
 
 const createVoirDireResponseSchema = z.object({
   questionId: z.string().uuid().optional().nullable(),
+  questionType: z.enum(['DISCRIMINATIVE', 'CASE_LEVEL', 'CUSTOM']).optional(),
   questionText: z.string().min(1),
   responseSummary: z.string().min(1),
+  yesNoAnswer: z.boolean().nullable().optional(),
   entryMethod: z.enum(['TYPED', 'VOICE_TO_TEXT', 'QUICK_SELECT']).default('TYPED'),
   responseTimestamp: z.string().datetime().optional(),
 });
@@ -45,6 +47,7 @@ export async function voirDireRoutes(server: FastifyInstance) {
           questionId: { type: 'string', format: 'uuid', nullable: true },
           questionText: { type: 'string' },
           responseSummary: { type: 'string' },
+          yesNoAnswer: { type: 'boolean', nullable: true },
           entryMethod: { type: 'string', enum: ['TYPED', 'VOICE_TO_TEXT', 'QUICK_SELECT'] },
           responseTimestamp: { type: 'string', format: 'date-time' },
         },
@@ -83,8 +86,10 @@ export async function voirDireRoutes(server: FastifyInstance) {
           jurorId,
           {
             questionId: validationResult.data.questionId || undefined,
+            questionType: validationResult.data.questionType,
             questionText: validationResult.data.questionText,
             responseSummary: validationResult.data.responseSummary,
+            yesNoAnswer: validationResult.data.yesNoAnswer,
             entryMethod: validationResult.data.entryMethod,
             responseTimestamp: validationResult.data.responseTimestamp
               ? new Date(validationResult.data.responseTimestamp)
@@ -183,6 +188,7 @@ export async function voirDireRoutes(server: FastifyInstance) {
             questionId: r.questionId,
             questionText: r.questionText,
             responseSummary: r.responseSummary,
+            yesNoAnswer: r.yesNoAnswer,
             responseTimestamp: r.responseTimestamp.toISOString(),
             enteredBy: r.enteredBy,
             entryMethod: r.entryMethod,
@@ -232,6 +238,7 @@ export async function voirDireRoutes(server: FastifyInstance) {
         properties: {
           questionText: { type: 'string' },
           responseSummary: { type: 'string' },
+          yesNoAnswer: { type: 'boolean', nullable: true },
           entryMethod: { type: 'string', enum: ['TYPED', 'VOICE_TO_TEXT', 'QUICK_SELECT'] },
           responseTimestamp: { type: 'string', format: 'date-time' },
         },
@@ -300,6 +307,7 @@ export async function voirDireRoutes(server: FastifyInstance) {
             questionId: fullResponse.questionId,
             questionText: fullResponse.questionText,
             responseSummary: fullResponse.responseSummary,
+            yesNoAnswer: fullResponse.yesNoAnswer,
             responseTimestamp: fullResponse.responseTimestamp.toISOString(),
             enteredBy: fullResponse.enteredBy,
             entryMethod: fullResponse.entryMethod,

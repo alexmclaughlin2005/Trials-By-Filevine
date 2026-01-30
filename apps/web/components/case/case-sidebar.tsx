@@ -65,8 +65,8 @@ export function CaseSidebar({
       count: jurorCount,
     },
     {
-      name: 'Voir Dire',
-      href: `/cases/${caseId}/questions`,
+      name: 'Voir Dire Setup',
+      href: `/cases/${caseId}/voir-dire-questions`,
       icon: HelpCircle,
     },
     {

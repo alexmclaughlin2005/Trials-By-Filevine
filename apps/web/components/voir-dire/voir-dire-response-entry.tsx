@@ -24,6 +24,8 @@ interface VoirDireResponseEntryProps {
   onSuccess?: () => void;
   suggestedQuestionId?: string;
   suggestedQuestionText?: string;
+  caseQuestionId?: string;
+  caseQuestionText?: string;
 }
 
 export function VoirDireResponseEntry({
@@ -33,9 +35,12 @@ export function VoirDireResponseEntry({
   onSuccess,
   suggestedQuestionId,
   suggestedQuestionText,
+  caseQuestionId,
+  caseQuestionText,
 }: VoirDireResponseEntryProps) {
   const [questionText, setQuestionText] = useState('');
   const [responseSummary, setResponseSummary] = useState('');
+  const [yesNoAnswer, setYesNoAnswer] = useState<boolean | null>(null); // null = freeform, true = yes, false = no
   const [entryMethod, setEntryMethod] = useState<'TYPED' | 'VOICE_TO_TEXT' | 'QUICK_SELECT'>('TYPED');
   const [responseTimestamp, setResponseTimestamp] = useState<string>('');
 
@@ -43,12 +48,19 @@ export function VoirDireResponseEntry({
 
   // Pre-populate question if provided
   useEffect(() => {
-    if (suggestedQuestionText && isOpen) {
+    if (caseQuestionText && isOpen) {
+      setQuestionText(caseQuestionText);
+    } else if (suggestedQuestionText && isOpen) {
       setQuestionText(suggestedQuestionText);
     } else if (isOpen) {
       setQuestionText('');
     }
-  }, [suggestedQuestionText, isOpen]);
+    // Reset yes/no answer when dialog opens
+    if (isOpen) {
+      setYesNoAnswer(null);
+      setResponseSummary('');
+    }
+  }, [caseQuestionText, suggestedQuestionText, isOpen]);
 
   // Set default timestamp to now when dialog opens
   useEffect(() => {
@@ -67,17 +79,33 @@ export function VoirDireResponseEntry({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!questionText.trim() || !responseSummary.trim()) {
+    // Validate: either yes/no answer or response summary must be provided
+    if (!questionText.trim() || (yesNoAnswer === null && !responseSummary.trim())) {
       return;
     }
 
     try {
+      // Determine question type and ID
+      const questionId = caseQuestionId || suggestedQuestionId;
+      const questionType = caseQuestionId
+        ? 'CASE_LEVEL'
+        : suggestedQuestionId
+        ? 'DISCRIMINATIVE'
+        : 'CUSTOM';
+
+      // If yes/no answer is set, use that as the summary; otherwise use the text summary
+      const finalResponseSummary = yesNoAnswer !== null 
+        ? (yesNoAnswer ? 'Yes' : 'No')
+        : responseSummary.trim();
+
       await createMutation.mutateAsync({
         jurorId,
         input: {
-          questionId: suggestedQuestionId,
+          questionId,
+          questionType,
           questionText: questionText.trim(),
-          responseSummary: responseSummary.trim(),
+          responseSummary: finalResponseSummary,
+          yesNoAnswer: yesNoAnswer,
           entryMethod,
           responseTimestamp: responseTimestamp
             ? new Date(responseTimestamp).toISOString()
@@ -88,6 +116,7 @@ export function VoirDireResponseEntry({
       // Reset form
       setQuestionText('');
       setResponseSummary('');
+      setYesNoAnswer(null);
       setEntryMethod('TYPED');
       setResponseTimestamp('');
 
@@ -102,6 +131,7 @@ export function VoirDireResponseEntry({
     if (!createMutation.isPending) {
       setQuestionText('');
       setResponseSummary('');
+      setYesNoAnswer(null);
       setEntryMethod('TYPED');
       setResponseTimestamp('');
       onClose();
@@ -135,16 +165,70 @@ export function VoirDireResponseEntry({
 
           <div className="space-y-2">
             <Label htmlFor="responseSummary">Juror's Response</Label>
+            
+            {/* Yes/No Toggle */}
+            <div className="flex items-center gap-4 mb-3">
+              <span className="text-sm text-filevine-gray-600">Quick Answer:</span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setYesNoAnswer(yesNoAnswer === true ? null : true)}
+                  disabled={createMutation.isPending}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    yesNoAnswer === true
+                      ? 'bg-filevine-green text-white'
+                      : 'bg-filevine-gray-100 text-filevine-gray-700 hover:bg-filevine-gray-200'
+                  }`}
+                >
+                  Yes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setYesNoAnswer(yesNoAnswer === false ? null : false)}
+                  disabled={createMutation.isPending}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    yesNoAnswer === false
+                      ? 'bg-filevine-red text-white'
+                      : 'bg-filevine-gray-100 text-filevine-gray-700 hover:bg-filevine-gray-200'
+                  }`}
+                >
+                  No
+                </button>
+                {yesNoAnswer !== null && (
+                  <button
+                    type="button"
+                    onClick={() => setYesNoAnswer(null)}
+                    disabled={createMutation.isPending}
+                    className="text-xs text-filevine-gray-500 hover:text-filevine-gray-700 underline"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Freeform Response */}
             <Textarea
               id="responseSummary"
               value={responseSummary}
-              onChange={(e) => setResponseSummary(e.target.value)}
-              placeholder="Enter a summary of the juror's response..."
+              onChange={(e) => {
+                setResponseSummary(e.target.value);
+                // Clear yes/no answer when typing freeform
+                if (yesNoAnswer !== null) {
+                  setYesNoAnswer(null);
+                }
+              }}
+              placeholder={yesNoAnswer !== null ? "Add additional notes (optional)..." : "Enter a summary of the juror's response..."}
               rows={5}
-              required
+              required={yesNoAnswer === null}
               disabled={createMutation.isPending}
               className="resize-none"
             />
+            {yesNoAnswer !== null && (
+              <p className="text-xs text-filevine-gray-500">
+                Answer set to: <strong>{yesNoAnswer ? 'Yes' : 'No'}</strong>. Add notes above if needed.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -187,7 +271,7 @@ export function VoirDireResponseEntry({
               <X className="mr-2 h-4 w-4" />
               Cancel
             </Button>
-            <Button type="submit" disabled={createMutation.isPending || !questionText.trim() || !responseSummary.trim()}>
+            <Button type="submit" disabled={createMutation.isPending || !questionText.trim() || (yesNoAnswer === null && !responseSummary.trim())}>
               {createMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />

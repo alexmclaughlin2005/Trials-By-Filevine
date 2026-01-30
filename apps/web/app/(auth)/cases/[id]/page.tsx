@@ -79,12 +79,12 @@ export default function CaseOverviewPage() {
             <p className="mt-1 text-xs text-filevine-gray-600">Profile and analyze jury panel</p>
           </Link>
           <Link
-            href={`/cases/${caseId}/questions`}
+            href={`/cases/${caseId}/voir-dire-questions`}
             className="rounded-lg border border-filevine-gray-200 p-4 text-left transition-colors hover:border-filevine-blue hover:bg-filevine-blue/5"
           >
             <HelpCircle className="mb-2 h-6 w-6 text-filevine-blue" />
-            <p className="font-medium text-filevine-gray-900">Generate Questions</p>
-            <p className="mt-1 text-xs text-filevine-gray-600">AI-powered voir dire questions</p>
+            <p className="font-medium text-filevine-gray-900">Voir Dire Setup</p>
+            <p className="mt-1 text-xs text-filevine-gray-600">Manage case-level voir dire questions</p>
           </Link>
           <Link
             href={`/cases/${caseId}/focus-groups`}

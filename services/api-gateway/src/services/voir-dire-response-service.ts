@@ -14,8 +14,10 @@ import { ClaudeClient } from '@juries/ai-client';
 
 export interface CreateVoirDireResponseInput {
   questionId?: string;
+  questionType?: 'DISCRIMINATIVE' | 'CASE_LEVEL' | 'CUSTOM';
   questionText: string;
   responseSummary: string;
+  yesNoAnswer?: boolean | null; // null = freeform, true = yes, false = no
   entryMethod: 'TYPED' | 'VOICE_TO_TEXT' | 'QUICK_SELECT';
   responseTimestamp?: Date;
 }
@@ -23,6 +25,7 @@ export interface CreateVoirDireResponseInput {
 export interface UpdateVoirDireResponseInput {
   questionText?: string;
   responseSummary?: string;
+  yesNoAnswer?: boolean | null;
   entryMethod?: 'TYPED' | 'VOICE_TO_TEXT' | 'QUICK_SELECT';
   responseTimestamp?: Date;
 }
@@ -45,12 +48,26 @@ export class VoirDireResponseService {
     data: CreateVoirDireResponseInput,
     userId: string
   ) {
+    // Determine questionType if not provided
+    let questionType = data.questionType;
+    if (!questionType && data.questionId) {
+      // Check if it's a case-level question or discriminative question
+      const caseQuestion = await this.prisma.caseVoirDireQuestion.findUnique({
+        where: { id: data.questionId },
+      });
+      questionType = caseQuestion ? 'CASE_LEVEL' : 'DISCRIMINATIVE';
+    } else if (!questionType) {
+      questionType = 'CUSTOM';
+    }
+
     return await this.prisma.voirDireResponse.create({
       data: {
         jurorId,
         questionId: data.questionId || null,
+        questionType,
         questionText: data.questionText,
         responseSummary: data.responseSummary,
+        yesNoAnswer: data.yesNoAnswer ?? null,
         responseTimestamp: data.responseTimestamp || new Date(),
         enteredBy: userId,
         entryMethod: data.entryMethod,
@@ -134,6 +151,7 @@ export class VoirDireResponseService {
     const updateData: any = {};
     if (data.questionText !== undefined) updateData.questionText = data.questionText;
     if (data.responseSummary !== undefined) updateData.responseSummary = data.responseSummary;
+    if (data.yesNoAnswer !== undefined) updateData.yesNoAnswer = data.yesNoAnswer;
     if (data.entryMethod !== undefined) updateData.entryMethod = data.entryMethod;
     if (data.responseTimestamp !== undefined) updateData.responseTimestamp = data.responseTimestamp;
 

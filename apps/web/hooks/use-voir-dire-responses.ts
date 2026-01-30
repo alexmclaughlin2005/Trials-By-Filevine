@@ -7,6 +7,7 @@ export interface VoirDireResponse {
   questionId: string | null;
   questionText: string;
   responseSummary: string;
+  yesNoAnswer: boolean | null;
   responseTimestamp: string;
   enteredBy: string;
   entryMethod: 'TYPED' | 'VOICE_TO_TEXT' | 'QUICK_SELECT';
@@ -31,8 +32,10 @@ export interface VoirDireResponse {
 
 export interface CreateVoirDireResponseInput {
   questionId?: string;
+  questionType?: 'DISCRIMINATIVE' | 'CASE_LEVEL' | 'CUSTOM';
   questionText: string;
   responseSummary: string;
+  yesNoAnswer?: boolean | null;
   entryMethod?: 'TYPED' | 'VOICE_TO_TEXT' | 'QUICK_SELECT';
   responseTimestamp?: string;
 }
