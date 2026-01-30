@@ -34,7 +34,9 @@ export interface MatchJurorInput {
 }
 
 export interface MatchJurorResponse {
+  success: boolean;
   matches: EnsembleMatch[];
+  count: number;
 }
 
 export interface JurorPersonaMapping {
@@ -134,18 +136,20 @@ export function useConfirmPersonaMatch() {
       } else {
         // If no mappingId provided, find the mapping for this persona
         // Get current matches to find the mappingId
-        const matchesData = await apiClient.get(`/matching/jurors/${jurorId}/matches`);
-        const match = matchesData.matches?.find((m: any) => m.personaId === personaId);
+        const matchesData = await apiClient.get<{ success: boolean; matches: EnsembleMatch[]; count: number }>(
+          `/matching/jurors/${jurorId}/matches`
+        );
+        const match = matchesData.matches?.find((m) => m.personaId === personaId);
         if (match?.mappingId) {
           return await apiClient.post(`/matching/jurors/${jurorId}/matches/${match.mappingId}/confirm`, {
             action: 'confirm',
           });
         }
         // If still no mappingId, create a new match and then confirm it
-        const matchData = await apiClient.post(`/matching/jurors/${jurorId}/match`, {
+        const matchData = await apiClient.post<{ success: boolean; matches: EnsembleMatch[]; count: number }>(`/matching/jurors/${jurorId}/match`, {
           personaIds: [personaId],
         });
-        const newMatch = matchData.matches?.find((m: any) => m.personaId === personaId);
+        const newMatch = matchData.matches?.find((m) => m.personaId === personaId);
         if (newMatch?.mappingId) {
           return await apiClient.post(`/matching/jurors/${jurorId}/matches/${newMatch.mappingId}/confirm`, {
             action: 'confirm',
