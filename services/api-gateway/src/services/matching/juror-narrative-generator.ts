@@ -37,16 +37,10 @@ export class JurorNarrativeGenerator {
           },
         },
         voirDireResponses: {
-          where: {
-            OR: [
-              { responseSummary: { not: null } },
-              { yesNoAnswer: { not: null } },
-            ],
-          },
           orderBy: {
             responseTimestamp: 'desc',
           },
-          take: 10, // Most recent responses with answers
+          take: 20, // Get more, then filter to those with answers
         },
         panel: {
           include: {
@@ -83,7 +77,7 @@ export class JurorNarrativeGenerator {
     }
 
     // Extracted signals (grouped by category)
-    const signalsByCategory = new Map<string, typeof juror.extractedSignals>();
+    const signalsByCategory = new Map<string, Array<{ signal: { category: string; name: string } }>>();
     for (const js of juror.extractedSignals) {
       const category = js.signal.category;
       if (!signalsByCategory.has(category)) {
@@ -96,8 +90,8 @@ export class JurorNarrativeGenerator {
       parts.push('\nBehavioral Indicators:');
       for (const [category, signals] of signalsByCategory) {
         const signalNames = signals
-          .map((js) => js.signal.name)
-          .filter((name, idx, arr) => arr.indexOf(name) === idx); // Unique
+          .map((js: { signal: { name: string } }) => js.signal.name)
+          .filter((name: string, idx: number, arr: string[]) => arr.indexOf(name) === idx); // Unique
         if (signalNames.length > 0) {
           parts.push(`${category}: ${signalNames.join(', ')}`);
         }
@@ -121,7 +115,7 @@ export class JurorNarrativeGenerator {
 
     // Voir dire responses (only include responses with answers)
     const voirDireWithAnswers = juror.voirDireResponses.filter(
-      (r) => r.responseSummary || r.yesNoAnswer !== null
+      (r: { responseSummary: string | null; yesNoAnswer: boolean | null }) => r.responseSummary || r.yesNoAnswer !== null
     );
     
     if (voirDireWithAnswers.length > 0) {
