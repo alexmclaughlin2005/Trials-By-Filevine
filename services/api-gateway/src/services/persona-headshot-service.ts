@@ -1,5 +1,6 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { put } from '@vercel/blob';
 import { invalidatePersonaImageCache } from './persona-image-utils';
 
 // Lazy load OpenAI to avoid errors if not configured
@@ -410,9 +411,10 @@ async function generateImage(prompt: string, personaId: string): Promise<string>
 }
 
 /**
- * Download image from URL and save locally with initials overlay
+ * Download image from URL and process with initials overlay
+ * Returns processed image buffer for upload to Vercel Blob
  */
-async function downloadAndSaveImage(imageUrl: string, filePath: string, initials?: string): Promise<void> {
+async function downloadAndProcessImage(imageUrl: string, initials?: string): Promise<Buffer> {
   const response = await fetch(imageUrl);
   if (!response.ok) {
     throw new Error(`Failed to download image: ${response.statusText}`);
@@ -427,7 +429,6 @@ async function downloadAndSaveImage(imageUrl: string, filePath: string, initials
       const imageBuffer = Buffer.from(buffer);
       
       // Create SVG with text overlay - initials in bottom right corner
-      // Use a semi-transparent background for better visibility
       const svgOverlay = Buffer.from(`
         <svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
           <rect x="850" y="950" width="150" height="60" fill="rgba(0,0,0,0.6)" rx="5"/>
@@ -448,17 +449,24 @@ async function downloadAndSaveImage(imageUrl: string, filePath: string, initials
         .png()
         .toBuffer();
       
-      await fs.writeFile(filePath, finalImage);
-      console.log(`[downloadAndSaveImage] Added initials overlay "${initials}" to image`);
-      return;
+      console.log(`[downloadAndProcessImage] Added initials overlay "${initials}" to image`);
+      return finalImage;
     } catch (error: any) {
-      // If sharp fails, fall back to saving without overlay
-      console.warn(`[downloadAndSaveImage] Failed to add initials overlay, saving without overlay:`, error.message);
+      // If sharp fails, fall back to image without overlay
+      console.warn(`[downloadAndProcessImage] Failed to add initials overlay, using original image:`, error.message);
     }
   }
   
-  // Save without overlay (fallback or if no initials)
-  await fs.writeFile(filePath, Buffer.from(buffer));
+  // Return without overlay (fallback or if no initials)
+  return Buffer.from(buffer);
+}
+
+/**
+ * Download image from URL and save locally with initials overlay (legacy - for local dev)
+ */
+async function downloadAndSaveImage(imageUrl: string, filePath: string, initials?: string): Promise<void> {
+  const buffer = await downloadAndProcessImage(imageUrl, initials);
+  await fs.writeFile(filePath, buffer);
 }
 
 /**
@@ -613,14 +621,33 @@ export async function generatePersonaHeadshots(
           };
           const personaInitials = getInitials(persona.name || persona.full_name || persona.nickname || '');
           
-          // Download and save image with initials overlay
-          await downloadAndSaveImage(imageUrl, imagePath, personaInitials);
+          // Check if using Vercel Blob or filesystem
+          const useVercelBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+          let finalImageUrl: string;
+
+          if (useVercelBlob) {
+            // Upload to Vercel Blob Storage
+            const blobFileName = `personas/${personaIdForImage}.png`;
+            const imageBuffer = await downloadAndProcessImage(imageUrl, personaInitials);
+            
+            const blobResult = await put(blobFileName, imageBuffer, {
+              access: 'public',
+              contentType: 'image/png',
+              addRandomSuffix: false,
+            });
+
+            finalImageUrl = blobResult.url;
+            console.log(`[generatePersonaHeadshots] Uploaded to Vercel Blob: ${blobResult.url}`);
+          } else {
+            // Fallback to filesystem
+            await downloadAndSaveImage(imageUrl, imagePath, personaInitials);
+            finalImageUrl = `images/${imageFileName}`;
+          }
           
-          // Update persona with relative image path
-          const relativeImagePath = `images/${imageFileName}`;
+          // Update persona with image URL
           const updatedPersona: Persona = {
             ...persona,
-            image_url: relativeImagePath,
+            image_url: finalImageUrl,
           };
           
           updatedPersonas.push(updatedPersona);
@@ -814,14 +841,41 @@ export async function generateSinglePersonaHeadshot(
     
     console.log(`[generateSinglePersonaHeadshot] Adding initials overlay: "${personaInitials}"`);
 
-    // Download and save image with initials overlay
-    await downloadAndSaveImage(imageUrl, imagePath, personaInitials);
+    // Check if BLOB_READ_WRITE_TOKEN is set for Vercel Blob storage
+    const useVercelBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
+    let finalImageUrl: string;
 
-    // Update persona with relative image path
-    const relativeImagePath = `images/${imageFileName}`;
+    if (useVercelBlob) {
+      // Upload to Vercel Blob Storage
+      const blobFileName = `personas/${actualPersonaId}.png`;
+      console.log(`[generateSinglePersonaHeadshot] Uploading to Vercel Blob: ${blobFileName}`);
+      
+      // Download, process with initials, and upload to Vercel Blob
+      const imageBuffer = await downloadAndProcessImage(imageUrl, personaInitials);
+      
+      const blobResult = await put(blobFileName, imageBuffer, {
+        access: 'public',
+        contentType: 'image/png',
+        addRandomSuffix: false, // Use consistent filename based on persona ID
+      });
+
+      console.log(`[generateSinglePersonaHeadshot] Image uploaded to Vercel Blob:`, {
+        personaId: actualPersonaId,
+        blobUrl: blobResult.url,
+      });
+
+      finalImageUrl = blobResult.url; // Use Vercel Blob URL
+    } else {
+      // Fallback to filesystem (for local dev or if Blob token not set)
+      console.log(`[generateSinglePersonaHeadshot] BLOB_READ_WRITE_TOKEN not set, using filesystem storage`);
+      await downloadAndSaveImage(imageUrl, imagePath, personaInitials);
+      finalImageUrl = `images/${imageFileName}`; // Relative path for filesystem
+    }
+
+    // Update persona with image URL
     const updatedPersona: Persona = {
       ...persona,
-      image_url: relativeImagePath,
+      image_url: finalImageUrl,
     };
 
     // Update JSON file if requested
@@ -841,7 +895,7 @@ export async function generateSinglePersonaHeadshot(
 
     return {
       success: true,
-      imageUrl: relativeImagePath,
+      imageUrl: finalImageUrl,
     };
   } catch (error: any) {
     return {

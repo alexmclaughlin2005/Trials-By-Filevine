@@ -603,6 +603,24 @@ export async function personasRoutes(server: FastifyInstance) {
         jsonPersonaId: persona.jsonPersonaId 
       }, 'Serving image for persona');
 
+      // First check if image is stored in Vercel Blob (via JSON mappings)
+      if (persona.jsonPersonaId) {
+        const { loadPersonaImageMappings } = await import('../services/persona-image-utils');
+        const mappings = await loadPersonaImageMappings();
+        const imageUrl = mappings.get(persona.jsonPersonaId);
+        
+        // If image_url is a Vercel Blob URL (starts with https://), redirect to it
+        if (imageUrl && imageUrl.startsWith('https://')) {
+          server.log.info({ 
+            personaId, 
+            jsonPersonaId: persona.jsonPersonaId,
+            blobUrl: imageUrl 
+          }, 'Redirecting to Vercel Blob URL');
+          return reply.redirect(302, imageUrl);
+        }
+      }
+
+      // Fallback to filesystem-based serving
       // Get image path - use jsonPersonaId directly to construct filename (most reliable)
       let imagePath: string | null = null;
       

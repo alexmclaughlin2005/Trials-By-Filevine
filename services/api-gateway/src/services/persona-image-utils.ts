@@ -690,7 +690,7 @@ export async function getPersonaImagePath(
 
 /**
  * Get image URL for API response
- * Returns a relative URL path like "/personas/images/{personaId}"
+ * Returns a relative URL path like "/personas/images/{personaId}" or a Vercel Blob URL if stored there
  * The frontend will prepend the API base URL (which already includes /api)
  */
 export async function getPersonaImageUrl(
@@ -700,6 +700,19 @@ export async function getPersonaImageUrl(
   archetype: string | null | undefined
 ): Promise<string | null> {
   try {
+    // First check if we have a Vercel Blob URL in the JSON mappings
+    const jsonPersonaId = await findPersonaIdFromDatabase(name, nickname, archetype);
+    if (jsonPersonaId) {
+      const mappings = await loadPersonaImageMappings();
+      const imageUrl = mappings.get(jsonPersonaId);
+      
+      // If image_url is a Vercel Blob URL (starts with https://), return it directly
+      if (imageUrl && imageUrl.startsWith('https://')) {
+        return imageUrl;
+      }
+    }
+    
+    // Fallback to filesystem-based serving
     const imagePath = await getPersonaImagePath(personaId, name, nickname, archetype);
     
     if (!imagePath) {
