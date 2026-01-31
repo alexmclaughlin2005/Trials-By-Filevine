@@ -1,7 +1,17 @@
 # Juries by Filevine - Project Structure & AI Instructions
 
-**Last Updated:** 2026-01-29 (Roundtable Image Integration)
-**Version:** 1.0.0
+**Last Updated:** 2026-01-31 (Documentation Cleanup)
+**Version:** 1.1.0
+
+> **📌 This is the primary structure document.** For current status and roadmap, see [CURRENT_STATE.md](./CURRENT_STATE.md).
+
+## Document Roles
+
+| Document | Purpose |
+|----------|---------|
+| **AI_instructions.md** (this file) | Project structure, directory map, service reference, tech stack |
+| **[CURRENT_STATE.md](./CURRENT_STATE.md)** | What's done, what's next, testing status, known issues |
+| **[docs/README.md](./docs/README.md)** | Documentation index and navigation |
 
 ## Project Overview
 
@@ -23,14 +33,25 @@ Juries by Filevine is an AI-powered jury intelligence platform that helps legal 
 
 ```
 Trials by Filevine/
-├── ai_instructions.md              # THIS FILE - Project structure & directory map
-├── CLAUDE.md                       # AI assistant instructions for documentation
-├── RAILWAY_DEPLOYMENT.md           # Railway deployment guide & best practices (500+ lines)
-├── RAILWAY_QUICK_START.md          # Quick reference for Railway deployment
-├── DEPLOYMENT_SUMMARY.md           # Lessons learned and deployment strategy
-├── Trials by Filevine_AI_PRD.md            # Product requirements document
-├── Trials by Filevine_AI_Architecture.md   # System architecture document
-├── Trials by Filevine_AI_Technical_Design.md # Technical specifications
+├── AI_instructions.md              # THIS FILE - Project structure & directory map
+├── CURRENT_STATE.md                # Current status, roadmap, what's done/next
+├── README.md                       # Project entry point
+├── DEVELOPER_GUIDE.md              # Developer quick reference
+├── DEPLOYMENT_GUIDE.md             # Primary deployment guide
+├── RAILWAY_DEPLOYMENT.md           # Railway-specific deployment guide
+├── claude.md                       # AI assistant documentation protocol
+│
+├── personas/                       # V2 persona data (authoritative)
+│   ├── data/                       # Persona JSON files
+│   └── docs/                       # Persona documentation
+│
+├── docs/                           # Documentation hub
+│   ├── README.md                   # Documentation index
+│   ├── api/                        # API documentation
+│   ├── architecture/               # PRDs, system design, SYSTEM_OVERVIEW.md
+│   ├── features/                   # Feature-specific documentation
+│   ├── guides/                     # Demo scripts, presentations
+│   └── archive/                    # Historical documentation
 │
 ├── apps/
 │   ├── web/                        # Next.js 14 web application (Vercel)
@@ -539,7 +560,7 @@ CASE_SERVICE_URL=...
      - Structured output: profile, attitudes, litigation relevance, voir dire recommendations
      - Data quality assessment and confidence scoring
      - Context-based caching, full UI integration, production-ready
-     - See `DEEP_RESEARCH_TECHNICAL.md` for implementation details
+     - See `docs/features/deep-research/DEEP_RESEARCH_TECHNICAL.md` for implementation details
    - All services support mock fallback for development without API key
    - UI displays AI suggestions with visual confidence indicators
    - Persona mapping, research analysis, and focus groups save to database
@@ -618,7 +639,7 @@ CASE_SERVICE_URL=...
    - Constructs filename directly from `jsonPersonaId` (e.g., `BOOT_09.png`)
    - Comprehensive logging for debugging
    - Falls back to fuzzy matching only if direct lookup fails
-   - See: [SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md](./SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md) for complete details
+   - See: [docs/archive/sessions/SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md](./docs/archive/sessions/SESSION_SUMMARY_2026-01-29_PERSONA_IMAGE_GENERATION_FIX.md) for complete details
 
 ### ✅ Persona Images in Roundtable Conversations (Jan 29, 2026)
 1. **Roundtable Conversation Views** - Added persona images throughout all roundtable conversation displays
@@ -632,7 +653,7 @@ CASE_SERVICE_URL=...
 3. **Backend Support** - API already includes `imageUrl` in conversation statements
    - `/focus-groups/conversations/:conversationId` endpoint includes imageUrl in statements
    - Persona summaries and statements both include imageUrl from persona lookup
-   - See: [DEPLOYMENT_SUMMARY_2026-01-29_PERSONA_IMAGES.md](./DEPLOYMENT_SUMMARY_2026-01-29_PERSONA_IMAGES.md) for complete details
+   - See: [docs/archive/deployments/DEPLOYMENT_SUMMARY_2026-01-29_PERSONA_IMAGES.md](./docs/archive/deployments/DEPLOYMENT_SUMMARY_2026-01-29_PERSONA_IMAGES.md) for complete details
 
 ### 🚧 In Progress / Next Steps
 
@@ -697,7 +718,19 @@ CASE_SERVICE_URL=...
 ## Important Notes
 
 - **Security:** Never commit `.env` files; use `.env.example` templates
-- **Documentation:** Update this file when adding/removing directories
+- **Documentation:** Update this file when adding/removing directories. See [claude.md](./claude.md) for maintenance policy.
 - **Testing:** Each service must have unit tests before deployment
 - **AI Costs:** Monitor Anthropic API usage; implement caching strategies
 - **Compliance:** All research must be no-contact, publicly accessible only
+- **Personas:** V2 is authoritative. V1 is deprecated. See [personas/README.md](./personas/README.md) for deprecation checklist.
+
+## Related Documentation
+
+| Document | Purpose |
+|----------|---------|
+| [CURRENT_STATE.md](./CURRENT_STATE.md) | Current status, roadmap, what's done/next |
+| [claude.md](./claude.md) | AI assistant instructions & maintenance policy |
+| [docs/README.md](./docs/README.md) | Documentation index |
+| [docs/features/](./docs/features/) | Feature-specific documentation |
+| [docs/architecture/](./docs/architecture/) | PRDs, system design, SYSTEM_OVERVIEW |
+| [personas/](./personas/) | V2 persona data (authoritative) |

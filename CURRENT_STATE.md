@@ -1,7 +1,9 @@
 # Trials by Filevine - Current State & Roadmap
 
-**Last Updated:** January 25, 2026
+**Last Updated:** January 31, 2026
 **Status:** Production-Ready, Deployed to Vercel
+
+> **📌 This is the primary status document.** For project structure and directory map, see [AI_instructions.md](./AI_instructions.md).
 
 ---
 

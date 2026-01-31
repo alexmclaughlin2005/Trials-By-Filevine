@@ -2,7 +2,22 @@
 
 **Purpose:** This directory contains historical documentation files that have been superseded by more current documentation but are preserved for reference.
 
-**Last Archive Date:** January 23, 2026
+**Last Archive Date:** January 31, 2026
+
+---
+
+## Archive Structure
+
+```
+archive/
+├── sessions/           # 17 development session logs (Jan 22-29, 2026)
+├── phases/             # 9 phase completion documents (Phases 1-3, 5)
+├── deployments/        # 5 deployment milestone markers
+├── roundtable-development/  # Roundtable feature development docs
+└── [legacy files]      # Previously archived files (see below)
+```
+
+Each subdirectory has its own README with detailed file listings.
 
 ---
 

@@ -1,119 +1,218 @@
 # Claude AI Assistant Instructions
 
-## Documentation Management Protocol
+**Last Updated:** January 31, 2026
 
-### Documentation Structure
-This project maintains a hierarchical documentation system:
+## Quick Start for AI Agents
 
-1. **Top-Level Status Documentation**
-   - `CURRENT_STATE.md` - **⭐ START HERE** - Complete current state, feature breakdown, and roadmap
-   - `PROJECT_STATUS.md` - Phase completion status and next steps
-   - `ai_instructions.md` - Complete app structure and directory map
-   - `README.md` - Project overview and quick start
-   - **When to Update:** After major features complete, before/after deployment, when priorities shift
+**Read these two documents first:**
+1. **[AI_instructions.md](./AI_instructions.md)** - Project structure, directory map, service reference
+2. **[CURRENT_STATE.md](./CURRENT_STATE.md)** - Current status, what's done, what's next
 
-2. **Feature Documentation**
-   - `DEEP_RESEARCH_TECHNICAL.md` - Deep research implementation (500+ lines)
-   - `ARCHETYPE_SYSTEM_SUMMARY.md` - Archetype classification system
-   - `PHASE_4_COMPLETE.md` - Document capture & OCR
-   - `QUICK_DEMO.md` - Demo script for presentations
-   - **When to Update:** When features are added/changed, or demo flow changes
+**Documentation hub:** [docs/README.md](./docs/README.md)
 
-3. **Service/Directory-Level Documentation** (each directory has `README.md`)
-   - Specific implementation details for that service/module
-   - API contracts, data models, and dependencies
-   - Local setup and testing instructions
-   - **When to Update:** When significant changes are made to that service
+---
 
-4. **Session Notes** (date-stamped)
-   - `SESSION_SUMMARY_2026-01-22.md` - Example: Testing session and bug fixes
-   - **When to Create:** For major work sessions with multiple changes, bug fixes, or decisions
-   - **Purpose:** Track progress, document bugs found/fixed, capture decisions made
+## Documentation Structure
 
-### My Responsibilities
+### Primary Documents (Root Level)
 
-1. **Before Making Changes:**
-   - Read `CURRENT_STATE.md` to understand current features and priorities
-   - Read `ai_instructions.md` to understand project structure
-   - Read relevant directory `README.md` files for context
-   - Verify changes align with architectural decisions in PRD/Architecture docs
+| Document | Purpose | When to Update |
+|----------|---------|----------------|
+| `AI_instructions.md` | Project structure, directory map, tech stack | When structure changes |
+| `CURRENT_STATE.md` | Status, roadmap, what's done/next | After major features, deployments |
+| `README.md` | Project entry point, quick start | Rarely (stable) |
+| `DEVELOPER_GUIDE.md` | Developer quick reference | When dev workflows change |
+| `DEPLOYMENT_GUIDE.md` | Primary deployment guide | When deploy process changes |
+| `RAILWAY_DEPLOYMENT.md` | Railway-specific guide | When Railway config changes |
 
-2. **After Making Changes:**
-   - Update `CURRENT_STATE.md` if major features completed or priorities changed
-   - Update `PROJECT_STATUS.md` with phase progress
-   - Update `ai_instructions.md` if directory structure changes
-   - Update relevant `README.md` files with implementation details
-   - Update `QUICK_DEMO.md` if user workflows changed
-   - Create session summary if multiple changes made
-   - Ensure documentation reflects actual code state
+### Documentation Directories
 
-3. **When Creating New Services/Directories:**
-   - Create a `README.md` in the new directory immediately
-   - Update `ai_instructions.md` with the new directory entry
-   - Update `CURRENT_STATE.md` if it's a major feature
-   - Document purpose, responsibilities, and key interfaces
+```
+docs/
+├── README.md               # Documentation index & navigation
+├── api/                    # API specs, OpenAPI, quick reference
+├── architecture/           # PRDs, system design, SYSTEM_OVERVIEW.md
+├── features/               # Feature-specific documentation
+│   ├── archetypes/        # Archetype classification system
+│   ├── chat/              # API chat assistant
+│   ├── deep-research/     # Claude web search synthesis
+│   ├── focus-groups/      # Jury deliberation simulations
+│   ├── juror-research/    # Juror research specifications
+│   ├── ocr/               # Document capture
+│   ├── personas/          # Persona system & matching
+│   ├── phase-5b/          # Active planning docs
+│   └── voir-dire/         # Question generation
+├── guides/                 # Demo scripts, presentations
+└── archive/                # Historical documentation
+    ├── sessions/          # Development session logs
+    ├── phases/            # Phase completion docs
+    ├── deployments/       # Deployment milestones
+    └── features/          # Feature planning archives
+```
 
-4. **After Major Milestones:**
-   - Create comprehensive session summary document
-   - Update all top-level status documents
-   - Review and update feature documentation
-   - Ensure roadmap reflects current priorities
+### Data Directories
 
-### Project Context
+```
+personas/                   # V2 persona data (authoritative)
+├── data/                  # Persona JSON files (10 archetypes)
+├── docs/                  # Persona documentation
+└── README.md              # Includes V1 deprecation checklist
+```
 
-- **Frontend Hosting:** Vercel (Next.js)
-- **Backend Hosting:** Railway (Node.js/Python services)
-- **AI Provider:** Claude 4.5 models (Anthropic API)
-- **Database:** PostgreSQL (Railway managed)
-- **Architecture:** Microservices-based, event-driven
+### Service Documentation
 
-### Key Architectural Principles
+Each service has its own `README.md`:
+- `services/api-gateway/README.md` - API Gateway documentation
+- `services/prompt-service/README.md` - Prompt service
+- `packages/database/README.md` - Database schema
+- `apps/web/README.md` - Web application
 
-1. **Security First:** Encryption, audit logs, SOC 2 compliance path
-2. **Offline Resilient:** PWA with local-first data entry
-3. **AI as Services:** Versioned ML services with explainability
-4. **Multi-Tenant:** Strict data isolation via organization_id
-5. **Event-Driven:** Async processing with message queues
+---
 
-### Technology Stack
+## My Responsibilities
 
-- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS
-- **Backend Services:** Node.js + Fastify (API), Python + FastAPI (AI)
-- **Database:** PostgreSQL 16 with pgvector
-- **Cache/Queue:** Redis, RabbitMQ or Railway-managed queues
-- **Auth:** Auth0 or Clerk
-- **AI Integration:** Anthropic Claude API via SDKs
+### Before Making Changes
 
-### Documentation Updates Checklist
+1. Read `AI_instructions.md` to understand project structure
+2. Read `CURRENT_STATE.md` to understand current status and priorities
+3. Check `docs/features/` for feature-specific documentation
+4. Read relevant service `README.md` files
 
-When I make changes, I will:
-- [ ] Read `CURRENT_STATE.md` first to understand context
-- [ ] Update `CURRENT_STATE.md` if major features completed
-- [ ] Update `PROJECT_STATUS.md` with phase progress
-- [ ] Update `ai_instructions.md` if structure changed
-- [ ] Update relevant service `README.md` files
-- [ ] Update `QUICK_DEMO.md` if workflows changed
-- [ ] Create session summary for major work sessions
-- [ ] Ensure documentation matches code reality
-- [ ] Include setup instructions for new services
-- [ ] Document environment variables and configuration
+### After Making Changes
 
-### Documentation Quick Reference
+1. **Structure changes** → Update `AI_instructions.md`
+2. **Feature completion** → Update `CURRENT_STATE.md`
+3. **New service/directory** → Create `README.md` in that directory
+4. **API changes** → Update `docs/api/` documentation
+5. **Major work session** → Consider creating session summary (see Maintenance Policy)
 
-**For AI Assistants:**
-- **Start Here:** Read [CURRENT_STATE.md](CURRENT_STATE.md) to understand current state
-- **Project Structure:** See [ai_instructions.md](ai_instructions.md)
-- **Recent Work:** Check [SESSION_SUMMARY_*.md](SESSION_SUMMARY_2026-01-22.md) files
-- **Deployment:** See [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+### When Creating New Services
 
-**For Developers:**
-- **Getting Started:** See [DEVELOPER_GUIDE.md](DEVELOPER_GUIDE.md)
-- **Quick Demo:** See [QUICK_DEMO.md](QUICK_DEMO.md)
-- **System Overview:** See [SYSTEM_OVERVIEW.md](SYSTEM_OVERVIEW.md)
+1. Create `README.md` in the new directory immediately
+2. Add entry to `AI_instructions.md` repository structure
+3. Update `CURRENT_STATE.md` if it's a major feature
+4. Document purpose, API contracts, and dependencies
 
-**For Product/Business:**
-- **Current Status:** See [CURRENT_STATE.md](CURRENT_STATE.md)
-- **Phase Status:** See [PROJECT_STATUS.md](PROJECT_STATUS.md)
-- **Demo Script:** See [QUICK_DEMO.md](QUICK_DEMO.md)
+---
 
-When making changes that involve new prompts, use the prompt/seed endpoint to create/update the admin tool for prompt seeding in the prod database.
+## Maintenance Policy
+
+### Session Summaries
+
+**Purpose:** Track development progress, decisions, and bug fixes.
+
+**Lifecycle:**
+- **Create:** For major work sessions with multiple changes
+- **Location:** `docs/archive/sessions/` (archived immediately)
+- **Naming:** `SESSION_SUMMARY_YYYY-MM-DD_description.md`
+- **Retention:** Keep indefinitely for historical reference
+
+**When to create:**
+- Multiple related bug fixes in one session
+- Major feature implementation
+- Important architectural decisions
+- Production deployments with issues
+
+### Phase/Milestone Documents
+
+**Purpose:** Document phase completion and implementation details.
+
+**Lifecycle:**
+- **Active:** Keep in root or `docs/features/` while actively developing
+- **Archive:** Move to `docs/archive/phases/` when phase is complete and stable
+- **Consolidate:** Merge key information into `CURRENT_STATE.md` before archiving
+
+### Deployment Documents
+
+**Purpose:** Track deployment milestones and procedures.
+
+**Lifecycle:**
+- **Primary guides:** `DEPLOYMENT_GUIDE.md` and `RAILWAY_DEPLOYMENT.md` (always current)
+- **Milestone markers:** Archive to `docs/archive/deployments/` after deployment succeeds
+- **Feature deployments:** Archive after 2 weeks if no issues
+
+### Feature Documentation
+
+**Purpose:** Document feature implementation and usage.
+
+**Lifecycle:**
+- **Planning docs:** Keep in `docs/features/[feature]/` during development
+- **Archive planning:** Move to `docs/archive/features/` after feature ships
+- **Keep active:** Implementation guides, testing guides, user guides
+
+### Keeping Documents in Sync
+
+**Weekly check:**
+- Ensure `CURRENT_STATE.md` reflects actual implementation status
+- Verify `AI_instructions.md` matches actual directory structure
+- Archive any documents older than 2 weeks that are no longer needed
+
+**After major changes:**
+- Update both primary documents if needed
+- Cross-reference between them (they should point to each other)
+
+---
+
+## Project Context
+
+### Hosting
+- **Frontend:** Vercel (Next.js 14)
+- **Backend:** Railway (Node.js/Python services)
+- **Database:** PostgreSQL on Railway
+- **AI Provider:** Anthropic Claude 4.5
+
+### Key Directories
+- `apps/web/` - Main Next.js web application
+- `services/api-gateway/` - Main API gateway with integrated AI services
+- `services/prompt-service/` - Centralized prompt management
+- `packages/database/` - Prisma schema and migrations
+- `personas/data/` - V2 persona JSON files
+
+### Database Schema
+Located at: `packages/database/prisma/schema.prisma`
+
+Key models: Organization, User, Case, JuryPanel, Juror, Candidate, SynthesizedProfile, Persona, PersonaMapping, ArchetypeResult, Fact, Argument, Witness, Question, FocusGroup, DocumentCapture, ResearchArtifact
+
+### Prompt Management
+- Prompts stored in database via prompt-service
+- Use `services/prompt-service/scripts/` for seeding prompts
+- See `services/prompt-service/README.md` for full documentation
+
+---
+
+## Documentation Quick Reference
+
+### For AI Assistants
+| Need | Document |
+|------|----------|
+| Project structure | [AI_instructions.md](./AI_instructions.md) |
+| Current status | [CURRENT_STATE.md](./CURRENT_STATE.md) |
+| All documentation | [docs/README.md](./docs/README.md) |
+| Feature docs | [docs/features/](./docs/features/) |
+| API reference | [docs/api/](./docs/api/) |
+| Architecture | [docs/architecture/](./docs/architecture/) |
+
+### For Developers
+| Need | Document |
+|------|----------|
+| Getting started | [GETTING_STARTED.md](./GETTING_STARTED.md) |
+| Dev quick ref | [DEVELOPER_GUIDE.md](./DEVELOPER_GUIDE.md) |
+| Deployment | [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) |
+| Demo script | [docs/guides/QUICK_DEMO.md](./docs/guides/QUICK_DEMO.md) |
+
+### For System Reference
+| Need | Document |
+|------|----------|
+| System overview | [docs/architecture/SYSTEM_OVERVIEW.md](./docs/architecture/SYSTEM_OVERVIEW.md) |
+| PRD | [docs/architecture/TrialForge_AI_PRD.md](./docs/architecture/TrialForge_AI_PRD.md) |
+| Technical design | [docs/architecture/TrialForge_AI_Technical_Design.md](./docs/architecture/TrialForge_AI_Technical_Design.md) |
+| Database schema | [packages/database/prisma/schema.prisma](./packages/database/prisma/schema.prisma) |
+
+---
+
+## Prompt Seeding
+
+When making changes that involve new prompts:
+1. Create prompt in `services/prompt-service/scripts/`
+2. Use seed endpoint to add to production database
+3. See `services/prompt-service/README.md` for details
