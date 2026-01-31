@@ -4,9 +4,10 @@
 
 ## Quick Start for AI Agents
 
-**Read these two documents first:**
+**Read these documents first:**
 1. **[AI_instructions.md](./AI_instructions.md)** - Project structure, directory map, service reference
 2. **[CURRENT_STATE.md](./CURRENT_STATE.md)** - Current status, what's done, what's next
+3. **[OUTSTANDING_WORK.md](./OUTSTANDING_WORK.md)** - Prioritized task list, what's left to do
 
 **Documentation hub:** [docs/README.md](./docs/README.md)
 

@@ -223,7 +223,7 @@ Trials by Filevine/
       - Documents attached to arguments are fetched and included in focus group discussions
       - Full document text is included for personas to reference during deliberations
       - Supports local file:// URLs for development testing
-  - `JurorSynthesisService` - Deep research synthesis with web search ✅ **TESTED**
+  - `JurorSynthesisService` - Deep research synthesis with web search 🔄 **NEEDS IMPROVEMENT**
     - POST `/api/candidates/:candidateId/synthesize` - Start synthesis
     - GET `/api/candidates/:candidateId/synthesis` - Poll status
     - GET `/api/synthesis/:profileId` - Get full profile
@@ -553,7 +553,7 @@ CASE_SERVICE_URL=...
    - **ResearchSummarizerService** - Extracts signals from research artifacts ✅
    - **QuestionGeneratorService** - Generates strategic voir dire questions ✅
    - **FocusGroupEngineService** - Simulates jury focus groups with deliberation ✅
-   - **JurorSynthesisService** - Deep research with Claude web search ✅ **TESTED**
+   - **JurorSynthesisService** - Deep research with Claude web search 🔄 **NEEDS IMPROVEMENT**
      - Synthesizes candidate data into comprehensive profiles
      - Uses Claude 4 Sonnet with web_search tool (up to 10 searches)
      - Async processing (10-60 seconds) with event emission
@@ -575,8 +575,8 @@ CASE_SERVICE_URL=...
 7. **Confidence Scoring** - 0-100 scale with automatic review flagging
 8. **Base64 Image Storage** - Temporary solution (production will use Vercel Blob/S3)
 
-### ✅ Phase 5 Complete - Deep Research Synthesis
-1. **JurorSynthesisService** - Complete backend service with Claude web search integration ✅ **TESTED**
+### 🔄 Phase 5 - Deep Research Synthesis - NEEDS IMPROVEMENT
+1. **JurorSynthesisService** - Backend service with Claude web search integration 🔄 **NEEDS IMPROVEMENT**
 2. **Synthesis API Routes** - 3 endpoints: start synthesis, poll status, get profile
 3. **DeepResearch Component** - Full frontend with polling, error handling, rich UI
 4. **Database Schema** - SynthesizedProfile model with all metrics
@@ -588,8 +588,8 @@ CASE_SERVICE_URL=...
 10. **Bug Fixes** - Resolved candidate ID issues and React Query cache synchronization (Jan 22, 2026)
 11. **Production Ready** - Error handling, logging, performance optimization complete
 
-### ✅ Phase 5.5 Complete - UX Simplification (Jan 2026)
-1. **Embedded Research Workflow** - All juror research happens within case context
+### 🔄 Phase 5.5 - UX Simplification (Jan 2026) - NEEDS IMPROVEMENT
+1. **Embedded Research Workflow** - All juror research happens within case context 🔄 **NEEDS IMPROVEMENT**
 2. **Auto-Panel Creation** - Jury panels automatically created on case creation
 3. **Simplified Panel Management** - Removed panel expansion UI (99% use case optimization)
 4. **Expandable Juror Cards** - Click to expand inline research tools
@@ -729,6 +729,7 @@ CASE_SERVICE_URL=...
 | Document | Purpose |
 |----------|---------|
 | [CURRENT_STATE.md](./CURRENT_STATE.md) | Current status, roadmap, what's done/next |
+| [OUTSTANDING_WORK.md](./OUTSTANDING_WORK.md) | **Prioritized task list - what's left to do** |
 | [claude.md](./claude.md) | AI assistant instructions & maintenance policy |
 | [docs/README.md](./docs/README.md) | Documentation index |
 | [docs/features/](./docs/features/) | Feature-specific documentation |

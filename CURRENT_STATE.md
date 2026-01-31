@@ -24,10 +24,15 @@ Trials by Filevine AI is a comprehensive jury intelligence platform that has com
 - ✅ All features tested and debugged
 
 ### What's Next
-- 🎯 Deploy to production (Railway + Vercel)
-- 🎯 Real-world testing with actual case data
+- ✅ ~~Deploy to production (Railway + Vercel)~~ *Complete Jan 2026*
+- ✅ ~~Real-world testing with actual case data~~ *Complete Jan 2026*
+- ✅ ~~Production image storage (Vercel Blob)~~ *Complete Jan 2026*
+- 🔧 **Improve Embedded Juror Research** - UX and feature enhancements needed
+- 🔧 **Improve Deep Research (Web Search)** - Quality and accuracy enhancements needed
+- 🎯 Phase 5B: Hard-Gate Arguments + "So What?" Results Tab
 - 🎯 Enhanced data sources (FEC API, voter files)
-- 🎯 Production image storage (Vercel Blob/S3)
+
+**See [OUTSTANDING_WORK.md](./OUTSTANDING_WORK.md) for full prioritized task list.**
 
 ---
 
@@ -110,7 +115,7 @@ Database (Railway)
 ---
 
 ### 2. Embedded Juror Research
-**Status:** ✅ Complete (Major UX improvement Jan 2026)
+**Status:** 🔄 Needs Improvement (Functional but requires UX/feature enhancements)
 **What it does:**
 - All research happens within the case page
 - Click juror card to expand inline research tools
@@ -168,8 +173,8 @@ Database (Railway)
 
 ---
 
-### 4. Deep Research Synthesis ⭐ NEW
-**Status:** ✅ Complete & Tested
+### 4. Deep Research Synthesis (Juror Web Search)
+**Status:** 🔄 Needs Improvement (Functional but requires quality/accuracy enhancements)
 **What it does:**
 - Uses Claude 4 Sonnet with web search tool
 - Performs 3-10 web searches per juror
@@ -625,34 +630,36 @@ NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
 ## Production Deployment Checklist
 
-### Pre-Deployment
+### Pre-Deployment ✅
 - [x] All features tested locally
 - [x] Bug fixes deployed
 - [x] Documentation updated
-- [ ] Review [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
-- [ ] Prepare production environment variables
+- [x] Review [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+- [x] Prepare production environment variables
 
-### Railway Setup
-- [ ] Create Railway account
-- [ ] Create PostgreSQL database
-- [ ] Create Redis instance
-- [ ] Deploy API Gateway service
-- [ ] Configure environment variables
-- [ ] Run production migrations
+### Railway Setup ✅ COMPLETE (January 2026)
+- [x] Create Railway account
+- [x] Create PostgreSQL database
+- [x] Create Redis instance
+- [x] Deploy API Gateway service
+- [x] Configure environment variables
+- [x] Run production migrations
 
-### Vercel Setup
-- [ ] Create Vercel account
-- [ ] Deploy web application
-- [ ] Configure environment variables
-- [ ] Set up custom domain (optional)
+### Vercel Setup ✅ COMPLETE (January 2026)
+- [x] Create Vercel account
+- [x] Deploy web application
+- [x] Configure environment variables
+- [x] Set up custom domain (optional)
+- [x] Image storage migration to Vercel Blob
 
-### Post-Deployment
-- [ ] Test authentication end-to-end
-- [ ] Test Deep Research with real candidate
-- [ ] Verify all AI services working
-- [ ] Monitor Railway logs for errors
-- [ ] Check Vercel Analytics
-- [ ] Track API costs and token usage
+### Post-Deployment ✅ COMPLETE (January 2026)
+- [x] Test authentication end-to-end
+- [x] Test Deep Research with real candidate
+- [x] Verify all AI services working
+- [x] Monitor Railway logs for errors
+- [x] Check Vercel Analytics
+- [x] Track API costs and token usage
+- [x] Real-world testing with actual case data
 
 ### Monitoring Setup
 - [ ] Set up Sentry for error tracking
